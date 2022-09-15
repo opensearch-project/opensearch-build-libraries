@@ -17,8 +17,8 @@ class TestRunBwcTestScript extends BuildPipelineTest {
     public void TestRunBwcTestScript() {
         this.registerLibTester(new RunBwcTestScriptLibTester(
             'dummy_job',
-            'tests/jenkins/data/opensearch-1.3.0-build.yml',
-            'tests/jenkins/data/opensearch-1.3.0-test.yml',
+            'tests/data/opensearch-1.3.0-build.yml',
+            'tests/data/opensearch-1.3.0-test.yml',
             '717'
             )
         )
@@ -30,8 +30,8 @@ class TestRunBwcTestScript extends BuildPipelineTest {
     public void TestRunBwcTestScript_OpenSearch_Dashboards() {
         this.registerLibTester(new RunBwcTestScriptLibTester(
             'dummy_job',
-            'tests/jenkins/data/opensearch-dashboards-1.2.0-build.yml',
-            'tests/jenkins/data/opensearch-dashboards-1.2.0-test.yml',
+            'tests/data/opensearch-dashboards-1.2.0-build.yml',
+            'tests/data/opensearch-dashboards-1.2.0-test.yml',
             '215'
             )
         )

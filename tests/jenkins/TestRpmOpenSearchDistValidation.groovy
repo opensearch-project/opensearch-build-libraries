@@ -16,7 +16,7 @@ class TestRpmOpenSearchDistValidation extends BuildPipelineTest {
     @Before
     void setUp() {
 
-        def bundleManifest = "tests/jenkins/data/opensearch-1.3.1-x64-rpm.yml"
+        def bundleManifest = "tests/data/opensearch-1.3.1-x64-rpm.yml"
         def rpmDistribution = "$workspace/opensearch-1.3.1-linux-x64.rpm"
         this.registerLibTester(new RpmOpenSearchDistValidationLibTester(rpmDistribution, bundleManifest))
         super.setUp()

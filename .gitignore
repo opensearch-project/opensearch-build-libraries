@@ -4,10 +4,6 @@ Thumbs.db
 .idea/
 *.iml
 
-__pycache__
-.pytest_cache
-*.pyc
-
 .coverage
 coverage.xml
 coverage/
@@ -18,18 +14,11 @@ coverage/
 out.txt
 
 /builds/
-/dist/
-/test-results/
 
-/rpm/
-/tar/
-/zip/
 
 /.vscode/
 
 .project
 .classpath
-/bin/
 
-/manifests/**/*.yml.lock
 

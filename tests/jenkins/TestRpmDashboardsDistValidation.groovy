@@ -16,7 +16,7 @@ class TestRpmDashboardsDistValidation extends BuildPipelineTest {
     @Before
     void setUp() {
 
-        def bundleManifest = "tests/jenkins/data/opensearch-dashboards-1.3.0-x64-rpm.yml"
+        def bundleManifest = "tests/data/opensearch-dashboards-1.3.0-x64-rpm.yml"
         def rpmDistribution = "$workspace/opensearch-dashboards-1.3.0-linux-x64.rpm"
         this.registerLibTester(new RpmDashboardsDistValidationLibTester(rpmDistribution, bundleManifest))
         super.setUp()

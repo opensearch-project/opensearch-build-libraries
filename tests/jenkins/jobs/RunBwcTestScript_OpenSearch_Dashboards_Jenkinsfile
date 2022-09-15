@@ -14,8 +14,8 @@ pipeline {
                 script {
                     runBwcTestScript(
                         jobName: 'dummy_job',
-                        buildManifest: 'tests/jenkins/data/opensearch-dashboards-1.2.0-build.yml',
-                        testManifest: 'tests/jenkins/data/opensearch-dashboards-1.2.0-test.yml',
+                        buildManifest: 'tests/data/opensearch-dashboards-1.2.0-build.yml',
+                        testManifest: 'tests/data/opensearch-dashboards-1.2.0-test.yml',
                         buildId: '215'
                     )
                 }

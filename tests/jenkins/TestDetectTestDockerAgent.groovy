@@ -16,7 +16,7 @@ class TestDetectTestDockerAgent extends BuildPipelineTest {
     @Test
     public void test() {
         this.registerLibTester(new DetectTestDockerAgentLibTester(
-            'tests/jenkins/data/opensearch-1.3.0-test.yml'
+            'tests/data/opensearch-1.3.0-test.yml'
         ))
         super.testPipeline("tests/jenkins/jobs/DetectTestDockerAgent_Jenkinsfile")
     }

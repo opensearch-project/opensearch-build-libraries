@@ -16,7 +16,7 @@ class TestUploadMinSnapshotsToS3 extends BuildPipelineTest {
     @Before
     void setUp() {
         List <Closure> fileActions = ['createSha512Checksums']
-        this.registerLibTester(new UploadMinSnapshotsToS3LibTester( fileActions, 'tests/jenkins/data/opensearch-1.3.0.yml' ))
+        this.registerLibTester(new UploadMinSnapshotsToS3LibTester( fileActions, 'tests/data/opensearch-1.3.0-build.yml' ))
         super.setUp()
     }
 

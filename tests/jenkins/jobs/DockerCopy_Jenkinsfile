@@ -1,0 +1,32 @@
+pipeline {
+    agent none
+    stages {
+        stage("Image Copy") {
+            stages {
+                stage('Parameters Check') {
+                    steps {
+                        script {
+                            currentBuild.description = "${SOURCE_IMAGE_REGISTRY}/${SOURCE_IMAGE} to ${DESTINATION_IMAGE_REGISTRY}/${DESTINATION_IMAGE}"
+                            if( SOURCE_IMAGE.isEmpty() || DESTINATION_IMAGE.isEmpty()) {
+                                        currentBuild.result = 'ABORTED'
+                                        error('Make sure all the parameters are passed in.')
+                            }
+                        }
+                    }
+                }
+                stage('Copy Image to ECR/DockerHub') {
+                    steps {
+                        script {
+                            copyContainer(
+                                sourceImage: "${SOURCE_IMAGE}",
+                                sourceRegistry: "${SOURCE_IMAGE_REGISTRY}",
+                                destinationImage: "${DESTINATION_IMAGE}",
+                                destinationRegistry: "${DESTINATION_IMAGE_REGISTRY}"
+                            )
+                        }
+                    }
+                }
+            }    
+        }
+    }
+}

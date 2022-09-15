@@ -17,8 +17,8 @@ class TestBuildInfoYaml extends BuildPipelineTest {
     void setUp() {
         this.registerLibTester(new BuildInfoYamlLibTester(
                 '',
-                'tests/jenkins/data/opensearch-2.2.0.yml',
-                'tests/jenkins/data/buildInfo.yml',
+                'tests/data/opensearch-2.2.0.yml',
+                'tests/data/buildInfo.yml',
                 'NOT_STARTED',
                 'INITIALIZE_STAGE'
             )

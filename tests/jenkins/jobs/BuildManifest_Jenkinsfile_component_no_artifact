@@ -14,7 +14,7 @@ pipeline {
         stage('Build Manifest Properties') {
             steps {
                 script {
-                    def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: "tests/data/opensearch-dashboards-build-1.2.0.yml"))
+                    def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: "tests/data/opensearch-dashboards-1.2.0-build.yml"))
                     echo buildManifest.build.name
                     echo buildManifest.build.version
                     echo buildManifest.build.platform

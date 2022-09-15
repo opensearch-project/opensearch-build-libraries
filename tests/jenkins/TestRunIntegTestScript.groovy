@@ -18,8 +18,8 @@ class TestRunIntegTestScript extends BuildPipelineTest {
         this.registerLibTester(new RunIntegTestScriptLibTester(
             'dummy_job',
             'OpenSearch',
-            'tests/jenkins/data/opensearch-1.3.0-build.yml',
-            'tests/jenkins/data/opensearch-1.3.0-test.yml',
+            'tests/data/opensearch-1.3.0-build.yml',
+            'tests/data/opensearch-1.3.0-test.yml',
             '',
             )
         )
@@ -32,8 +32,8 @@ class TestRunIntegTestScript extends BuildPipelineTest {
         this.registerLibTester(new RunIntegTestScriptLibTester(
             'dummy_job',
             'functionalTestDashboards',
-            'tests/jenkins/data/opensearch-dashboards-1.2.0-build.yml',
-            'tests/jenkins/data/opensearch-dashboards-1.2.0-test.yml',
+            'tests/data/opensearch-dashboards-1.2.0-build.yml',
+            'tests/data/opensearch-dashboards-1.2.0-test.yml',
             '',
             )
         )
@@ -46,8 +46,8 @@ class TestRunIntegTestScript extends BuildPipelineTest {
         this.registerLibTester(new RunIntegTestScriptLibTester(
             'dummy_job',
             'OpenSearch',
-            'tests/jenkins/data/opensearch-1.3.0-build.yml',
-            'tests/jenkins/data/opensearch-1.3.0-test.yml',
+            'tests/data/opensearch-1.3.0-build.yml',
+            'tests/data/opensearch-1.3.0-test.yml',
             'tests/jenkins/artifacts/tar',
             )
         )

@@ -13,6 +13,7 @@ import org.junit.*
 class TestInputManifest extends BuildPipelineTest {
     @Test
     void testInputManifest() {
+        helper.registerAllowedMethod("git", [Map])
         super.testPipeline("tests/jenkins/jobs/InputManifest_Jenkinsfile")
     }
 }

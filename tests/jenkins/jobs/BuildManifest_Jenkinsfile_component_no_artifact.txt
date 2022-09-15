@@ -4,7 +4,7 @@
          BuildManifest_Jenkinsfile_component_no_artifact.echo(Executing on agent [label:none])
          BuildManifest_Jenkinsfile_component_no_artifact.stage(Build Manifest Properties, groovy.lang.Closure)
             BuildManifest_Jenkinsfile_component_no_artifact.script(groovy.lang.Closure)
-               BuildManifest_Jenkinsfile_component_no_artifact.readYaml({file=tests/data/opensearch-dashboards-build-1.2.0.yml})
+               BuildManifest_Jenkinsfile_component_no_artifact.readYaml({file=tests/data/opensearch-dashboards-1.2.0-build.yml})
                BuildManifest.asBoolean()
                BuildManifest_Jenkinsfile_component_no_artifact.echo(OpenSearch Dashboards)
                BuildManifest_Jenkinsfile_component_no_artifact.echo(1.2.0)

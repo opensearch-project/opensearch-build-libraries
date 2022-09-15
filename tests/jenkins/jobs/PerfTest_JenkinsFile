@@ -1,0 +1,47 @@
+lib = library(identifier: "jenkins@20211118", retriever: legacySCM(scm))
+
+pipeline {
+    agent none
+    stages {
+        stage('perf-test') {
+            parallel {
+                stage('test-with-security') {
+                    steps {
+                        script {
+                            def bundleManifestObj = downloadBuildManifest(
+                                url: BUNDLE_MANIFEST_URL,
+                                path: BUNDLE_MANIFEST
+                            )
+                            runPerfTestScript(bundleManifest: BUNDLE_MANIFEST,
+                                buildId: BUILD_ID,
+                                architecture: ARCHITECTURE,
+                                insecure: false,
+                                workload: TEST_WORKLOAD,
+                                testIterations: TEST_ITERATIONS,
+                                warmupIterations: WARMUP_ITERATIONS,
+                                stackNameSuffix: env.BUILD_NUMBER)
+                        }
+                    }
+                }
+                stage('test-without-security') {
+                    steps {
+                        script {
+                            def bundleManifestObj = downloadBuildManifest(
+                                url: BUNDLE_MANIFEST_URL,
+                                path: BUNDLE_MANIFEST
+                            )
+                            runPerfTestScript(bundleManifest: BUNDLE_MANIFEST,
+                                buildId: BUILD_ID,
+                                architecture: ARCHITECTURE,
+                                insecure: true,
+                                workload: TEST_WORKLOAD,
+                                testIterations: TEST_ITERATIONS,
+                                warmupIterations: WARMUP_ITERATIONS,
+                                stackNameSuffix: env.BUILD_NUMBER)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

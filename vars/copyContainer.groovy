@@ -21,10 +21,7 @@ void call(Map args = [:]) {
         def dockerJenkinsCredential = args.destinationRegistry == 'opensearchproject' ? "jenkins-production-dockerhub-credential" : "jenkins-staging-dockerhub-credential"
         withCredentials([usernamePassword(credentialsId: dockerJenkinsCredential, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
             def dockerLogin = sh(returnStdout: true, script: "echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin").trim()
-            sh """
-                gcrane cp ${args.sourceRegistry}/${args.sourceImage} ${args.destinationRegistry}/${args.destinationImage}
-                docker logout
-            """
+            sh """gcrane cp ${args.sourceRegistry}/${args.sourceImage} ${args.destinationRegistry}/${args.destinationImage}; docker logout"""
         }
     }
     if (args.destinationRegistry == 'public.ecr.aws/opensearchproject') {
@@ -34,18 +31,12 @@ void call(Map args = [:]) {
             {
                 withAWS(role: "${ARTIFACT_PROMOTION_ROLE_NAME}", roleAccount: "${AWS_ACCOUNT_ARTIFACT}", duration: 900, roleSessionName: 'jenkins-session') {
                     def ecrLogin = sh(returnStdout: true, script: "aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${args.destinationRegistry}").trim()
-                    sh """
-                        gcrane cp ${args.sourceRegistry}/${args.sourceImage} ${args.destinationRegistry}/${args.destinationImage}
-                        docker logout ${args.destinationRegistry}
-                    """
+                    sh """gcrane cp ${args.sourceRegistry}/${args.sourceImage} ${args.destinationRegistry}/${args.destinationImage}; docker logout ${args.destinationRegistry}"""
                 }
             }
     }
     if(args.destinationRegistry == 'public.ecr.aws/opensearchstaging') {
             def ecrLogin = sh(returnStdout: true, script: "aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${args.destinationRegistry}").trim()
-            sh """
-                 gcrane cp ${args.sourceRegistry}/${args.sourceImage} ${args.destinationRegistry}/${args.destinationImage}
-                 docker logout ${args.destinationRegistry}
-            """
+            sh """gcrane cp ${args.sourceRegistry}/${args.sourceImage} ${args.destinationRegistry}/${args.destinationImage}; docker logout ${args.destinationRegistry}"""
     }
 }
