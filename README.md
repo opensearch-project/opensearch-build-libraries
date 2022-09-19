@@ -2,6 +2,8 @@
 
 [![groovy](https://github.com/opensearch-project/opensearch-build/actions/workflows/groovy-tests.yml/badge.svg)](https://github.com/opensearch-project/opensearch-build/actions/workflows/groovy-tests.yml)
 
+- [OpenSearch Build Libraries](#opensearch-build-libraries)
+    - [Jenkins Shared Libraries](#jenkins-shared-libraries)
 - [Contributing](#contributing)
 - [Getting Help](#getting-help)
 - [Code of Conduct](#code-of-conduct)
@@ -9,7 +11,20 @@
 - [License](#license)
 - [Copyright](#copyright)
 
+## OpenSearch Build Libraries
+OpenSearch build libraries consist of shared libraries used to build, test and release OpenSearch, OpenSearch Dashboards and its associated products such as clients, drivers, etc.
 
+### Jenkins Shared Libraries
+This repository consist of jenkins shared libraries as one of the libraries. Read more about jenkins shared libraries [here](https://www.jenkins.io/doc/book/pipeline/shared-libraries/)
+Checkout different [retrieval methods](https://www.jenkins.io/doc/book/pipeline/shared-libraries/#retrieval-method) that can be used by jenkins files to use this remote library.
+
+Example:
+```
+lib = library(identifier: 'jenkins@<tag>', retriever: modernSCM([
+    $class: 'GitSCMSource',
+    remote: 'https://github.com/opensearch-project/opensearch-build-libraries.git',
+]))
+```
 
 ## Contributing
 
