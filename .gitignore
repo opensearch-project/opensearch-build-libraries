@@ -12,6 +12,7 @@ coverage/
 .settings/
 /build/
 out.txt
+/tar/
 
 /builds/
 
