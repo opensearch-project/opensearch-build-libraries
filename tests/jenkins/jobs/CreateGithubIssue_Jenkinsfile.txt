@@ -5,4 +5,4 @@
             CreateGithubIssue_Jenkinsfile.script(groovy.lang.Closure)
                CreateGithubIssue_Jenkinsfile.createGithubIssue({message=[Error building OpenSearch, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component OpenSearch --snapshot]})
                   createGithubIssue.readYaml({file=manifests/2.0.0/opensearch-2.0.0.yml})
-               CreateGithubIssue_Jenkinsfile.echo(Exception occurred: java.io.FileNotFoundException: manifests\2.0.0\opensearch-2.0.0.yml (The system cannot find the path specified))
+               CreateGithubIssue_Jenkinsfile.echo(Exception occurred: java.io.FileNotFoundException: manifests/2.0.0/opensearch-2.0.0.yml (No such file or directory))
