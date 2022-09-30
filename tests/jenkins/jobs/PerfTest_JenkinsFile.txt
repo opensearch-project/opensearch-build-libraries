@@ -1,6 +1,6 @@
    PerfTest_JenkinsFile.run()
       PerfTest_JenkinsFile.legacySCM(groovy.lang.Closure)
-      PerfTest_JenkinsFile.library({identifier=jenkins@1.0.0, retriever=null})
+      PerfTest_JenkinsFile.library({identifier=jenkins@main, retriever=null})
       PerfTest_JenkinsFile.pipeline(groovy.lang.Closure)
          PerfTest_JenkinsFile.echo(Executing on agent [label:none])
          PerfTest_JenkinsFile.stage(test-with-security, groovy.lang.Closure)
