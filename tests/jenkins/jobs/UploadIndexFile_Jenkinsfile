@@ -1,5 +1,3 @@
-lib = library(identifier: "jenkins@1.0.0", retriever: legacySCM(scm))
-
 pipeline {
     agent none
     stages {

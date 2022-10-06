@@ -1,6 +1,4 @@
    AssembleManifest_rpm_Jenkinsfile.run()
-      AssembleManifest_rpm_Jenkinsfile.legacySCM(groovy.lang.Closure)
-      AssembleManifest_rpm_Jenkinsfile.library({identifier=jenkins@1.0.0, retriever=null})
       AssembleManifest_rpm_Jenkinsfile.pipeline(groovy.lang.Closure)
          AssembleManifest_rpm_Jenkinsfile.echo(Executing on agent [label:none])
          AssembleManifest_rpm_Jenkinsfile.stage(assembleManifest rpm, groovy.lang.Closure)
