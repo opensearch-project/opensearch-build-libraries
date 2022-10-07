@@ -34,12 +34,12 @@ class TestRunPerfTestScript extends BuildPipelineTest {
 
     @Test
     public void testRunPerfTestScript_Pipeline() {
-        super.testPipeline("tests/jenkins/jobs/PerfTest_JenkinsFile")
+        super.testPipeline("tests/jenkins/jobs/PerfTest_Jenkinsfile")
     }
 
     @Test
     void testRunPerfTestScript_verifyArtifactDownloads() {
-        runScript("tests/jenkins/jobs/PerfTest_JenkinsFile")
+        runScript("tests/jenkins/jobs/PerfTest_Jenkinsfile")
 
         def curlCommands = getCommandExecutions('sh', 'curl').findAll {
             shCommand -> shCommand.contains('curl')
@@ -62,7 +62,7 @@ class TestRunPerfTestScript extends BuildPipelineTest {
 
     @Test
     void testRunPerfTestScript_verifyPackageInstallation() {
-        runScript("tests/jenkins/jobs/PerfTest_JenkinsFile")
+        runScript("tests/jenkins/jobs/PerfTest_Jenkinsfile")
 
         def pipenvCommands = getCommandExecutions('sh', 'pipenv').findAll {
             shCommand -> shCommand.contains('pipenv')
@@ -74,7 +74,7 @@ class TestRunPerfTestScript extends BuildPipelineTest {
 
     @Test
     void testRunPerfTestScript_verifyScriptExecutions() {
-        runScript("tests/jenkins/jobs/PerfTest_JenkinsFile")
+        runScript("tests/jenkins/jobs/PerfTest_Jenkinsfile")
 
         def testScriptCommands = getCommandExecutions('sh', './test.sh').findAll {
             shCommand -> shCommand.contains('./test.sh')
