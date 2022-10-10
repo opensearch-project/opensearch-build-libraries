@@ -1,5 +1,5 @@
 {
-"**/*.{groovy,sh}":[
+"**/*.{groovy,sh,Jenkinsfile}":[
   " Copyright OpenSearch Contributors",
   " SPDX-License-Identifier: Apache-2.0"
 ]
