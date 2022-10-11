@@ -6,10 +6,11 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
+import jenkins.InputManifest
+
 Map call(Map args = [:]) {
-    def lib = library(identifier: "jenkins@main", retriever: legacySCM(scm))
     String manifest = args.manifest ?: "manifests/${INPUT_MANIFEST}"
-    def inputManifest = lib.jenkins.InputManifest.new(readYaml(file: manifest))
+    def inputManifest = new InputManifest(readYaml(file: manifest))
     dockerImage = inputManifest.ci?.image?.name ?: 'opensearchstaging/ci-runner:ci-runner-centos7-v1'
     dockerArgs = inputManifest.ci?.image?.args
     // Using default javaVersion as openjdk-17

@@ -6,9 +6,10 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
+import jenkins.BuildManifest
+
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
-    def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.bundleManifest))
+    def buildManifest = new BuildManifest(readYaml(file: args.bundleManifest))
 
     install_opensearch_infra_dependencies()
     config_name = isNullOrEmpty(args.config) ? "config.yml" : args.config

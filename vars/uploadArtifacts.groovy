@@ -6,10 +6,13 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
-void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
+import jenkins.BuildManifest
+import jenkins.Messages
 
-    def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.buildManifest))
+
+void call(Map args = [:]) {
+
+    def buildManifest = new BuildManifest(readYaml(file: args.buildManifest))
     def minArtifactPath = buildManifest.getMinArtifact()
     def productFilename = buildManifest.build.getFilename()
     def packageName = buildManifest.build.getPackageName()
@@ -45,7 +48,7 @@ void call(Map args = [:]) {
     }
 
     def baseUrl = buildManifest.getArtifactRootUrl("${PUBLIC_ARTIFACT_URL}", "${JOB_NAME}", "${BUILD_NUMBER}")
-    lib.jenkins.Messages.new(this).add("${STAGE_NAME}", [
+    new Messages(this).add("${STAGE_NAME}", [
             "${baseUrl}/builds/${productFilename}/manifest.yml",
             "${baseUrl}/dist/${productFilename}/manifest.yml"
         ].join('\n')
