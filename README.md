@@ -1,6 +1,7 @@
 <img src="https://opensearch.org/assets/brand/SVG/Logo/opensearch_logo_default.svg" height="64px"/>
 
-[![groovy](https://github.com/opensearch-project/opensearch-build/actions/workflows/groovy-tests.yml/badge.svg)](https://github.com/opensearch-project/opensearch-build/actions/workflows/groovy-tests.yml)
+[![groovy](https://github.com/opensearch-project/opensearch-build-libraries/actions/workflows/groovy-tests.yml/badge.svg)](https://github.com/opensearch-project/opensearch-build/actions/workflows/groovy-tests.yml)
+[![codecov](https://codecov.io/gh/opensearch-project/opensearch-build-libraries/branch/main/graph/badge.svg)](https://codecov.io/gh/opensearch-project/opensearch-build-libraries)
 
 - [OpenSearch Build Libraries](#opensearch-build-libraries)
     - [Jenkins Shared Libraries](#jenkins-shared-libraries)
