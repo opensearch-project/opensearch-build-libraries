@@ -6,16 +6,18 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
+import jenkins.BuildManifest
+import jenkins.InputManifest
+
 void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     List<Closure> fileActions = args.fileActions ?: []
     String manifest = args.manifest ?: "manifests/${INPUT_MANIFEST}"
 
-    def inputManifest = lib.jenkins.InputManifest.new(readYaml(file: manifest))
+    def inputManifest = new InputManifest(readYaml(file: manifest))
     echo("Retreving build manifest from: $WORKSPACE/${args.distribution}/builds/${inputManifest.build.getFilename()}/manifest.yml")
 
     productName = inputManifest.build.getFilename()
-    def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: "$WORKSPACE/${args.distribution}/builds/${productName}/manifest.yml"))
+    def buildManifest = new BuildManifest(readYaml(file: "$WORKSPACE/${args.distribution}/builds/${productName}/manifest.yml"))
     version = buildManifest.build.version
     architecture = buildManifest.build.architecture
     platform = buildManifest.build.platform

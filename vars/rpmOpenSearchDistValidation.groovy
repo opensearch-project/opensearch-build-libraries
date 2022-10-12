@@ -12,10 +12,11 @@
  * args.bundleManifest: The location of the distribution manifest.
  * args.rpmDistribution: The location of the RPM distribution file.
  */
+import jenkins.BundleManifest
+
 def call(Map args = [:]) {
 
-    def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
-    def BundleManifestObj = lib.jenkins.BundleManifest.new(readYaml(file: args.bundleManifest))
+    def BundleManifestObj = new BundleManifest(readYaml(file: args.bundleManifest))
     def distFile = args.rpmDistribution
     def name = BundleManifestObj.build.getFilename()   //opensearch
     def version = BundleManifestObj.build.version       //2.0.0-rc1

@@ -6,10 +6,11 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
-void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
+import jenkins.BuildManifest
+import jenkins.Messages
 
-    def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.buildManifestFileName))
+void call(Map args = [:]) {
+    def buildManifest = new BuildManifest(readYaml(file: args.buildManifestFileName))
 
     String buildId = buildManifest.build.id
     echo "Build Id: ${buildId}"
@@ -30,5 +31,5 @@ void call(Map args = [:]) {
         }
 
     def baseUrl = buildManifest.getArtifactRootUrl("${PUBLIC_ARTIFACT_URL}", args.jobName)
-    lib.jenkins.Messages.new(this).add("${STAGE_NAME}", "${baseUrl}/test-results/")
+    new Messages(this).add("${STAGE_NAME}", "${baseUrl}/test-results/")
 }

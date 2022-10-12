@@ -6,12 +6,12 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
+import jenkins.InputManifest
 
 void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
 
     String manifest = args.manifest ?: "manifests/${INPUT_MANIFEST}"
-    def inputManifest = lib.jenkins.InputManifest.new(readYaml(file: manifest))
+    def inputManifest = new InputManifest(readYaml(file: manifest))
 
     String filename = inputManifest.build.getFilename()
     String jobname = args.jobName
