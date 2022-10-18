@@ -8,7 +8,6 @@
  */
 import static org.hamcrest.CoreMatchers.notNullValue
 import static org.hamcrest.MatcherAssert.assertThat
-import jenkins.BuildManifest
 
 class RunPerfTestScriptLibTester extends LibFunctionTester {
 
@@ -44,7 +43,7 @@ class RunPerfTestScriptLibTester extends LibFunctionTester {
         helper.registerAllowedMethod('findFiles', [Map.class], null)
         helper.registerAllowedMethod("withCredentials", [Map])
         helper.registerAllowedMethod("downloadBuildManifest", [Map], {
-            c -> new BuildManifest(readYaml(file: bundleManifest))
+            c -> lib.jenkins.BuildManifest.new(readYaml(file: bundleManifest))
         })
         helper.registerAllowedMethod('parameterizedCron', [String], null)
         binding.setVariable('AGENT_LABEL', 'Jenkins-Agent-AL2-X64-C54xlarge-Docker-Host')

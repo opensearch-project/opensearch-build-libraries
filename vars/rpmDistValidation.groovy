@@ -11,14 +11,14 @@
  * @param Map args = [:]
  * args.bundleManifestURL: The CI URL of the distribution manifest.
  */
-import jenkins.BundleManifest
-
 def call(Map args = [:]) {
+
+    def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     def bundleManifestURL = args.bundleManifestURL
     sh ("curl -sL $bundleManifestURL -o $WORKSPACE/manifest.yml")
     def bundleManifest = "$WORKSPACE/manifest.yml"
 
-    def BundleManifestObj = new BundleManifest(readYaml(file: "$bundleManifest"))
+    def BundleManifestObj = lib.jenkins.BundleManifest.new(readYaml(file: "$bundleManifest"))
     def name = BundleManifestObj.build.getFilename()   //opensearch; opensearch-dashboards
     def version = BundleManifestObj.build.version       //2.0.0-rc1
     def rpmVersion = version.replace("-", ".")        //2.0.0.rc1

@@ -6,10 +6,10 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
-import jenkins.BuildManifest
-
 def call(Map args = [:]) {
+    def lib = library(identifier: "jenkins@main", retriever: legacySCM(scm))
+
     sh "curl -sSL ${args.url} --output ${args.path}"
-    def buildManifestObj = new BuildManifest(readYaml(file: args.path))
+    def buildManifestObj = lib.jenkins.BuildManifest.new(readYaml(file: args.path))
     return buildManifestObj
 }

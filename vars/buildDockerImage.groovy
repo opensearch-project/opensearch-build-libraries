@@ -6,11 +6,9 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
-
-import jenkins.InputManifest
-
 void call(Map args = [:]) {
-    def inputManifest = new InputManifest(readYaml(file: args.inputManifest))
+    def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
+    def inputManifest = lib.jenkins.InputManifest.new(readYaml(file: args.inputManifest))
     def build_qualifier = inputManifest.build.qualifier
     def build_number = args.buildNumber ?: "${BUILD_NUMBER}"
 

@@ -6,11 +6,10 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
-import jenkins.BundleManifest
-
 def call(Map args = [:]) {
 
-    def bundleManifestObj = new BundleManifest(readYaml(file: args.distManifest))
+    def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
+    def bundleManifestObj = lib.jenkins.BundleManifest.new(readYaml(file: args.distManifest))
 
     def componentsName = bundleManifestObj.getNames()
     def componetsNumber = componentsName.size()
