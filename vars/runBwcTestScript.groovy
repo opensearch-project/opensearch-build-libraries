@@ -6,11 +6,10 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
-import jenkins.BuildManifest
-
 void call(Map args = [:]) {
     String jobName = args.jobName ?: 'distribution-build-opensearch'
-    def buildManifest = new BuildManifest(readYaml(file: args.buildManifest))
+    lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
+    def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.buildManifest))
     String artifactRootUrl = buildManifest.getArtifactRootUrl(jobName, args.buildId)
     echo "Artifact root URL: ${artifactRootUrl}"
 

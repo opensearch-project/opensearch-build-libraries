@@ -6,14 +6,15 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
-import jenkins.InputManifest
 
 void call(Map args = [:]) {
+    def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
+
     // fileActions are a closure that accepts a String, filepath with return type void
     List<Closure> fileActions = args.fileActions ?: []
 
     String manifest = args.manifest ?: "manifests/${INPUT_MANIFEST}"
-    def inputManifest = new InputManifest(readYaml(file: manifest))
+    def inputManifest = lib.jenkins.InputManifest.new(readYaml(file: manifest))
     String filename = inputManifest.build.getFilename()
     String version = inputManifest.build.version
     String qualifier = inputManifest.build.qualifier ? '-' + inputManifest.build.qualifier : ''

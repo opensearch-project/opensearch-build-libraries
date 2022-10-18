@@ -6,16 +6,14 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
-import jenkins.BuildManifest
-import jenkins.InputManifest
-
 def call(Map args = [:]) {
-    def inputManifestObj = new InputManifest(readYaml(file: args.inputManifest))
+    def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
+    def inputManifestObj = lib.jenkins.InputManifest.new(readYaml(file: args.inputManifest))
 
     buildManifest(args)
 
     String buildManifest = "${args.distribution}/builds/${inputManifestObj.build.getFilename()}/manifest.yml"
-    def buildManifestObj = new BuildManifest(readYaml(file: buildManifest))
+    def buildManifestObj = lib.jenkins.BuildManifest.new(readYaml(file: buildManifest))
 
     assembleUpload(
         args + [

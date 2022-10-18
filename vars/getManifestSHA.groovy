@@ -6,8 +6,6 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
-import jenkins.InputManifest
-
 Map call(Map args = [:]) {
     String inputManifest = args.inputManifest ?: "manifests/${INPUT_MANIFEST}"
     String jobName = args.jobName ?: "${JOB_NAME}"
@@ -23,7 +21,8 @@ Map call(Map args = [:]) {
     String manifestSHA = sha1(manifestLock)
     echo "Manifest SHA: ${manifestSHA}"
 
-    def inputManifestObj = new InputManifest(readYaml(file: manifestLock))
+    def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
+    def inputManifestObj = lib.jenkins.InputManifest.new(readYaml(file: manifestLock))
     String shasRoot = inputManifestObj.getSHAsRoot(jobName)
     String manifestSHAPath = "${shasRoot}/${manifestSHA}.yml"
     echo "Manifest lock: ${manifestLock}"

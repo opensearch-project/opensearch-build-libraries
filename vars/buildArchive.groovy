@@ -6,16 +6,14 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
-
-import jenkins.Messages
-
 void call(Map args = [:]) {
+    def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     buildManifest(args)
 
     String stashName = "${args.stashName}"
     echo "Stashing builds to assemble later with name: ${stashName}"
     stash includes: "${args.distribution}/builds/**", name: "${stashName}"
 
-    new Messages(this).add("${STAGE_NAME}", "Built ${STAGE_NAME}.")
+    lib.jenkins.Messages.new(this).add("${STAGE_NAME}", "Built ${STAGE_NAME}.")
 
 }
