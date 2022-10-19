@@ -1,0 +1,12 @@
+standardReleasePipeline(overrideAgent: 'AL2-X64',
+    overrideDockerImage: 'test:image')
+{
+    fakePublishToMaven(
+        mavenArtifactsPath: "/maven",
+        autoPublish: true
+    )
+}
+  
+def fakePublishToMaven(Map args) {
+      echo "fakePublishToMaven ${args}"
+}
