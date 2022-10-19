@@ -27,7 +27,7 @@ class TestStandardReleasePipeline extends BuildPipelineTest {
 
     @Test
     void testStandardReleasePipeline() {
-        super.testPipeline('tests/jenkins/jobs/StandardReleasePipeline_Jenkinsfile')
+        super.testPipeline('tests/jenkins/jobs/StandardReleasePipeline_JenkinsFile')
     }
 
     @Test
