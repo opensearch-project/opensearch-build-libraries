@@ -1,4 +1,5 @@
-standardReleasePipeline()
+standardReleasePipeline(overrideAgent: 'AL2-X64',
+    overrideDockerImage: 'test:image')
 {
     fakePublishToMaven(
         mavenArtifactsPath: "/maven",
