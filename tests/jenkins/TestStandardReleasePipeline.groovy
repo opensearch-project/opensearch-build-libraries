@@ -36,7 +36,7 @@ class TestStandardReleasePipeline extends BuildPipelineTest {
     }
 
     @Test
-    void 'check overide values'() {
+    void 'check override values'() {
         runScript("tests/jenkins/jobs/StandardReleasePipelineWithArgs_JenkinsFile")
         def echoCommand = getEchoCommands().findAll{
             command -> command.contains('agent')
