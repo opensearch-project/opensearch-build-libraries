@@ -1,8 +1,16 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * The OpenSearch Contributors require contributions made to
+ * this file be licensed under the Apache-2.0 license or a
+ * compatible open source license.
+ */
+
 /** A standard release pipeline for OpenSearch projects
 @param Map args = [:] args A map of the following parameters
+@param body <Required> - A closure containing release steps to be executed in release stage.
 @param args.overrideAgent <Optional> - Jenkins agent label to override the default.
 @param args.overrideDockerImage <Optional> - Docker image to override the default.
-@param body <Required> - A closure containing release steps to be executed in release stage.
 */
 
 void call(Map args = [:], Closure body) {
