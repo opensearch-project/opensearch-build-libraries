@@ -20,7 +20,7 @@ void call(Map args = [:], Closure body) {
         {
             docker {
                 label args.overrideAgent ?: 'Jenkins-Agent-AL2-X64-C54xlarge-Docker-Host'
-                image args.overrideDockerImage ?: 'opensearchstaging/ci-runner:ci-runner-centos7-opensearch-build-v2'
+                image args.overrideDockerImage ?: 'opensearchstaging/ci-runner:release-centos7-clients-v1'
                 alwaysPull true
             }
         }

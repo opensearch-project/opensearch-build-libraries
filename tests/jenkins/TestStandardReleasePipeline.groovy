@@ -54,7 +54,7 @@ class TestStandardReleasePipeline extends BuildPipelineTest {
         }
 
         assertThat(echoCommand.size(), equalTo(1))
-        assertThat(echoCommand, hasItem('Executing on agent [docker:[image:opensearchstaging/ci-runner:ci-runner-centos7-opensearch-build-v2, reuseNode:false, stages:[:], args:, alwaysPull:true, containerPerStageRoot:false, label:Jenkins-Agent-AL2-X64-C54xlarge-Docker-Host]]'))
+        assertThat(echoCommand, hasItem('Executing on agent [docker:[image:opensearchstaging/ci-runner:release-centos7-clients-v1, reuseNode:false, stages:[:], args:, alwaysPull:true, containerPerStageRoot:false, label:Jenkins-Agent-AL2-X64-C54xlarge-Docker-Host]]'))
     }
 
     def getEchoCommands() {
