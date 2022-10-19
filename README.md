@@ -27,6 +27,12 @@ lib = library(identifier: 'jenkins@<tag>', retriever: modernSCM([
 ]))
 ```
 
+#### Library Details
+
+| Name                                                   | Description                                                                              |
+|--------------------------------------------------------|:-----------------------------------------------------------------------------------------|
+| [standardReleasePipeline.groovy](./vars/standardReleasePipeline.groovy)  | The library sets up the necessary jenkins properties for you such as agent label, docker image to use as well as workflow time out. Check how to use the [default](./tests/jenkins/jobs/StandardReleasePipeline_JenkinsFile) in your workflow and how to [overide](./tests/jenkins/jobs/StandardReleasePipelineWithArgs_JenkinsFile) agent & docker image if you need.|
+
 ## Contributing
 
 See [developer guide](DEVELOPER_GUIDE.md) and [how to contribute to this project](CONTRIBUTING.md). 
