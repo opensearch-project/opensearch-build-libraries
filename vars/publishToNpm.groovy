@@ -15,7 +15,7 @@
 boolean call(Map args = [:]) {
     def status = false
 
-    git url: args.repository , branch: args.tag
+    checkout([$class: 'GitSCM', branches: [[name: "${args.tag}" ]], userRemoteConfigs: [[url: "${args.repository}" ]]])
     
     withCredentials([string(credentialsId: 'publish-to-npm-token', variable: 'NPM_TOKEN')]){
         sh '''
