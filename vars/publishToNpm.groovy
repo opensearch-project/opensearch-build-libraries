@@ -17,6 +17,6 @@ void call(Map args = [:]) {
     checkout([$class: 'GitSCM', branches: [[name: "${args.tag}" ]], userRemoteConfigs: [[url: "${args.repository}" ]]])
     
     withCredentials([string(credentialsId: 'publish-to-npm-token', variable: 'NPM_TOKEN')]){
-        sh """npm set registry 'https://registry.npmjs.org'; npm set //registry.npmjs.org/:_authToken ${NPM_TOKEN}; npm publish --dry-run && npm publish --access public"""
+        sh """npm set registry "https://registry.npmjs.org"; npm set //registry.npmjs.org/:_authToken ${NPM_TOKEN}; npm publish --dry-run && npm publish --access public"""
     }
 }

@@ -1,0 +1,14 @@
+standardReleasePipelineWithGenericTrigger(jsonValue: '.ref',
+    tokenIdCredential: 'opensearch-ci-webhook-trigger-token',
+    causeString: 'A tag was cut on opensearch-ci repo',
+    regexpFilterText: '$ref',
+    regexpFilterExpression: '^refs/tags/.*')
+{
+    fakePublishToNpm(
+        tag: env.tag
+    )
+}
+  
+def fakePublishToNpm(Map args) {
+      echo "fakePublishToNpm ${args}"
+}
