@@ -9,4 +9,3 @@
             standardReleasePipeline.script(groovy.lang.Closure)
                standardReleasePipeline.postCleanup()
                   postCleanup.cleanWs({disableDeferredWipeout=true, deleteDirs=true})
-               standardReleasePipeline.sh(docker image prune -f --all)
