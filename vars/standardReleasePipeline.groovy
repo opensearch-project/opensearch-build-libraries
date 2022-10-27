@@ -40,7 +40,6 @@ void call(Map args = [:], Closure body) {
             always {
                 script {
                     postCleanup()
-                    sh 'docker image prune -f --all'
                     }
                 }
             }
