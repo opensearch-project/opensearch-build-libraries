@@ -11,7 +11,6 @@
 @param Map args = [:] args A map of the following parameters
 @param body <Required> - A closure containing release steps to be executed in release stage.
 @param args.tokenIdCredential <Required> - Credential id containing token for trigger authentication
-
 @param args.overrideAgent <Optional> - Jenkins agent label to override the default ('Jenkins-Agent-AL2-X64-C54xlarge-Docker-Host')
 @param args.overrideDockerImage <Optional> - Docker image to override the default ('opensearchstaging/ci-runner:release-centos7-clients-v1')
 @param args.jsonValue <Optional> - Json value retrieved from payload of the webhook. Defaults to '$.release.tag_name'
