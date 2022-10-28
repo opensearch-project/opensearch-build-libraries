@@ -6,7 +6,7 @@
             standardReleasePipelineWithGenericTrigger.GenericTrigger({genericVariables=[{key=ref, value=.ref}, {key=isDraft, value=$.release.draft}, {key=release_url, value=$.release.url}], tokenCredentialId=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, printContributedVariables=false, printPostContent=false, regexpFilterText=$ref, regexpFilterExpression=^refs/tags/.*})
             standardReleasePipelineWithGenericTrigger.stage(Release, groovy.lang.Closure)
                standardReleasePipelineWithGenericTrigger.script(groovy.lang.Closure)
-                  StandardReleasePipelineWithGenericTriggersTag_Jenkinsfile.echo(fakePublishToNpm [tag:null])
+                  StandardReleasePipelineWithGenericTriggersTag_Jenkinsfile.echo(fakePublishToNpm [tag:1.0.0])
             standardReleasePipelineWithGenericTrigger.script(groovy.lang.Closure)
                standardReleasePipelineWithGenericTrigger.postCleanup()
                   postCleanup.cleanWs({disableDeferredWipeout=true, deleteDirs=true})

@@ -5,7 +5,7 @@ standardReleasePipelineWithGenericTrigger(jsonValue: '.ref',
     regexpFilterExpression: '^refs/tags/.*')
 {
     fakePublishToNpm(
-        tag: env.tag
+        tag: "${tag}"
     )
 }
   
