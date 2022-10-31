@@ -46,7 +46,7 @@ class TestStandardReleasePipeline extends BuildPipelineTest {
         assertThat(echoCommand, hasItem('Executing on agent [docker:[image:test:image, reuseNode:false, stages:[:], args:, alwaysPull:true, containerPerStageRoot:false, label:AL2-X64]]'))
     }
 
-    @Test 
+    @Test
     void 'check default values'(){
         runScript("tests/jenkins/jobs/StandardReleasePipeline_JenkinsFile")
         def echoCommand = getEchoCommands().findAll{
