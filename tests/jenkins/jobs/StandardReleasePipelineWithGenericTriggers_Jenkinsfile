@@ -1,0 +1,15 @@
+standardReleasePipelineWithGenericTrigger(overrideAgent: 'AL2-X64',
+    overrideDockerImage: 'centos:7',
+    tokenIdCredential: 'opensearch-ci-webhook-trigger-token',
+    causeString: 'A tag was cut on opensearch-ci repo',
+    publishRelease: true)
+{
+    fakePublishToMaven(
+        mavenArtifactsPath: "/maven",
+        autoPublish: true
+    )
+}
+  
+def fakePublishToMaven(Map args) {
+      echo "fakePublishToMaven ${args}"
+}
