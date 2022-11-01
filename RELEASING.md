@@ -16,4 +16,4 @@ This respository, as other in this organization follows semantic versioning.
 
 ## Releasing
 
-The release process includes a [MAINTAINER](MAINTAINERS.md) pushing a tag to this repository.
+The release process includes a [maintainer](MAINTAINERS.md) pushing a tag to this repository which creates a release on GitHub via [release.yml](./.github/workflows/release.yml) workflow.
