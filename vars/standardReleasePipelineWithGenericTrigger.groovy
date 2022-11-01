@@ -48,11 +48,11 @@ void call(Map args = [:], Closure body) {
                 regexpFilterExpression: (args.regexpFilterExpression ?: 'true')
             )
         }
-    environment {
-        tag = "$ref"
-    }
-        stages{
-            stage("Release") {
+        environment {
+            tag = "$ref"
+        }
+        stages {
+            stage('Release') {
                 steps {
                     script {
                         body()
@@ -63,18 +63,18 @@ void call(Map args = [:], Closure body) {
         post {
             success {
                 script {
-                    if (args.publishRelease && release_url!= null){
-                        withCredentials([string(credentialsId: 'jenkins-github-bot-token', variable: 'GIT_TOKEN')]){
-                            sh "curl -X PATCH -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${GIT_TOKEN}' ${release_url} -d '{\"tag_name\":\"${tag}\",\"draft\":false,\"prerelease\":false}'"
-                            } 
-                    } 
+                    if (args.publishRelease && release_url != null) {
+                        withCredentials([usernamePassword(credentialsId: "${GITHUB_BOT_TOKEN_NAME}", usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
+                            sh "curl -X PATCH -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${GITHUB_TOKEN}' ${release_url} -d '{\"tag_name\":\"${tag}\",\"draft\":false,\"prerelease\":false}'"
+                        }
+                    }
                 }
             }
             always {
                 script {
                     postCleanup()
-                    }
                 }
             }
         }
     }
+}
