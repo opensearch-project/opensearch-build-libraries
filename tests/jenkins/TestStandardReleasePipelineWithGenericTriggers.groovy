@@ -67,7 +67,7 @@ class TestStandardReleasePipelineWithGenericTriggers extends BuildPipelineTest {
             c -> c.contains('curl')
         }
         assertThat(cmd.size(), equalTo(1))
-        assertThat(cmd, hasItem("curl -X PATCH -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer GIT_TOKEN' https://api.github.com/repos/Codertocat/Hello-World/releases/17372790 -d '{\"tag_name\":\"1.0.0\",\"draft\":false,\"prerelease\":false}'"))
+        assertThat(cmd, hasItem("curl -X PATCH -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/Codertocat/Hello-World/releases/17372790 -d '{\"tag_name\":\"1.0.0\",\"draft\":false,\"prerelease\":false}'"))
 
     }
 
