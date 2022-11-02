@@ -64,7 +64,7 @@ void call(Map args = [:], Closure body) {
             success {
                 script {
                     if (args.publishRelease && release_url != null) {
-                        withCredentials([usernamePassword(credentialsId: "${GITHUB_BOT_TOKEN_NAME}", usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
+                        withCredentials([usernamePassword(credentialsId: 'jenkins-github-bot-token', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
                             sh "curl -X PATCH -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${GITHUB_TOKEN}' ${release_url} -d '{\"tag_name\":\"${tag}\",\"draft\":false,\"prerelease\":false}'"
                         }
                     }

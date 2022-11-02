@@ -25,7 +25,6 @@ class TestStandardReleasePipelineWithGenericTriggers extends BuildPipelineTest {
         helper.registerAllowedMethod("GenericTrigger", [Map.class], null)
         binding.setVariable('tag', '1.0.0')
         binding.setVariable('release_url', 'https://api.github.com/repos/Codertocat/Hello-World/releases/17372790')
-        binding.setVariable('GITHUB_BOT_TOKEN_NAME', 'github_bot_token_name')
         super.setUp()
     }
 
