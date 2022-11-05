@@ -51,15 +51,17 @@ void call(Map args = [:]) {
                 ./gradlew --stop
                 rm -rf ~/.gradle
 
-                echo "Check existing dockercontainer"
-                docker ps -a
-                docker stop `docker ps -qa` > /dev/null 2>&1 || echo
-                docker rm `docker ps -qa` > /dev/null 2>&1 || echo
-                echo "Stop existing dockercontainer"
-                docker ps -a
+                if ! (uname -s | grep -i NT); then
+                    echo "Check existing dockercontainer"
+                    docker ps -a
+                    docker stop `docker ps -qa` > /dev/null 2>&1 || echo
+                    docker rm `docker ps -qa` > /dev/null 2>&1 || echo
+                    echo "Stop existing dockercontainer"
+                    docker ps -a
 
-                echo "Check docker-compose version"
-                docker-compose version
+                    echo "Check docker-compose version"
+                    docker-compose version
+                fi
 
                 echo "Check existing processes"
                 ps -ef | grep [o]pensearch | wc -l
