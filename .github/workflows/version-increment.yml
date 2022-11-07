@@ -14,6 +14,8 @@ jobs:
       pull-requests: write
     name: version-increment
     steps:
+      - name: Check out OpenSearch repo
+        uses: actions/checkout@v3
       - name: Run gradle task
         id: gradle
         run: |
