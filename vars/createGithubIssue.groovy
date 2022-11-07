@@ -64,7 +64,7 @@ def create_issue(component, url, currentVersion, failedMessage){
                 println("Issue already exists in the repository, skipping.")
             } else {
                 sh (
-                        script: "gh issue create --title \"[AUTOCUT] OS Distribution Build Failed for ${component}-${currentVersion}\" --body \"${message}\" --label ${label} --repo ${url}",
+                        script: "gh issue create --title \"[AUTOCUT] OS Distribution Build Failed for ${component}-${currentVersion}\" --body \"${message}\" --label ${label} --label \"untriaged\" --repo ${url}",
                         returnStdout: true
                 )
             }

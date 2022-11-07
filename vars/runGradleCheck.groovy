@@ -7,7 +7,7 @@
  * compatible open source license.
  */
 void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@1.1.1', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@1.1.2', retriever: legacySCM(scm))
     def git_repo_url = args.gitRepoUrl ?: 'null'
     def git_reference = args.gitReference ?: 'null'
 
@@ -51,15 +51,17 @@ void call(Map args = [:]) {
                 ./gradlew --stop
                 rm -rf ~/.gradle
 
-                echo "Check existing dockercontainer"
-                docker ps -a
-                docker stop `docker ps -qa` > /dev/null 2>&1 || echo
-                docker rm `docker ps -qa` > /dev/null 2>&1 || echo
-                echo "Stop existing dockercontainer"
-                docker ps -a
+                if ! (uname -s | grep -i NT); then
+                    echo "Check existing dockercontainer"
+                    docker ps -a
+                    docker stop `docker ps -qa` > /dev/null 2>&1 || echo
+                    docker rm `docker ps -qa` > /dev/null 2>&1 || echo
+                    echo "Stop existing dockercontainer"
+                    docker ps -a
 
-                echo "Check docker-compose version"
-                docker-compose version
+                    echo "Check docker-compose version"
+                    docker-compose version
+                fi
 
                 echo "Check existing processes"
                 ps -ef | grep [o]pensearch | wc -l
