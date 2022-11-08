@@ -14,14 +14,18 @@ import java.util.*
 import java.nio.file.*
 
 class TestPromoteArtifacts extends BuildPipelineTest {
-    private Path targetOpenSearchTar;
-    private Path targetOpenSearchDashboardsTar;
-    private Path targetOpenSearchTarQualifier;
-    private Path targetOpenSearchDashboardsTarQualifier;
-    private Path targetOpenSearchRpm;
-    private Path targetOpenSearchDashboardsRpm;
-    private Path targetOpenSearchRpmQualifier;
-    private Path targetOpenSearchDashboardsRpmQualifier;
+    private Path targetOpenSearchLinuxTar;
+    private Path targetOpenSearchDashboardsLinuxTar;
+    private Path targetOpenSearchLinuxTarQualifier;
+    private Path targetOpenSearchDashboardsLinuxTarQualifier;
+    private Path targetOpenSearchLinuxRpm;
+    private Path targetOpenSearchDashboardsLinuxRpm;
+    private Path targetOpenSearchLinuxRpmQualifier;
+    private Path targetOpenSearchDashboardsLinuxRpmQualifier;
+    private Path targetOpenSearchWindowsZip;
+    private Path targetOpenSearchDashboardsWindowsZip;
+    private Path targetOpenSearchWindowsZipQualifier;
+    private Path targetOpenSearchDashboardsWindowsZipQualifier;
 
     @Override
     @Before
@@ -79,44 +83,60 @@ class TestPromoteArtifacts extends BuildPipelineTest {
             return [stdout: "zip_dummy_artifact_1.3.0.zip", exitValue: 0]
         }
 
-        targetOpenSearchTar = copy(
+        targetOpenSearchLinuxTar = copy(
             "tests/data/opensearch-build-1.3.0.yml", 
             "tests/jenkins/artifacts/tar/vars-build/1.3.0/33/linux/x64/tar/builds/opensearch/manifest.yml"
         );
 
-        targetOpenSearchDashboardsTar = copy(
+        targetOpenSearchDashboardsLinuxTar = copy(
             "tests/data/opensearch-dashboards-build-1.3.0.yml", 
             "tests/jenkins/artifacts/tar/vars-build/1.3.0/33/linux/x64/tar/builds/opensearch-dashboards/manifest.yml"
         );
 
-        targetOpenSearchTarQualifier = copy(
+        targetOpenSearchLinuxTarQualifier = copy(
             "tests/data/opensearch-build-2.0.0-rc1.yml", 
             "tests/jenkins/artifacts/tar/vars-build/2.0.0-rc1/33/linux/x64/tar/builds/opensearch/manifest.yml"
         );
 
-        targetOpenSearchDashboardsTarQualifier = copy(
+        targetOpenSearchDashboardsLinuxTarQualifier = copy(
             "tests/data/opensearch-dashboards-build-2.0.0-rc1.yml", 
             "tests/jenkins/artifacts/tar/vars-build/2.0.0-rc1/33/linux/x64/tar/builds/opensearch-dashboards/manifest.yml"
         );
 
-        targetOpenSearchRpm = copy(
+        targetOpenSearchLinuxRpm = copy(
             "tests/data/opensearch-build-1.3.0-rpm.yml", 
             "tests/jenkins/artifacts/rpm/vars-build/1.3.0/33/linux/x64/rpm/builds/opensearch/manifest.yml"
         );
 
-        targetOpenSearchDashboardsRpm = copy(
+        targetOpenSearchDashboardsLinuxRpm = copy(
             "tests/data/opensearch-dashboards-build-1.3.0-rpm.yml", 
             "tests/jenkins/artifacts/rpm/vars-build/1.3.0/33/linux/x64/rpm/builds/opensearch-dashboards/manifest.yml"
         );
 
-        targetOpenSearchRpmQualifier = copy(
+        targetOpenSearchLinuxRpmQualifier = copy(
             "tests/data/opensearch-build-2.0.0-rc1-rpm.yml", 
             "tests/jenkins/artifacts/rpm/vars-build/2.0.0-rc1/33/linux/x64/rpm/builds/opensearch/manifest.yml"
         );
 
-        targetOpenSearchDashboardsRpmQualifier = copy(
+        targetOpenSearchDashboardsLinuxRpmQualifier = copy(
             "tests/data/opensearch-dashboards-build-2.0.0-rc1-rpm.yml", 
             "tests/jenkins/artifacts/rpm/vars-build/2.0.0-rc1/33/linux/x64/rpm/builds/opensearch-dashboards/manifest.yml"
+        );
+        targetOpenSearchWindowsZip = copy(
+            "tests/data/opensearch-build-1.3.0-windows-zip.yml", 
+            "tests/jenkins/artifacts/rpm/vars-build/1.3.0/33/windows/x64/zip/builds/opensearch/manifest.yml"
+        );
+        targetOpenSearchDashboardsWindowsZip = copy(
+            "tests/data/opensearch-dashboards-build-1.3.0-windows-zip.yml", 
+            "tests/jenkins/artifacts/rpm/vars-build/1.3.0/33/windows/x64/zip/builds/opensearch-dashboards/manifest.yml"
+        );
+        targetOpenSearchWindowsZipQualifier = copy(
+            "tests/data/opensearch-build-2.0.0-rc1-windows-zip.yml", 
+            "tests/jenkins/artifacts/rpm/vars-build/2.0.0-rc1/33/windows/x64/zip/builds/opensearch/manifest.yml"
+        );
+        targetOpenSearchDashboardsWindowsZipQualifier = copy(
+            "tests/data/opensearch-dashboards-build-2.0.0-rc1-windows-zip.yml", 
+            "tests/jenkins/artifacts/rpm/vars-build/2.0.0-rc1/33/windows/x64/zip/builds/opensearch-dashboards/manifest.yml"
         );
     }
 
@@ -133,14 +153,18 @@ class TestPromoteArtifacts extends BuildPipelineTest {
     void after() {
         super.setUp()
         // Test file needs to be cleaned up
-        Files.delete(targetOpenSearchTar)
-        Files.delete(targetOpenSearchDashboardsTar)
-        Files.delete(targetOpenSearchTarQualifier)
-        Files.delete(targetOpenSearchDashboardsTarQualifier)
-        Files.delete(targetOpenSearchRpm)
-        Files.delete(targetOpenSearchDashboardsRpm)
-        Files.delete(targetOpenSearchRpmQualifier)
-        Files.delete(targetOpenSearchDashboardsRpmQualifier)
+        Files.delete(targetOpenSearchLinuxTar)
+        Files.delete(targetOpenSearchDashboardsLinuxTar)
+        Files.delete(targetOpenSearchLinuxTarQualifier)
+        Files.delete(targetOpenSearchDashboardsLinuxTarQualifier)
+        Files.delete(targetOpenSearchLinuxRpm)
+        Files.delete(targetOpenSearchDashboardsLinuxRpm)
+        Files.delete(targetOpenSearchLinuxRpmQualifier)
+        Files.delete(targetOpenSearchDashboardsLinuxRpmQualifier)
+        Files.delete(targetOpenSearchWindowsZip)
+        Files.delete(targetOpenSearchDashboardsWindowsZip)
+        Files.delete(targetOpenSearchWindowsZipQualifier)
+        Files.delete(targetOpenSearchDashboardsWindowsZipQualifier)
     }
 
     @Test

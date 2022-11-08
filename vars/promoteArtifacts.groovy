@@ -21,21 +21,28 @@ void call(Map args = [:]) {
     String revision = version + qualifier
     println("Revision: ${revision}")
 
-    List<String> distributionList = ['tar', 'rpm']
+    //List<String> distributionList = ['tar', 'rpm', 'zip']
+    Map<String, List> distributionMap = [
+        "linux": ['tar', 'rpm'],
+        "windows": ['zip']
+    ]
+
+    println("${DISTRIBUTION_PLATFORM}" + " platform will upload these distributions to production bucket: " + distributionMap["${DISTRIBUTION_PLATFORM}"])
 
     withCredentials([string(credentialsId: 'jenkins-aws-account-public', variable: 'AWS_ACCOUNT_PUBLIC'),
         string(credentialsId: 'jenkins-artifact-bucket-name', variable: 'ARTIFACT_BUCKET_NAME'),
         string(credentialsId: 'jenkins-artifact-promotion-role', variable: 'ARTIFACT_PROMOTION_ROLE_NAME'),
         string(credentialsId: 'jenkins-aws-production-account', variable: 'AWS_ACCOUNT_ARTIFACT'),
         string(credentialsId: 'jenkins-artifact-production-bucket-name', variable: 'ARTIFACT_PRODUCTION_BUCKET_NAME')]) {
-        for (distribution in distributionList) {
+        for (distribution in distributionMap["${DISTRIBUTION_PLATFORM}"]) {
             // Must use local variable due to groovy for loop and closure scope
             // Or the stage will fixed to the last item in return when trigger new stages
             // https://web.archive.org/web/20181121065904/http://blog.freeside.co/2013/03/29/groovy-gotcha-for-loops-and-closure-scope/
             def distribution_local = distribution
             def artifactPath = "${DISTRIBUTION_JOB_NAME}/${revision}/${DISTRIBUTION_BUILD_NUMBER}/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution_local}"
             def prefixPath = "${WORKSPACE}/artifacts/${distribution_local}"
-            println("S3 download ${distribution_local} artifacts before creating signatures")
+            println("#################################################################")
+            println("S3 download ${DISTRIBUTION_BUILD_NUMBER} ${DISTRIBUTION_PLATFORM} ${DISTRIBUTION_ARCHITECTURE} ${distribution_local} ${DISTRIBUTION_JOB_NAME} ${revision} artifacts before creating signatures")
 
             withAWS(role: 'opensearch-bundle', roleAccount: "${AWS_ACCOUNT_PUBLIC}", duration: 900, roleSessionName: 'jenkins-session') {
                 s3Download(bucket: "${ARTIFACT_BUCKET_NAME}", file: "${prefixPath}", path: "${artifactPath}/",  force: true)
