@@ -21,7 +21,6 @@ void call(Map args = [:]) {
     String revision = version + qualifier
     println("Revision: ${revision}")
 
-    //List<String> distributionList = ['tar', 'rpm', 'zip']
     Map<String, List> distributionMap = [
         "linux": ['tar', 'rpm'],
         "windows": ['zip']
@@ -41,7 +40,6 @@ void call(Map args = [:]) {
             def distribution_local = distribution
             def artifactPath = "${DISTRIBUTION_JOB_NAME}/${revision}/${DISTRIBUTION_BUILD_NUMBER}/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution_local}"
             def prefixPath = "${WORKSPACE}/artifacts/${distribution_local}"
-            println("#################################################################")
             println("S3 download ${DISTRIBUTION_BUILD_NUMBER} ${DISTRIBUTION_PLATFORM} ${DISTRIBUTION_ARCHITECTURE} ${distribution_local} ${DISTRIBUTION_JOB_NAME} ${revision} artifacts before creating signatures")
 
             withAWS(role: 'opensearch-bundle', roleAccount: "${AWS_ACCOUNT_PUBLIC}", duration: 900, roleSessionName: 'jenkins-session') {
