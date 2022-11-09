@@ -13,7 +13,7 @@ import org.junit.*
 import java.util.*
 import java.nio.file.*
 
-class TestPromoteArtifacts extends BuildPipelineTest {
+class TestPromoteLinuxArtifacts extends BuildPipelineTest {
     private Path targetOpenSearchTar;
     private Path targetOpenSearchDashboardsTar;
     private Path targetOpenSearchTarQualifier;
