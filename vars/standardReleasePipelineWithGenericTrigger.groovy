@@ -38,16 +38,17 @@ void call(Map args = [:], Closure body) {
             GenericTrigger(
                 genericVariables: [
                     [key: 'ref', value: (args.jsonValue ?: '$.release.tag_name')],
+                    [key: 'action', value: '$.action'],
                     [key: 'isDraft', value: '$.release.draft'],
                     [key: 'release_url', value: '$.release.url'],
-                    [key: 'assests_url', value: '$.release.assets_url']
+                    [key: 'assets_url', value: '$.release.assets_url']
                 ],
                 tokenCredentialId: args.tokenIdCredential,
                 causeString: args.causeString ?: 'A tag was cut on GitHub repository causing this workflow to run',
                 printContributedVariables: false,
                 printPostContent: false,
-                regexpFilterText: (args.regexpFilterText ?: '$isDraft'),
-                regexpFilterExpression: (args.regexpFilterExpression ?: 'true')
+                regexpFilterText: (args.regexpFilterText ?: '$isDraft $action'),
+                regexpFilterExpression: (args.regexpFilterExpression ?: '^true created$')
             )
         }
         environment {
@@ -62,17 +63,22 @@ void call(Map args = [:], Closure body) {
                 }
                 steps {
                     script {
-                        if (args.downloadReleaseAsset && assests_url != '') {
+                        if (args.downloadReleaseAsset && "$assets_url" != '') {
                             withCredentials([usernamePassword(credentialsId: 'jenkins-github-bot-token', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
-                                def assets = sh(
-                                    script: "curl -X PATCH -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${GITHUB_TOKEN}' ${assests_url}",
+                                String assets = sh(
+                                    script: "curl -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${GITHUB_TOKEN}' ${assets_url}",
                                     returnStdout: true
                                 )
-
-                                def assetUrl = get_artifacts(assets)
-                                echo 'Downloading artifacts from $asset_url'
-                                sh "curl -OJ -L -H 'Accept: application/octet-stream' -H 'Authorization: Bearer ${GITHUB_TOKEN}' ${assetUrl}"
-                                sh 'tar -zxf artifacts.tar.gz'
+                                echo "Assests response: ${assets}"
+                                String assetUrl = null
+                                def parsedJson = readJSON text: assets
+                                parsedJson.each { item ->
+                                    if(item.name == "artifacts.tar.gz") {
+                                        assetUrl = item.url
+                                        }
+                                    }
+                                echo "Downloading artifacts from $assetUrl"
+                                sh "curl -OJ -L -H 'Accept: application/octet-stream' -H 'Authorization: Bearer ${GITHUB_TOKEN}' ${assetUrl} && tar -zxf artifacts.tar.gz"
                             }
                         }
                     }
@@ -101,15 +107,6 @@ void call(Map args = [:], Closure body) {
                     postCleanup()
                 }
             }
-        }
-    }
-}
-
-String get_artifacts(assets) {
-    assets.each { item ->
-        def props = readJSON text: ${item}
-        if (props.name == 'artifacts.tar.gz') {
-            return props.url
         }
     }
 }
