@@ -40,7 +40,7 @@ void call(Map args = [:]) {
             def distribution_local = distribution
             def artifactPath = "${DISTRIBUTION_JOB_NAME}/${revision}/${DISTRIBUTION_BUILD_NUMBER}/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution_local}"
             def prefixPath = "${WORKSPACE}/artifacts/${distribution_local}"
-            println("S3 download ${DISTRIBUTION_BUILD_NUMBER} ${DISTRIBUTION_PLATFORM} ${DISTRIBUTION_ARCHITECTURE} ${distribution_local} ${DISTRIBUTION_JOB_NAME} ${revision} artifacts before creating signatures")
+            println("S3 download ${DISTRIBUTION_PLATFORM} ${DISTRIBUTION_ARCHITECTURE} ${distribution_local} ${revision} from ${DISTRIBUTION_JOB_NAME} build number ${DISTRIBUTION_BUILD_NUMBER} artifacts before creating signatures")
 
             withAWS(role: 'opensearch-bundle', roleAccount: "${AWS_ACCOUNT_PUBLIC}", duration: 900, roleSessionName: 'jenkins-session') {
                 s3Download(bucket: "${ARTIFACT_BUCKET_NAME}", file: "${prefixPath}", path: "${artifactPath}/",  force: true)
