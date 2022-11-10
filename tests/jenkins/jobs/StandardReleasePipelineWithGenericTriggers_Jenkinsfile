@@ -2,6 +2,7 @@ standardReleasePipelineWithGenericTrigger(overrideAgent: 'AL2-X64',
     overrideDockerImage: 'centos:7',
     tokenIdCredential: 'opensearch-ci-webhook-trigger-token',
     causeString: 'A tag was cut on opensearch-ci repo',
+    downloadReleaseAsset: true,
     publishRelease: true)
 {
     fakePublishToMaven(

@@ -1,9 +1,20 @@
    StandardReleasePipelineWithGenericTriggers_Jenkinsfile.run()
-      StandardReleasePipelineWithGenericTriggers_Jenkinsfile.standardReleasePipelineWithGenericTrigger({overrideAgent=AL2-X64, overrideDockerImage=centos:7, tokenIdCredential=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, publishRelease=true}, groovy.lang.Closure)
+      StandardReleasePipelineWithGenericTriggers_Jenkinsfile.standardReleasePipelineWithGenericTrigger({overrideAgent=AL2-X64, overrideDockerImage=centos:7, tokenIdCredential=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, downloadReleaseAsset=true, publishRelease=true}, groovy.lang.Closure)
          standardReleasePipelineWithGenericTrigger.pipeline(groovy.lang.Closure)
             standardReleasePipelineWithGenericTrigger.timeout({time=1, unit=HOURS})
             standardReleasePipelineWithGenericTrigger.echo(Executing on agent [docker:[image:centos:7, reuseNode:false, stages:[:], args:, alwaysPull:true, containerPerStageRoot:false, label:AL2-X64]])
-            standardReleasePipelineWithGenericTrigger.GenericTrigger({genericVariables=[{key=ref, value=$.release.tag_name}, {key=isDraft, value=$.release.draft}, {key=release_url, value=$.release.url}], tokenCredentialId=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, printContributedVariables=false, printPostContent=false, regexpFilterText=$isDraft, regexpFilterExpression=true})
+            standardReleasePipelineWithGenericTrigger.GenericTrigger({genericVariables=[{key=ref, value=$.release.tag_name}, {key=action, value=$.action}, {key=isDraft, value=$.release.draft}, {key=release_url, value=$.release.url}, {key=assets_url, value=$.release.assets_url}], tokenCredentialId=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, printContributedVariables=false, printPostContent=false, regexpFilterText=$isDraft $action, regexpFilterExpression=^true created$})
+            standardReleasePipelineWithGenericTrigger.stage(Download artifacts, groovy.lang.Closure)
+               standardReleasePipelineWithGenericTrigger.script(groovy.lang.Closure)
+                  standardReleasePipelineWithGenericTrigger.usernamePassword({credentialsId=jenkins-github-bot-token, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
+                  standardReleasePipelineWithGenericTrigger.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+                     standardReleasePipelineWithGenericTrigger.sh({script=curl -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/owner/name/releases/1234/assets, returnStdout=true})
+                     standardReleasePipelineWithGenericTrigger.readJSON({text=
+bbb
+ccc
+})
+                     standardReleasePipelineWithGenericTrigger.echo(Downloading artifacts from https://api.github.com/repos/owner/reponame/releases/assets/123456)
+                     standardReleasePipelineWithGenericTrigger.sh(curl -OJ -L -H 'Accept: application/octet-stream' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/owner/reponame/releases/assets/123456 && tar -zxf artifacts.tar.gz)
             standardReleasePipelineWithGenericTrigger.stage(Release, groovy.lang.Closure)
                standardReleasePipelineWithGenericTrigger.script(groovy.lang.Closure)
                   StandardReleasePipelineWithGenericTriggers_Jenkinsfile.echo(fakePublishToMaven [mavenArtifactsPath:/maven, autoPublish:true])

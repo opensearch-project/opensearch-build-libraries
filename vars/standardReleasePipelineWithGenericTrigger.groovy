@@ -69,7 +69,6 @@ void call(Map args = [:], Closure body) {
                                     script: "curl -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${GITHUB_TOKEN}' ${assets_url}",
                                     returnStdout: true
                                 )
-                                echo "Assests response: ${assets}"
                                 String assetUrl = null
                                 def parsedJson = readJSON text: assets
                                 parsedJson.each { item ->
