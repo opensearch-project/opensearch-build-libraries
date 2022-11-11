@@ -19,6 +19,7 @@
 @param args.regexpFilterExpression <Optional> - Regular expression to test on the evaluated text specified. Defaults to ''
 @param args.publishRelease <Optional> - If set to true the release that triggered the job will be published on GitHub.
 @param args.downloadReleaseAsset <Optional> - If set to true, the assets attached to the release that triggered the job will be downloaded. Defaults to false.
+@param args.downloadReleaseAssetName <Optional> - Name of the tar.gz file attached to the draft release and containing artifacts to release. Defaults to 'artifacts.tar.gz'.
 */
 
 void call(Map args = [:], Closure body) {
@@ -71,13 +72,14 @@ void call(Map args = [:], Closure body) {
                                 )
                                 String assetUrl = null
                                 def parsedJson = readJSON text: assets
+                                def assetName = args.downloadReleaseAssetName ?: 'artifacts.tar.gz'
                                 parsedJson.each { item ->
-                                    if(item.name == "artifacts.tar.gz") {
+                                    if(item.name == assetName) {
                                         assetUrl = item.url
                                         }
                                     }
                                 echo "Downloading artifacts from $assetUrl"
-                                sh "curl -OJ -L -H 'Accept: application/octet-stream' -H 'Authorization: Bearer ${GITHUB_TOKEN}' ${assetUrl} && tar -zxf artifacts.tar.gz"
+                                sh "curl -J -L -H 'Accept: application/octet-stream' -H 'Authorization: Bearer ${GITHUB_TOKEN}' ${assetUrl} | tar -xzv"
                             }
                         }
                     }
