@@ -16,8 +16,10 @@
 @param args.jsonValue <Optional> - Json value retrieved from payload of the webhook. Defaults to '$.release.tag_name'
 @param args.causeString <Optional> - String mentioning why the workflow was triggered. Defaults to 'A tag was cut on GitHub repository causing this workflow to run'
 @param args.regexpFilterText <Optional> - Variable to apply regular expression on. Defaults to '$isDraft'
-@param.regexpFilterExpression <Optional> - Regular expression to test on the evaluated text specified. Defaults to ''
-@param.publishRelease <Optional> - If set to true the release that triggered the job will be published on GitHub.
+@param args.regexpFilterExpression <Optional> - Regular expression to test on the evaluated text specified. Defaults to ''
+@param args.publishRelease <Optional> - If set to true the release that triggered the job will be published on GitHub.
+@param args.downloadReleaseAsset <Optional> - If set to true, the assets attached to the release that triggered the job will be downloaded. Defaults to false.
+@param args.downloadReleaseAssetName <Optional> - Name of the tar.gz file attached to the draft release and containing artifacts to release. Defaults to 'artifacts.tar.gz'.
 */
 
 void call(Map args = [:], Closure body) {
@@ -37,21 +39,52 @@ void call(Map args = [:], Closure body) {
             GenericTrigger(
                 genericVariables: [
                     [key: 'ref', value: (args.jsonValue ?: '$.release.tag_name')],
+                    [key: 'action', value: '$.action'],
                     [key: 'isDraft', value: '$.release.draft'],
-                    [key: 'release_url', value: '$.release.url']
+                    [key: 'release_url', value: '$.release.url'],
+                    [key: 'assets_url', value: '$.release.assets_url']
                 ],
                 tokenCredentialId: args.tokenIdCredential,
                 causeString: args.causeString ?: 'A tag was cut on GitHub repository causing this workflow to run',
                 printContributedVariables: false,
                 printPostContent: false,
-                regexpFilterText: (args.regexpFilterText ?: '$isDraft'),
-                regexpFilterExpression: (args.regexpFilterExpression ?: 'true')
+                regexpFilterText: (args.regexpFilterText ?: '$isDraft $action'),
+                regexpFilterExpression: (args.regexpFilterExpression ?: '^true created$')
             )
         }
         environment {
             tag = "$ref"
         }
         stages {
+            stage('Download artifacts') {
+                when {
+                    expression {
+                        return args.downloadReleaseAsset
+                    }
+                }
+                steps {
+                    script {
+                        if (args.downloadReleaseAsset && "$assets_url" != '') {
+                            withCredentials([usernamePassword(credentialsId: 'jenkins-github-bot-token', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
+                                String assets = sh(
+                                    script: "curl -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${GITHUB_TOKEN}' ${assets_url}",
+                                    returnStdout: true
+                                )
+                                String assetUrl = null
+                                def parsedJson = readJSON text: assets
+                                def assetName = args.downloadReleaseAssetName ?: 'artifacts.tar.gz'
+                                parsedJson.each { item ->
+                                    if(item.name == assetName) {
+                                        assetUrl = item.url
+                                        }
+                                    }
+                                echo "Downloading artifacts from $assetUrl"
+                                sh "curl -J -L -H 'Accept: application/octet-stream' -H 'Authorization: Bearer ${GITHUB_TOKEN}' ${assetUrl} | tar -xzv"
+                            }
+                        }
+                    }
+                }
+            }
             stage('Release') {
                 steps {
                     script {
