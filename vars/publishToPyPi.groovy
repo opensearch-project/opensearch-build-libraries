@@ -15,9 +15,6 @@
 @param args.signArtifacts <optional> - Sign the artifacts to be uploaded to PyPi. Defaults to 'true'
 */
 void call(Map args = [:]) {
-
-    checkout([$class: 'GitSCM', branches: [[name: "${args.tag}" ]], userRemoteConfigs: [[url: "${args.repository}" ]]])
-
     if (args.signArtifacts) {
         lib = library(identifier: 'jenkins@pypi', retriever: legacySCM(scm))
         signArtifacts(
