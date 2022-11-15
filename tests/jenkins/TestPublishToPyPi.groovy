@@ -31,7 +31,7 @@ class TestPublishToPyPi extends BuildPipelineTest {
 
         def twineCommands = getCommands('sh', 'twine')
         assertThat(twineCommands, hasItem(
-            'twine upload -r pypi dist'
+            'twine upload -r pypi dist/*'
         ))
 
         def signing = getCommands('signArtifacts', '')
@@ -46,7 +46,7 @@ class TestPublishToPyPi extends BuildPipelineTest {
 
         def twineCommands = getCommands('sh', 'twine')
         assertThat(twineCommands, hasItem(
-            'twine upload -r pypi test'
+            'twine upload -r pypi test/*'
         ))
         def signing = getCommands('signArtifacts', '')
         assertThat(signing, hasItem('{artifactPath=test, sigtype=.asc, platform=linux}'))
