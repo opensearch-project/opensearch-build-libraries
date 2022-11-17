@@ -20,9 +20,9 @@ class TestPublishToPyPi extends BuildPipelineTest {
 
     @Test
     void setUp() {
-        this.registerLibTester(new PublishToPyPiLibTester())
+        this.registerLibTester(new PublishToPyPiLibTester('test'))
         super.setUp()
-        super.testPipeline('tests/jenkins/jobs/PublishToPyPi_Jenkinsfile')
+        super.testPipeline('tests/jenkins/jobs/PublishToPyPiWithDir_Jenkinsfile')
     }
 
     @Test

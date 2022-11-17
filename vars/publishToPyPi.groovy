@@ -21,7 +21,7 @@ void call(Map args = [:]) {
         platform: 'linux'
     )
 
-    withCredentials([usernamePassword(credentialsId: 'jenkins-opensearch-pypi-username', usernameVariable: 'TWINE_USERNAME', passwordVariable: 'TWINE_PASSWORD')]) {
+    withCredentials([usernamePassword(credentialsId: 'jenkins-opensearch-pypi-credentials', usernameVariable: 'TWINE_USERNAME', passwordVariable: 'TWINE_PASSWORD')]) {
             sh """twine upload -r pypi ${releaseArtifactsDir}/*"""
     }
 }
