@@ -19,16 +19,10 @@ import org.junit.Test
 class TestPublishToPyPi extends BuildPipelineTest {
 
     @Test
-    void setUp() {
-        this.registerLibTester(new PublishToPyPiLibTester('test'))
+    void testWithDefaults() {
+        this.registerLibTester(new PublishToPyPiLibTester())
         super.setUp()
-        super.testPipeline('tests/jenkins/jobs/PublishToPyPiWithDir_Jenkinsfile')
-    }
-
-    @Test
-    void 'verify default run'(){
-        runScript('tests/jenkins/jobs/PublishToPyPi_Jenkinsfile')
-
+        super.testPipeline('tests/jenkins/jobs/PublishToPyPi_Jenkinsfile')
         def twineCommands = getCommands('sh', 'twine')
         assertThat(twineCommands, hasItem(
             'twine upload -r pypi dist/*'
@@ -41,8 +35,10 @@ class TestPublishToPyPi extends BuildPipelineTest {
     }
 
     @Test
-    void 'verify custom dir'(){
-        runScript('tests/jenkins/jobs/PublishToPyPiWithDir_Jenkinsfile')
+    void testWithCustomDir() {
+        this.registerLibTester(new PublishToPyPiLibTester('test'))
+        super.setUp()
+        super.testPipeline('tests/jenkins/jobs/PublishToPyPiWithDir_Jenkinsfile')
 
         def twineCommands = getCommands('sh', 'twine')
         assertThat(twineCommands, hasItem(
@@ -53,8 +49,8 @@ class TestPublishToPyPi extends BuildPipelineTest {
 
         def signing_sh = getCommands('sh', 'sign.sh')
         assertThat(signing_sh, hasItem('\n                   #!/bin/bash\n                   set +x\n                   export ROLE=SIGNER_CLIENT_ROLE\n                   export EXTERNAL_ID=SIGNER_CLIENT_EXTERNAL_ID\n                   export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET\n                   export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET\n\n                   /tmp/workspace/sign.sh test --sigtype=.asc --platform=linux\n               '))
-
     }
+
     def getCommands(method, text) {
         def shCommands = helper.callStack.findAll { call ->
             call.methodName == method
@@ -65,4 +61,5 @@ class TestPublishToPyPi extends BuildPipelineTest {
         }
         return shCommands
     }
+
 }
