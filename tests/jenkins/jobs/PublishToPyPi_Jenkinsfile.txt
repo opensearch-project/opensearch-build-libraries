@@ -27,6 +27,6 @@
 
                    /tmp/workspace/sign.sh dist --sigtype=.asc --platform=linux
                )
-                  publishToPyPi.usernamePassword({credentialsId=jenkins-opensearch-pypi-username, usernameVariable=TWINE_USERNAME, passwordVariable=TWINE_PASSWORD})
+                  publishToPyPi.usernamePassword({credentialsId=jenkins-opensearch-pypi-credentials, usernameVariable=TWINE_USERNAME, passwordVariable=TWINE_PASSWORD})
                   publishToPyPi.withCredentials([[TWINE_USERNAME, TWINE_PASSWORD]], groovy.lang.Closure)
                      publishToPyPi.sh(twine upload -r pypi dist/*)
