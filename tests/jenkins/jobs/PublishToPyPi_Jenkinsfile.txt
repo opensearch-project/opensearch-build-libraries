@@ -1,0 +1,32 @@
+   PublishToPyPi_Jenkinsfile.run()
+      PublishToPyPi_Jenkinsfile.pipeline(groovy.lang.Closure)
+         PublishToPyPi_Jenkinsfile.echo(Executing on agent [label:none])
+         PublishToPyPi_Jenkinsfile.stage(publishToPyPi, groovy.lang.Closure)
+            PublishToPyPi_Jenkinsfile.script(groovy.lang.Closure)
+               PublishToPyPi_Jenkinsfile.publishToPyPi()
+                  publishToPyPi.legacySCM(groovy.lang.Closure)
+                  publishToPyPi.library({identifier=jenkins@main, retriever=null})
+                  publishToPyPi.signArtifacts({artifactPath=dist, sigtype=.asc, platform=linux})
+                     signArtifacts.echo(PGP or Windows Signature Signing)
+                     signArtifacts.fileExists(/tmp/workspace/sign.sh)
+                     signArtifacts.git({url=https://github.com/opensearch-project/opensearch-build.git, branch=main})
+                     signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import -)
+                     signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
+                     signArtifacts.string({credentialsId=jenkins-signer-client-role, variable=SIGNER_CLIENT_ROLE})
+                     signArtifacts.string({credentialsId=jenkins-signer-client-external-id, variable=SIGNER_CLIENT_EXTERNAL_ID})
+                     signArtifacts.string({credentialsId=jenkins-signer-client-unsigned-bucket, variable=SIGNER_CLIENT_UNSIGNED_BUCKET})
+                     signArtifacts.string({credentialsId=jenkins-signer-client-signed-bucket, variable=SIGNER_CLIENT_SIGNED_BUCKET})
+                     signArtifacts.withCredentials([[GITHUB_USER, GITHUB_TOKEN], SIGNER_CLIENT_ROLE, SIGNER_CLIENT_EXTERNAL_ID, SIGNER_CLIENT_UNSIGNED_BUCKET, SIGNER_CLIENT_SIGNED_BUCKET], groovy.lang.Closure)
+                        signArtifacts.sh(
+                   #!/bin/bash
+                   set +x
+                   export ROLE=SIGNER_CLIENT_ROLE
+                   export EXTERNAL_ID=SIGNER_CLIENT_EXTERNAL_ID
+                   export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET
+                   export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET
+
+                   /tmp/workspace/sign.sh dist --sigtype=.asc --platform=linux
+               )
+                  publishToPyPi.usernamePassword({credentialsId=jenkins-opensearch-pypi-username, usernameVariable=TWINE_USERNAME, passwordVariable=TWINE_PASSWORD})
+                  publishToPyPi.withCredentials([[TWINE_USERNAME, TWINE_PASSWORD]], groovy.lang.Closure)
+                     publishToPyPi.sh(twine upload -r pypi dist/*)

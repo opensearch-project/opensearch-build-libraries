@@ -119,3 +119,17 @@ jacocoTestReport {
         xml.required = true
     }
 }
+
+String version = '1.3.0'
+
+task updateVersion {
+    doLast {
+        println "Setting version to ${version} in all libraries"
+        ant.replaceregexp(match:'jenkins@main', replace: 'jenkins@' + version, flags: 'g') {
+            fileset(dir: projectDir) {
+                include (name: "vars/**")
+                include (name: "tests/**")
+            }
+        }
+    }
+}
