@@ -20,7 +20,7 @@ class TestPublishToPyPi extends BuildPipelineTest {
 
     @Test
     void testWithDefaults() {
-        this.registerLibTester(new PublishToPyPiLibTester())
+        this.registerLibTester(new PublishToPyPiLibTester('pypi-token'))
         super.setUp()
         super.testPipeline('tests/jenkins/jobs/PublishToPyPi_Jenkinsfile')
         def twineCommands = getCommands('sh', 'twine')
@@ -36,7 +36,7 @@ class TestPublishToPyPi extends BuildPipelineTest {
 
     @Test
     void testWithCustomDir() {
-        this.registerLibTester(new PublishToPyPiLibTester('test'))
+        this.registerLibTester(new PublishToPyPiLibTester('pypi-token', 'test'))
         super.setUp()
         super.testPipeline('tests/jenkins/jobs/PublishToPyPiWithDir_Jenkinsfile')
 
