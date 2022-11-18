@@ -13,7 +13,7 @@ pipeline {
         stage('publishToPyPi') {
             steps {
                 script {
-                    publishToPyPi(credentialsId: 'pypi-token', artifactsPath: 'test')
+                    publishToPyPi(credentialId: 'pypi-token', artifactsPath: 'test')
                 }
             }
         }

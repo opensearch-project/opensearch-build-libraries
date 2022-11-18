@@ -13,13 +13,13 @@ import static org.hamcrest.CoreMatchers.NullValue
 class PublishToPyPiLibTester extends LibFunctionTester {
 
     private String artifactsPath = 'dist'
-    private String credentialsId
+    private String credentialId
 
-    public PublishToPyPiLibTester(String credentialsId) {
-        this.credentialsId = credentialsId
+    public PublishToPyPiLibTester(String credentialId) {
+        this.credentialId = credentialId
     }
-    public PublishToPyPiLibTester(String credentialsId, String artifactsPath) {
-        this.credentialsId = credentialsId
+    public PublishToPyPiLibTester(String credentialId, String artifactsPath) {
+        this.credentialId = credentialId
         this.artifactsPath = artifactsPath
     }
 
@@ -30,11 +30,11 @@ class PublishToPyPiLibTester extends LibFunctionTester {
     }
     void parameterInvariantsAssertions(call){
         assertThat(call.args.artifactsPath.toString(), notNullValue())
-        assertThat(call.args.credentialsId.toString(), notNullValue())
+        assertThat(call.args.credentialId.toString(), notNullValue())
     }
 
     boolean expectedParametersMatcher(call) {
-        return call.args.credentialsId.first().toString().equals(this.credentialsId)
+        return call.args.credentialId.first().toString().equals(this.credentialId)
     }
 
     boolean expectedParametersMatcherArtifact(call){

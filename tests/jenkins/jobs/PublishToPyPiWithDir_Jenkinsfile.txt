@@ -3,7 +3,7 @@
          PublishToPyPiWithDir_Jenkinsfile.echo(Executing on agent [label:none])
          PublishToPyPiWithDir_Jenkinsfile.stage(publishToPyPi, groovy.lang.Closure)
             PublishToPyPiWithDir_Jenkinsfile.script(groovy.lang.Closure)
-               PublishToPyPiWithDir_Jenkinsfile.publishToPyPi({credentialsId=pypi-token, artifactsPath=test})
+               PublishToPyPiWithDir_Jenkinsfile.publishToPyPi({credentialId=pypi-token, artifactsPath=test})
                   publishToPyPi.legacySCM(groovy.lang.Closure)
                   publishToPyPi.library({identifier=jenkins@main, retriever=null})
                   publishToPyPi.signArtifacts({artifactPath=test, sigtype=.asc, platform=linux})
