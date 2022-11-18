@@ -9,7 +9,7 @@
 
 /** Library to publish artifacts to PyPi registry with OpenSearch as maintainer
 @param Map args = [:] args A map of the following parameters
-@param args.credentialsId <required>
+@param args.credentialsId <required> - Credential id consisting token for publishing the package
 @param args.artifactsPath <optional> - The directory containing distribution files to upload to the repository. Defaults to 'dist/*'
 */
 void call(Map args = [:]) {
