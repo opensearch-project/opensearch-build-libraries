@@ -13,7 +13,7 @@
 */
 void call(Map args = [:]) {
     lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
-    String releaseArtifactsDir = args.artifactsPath ?: 'dist'
+    String releaseArtifactsDir = args.artifactsPath ? "${WORKSPACE}/${args.artifactsPath}" : "${WORKSPACE}/dist"
 
     signArtifacts(
         artifactPath: releaseArtifactsDir,

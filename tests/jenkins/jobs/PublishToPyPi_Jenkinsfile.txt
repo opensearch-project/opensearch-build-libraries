@@ -6,7 +6,7 @@
                PublishToPyPi_Jenkinsfile.publishToPyPi()
                   publishToPyPi.legacySCM(groovy.lang.Closure)
                   publishToPyPi.library({identifier=jenkins@main, retriever=null})
-                  publishToPyPi.signArtifacts({artifactPath=dist, sigtype=.asc, platform=linux})
+                  publishToPyPi.signArtifacts({artifactPath=/tmp/workspace/dist, sigtype=.asc, platform=linux})
                      signArtifacts.echo(PGP or Windows Signature Signing)
                      signArtifacts.fileExists(/tmp/workspace/sign.sh)
                      signArtifacts.git({url=https://github.com/opensearch-project/opensearch-build.git, branch=main})
@@ -25,8 +25,8 @@
                    export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET
                    export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET
 
-                   /tmp/workspace/sign.sh dist --sigtype=.asc --platform=linux
+                   /tmp/workspace/sign.sh /tmp/workspace/dist --sigtype=.asc --platform=linux
                )
                   publishToPyPi.usernamePassword({credentialsId=jenkins-opensearch-pypi-username, usernameVariable=TWINE_USERNAME, passwordVariable=TWINE_PASSWORD})
                   publishToPyPi.withCredentials([[TWINE_USERNAME, TWINE_PASSWORD]], groovy.lang.Closure)
-                     publishToPyPi.sh(twine upload -r pypi dist/*)
+                     publishToPyPi.sh(twine upload -r pypi /tmp/workspace/dist/*)
