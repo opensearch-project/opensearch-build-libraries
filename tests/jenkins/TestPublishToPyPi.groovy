@@ -51,8 +51,6 @@ class TestPublishToPyPi extends BuildPipelineTest {
         assertThat(signing_sh, hasItem('\n                   #!/bin/bash\n                   set +x\n                   export ROLE=SIGNER_CLIENT_ROLE\n                   export EXTERNAL_ID=SIGNER_CLIENT_EXTERNAL_ID\n                   export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET\n                   export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET\n\n                   /tmp/workspace/sign.sh /tmp/workspace/test --sigtype=.asc --platform=linux\n               '))
     }
 
-    }
-
     def getCommands(method, text) {
         def shCommands = helper.callStack.findAll { call ->
             call.methodName == method
