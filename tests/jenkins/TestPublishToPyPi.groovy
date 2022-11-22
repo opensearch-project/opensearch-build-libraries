@@ -48,13 +48,9 @@ class TestPublishToPyPi extends BuildPipelineTest {
         assertThat(signing, hasItem('{artifactPath=/tmp/workspace/test, sigtype=.asc, platform=linux}'))
 
         def signing_sh = getCommands('sh', 'sign.sh')
-<<<<<<< HEAD
-        assertThat(signing_sh, hasItem('\n                   #!/bin/bash\n                   set +x\n                   export ROLE=SIGNER_CLIENT_ROLE\n                   export EXTERNAL_ID=SIGNER_CLIENT_EXTERNAL_ID\n                   export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET\n                   export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET\n\n                   /tmp/workspace/sign.sh test --sigtype=.asc --platform=linux\n               '))
-=======
         assertThat(signing_sh, hasItem('\n                   #!/bin/bash\n                   set +x\n                   export ROLE=SIGNER_CLIENT_ROLE\n                   export EXTERNAL_ID=SIGNER_CLIENT_EXTERNAL_ID\n                   export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET\n                   export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET\n\n                   /tmp/workspace/sign.sh /tmp/workspace/test --sigtype=.asc --platform=linux\n               '))
     }
 
->>>>>>> 6c719d8 (Fix path for signing artifacts using pypi lib (#45))
     }
 
     def getCommands(method, text) {
