@@ -11,7 +11,7 @@
 Note: Please make sure the gem is already signed.
 @param Map args = [:] args A map of the following parameters
 @param args.apiKey <required> - Credential id consisting api key for publishing the gem to rubyGems.org
-@param args.gemsDir <optional> - The directory containing gems to be published. Defaults to 'dist'
+@param args.gemsDir <optional> - The directory containing the gem to be published. Defaults to 'dist'
 @params args.publicCertPath <optional> - The relative path to public key. Defaults to 'cert/opensearch-rubygems.pem'
 */
 void call(Map args = [:]) {
