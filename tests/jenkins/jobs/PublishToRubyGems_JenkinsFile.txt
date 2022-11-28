@@ -3,7 +3,7 @@
          PublishToRubyGems_JenkinsFile.echo(Executing on agent [label:none])
          PublishToRubyGems_JenkinsFile.stage(publishRubyGems, groovy.lang.Closure)
             PublishToRubyGems_JenkinsFile.script(groovy.lang.Closure)
-               PublishToRubyGems_JenkinsFile.publishToRubyGems({apiKey=ruby-api-key})
+               PublishToRubyGems_JenkinsFile.publishToRubyGems({apiKeyCredentialId=ruby-api-key})
                   publishToRubyGems.string({credentialsId=ruby-api-key, variable=API_KEY})
                   publishToRubyGems.withCredentials([API_KEY], groovy.lang.Closure)
                      publishToRubyGems.sh(gem cert --add /tmp/workspace/cert/opensearch-rubygems.pem &&             cd /tmp/workspace/dist && gem install `ls *.gem` -P HighSecurity &&             curl --fail --data-binary @`ls *.gem` -H 'Authorization:API_KEY' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems)

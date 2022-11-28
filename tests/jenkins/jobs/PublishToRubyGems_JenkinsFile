@@ -13,7 +13,7 @@ pipeline {
         stage('publishRubyGems') {
             steps {
                 script {
-                    publishToRubyGems(apiKey: 'ruby-api-key')
+                    publishToRubyGems(apiKeyCredentialId: 'ruby-api-key')
 
                 }
             }

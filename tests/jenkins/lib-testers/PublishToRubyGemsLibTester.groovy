@@ -14,13 +14,13 @@ class PublishToRubyGemsLibTester extends LibFunctionTester {
 
     private String gemsDir = 'dist'
     private String certPath = 'certs/opensearch-rubygems.pem'
-    private String apiKey
+    private String apiKeyCredentialId
 
-    public PublishToRubyGemsLibTester(String apiKey) {
-        this.apiKey = apiKey
+    public PublishToRubyGemsLibTester(String apiKeyCredentialId) {
+        this.apiKeyCredentialId = apiKeyCredentialId
     }
-    public PublishToRubyGemsLibTester(String apiKey, String gemsDir, String certPath) {
-        this.apiKey = apiKey
+    public PublishToRubyGemsLibTester(String apiKeyCredentialId, String gemsDir, String certPath) {
+        this.apiKeyCredentialId = apiKeyCredentialId
         this.gemsDir = gemsDir
         this.certPath = certPath
     }
@@ -30,12 +30,12 @@ class PublishToRubyGemsLibTester extends LibFunctionTester {
     }
     void parameterInvariantsAssertions(call){
         assertThat(call.args.gemsDir.toString(), notNullValue())
-        assertThat(call.args.apiKey.toString(), notNullValue())
+        assertThat(call.args.apiKeyCredentialId.toString(), notNullValue())
         assertThat(call.args.certPath.toString(), notNullValue())
     }
 
     boolean expectedParametersMatcher(call) {
-        return call.args.apiKey.first().toString().equals(this.apiKey)
+        return call.args.apiKeyCredentialId.first().toString().equals(this.apiKeyCredentialId)
     }
 
     String libFunctionName(){
