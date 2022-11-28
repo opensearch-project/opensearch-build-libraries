@@ -10,11 +10,10 @@
 pipeline {
     agent none
     stages {
-        stage('publishRubyGems') {
+        stage('publishRubyGems'){
             steps {
                 script {
-                    publishToRubyGems(apiKey: 'ruby-api-key')
-
+                    publishToRubyGems(apiKey: 'ruby-api-key', gemsDir: 'test', publicCertPath: 'certificate/path')
                 }
             }
         }

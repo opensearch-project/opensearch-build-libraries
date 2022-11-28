@@ -25,10 +25,18 @@ class TestPublishToRubyGems extends BuildPipelineTest {
         super.testPipeline('tests/jenkins/jobs/PublishToRubyGems_JenkinsFile')
         def curlCommands = getCommands('sh', 'curl')
         assertThat(curlCommands, hasItem(
-            "cd /tmp/workspace/dist && curl --fail --data-binary @`ls *.gem` -H 'Authorization:API_KEY' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems"
+            "gem cert --add /tmp/workspace/cert/opensearch-rubygems.pem &&             cd /tmp/workspace/dist && gem install `ls *.gem` -P HighSecurity &&             curl --fail --data-binary @`ls *.gem` -H 'Authorization:API_KEY' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems"
         ))
+    }
+
+    @Test
+    void testPublishingRubyWithArgs() {
+        this.registerLibTester(new PublishToRubyGemsLibTester('ruby-api-key', 'test', 'certificate/path'))
+        super.setUp()
+        super.testPipeline('tests/jenkins/jobs/PublishToRubyGemWithArgs_Jenkinsfile')
+        def curlCommands = getCommands('sh', 'curl')
         assertThat(curlCommands, hasItem(
-            "cd /tmp/workspace/test && curl --fail --data-binary @`ls *.gem` -H 'Authorization:API_KEY' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems"
+            "gem cert --add /tmp/workspace/certificate/path &&             cd /tmp/workspace/test && gem install `ls *.gem` -P HighSecurity &&             curl --fail --data-binary @`ls *.gem` -H 'Authorization:API_KEY' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems"
         ))
     }
 

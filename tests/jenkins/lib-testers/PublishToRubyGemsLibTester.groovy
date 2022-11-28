@@ -13,14 +13,16 @@ import static org.hamcrest.CoreMatchers.NullValue
 class PublishToRubyGemsLibTester extends LibFunctionTester {
 
     private String gemsDir = 'dist'
+    private String certPath = 'certs/opensearch-rubygems.pem'
     private String apiKey
 
     public PublishToRubyGemsLibTester(String apiKey) {
         this.apiKey = apiKey
     }
-    public PublishToRubyGemsLibTester(String apiKey, String gemsDir) {
+    public PublishToRubyGemsLibTester(String apiKey, String gemsDir, String certPath) {
         this.apiKey = apiKey
         this.gemsDir = gemsDir
+        this.certPath = certPath
     }
 
     void configure(helper, binding){
@@ -29,6 +31,7 @@ class PublishToRubyGemsLibTester extends LibFunctionTester {
     void parameterInvariantsAssertions(call){
         assertThat(call.args.gemsDir.toString(), notNullValue())
         assertThat(call.args.apiKey.toString(), notNullValue())
+        assertThat(call.args.certPath.toString(), notNullValue())
     }
 
     boolean expectedParametersMatcher(call) {
