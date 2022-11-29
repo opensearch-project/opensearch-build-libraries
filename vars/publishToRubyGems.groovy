@@ -12,11 +12,11 @@ Note: Please make sure the gem is already signed.
 @param Map args = [:] args A map of the following parameters
 @param args.apiKeyCredentialId <required> - Credential id consisting api key for publishing the gem to rubyGems.org
 @param args.gemsDir <optional> - The directory containing the gem to be published. Defaults to 'dist'
-@params args.publicCertPath <optional> - The relative path to public key. Defaults to 'cert/opensearch-rubygems.pem'
+@params args.publicCertPath <optional> - The relative path to public key. Defaults to 'certs/opensearch-rubygems.pem'
 */
 void call(Map args = [:]) {
     String releaseArtifactsDir = args.gemsDir ? "${WORKSPACE}/${args.gemsDir}" : "${WORKSPACE}/dist"
-    String certPath = args.publicCertPath ? "${WORKSPACE}/${args.publicCertPath}" : "${WORKSPACE}/cert/opensearch-rubygems.pem"
+    String certPath = args.publicCertPath ? "${WORKSPACE}/${args.publicCertPath}" : "${WORKSPACE}/certs/opensearch-rubygems.pem"
 
     withCredentials([string(credentialsId: "${args.apiKeyCredentialId}", variable: 'API_KEY')]) {
         sh """gem cert --add ${certPath} && \
