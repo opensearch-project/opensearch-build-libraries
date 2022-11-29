@@ -25,7 +25,7 @@ class TestPublishToRubyGems extends BuildPipelineTest {
         super.testPipeline('tests/jenkins/jobs/PublishToRubyGems_JenkinsFile')
         def curlCommands = getCommands('sh', 'curl')
         assertThat(curlCommands, hasItem(
-            "gem cert --add /tmp/workspace/cert/opensearch-rubygems.pem &&             cd /tmp/workspace/dist && gem install `ls *.gem` -P HighSecurity &&             curl --fail --data-binary @`ls *.gem` -H 'Authorization:API_KEY' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems"
+            "gem cert --add /tmp/workspace/certs/opensearch-rubygems.pem &&             cd /tmp/workspace/dist && gem install `ls *.gem` -P HighSecurity &&             curl --fail --data-binary @`ls *.gem` -H 'Authorization:API_KEY' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems"
         ))
     }
 
