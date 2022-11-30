@@ -14,13 +14,22 @@ Note: Please make sure the gem is already signed.
 @param args.gemsDir <optional> - The directory containing the gem to be published. Defaults to 'dist'
 @params args.publicCertPath <optional> - The relative path to public key. Defaults to 'certs/opensearch-rubygems.pem'
 */
+
+
 void call(Map args = [:]) {
     String releaseArtifactsDir = args.gemsDir ? "${WORKSPACE}/${args.gemsDir}" : "${WORKSPACE}/dist"
     String certPath = args.publicCertPath ? "${WORKSPACE}/${args.publicCertPath}" : "${WORKSPACE}/certs/opensearch-rubygems.pem"
 
+    sh """
+        gem cert --add ${certPath}
+        cd ${releaseArtifactsDir} && gemNameWithVersion=\$(ls *.gem)
+        gem install \$gemNameWithVersion
+        gemName=\$(echo \$gemNameWithVersion | sed -E 's/(-[0-9.]+.gem\$)//g')
+        gem uninstall \$gemName
+        gem install \$gemNameWithVersion -P HighSecurity
+    """
+
     withCredentials([string(credentialsId: "${args.apiKeyCredentialId}", variable: 'API_KEY')]) {
-        sh """gem cert --add ${certPath} && \
-            cd ${releaseArtifactsDir} && gem install `ls *.gem` -P HighSecurity && \
-            curl --fail --data-binary @`ls *.gem` -H 'Authorization:${API_KEY}' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems"""
-        }
+        sh "cd ${releaseArtifactsDir} && curl --fail --data-binary @`ls *.gem` -H 'Authorization:${API_KEY}' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems"
+    }
 }
