@@ -15,26 +15,21 @@ Note: Please make sure the gem is already signed.
 @params args.publicCertPath <optional> - The relative path to public key. Defaults to 'certs/opensearch-rubygems.pem'
 */
 
-import java.util.logging.Logger;
-
-log = Logger.getLogger("InfoLogging");
 
 void call(Map args = [:]) {
     String releaseArtifactsDir = args.gemsDir ? "${WORKSPACE}/${args.gemsDir}" : "${WORKSPACE}/dist"
     String certPath = args.publicCertPath ? "${WORKSPACE}/${args.publicCertPath}" : "${WORKSPACE}/certs/opensearch-rubygems.pem"
 
-    sh "gem cert --add ${certPath} && cd ${releaseArtifactsDir}"
-    log.info('Verifying the gem signature')
-    def gemNameWithVersion = sh 'ls *.gem'
     sh """
-        gem install '${gemNameWithVersion}';
-        gemName=$(echo ${gemNameWithVersion} | sed -E 's/(-[0-9.]+.gem$)//g');
-        gem uninstall ${gemName};
-        gem install ${gemNameWithVersion} -P HighSecurity;
+        gem cert --add ${certPath}
+        cd ${releaseArtifactsDir} && gemNameWithVersion=\$(ls *.gem)
+        gem install \$gemNameWithVersion
+        gemName=\$(echo \$gemNameWithVersion | sed -E 's/(-[0-9.]+.gem\$)//g')
+        gem uninstall \$gemName
+        gem install \$gemNameWithVersion -P HighSecurity
     """
 
-    log.info('Publishing the gem')
     withCredentials([string(credentialsId: "${args.apiKeyCredentialId}", variable: 'API_KEY')]) {
-        sh "curl --fail --data-binary @${gemName}` -H 'Authorization:${API_KEY}' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems"
-        }
+        sh "curl --fail --data-binary @`ls *.gem` -H 'Authorization:${API_KEY}' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems"
+    }
 }

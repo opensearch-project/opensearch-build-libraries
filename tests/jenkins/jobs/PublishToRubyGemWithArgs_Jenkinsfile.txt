@@ -4,6 +4,14 @@
          PublishToRubyGemWithArgs_Jenkinsfile.stage(publishRubyGems, groovy.lang.Closure)
             PublishToRubyGemWithArgs_Jenkinsfile.script(groovy.lang.Closure)
                PublishToRubyGemWithArgs_Jenkinsfile.publishToRubyGems({apiKeyCredentialId=ruby-api-key, gemsDir=test, publicCertPath=certificate/path})
+                  publishToRubyGems.sh(
+        gem cert --add /tmp/workspace/certificate/path
+        cd /tmp/workspace/test && gemNameWithVersion=$(ls *.gem)
+        gem install $gemNameWithVersion
+        gemName=$(echo $gemNameWithVersion | sed -E 's/(-[0-9.]+.gem$)//g')
+        gem uninstall $gemName
+        gem install $gemNameWithVersion -P HighSecurity
+    )
                   publishToRubyGems.string({credentialsId=ruby-api-key, variable=API_KEY})
                   publishToRubyGems.withCredentials([API_KEY], groovy.lang.Closure)
-                     publishToRubyGems.sh(gem cert --add /tmp/workspace/certificate/path &&             cd /tmp/workspace/test && gem install `ls *.gem` -P HighSecurity &&             curl --fail --data-binary @`ls *.gem` -H 'Authorization:API_KEY' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems)
+                     publishToRubyGems.sh(curl --fail --data-binary @`ls *.gem` -H 'Authorization:API_KEY' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems)
