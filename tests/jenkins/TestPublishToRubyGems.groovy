@@ -12,7 +12,6 @@ package jenkins.tests
 import jenkins.tests.BuildPipelineTest
 import static com.lesfurets.jenkins.unit.MethodCall.callArgsToString
 import static org.hamcrest.CoreMatchers.hasItem
-import static org.hamcrest.CoreMatchers.containsString
 import static org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
 import org.junit.Test
