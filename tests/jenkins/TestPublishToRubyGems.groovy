@@ -24,9 +24,11 @@ class TestPublishToRubyGems extends BuildPipelineTest {
         super.setUp()
         super.testPipeline('tests/jenkins/jobs/PublishToRubyGems_JenkinsFile')
         def curlCommands = getCommands('sh', 'curl')
+        def gemCommands = getCommands('sh', 'gem')
         assertThat(curlCommands, hasItem(
-            "gem cert --add /tmp/workspace/certs/opensearch-rubygems.pem &&             cd /tmp/workspace/dist && gem install `ls *.gem` -P HighSecurity &&             curl --fail --data-binary @`ls *.gem` -H 'Authorization:API_KEY' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems"
+            "cd /tmp/workspace/dist && curl --fail --data-binary @`ls *.gem` -H 'Authorization:API_KEY' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems".toString()
         ))
+        assertThat(gemCommands, hasItem("\n        gem cert --add /tmp/workspace/certs/opensearch-rubygems.pem\n        cd /tmp/workspace/dist && gemNameWithVersion=\$(ls *.gem)\n        gem install \$gemNameWithVersion\n        gemName=\$(echo \$gemNameWithVersion | sed -E 's/(-[0-9.]+.gem\$)//g')\n        gem uninstall \$gemName\n        gem install \$gemNameWithVersion -P HighSecurity\n    "))
     }
 
     @Test
@@ -35,9 +37,10 @@ class TestPublishToRubyGems extends BuildPipelineTest {
         super.setUp()
         super.testPipeline('tests/jenkins/jobs/PublishToRubyGemWithArgs_Jenkinsfile')
         def curlCommands = getCommands('sh', 'curl')
+        def gemCommands = getCommands('sh', 'gem')
         assertThat(curlCommands, hasItem(
-            "gem cert --add /tmp/workspace/certificate/path &&             cd /tmp/workspace/test && gem install `ls *.gem` -P HighSecurity &&             curl --fail --data-binary @`ls *.gem` -H 'Authorization:API_KEY' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems"
-        ))
+            "cd /tmp/workspace/test && curl --fail --data-binary @`ls *.gem` -H 'Authorization:API_KEY' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems".toString()))
+        assertThat(gemCommands, hasItem("\n        gem cert --add /tmp/workspace/certificate/path\n        cd /tmp/workspace/test && gemNameWithVersion=\$(ls *.gem)\n        gem install \$gemNameWithVersion\n        gemName=\$(echo \$gemNameWithVersion | sed -E 's/(-[0-9.]+.gem\$)//g')\n        gem uninstall \$gemName\n        gem install \$gemNameWithVersion -P HighSecurity\n    "))
     }
 
     def getCommands(method, text) {
