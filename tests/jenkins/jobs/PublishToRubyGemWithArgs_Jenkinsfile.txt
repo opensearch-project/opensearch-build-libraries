@@ -14,4 +14,4 @@
     )
                   publishToRubyGems.string({credentialsId=ruby-api-key, variable=API_KEY})
                   publishToRubyGems.withCredentials([API_KEY], groovy.lang.Closure)
-                     publishToRubyGems.sh(curl --fail --data-binary @`ls *.gem` -H 'Authorization:API_KEY' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems)
+                     publishToRubyGems.sh(cd /tmp/workspace/test && curl --fail --data-binary @`ls *.gem` -H 'Authorization:API_KEY' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems)
