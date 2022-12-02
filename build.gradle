@@ -69,7 +69,7 @@ sharedLibrary {
         dependency('org.jenkins-ci.plugins.workflow', 'workflow-cps', '2.94.1')
         dependency('org.jenkins-ci.plugins.workflow', 'workflow-multibranch', '2.26.1')
         dependency('org.jenkins-ci.plugins', 'pipeline-input-step', '449.v77f0e8b_845c4') // https://repo.jenkins-ci.org/public/org/jenkins-ci/plugins/pipeline-input-step/
-        dependency('org.jenkins-ci.plugins', 'script-security', '1172.v35f6a_0b_8207e')
+        dependency('org.jenkins-ci.plugins', 'script-security', '1184.v85d16b_d851b_3')
         dependency('org.jenkins-ci.plugins', 'credentials', '1112.vc87b_7a_3597f6')
         dependency('org.jenkins-ci.plugins', 'git-client', '3.10.1')
         dependency('org.jenkins-ci.plugins', 'junit', '1.55')
