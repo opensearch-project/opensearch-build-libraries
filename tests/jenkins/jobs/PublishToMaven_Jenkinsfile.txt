@@ -4,6 +4,8 @@
          PublishToMaven_Jenkinsfile.stage(publish, groovy.lang.Closure)
             PublishToMaven_Jenkinsfile.script(groovy.lang.Closure)
                PublishToMaven_Jenkinsfile.publishToMaven({signingArtifactsPath=/path/to/signing, mavenArtifactsPath=/path/to/maven/artifacts, autoPublish=true})
+                  publishToMaven.legacySCM(groovy.lang.Closure)
+                  publishToMaven.library({identifier=jenkins@main, retriever=null})
                   publishToMaven.signArtifacts({artifactPath=/path/to/signing, type=maven, platform=linux, sigtype=.asc})
                      signArtifacts.echo(PGP or Windows Signature Signing)
                      signArtifacts.fileExists(workspace/sign.sh)
