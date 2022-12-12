@@ -7,7 +7,7 @@
  * compatible open source license.
  */
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@1.4.2', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@1.5.0', retriever: legacySCM(scm))
 
     def sha = getManifestSHA(args)
 
