@@ -15,6 +15,7 @@
  */
 
 void call(Map args = [:]) {
+    lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     def autoPublish = args.autoPublish ?: false
     println("Signing Maven artifacts.")
     signArtifacts(
