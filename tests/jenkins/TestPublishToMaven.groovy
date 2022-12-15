@@ -28,7 +28,9 @@ class TestPublishToMaven extends BuildPipelineTest {
 
         assertThat(signing, hasItem('{artifactPath=/path/to/signing, type=maven, platform=linux, sigtype=.asc}'))
         assertThat(signing_sh, hasItem('\n                   #!/bin/bash\n                   set +x\n                   export ROLE=SIGNER_CLIENT_ROLE\n                   export EXTERNAL_ID=SIGNER_CLIENT_EXTERNAL_ID\n                   export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET\n                   export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET\n\n                   workspace/sign.sh /path/to/signing --type=maven --platform=linux --sigtype=.asc\n               '))
-        assertThat(release_sh, hasItem('workspace/publish/stage-maven-release.sh /path/to/maven/artifacts true'))
+        assertThat(release_sh, hasItem('./stage-maven-release.sh /path/to/maven/artifacts true'))
+        assertThat(release_sh, hasItem('chmod a+x ./stage-maven-release.sh'))
+
     }
 
     @Test
@@ -44,9 +46,8 @@ class TestPublishToMaven extends BuildPipelineTest {
 
         assertThat(signing, hasItem('{artifactPath=/path/to/signing/manifest.yml, type=maven, platform=linux, sigtype=.asc}'))
         assertThat(signing_sh, hasItem('\n                   #!/bin/bash\n                   set +x\n                   export ROLE=SIGNER_CLIENT_ROLE\n                   export EXTERNAL_ID=SIGNER_CLIENT_EXTERNAL_ID\n                   export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET\n                   export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET\n\n                   workspace/sign.sh /path/to/signing/manifest.yml --type=maven --platform=linux --sigtype=.asc\n               '))
-        assertThat(release_sh, hasItem('workspace/publish/stage-maven-release.sh /path/to/maven/artifacts false'))
-
-
+        assertThat(release_sh, hasItem('./stage-maven-release.sh /path/to/maven/artifacts false'))
+        assertThat(release_sh, hasItem('chmod a+x ./stage-maven-release.sh'))
     }
 
     def getCommands(method, text) {
