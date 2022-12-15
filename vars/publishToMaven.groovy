@@ -15,7 +15,9 @@
  */
 
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@1.5.0', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
+    loadCustomScript(scriptPath: 'publish/stage-maven-release.sh',
+                     scriptName: 'stage-maven-release.sh')
     def autoPublish = args.autoPublish ?: false
     println("Signing Maven artifacts.")
     signArtifacts(
@@ -27,6 +29,6 @@ void call(Map args = [:]) {
 
     println("Stage and Release Maven artifacts.")
     withCredentials([usernamePassword(credentialsId: 'jenkins-sonatype-creds', usernameVariable: 'SONATYPE_USERNAME', passwordVariable: 'SONATYPE_PASSWORD')]) {
-        sh("${WORKSPACE}/publish/stage-maven-release.sh ${args.mavenArtifactsPath} ${autoPublish}")
+        sh("./stage-maven-release.sh ${args.mavenArtifactsPath} ${autoPublish}")
     }
 }
