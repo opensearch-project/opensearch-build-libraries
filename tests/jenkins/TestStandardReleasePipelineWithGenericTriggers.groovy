@@ -115,7 +115,7 @@ class TestStandardReleasePipelineWithGenericTriggers extends BuildPipelineTest {
         def cmd = getCommands('sh').findAll{
             c -> c.contains('curl')
         }
-        assertThat(cmd, hasItem("curl -J -L -H 'Accept: application/octet-stream' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/owner/reponame/releases/assets/123456 | tar -xzv"))
+        assertThat(cmd, hasItem("curl -J -L -H 'Accept: application/octet-stream' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/owner/reponame/releases/assets/123456 -o artifacts.tar.gz && tar -xvf artifacts.tar.gz"))
         assertThat(cmd, hasItem("{script=curl -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/owner/name/releases/1234/assets, returnStdout=true}"))
     }
 

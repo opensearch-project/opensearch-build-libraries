@@ -14,7 +14,7 @@ bbb
 ccc
 })
                      standardReleasePipelineWithGenericTrigger.echo(Downloading artifacts from https://api.github.com/repos/owner/reponame/releases/assets/123456)
-                     standardReleasePipelineWithGenericTrigger.sh(curl -J -L -H 'Accept: application/octet-stream' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/owner/reponame/releases/assets/123456 | tar -xzv)
+                     standardReleasePipelineWithGenericTrigger.sh(curl -J -L -H 'Accept: application/octet-stream' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/owner/reponame/releases/assets/123456 -o artifacts.tar.gz && tar -xvf artifacts.tar.gz)
             standardReleasePipelineWithGenericTrigger.stage(Release, groovy.lang.Closure)
                standardReleasePipelineWithGenericTrigger.script(groovy.lang.Closure)
                   StandardReleasePipelineWithGenericTriggers_Jenkinsfile.echo(fakePublishToMaven [mavenArtifactsPath:/maven, autoPublish:true])
