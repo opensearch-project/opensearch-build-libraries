@@ -86,7 +86,7 @@ class TestStandardReleasePipelineWithGenericTriggers extends BuildPipelineTest {
         }
 
         assertThat(echoCommand.size(), equalTo(1))
-        assertThat(echoCommand, hasItem('Executing on agent [docker:[image:centos:7, reuseNode:false, stages:[:], args:, alwaysPull:true, containerPerStageRoot:false, label:AL2-X64]]'))
+        assertThat(echoCommand, hasItem('Executing on agent [docker:[image:centos:7, reuseNode:false, stages:[:], args:-e JAVA_HOME=/opt/java/openjdk-17, alwaysPull:true, containerPerStageRoot:false, label:AL2-X64]]'))
     }
 
     @Test
@@ -117,6 +117,17 @@ class TestStandardReleasePipelineWithGenericTriggers extends BuildPipelineTest {
         }
         assertThat(cmd, hasItem("curl -J -L -H 'Accept: application/octet-stream' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/owner/reponame/releases/assets/123456 -o artifacts.tar.gz && tar -xvf artifacts.tar.gz"))
         assertThat(cmd, hasItem("{script=curl -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/owner/name/releases/1234/assets, returnStdout=true}"))
+    }
+
+    @Test
+    void 'validate default values'() {
+        runScript("tests/jenkins/jobs/StandardReleasePipelineWithGenericTriggersTag_Jenkinsfile")
+        def echoCommand = getCommands('echo').findAll{
+            command -> command.contains('agent')
+        }
+
+        assertThat(echoCommand.size(), equalTo(1))
+        assertThat(echoCommand, hasItem('Executing on agent [docker:[image:opensearchstaging/ci-runner:release-centos7-clients-v1, reuseNode:false, stages:[:], args:-e JAVA_HOME=/opt/java/openjdk-11, alwaysPull:true, containerPerStageRoot:false, label:Jenkins-Agent-AL2-X64-C54xlarge-Docker-Host]]'))
     }
 
     @Test

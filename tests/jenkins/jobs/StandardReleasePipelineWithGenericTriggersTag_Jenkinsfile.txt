@@ -2,7 +2,7 @@
       StandardReleasePipelineWithGenericTriggersTag_Jenkinsfile.standardReleasePipelineWithGenericTrigger({jsonValue=.ref, tokenIdCredential=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, regexpFilterText=$ref, regexpFilterExpression=^refs/tags/.*}, groovy.lang.Closure)
          standardReleasePipelineWithGenericTrigger.pipeline(groovy.lang.Closure)
             standardReleasePipelineWithGenericTrigger.timeout({time=1, unit=HOURS})
-            standardReleasePipelineWithGenericTrigger.echo(Executing on agent [docker:[image:opensearchstaging/ci-runner:release-centos7-clients-v1, reuseNode:false, stages:[:], args:, alwaysPull:true, containerPerStageRoot:false, label:Jenkins-Agent-AL2-X64-C54xlarge-Docker-Host]])
+            standardReleasePipelineWithGenericTrigger.echo(Executing on agent [docker:[image:opensearchstaging/ci-runner:release-centos7-clients-v1, reuseNode:false, stages:[:], args:-e JAVA_HOME=/opt/java/openjdk-11, alwaysPull:true, containerPerStageRoot:false, label:Jenkins-Agent-AL2-X64-C54xlarge-Docker-Host]])
             standardReleasePipelineWithGenericTrigger.GenericTrigger({genericVariables=[{key=ref, value=.ref}, {key=action, value=$.action}, {key=isDraft, value=$.release.draft}, {key=release_url, value=$.release.url}, {key=assets_url, value=$.release.assets_url}], tokenCredentialId=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, printContributedVariables=false, printPostContent=false, regexpFilterText=$ref, regexpFilterExpression=^refs/tags/.*})
             standardReleasePipelineWithGenericTrigger.echo(Skipping stage Download artifacts)
             standardReleasePipelineWithGenericTrigger.stage(Release, groovy.lang.Closure)
