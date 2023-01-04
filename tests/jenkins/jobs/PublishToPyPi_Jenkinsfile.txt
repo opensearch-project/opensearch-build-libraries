@@ -5,7 +5,7 @@
             PublishToPyPi_Jenkinsfile.script(groovy.lang.Closure)
                PublishToPyPi_Jenkinsfile.publishToPyPi({credentialId=pypi-token})
                   publishToPyPi.legacySCM(groovy.lang.Closure)
-                  publishToPyPi.library({identifier=jenkins@1.5.2, retriever=null})
+                  publishToPyPi.library({identifier=jenkins@1.5.3, retriever=null})
                   publishToPyPi.signArtifacts({artifactPath=/tmp/workspace/dist, sigtype=.asc, platform=linux})
                      signArtifacts.echo(PGP or Windows Signature Signing)
                      signArtifacts.fileExists(/tmp/workspace/sign.sh)
