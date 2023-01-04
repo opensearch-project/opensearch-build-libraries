@@ -1,5 +1,6 @@
 standardReleasePipelineWithGenericTrigger(overrideAgent: 'AL2-X64',
     overrideDockerImage: 'centos:7',
+    overrideDockerArgs: '-e JAVA_HOME=/opt/java/openjdk-17',
     tokenIdCredential: 'opensearch-ci-webhook-trigger-token',
     causeString: 'A tag was cut on opensearch-ci repo',
     downloadReleaseAsset: true,
