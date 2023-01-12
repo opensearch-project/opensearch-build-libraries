@@ -22,6 +22,10 @@ class TestPromoteLinuxArtifacts extends BuildPipelineTest {
     private Path targetOpenSearchDashboardsRpm;
     private Path targetOpenSearchRpmQualifier;
     private Path targetOpenSearchDashboardsRpmQualifier;
+    private Path targetOpenSearchDeb;
+    private Path targetOpenSearchDashboardsDeb;
+    private Path targetOpenSearchDebQualifier;
+    private Path targetOpenSearchDashboardsDebQualifier;
 
     @Override
     @Before
@@ -118,6 +122,26 @@ class TestPromoteLinuxArtifacts extends BuildPipelineTest {
             "tests/data/opensearch-dashboards-build-2.0.0-rc1-rpm.yml", 
             "tests/jenkins/artifacts/rpm/vars-build/2.0.0-rc1/33/linux/x64/rpm/builds/opensearch-dashboards/manifest.yml"
         );
+
+        targetOpenSearchDeb = copy(
+            "tests/data/opensearch-build-1.3.0-deb.yml", 
+            "tests/jenkins/artifacts/deb/vars-build/1.3.0/33/linux/x64/deb/builds/opensearch/manifest.yml"
+        );
+
+        targetOpenSearchDashboardsDeb = copy(
+            "tests/data/opensearch-dashboards-build-1.3.0-deb.yml", 
+            "tests/jenkins/artifacts/deb/vars-build/1.3.0/33/linux/x64/deb/builds/opensearch-dashboards/manifest.yml"
+        );
+
+        targetOpenSearchDebQualifier = copy(
+            "tests/data/opensearch-build-2.0.0-rc1-deb.yml", 
+            "tests/jenkins/artifacts/deb/vars-build/2.0.0-rc1/33/linux/x64/deb/builds/opensearch/manifest.yml"
+        );
+
+        targetOpenSearchDashboardsDebQualifier = copy(
+            "tests/data/opensearch-dashboards-build-2.0.0-rc1-deb.yml", 
+            "tests/jenkins/artifacts/deb/vars-build/2.0.0-rc1/33/linux/x64/deb/builds/opensearch-dashboards/manifest.yml"
+        );
     }
 
     private Path copy(String sourcePath, String targetPath){
@@ -141,6 +165,10 @@ class TestPromoteLinuxArtifacts extends BuildPipelineTest {
         Files.delete(targetOpenSearchDashboardsRpm)
         Files.delete(targetOpenSearchRpmQualifier)
         Files.delete(targetOpenSearchDashboardsRpmQualifier)
+        Files.delete(targetOpenSearchDeb)
+        Files.delete(targetOpenSearchDashboardsDeb)
+        Files.delete(targetOpenSearchDebQualifier)
+        Files.delete(targetOpenSearchDashboardsDebQualifier)
     }
 
     @Test
