@@ -42,6 +42,8 @@ class BuildManifest implements Serializable {
                 return 'zip'
             } else if (this.distribution == 'rpm') {
                 return 'rpm'
+            } else if (this.distribution == 'deb') {
+                return 'deb'
             } else {
                 return 'tar.gz'
             }

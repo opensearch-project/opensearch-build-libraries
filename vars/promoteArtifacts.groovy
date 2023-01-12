@@ -22,7 +22,7 @@ void call(Map args = [:]) {
     println("Revision: ${revision}")
 
     Map<String, List> distributionMap = [
-        "linux": ['tar', 'rpm'],
+        "linux": ['tar', 'rpm', 'deb'],
         "windows": ['zip']
     ]
 

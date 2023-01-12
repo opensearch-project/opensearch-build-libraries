@@ -118,6 +118,26 @@ class TestPromoteLinuxArtifacts extends BuildPipelineTest {
             "tests/data/opensearch-dashboards-build-2.0.0-rc1-rpm.yml", 
             "tests/jenkins/artifacts/rpm/vars-build/2.0.0-rc1/33/linux/x64/rpm/builds/opensearch-dashboards/manifest.yml"
         );
+
+        targetOpenSearchRpm = copy(
+            "tests/data/opensearch-build-1.3.0-deb.yml", 
+            "tests/jenkins/artifacts/deb/vars-build/1.3.0/33/linux/x64/deb/builds/opensearch/manifest.yml"
+        );
+
+        targetOpenSearchDashboardsRpm = copy(
+            "tests/data/opensearch-dashboards-build-1.3.0-deb.yml", 
+            "tests/jenkins/artifacts/deb/vars-build/1.3.0/33/linux/x64/deb/builds/opensearch-dashboards/manifest.yml"
+        );
+
+        targetOpenSearchRpmQualifier = copy(
+            "tests/data/opensearch-build-2.0.0-rc1-deb.yml", 
+            "tests/jenkins/artifacts/deb/vars-build/2.0.0-rc1/33/linux/x64/deb/builds/opensearch/manifest.yml"
+        );
+
+        targetOpenSearchDashboardsRpmQualifier = copy(
+            "tests/data/opensearch-dashboards-build-2.0.0-rc1-deb.yml", 
+            "tests/jenkins/artifacts/deb/vars-build/2.0.0-rc1/33/linux/x64/deb/builds/opensearch-dashboards/manifest.yml"
+        );
     }
 
     private Path copy(String sourcePath, String targetPath){
