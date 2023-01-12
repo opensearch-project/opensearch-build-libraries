@@ -7,7 +7,7 @@
  * compatible open source license.
  */
 Closure call() {
-    allowedFileTypes = [".tar.gz", ".zip", ".rpm"]
+    allowedFileTypes = [".tar.gz", ".zip", ".rpm", ".deb"]
 
     return { argsMap -> body: {
 
