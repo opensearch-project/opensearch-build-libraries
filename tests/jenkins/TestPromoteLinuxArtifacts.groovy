@@ -22,6 +22,10 @@ class TestPromoteLinuxArtifacts extends BuildPipelineTest {
     private Path targetOpenSearchDashboardsRpm;
     private Path targetOpenSearchRpmQualifier;
     private Path targetOpenSearchDashboardsRpmQualifier;
+    private Path targetOpenSearchDeb;
+    private Path targetOpenSearchDashboardsDeb;
+    private Path targetOpenSearchDebQualifier;
+    private Path targetOpenSearchDashboardsDebQualifier;
 
     @Override
     @Before
@@ -161,6 +165,10 @@ class TestPromoteLinuxArtifacts extends BuildPipelineTest {
         Files.delete(targetOpenSearchDashboardsRpm)
         Files.delete(targetOpenSearchRpmQualifier)
         Files.delete(targetOpenSearchDashboardsRpmQualifier)
+        Files.delete(targetOpenSearchDeb)
+        Files.delete(targetOpenSearchDashboardsDeb)
+        Files.delete(targetOpenSearchDebQualifier)
+        Files.delete(targetOpenSearchDashboardsDebQualifier)
     }
 
     @Test
