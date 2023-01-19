@@ -1,0 +1,23 @@
+   PublishToNuget_Jenkinsfile.run()
+      PublishToNuget_Jenkinsfile.pipeline(groovy.lang.Closure)
+         PublishToNuget_Jenkinsfile.echo(Executing on agent [label:none])
+         PublishToNuget_Jenkinsfile.stage(publishToNuget, groovy.lang.Closure)
+            PublishToNuget_Jenkinsfile.script(groovy.lang.Closure)
+               PublishToNuget_Jenkinsfile.publishToNuget({repository=https://github.com/opensearch-project/opensearch-net, tag=1.2.0, apiKeyCredentialId=net-api-key, solutionFilePath=test-solution-file.sln})
+                  publishToNuget.legacySCM(groovy.lang.Closure)
+                  publishToNuget.library({identifier=jenkins@main, retriever=null})
+                  publishToNuget.checkout({$class=GitSCM, branches=[{name=1.2.0}], userRemoteConfigs=[{url=https://github.com/opensearch-project/opensearch-net}]})
+                  publishToNuget.sh(
+    dotnet build /tmp/workspace/test-solution-file.sln --configuration Release
+    find src -name OpenSearch*.dll>/tmp/workspace/dlls.txt
+    )
+                  publishToNuget.readFile({file=/tmp/workspace/dlls.txt})
+                  publishToNuget.string({credentialsId=net-api-key, variable=API_KEY})
+                  publishToNuget.withCredentials([API_KEY], groovy.lang.Closure)
+                     publishToNuget.sh(
+            dotnet pack /tmp/workspace/test-solution-file.sln --configuration Release --no-build
+            for package in `find src -name OpenSearch*.nupkg`
+                do
+                    dotnet nuget push $package --api-key API_KEY --source https://api.nuget.org/v3/index.json
+                done
+        )
