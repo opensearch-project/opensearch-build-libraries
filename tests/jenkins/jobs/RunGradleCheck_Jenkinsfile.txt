@@ -57,7 +57,13 @@
 
                 echo "Start gradlecheck"
                 GRADLE_CHECK_STATUS=0
-                ./gradlew clean && ./gradlew check -Dtests.coverage=true --no-daemon --no-scan || GRADLE_CHECK_STATUS=1
+                
+                if (uname -s | grep -i NT); then
+                   echo "Start gradlecheck on windows"
+                   ./gradlew clean && ./gradlew check --max-workers 8 -Dtests.coverage=true --no-daemon --no-scan || GRADLE_CHECK_STATUS=1
+                else
+                   ./gradlew clean && ./gradlew check -Dtests.coverage=true --no-daemon --no-scan || GRADLE_CHECK_STATUS=1
+                fi
 
                 if [ "$GRADLE_CHECK_STATUS" != 0 ]; then
                     echo Gradle Check Failed!
