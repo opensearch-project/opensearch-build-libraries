@@ -23,7 +23,7 @@ void call(Map args = [:]) {
     dotnet build ${WORKSPACE}/${args.solutionFilePath} --configuration Release
     find src -name OpenSearch*.dll>${WORKSPACE}/dlls.txt
     """
-    dlls = readFile(file: "${WORKSPACE }/dlls.txt").readLines()
+    dlls = readFile(file: "${WORKSPACE}/dlls.txt").readLines()
     dlls.each { item ->
         signArtifacts(
             artifactPath: item,
