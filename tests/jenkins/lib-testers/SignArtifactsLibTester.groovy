@@ -39,6 +39,7 @@ class SignArtifactsLibTester extends LibFunctionTester {
     void configure(helper, binding) {
         binding.setVariable('GITHUB_BOT_TOKEN_NAME', 'github_bot_token_name')
         helper.registerAllowedMethod('git', [Map])
+        helper.addFileExistsMock('/tmp/workspace/sign.sh', true)
         helper.registerAllowedMethod('withCredentials', [Map, Closure], { args, closure ->
             closure.delegate = delegate
             return helper.callClosure(closure)

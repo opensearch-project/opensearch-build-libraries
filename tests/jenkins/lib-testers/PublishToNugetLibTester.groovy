@@ -25,6 +25,7 @@ class PublishToNugetLibTester extends LibFunctionTester {
 
     void configure(helper, binding){
         helper.registerAllowedMethod("checkout", [Map], {})
+        helper.addFileExistsMock('workspace/sign.sh', false)
         helper.registerAllowedMethod("withCredentials", [Map, Closure], { args, closure ->
             closure.delegate = delegate
             return helper.callClosure(closure)
