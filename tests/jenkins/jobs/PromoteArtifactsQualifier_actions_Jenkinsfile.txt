@@ -51,7 +51,7 @@
                    export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET
                    export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET
 
-                   tests/jenkins/sign.sh tests/jenkins/tests/jenkins/file/found.zip --sigtype=.sig
+                   tests/jenkins/sign.sh tests/jenkins/tests/jenkins/file/found.zip --sigtype .sig
                )
                      promoteArtifacts.withAWS({role=ARTIFACT_PROMOTION_ROLE_NAME, roleAccount=AWS_ACCOUNT_ARTIFACT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
                         promoteArtifacts.s3Upload({bucket=ARTIFACT_PRODUCTION_BUCKET_NAME, path=releases/core/opensearch/2.0.0-rc1/, workingDir=tests/jenkins/artifacts/tar/vars-build/2.0.0-rc1/33/linux/x64/tar/builds/opensearch/dist/, includePathPattern=**/opensearch-min-2.0.0-rc1-linux-x64*})
@@ -89,7 +89,7 @@
                    export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET
                    export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET
 
-                   tests/jenkins/sign.sh tests/jenkins/tests/jenkins/file/found.zip --sigtype=.sig
+                   tests/jenkins/sign.sh tests/jenkins/tests/jenkins/file/found.zip --sigtype .sig
                )
                      promoteArtifacts.withAWS({role=ARTIFACT_PROMOTION_ROLE_NAME, roleAccount=AWS_ACCOUNT_ARTIFACT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
                         promoteArtifacts.s3Upload({bucket=ARTIFACT_PRODUCTION_BUCKET_NAME, path=releases/bundle/opensearch/2.0.0-rc1/, workingDir=tests/jenkins/artifacts/rpm/vars-build/2.0.0-rc1/33/linux/x64/rpm/dist/opensearch/, includePathPattern=**/opensearch-2.0.0-rc1-linux-x64*})
@@ -126,7 +126,7 @@
                    export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET
                    export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET
 
-                   tests/jenkins/sign.sh tests/jenkins/tests/jenkins/file/found.zip --sigtype=.sig
+                   tests/jenkins/sign.sh tests/jenkins/tests/jenkins/file/found.zip --sigtype .sig
                )
                      promoteArtifacts.withAWS({role=ARTIFACT_PROMOTION_ROLE_NAME, roleAccount=AWS_ACCOUNT_ARTIFACT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
                         promoteArtifacts.s3Upload({bucket=ARTIFACT_PRODUCTION_BUCKET_NAME, path=releases/bundle/opensearch/2.0.0-rc1/, workingDir=tests/jenkins/artifacts/deb/vars-build/2.0.0-rc1/33/linux/x64/deb/dist/opensearch/, includePathPattern=**/opensearch-2.0.0-rc1-linux-x64*})
