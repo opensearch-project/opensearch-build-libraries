@@ -13,18 +13,21 @@ Note: Please make sure the gem is already signed.
 @param args.apiKeyCredentialId <required> - Credential id consisting api key for publishing the gem to rubyGems.org
 @param args.gemsDir <optional> - The directory containing the gem to be published. Defaults to 'dist'
 @params args.publicCertPath <optional> - The relative path to public key. Defaults to 'certs/opensearch-rubygems.pem'
+@params args.rubyVersion <optional> - Ruby version to be used. Defaults to 2.6.0
 */
 
 
 void call(Map args = [:]) {
     String releaseArtifactsDir = args.gemsDir ? "${WORKSPACE}/${args.gemsDir}" : "${WORKSPACE}/dist"
     String certPath = args.publicCertPath ? "${WORKSPACE}/${args.publicCertPath}" : "${WORKSPACE}/certs/opensearch-rubygems.pem"
+    String rubyVersion = args.rubyVersion ?: '2.6.0'
 
     sh """
+        rvm install ${rubyVersion} && rvm use ${rubyVersion}
         gem cert --add ${certPath}
         cd ${releaseArtifactsDir} && gemNameWithVersion=\$(ls *.gem)
         gem install \$gemNameWithVersion
-        gemName=\$(echo \$gemNameWithVersion | sed -E 's/(-[0-9.]+.gem\$)//g')
+        gemName=\$(echo \$gemNameWithVersion | sed -E 's/(-[0-9.]+-*[a-z]*.gem\$)//g')
         gem uninstall \$gemName
         gem install \$gemNameWithVersion -P HighSecurity
     """
