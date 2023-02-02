@@ -4,9 +4,9 @@
          PublishToRubyGems_JenkinsFile.stage(publishRubyGems, groovy.lang.Closure)
             PublishToRubyGems_JenkinsFile.script(groovy.lang.Closure)
                PublishToRubyGems_JenkinsFile.publishToRubyGems({apiKeyCredentialId=ruby-api-key})
-                  publishToRubyGems.sh(
-        rvm install 2.6.0 && rvm use 2.6.0
+                  publishToRubyGems.sh(#!/bin/bash
         gem cert --add /tmp/workspace/certs/opensearch-rubygems.pem
+        source /usr/share/opensearch/.rvm/scripts/rvm && rvm use 2.6.0 && ruby --version
         cd /tmp/workspace/dist && gemNameWithVersion=$(ls *.gem)
         gem install $gemNameWithVersion
         gemName=$(echo $gemNameWithVersion | sed -E 's/(-[0-9.]+-*[a-z]*.gem$)//g')

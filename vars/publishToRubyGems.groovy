@@ -8,7 +8,7 @@
  */
 
 /** Library to publish ruby gems to rubygems.org registry with OpenSearch as the owner.
-Note: Please make sure the gem is already signed.
+Note: Please make sure the gem is already signed. For ruby versions, they to be preinstalled as a part of docker. See the default docker file: https://github.com/opensearch-project/opensearch-build/blob/main/docker/ci/dockerfiles/current/release.centos.clients.x64.arm64.dockerfile
 @param Map args = [:] args A map of the following parameters
 @param args.apiKeyCredentialId <required> - Credential id consisting api key for publishing the gem to rubyGems.org
 @param args.gemsDir <optional> - The directory containing the gem to be published. Defaults to 'dist'
@@ -22,9 +22,9 @@ void call(Map args = [:]) {
     String certPath = args.publicCertPath ? "${WORKSPACE}/${args.publicCertPath}" : "${WORKSPACE}/certs/opensearch-rubygems.pem"
     String rubyVersion = args.rubyVersion ?: '2.6.0'
 
-    sh """
-        rvm install ${rubyVersion} && rvm use ${rubyVersion}
+    sh """#!/bin/bash
         gem cert --add ${certPath}
+        source /usr/share/opensearch/.rvm/scripts/rvm && rvm use ${rubyVersion} && ruby --version
         cd ${releaseArtifactsDir} && gemNameWithVersion=\$(ls *.gem)
         gem install \$gemNameWithVersion
         gemName=\$(echo \$gemNameWithVersion | sed -E 's/(-[0-9.]+-*[a-z]*.gem\$)//g')
