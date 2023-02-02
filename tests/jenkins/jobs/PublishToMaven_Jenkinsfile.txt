@@ -219,7 +219,7 @@ fi
                    export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET
                    export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET
 
-                   workspace/sign.sh /path/to/signing --type=maven --platform=linux --sigtype=.asc
+                   workspace/sign.sh /path/to/signing --type maven --platform linux --sigtype .asc
                )
                   publishToMaven.usernamePassword({credentialsId=jenkins-sonatype-creds, usernameVariable=SONATYPE_USERNAME, passwordVariable=SONATYPE_PASSWORD})
                   publishToMaven.withCredentials([[SONATYPE_USERNAME, SONATYPE_PASSWORD]], groovy.lang.Closure)

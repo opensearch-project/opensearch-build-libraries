@@ -25,7 +25,7 @@
                    export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET
                    export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET
 
-                   /tmp/workspace/sign.sh /tmp/workspace/test --sigtype=.asc --platform=linux
+                   /tmp/workspace/sign.sh /tmp/workspace/test --sigtype .asc --platform linux
                )
                   publishToPyPi.usernamePassword({credentialsId=pypi-token, usernameVariable=TWINE_USERNAME, passwordVariable=TWINE_PASSWORD})
                   publishToPyPi.withCredentials([[TWINE_USERNAME, TWINE_PASSWORD]], groovy.lang.Closure)

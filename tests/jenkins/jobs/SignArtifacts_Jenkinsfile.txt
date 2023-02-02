@@ -22,9 +22,9 @@
                    export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET
                    export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET
 
-                   /tmp/workspace/sign.sh /tmp/workspace/artifacts --sigtype=.sig --platform=linux
+                   /tmp/workspace/sign.sh /tmp/workspace/artifacts --sigtype .sig --platform linux
                )
-               SignArtifacts_Jenkinsfile.signArtifacts({artifactPath=/tmp/workspace/artifacts, sigtype=.rpm, platform=linux})
+               SignArtifacts_Jenkinsfile.signArtifacts({artifactPath=/tmp/workspace/artifacts, sigtype=.rpm, platform=linux, overwrite=false})
                   signArtifacts.string({credentialsId=jenkins-rpm-signing-account-number, variable=RPM_SIGNING_ACCOUNT_NUMBER})
                   signArtifacts.string({credentialsId=jenkins-rpm-signing-passphrase-secrets-arn, variable=RPM_SIGNING_PASSPHRASE_SECRETS_ARN})
                   signArtifacts.string({credentialsId=jenkins-rpm-signing-secret-key-secrets-arn, variable=RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN})
@@ -123,5 +123,30 @@
                    export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET
                    export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET
 
-                   /tmp/workspace/sign.sh /tmp/workspace/file.yml --platform=linux --type=maven
+                   /tmp/workspace/sign.sh /tmp/workspace/file.yml --platform linux --type maven
+               )
+               SignArtifacts_Jenkinsfile.signArtifacts({artifactPath=/tmp/workspace/the_msi.msi, platform=windows, overwrite=true})
+                  signArtifacts.echo(PGP or Windows Signature Signing)
+                  signArtifacts.fileExists(/tmp/workspace/sign.sh)
+                  signArtifacts.git({url=https://github.com/opensearch-project/opensearch-build.git, branch=main})
+                  signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import -)
+                  signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
+                  signArtifacts.string({credentialsId=jenkins-signer-windows-role, variable=SIGNER_WINDOWS_ROLE})
+                  signArtifacts.string({credentialsId=jenkins-signer-windows-external-id, variable=SIGNER_WINDOWS_EXTERNAL_ID})
+                  signArtifacts.string({credentialsId=jenkins-signer-windows-unsigned-bucket, variable=SIGNER_WINDOWS_UNSIGNED_BUCKET})
+                  signArtifacts.string({credentialsId=jenkins-signer-windows-signed-bucket, variable=SIGNER_WINDOWS_SIGNED_BUCKET})
+                  signArtifacts.string({credentialsId=jenkins-signer-windows-profile-identifier, variable=SIGNER_WINDOWS_PROFILE_IDENTIFIER})
+                  signArtifacts.string({credentialsId=jenkins-signer-windows-platform-identifier, variable=SIGNER_WINDOWS_PLATFORM_IDENTIFIER})
+                  signArtifacts.withCredentials([[GITHUB_USER, GITHUB_TOKEN], SIGNER_WINDOWS_ROLE, SIGNER_WINDOWS_EXTERNAL_ID, SIGNER_WINDOWS_UNSIGNED_BUCKET, SIGNER_WINDOWS_SIGNED_BUCKET, SIGNER_WINDOWS_PROFILE_IDENTIFIER, SIGNER_WINDOWS_PLATFORM_IDENTIFIER], groovy.lang.Closure)
+                     signArtifacts.sh(
+                   #!/bin/bash
+                   set +x
+                   export ROLE=SIGNER_WINDOWS_ROLE
+                   export EXTERNAL_ID=SIGNER_WINDOWS_EXTERNAL_ID
+                   export UNSIGNED_BUCKET=SIGNER_WINDOWS_UNSIGNED_BUCKET
+                   export SIGNED_BUCKET=SIGNER_WINDOWS_SIGNED_BUCKET
+                   export PROFILE_IDENTIFIER=SIGNER_WINDOWS_PROFILE_IDENTIFIER
+                   export PLATFORM_IDENTIFIER=SIGNER_WINDOWS_PLATFORM_IDENTIFIER
+
+                   /tmp/workspace/sign.sh /tmp/workspace/the_msi.msi --platform windows --overwrite 
                )
