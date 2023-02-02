@@ -31,6 +31,7 @@ class TestPromoteWindowsArtifacts extends BuildPipelineTest {
         binding.setVariable('DISTRIBUTION_BUILD_NUMBER', '33')
         binding.setVariable('DISTRIBUTION_PLATFORM', 'windows')
         binding.setVariable('DISTRIBUTION_ARCHITECTURE', 'x64')
+        binding.setVariable('DISTRIBUTION_NAME', 'zip')
         binding.setVariable('WORKSPACE', 'tests/jenkins')
         binding.setVariable('GITHUB_BOT_TOKEN_NAME', 'github_bot_token_name')
         def configs = ["role": "dummy_role",
