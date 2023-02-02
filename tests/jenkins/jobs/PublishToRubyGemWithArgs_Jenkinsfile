@@ -13,7 +13,7 @@ pipeline {
         stage('publishRubyGems'){
             steps {
                 script {
-                    publishToRubyGems(apiKeyCredentialId: 'ruby-api-key', gemsDir: 'test', publicCertPath: 'certificate/path')
+                    publishToRubyGems(apiKeyCredentialId: 'ruby-api-key', gemsDir: 'test', publicCertPath: 'certificate/path', rubyVersion: 'jruby-9.3.0.0')
                 }
             }
         }

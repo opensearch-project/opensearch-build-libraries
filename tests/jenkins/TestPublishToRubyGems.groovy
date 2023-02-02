@@ -28,7 +28,7 @@ class TestPublishToRubyGems extends BuildPipelineTest {
         assertThat(curlCommands, hasItem(
             "cd /tmp/workspace/dist && curl --fail --data-binary @`ls *.gem` -H 'Authorization:API_KEY' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems".toString()
         ))
-        assertThat(gemCommands, hasItem("\n        gem cert --add /tmp/workspace/certs/opensearch-rubygems.pem\n        cd /tmp/workspace/dist && gemNameWithVersion=\$(ls *.gem)\n        gem install \$gemNameWithVersion\n        gemName=\$(echo \$gemNameWithVersion | sed -E 's/(-[0-9.]+.gem\$)//g')\n        gem uninstall \$gemName\n        gem install \$gemNameWithVersion -P HighSecurity\n    "))
+        assertThat(gemCommands, hasItem("#!/bin/bash\n        gem cert --add /tmp/workspace/certs/opensearch-rubygems.pem\n        source /usr/share/opensearch/.rvm/scripts/rvm && rvm use 2.6.0 && ruby --version\n        cd /tmp/workspace/dist && gemNameWithVersion=\$(ls *.gem)\n        gem install \$gemNameWithVersion\n        gemName=\$(echo \$gemNameWithVersion | sed -E 's/(-[0-9.]+-*[a-z]*.gem\$)//g')\n        gem uninstall \$gemName\n        gem install \$gemNameWithVersion -P HighSecurity\n    "))
     }
 
     @Test
@@ -40,7 +40,7 @@ class TestPublishToRubyGems extends BuildPipelineTest {
         def gemCommands = getCommands('sh', 'gem')
         assertThat(curlCommands, hasItem(
             "cd /tmp/workspace/test && curl --fail --data-binary @`ls *.gem` -H 'Authorization:API_KEY' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems".toString()))
-        assertThat(gemCommands, hasItem("\n        gem cert --add /tmp/workspace/certificate/path\n        cd /tmp/workspace/test && gemNameWithVersion=\$(ls *.gem)\n        gem install \$gemNameWithVersion\n        gemName=\$(echo \$gemNameWithVersion | sed -E 's/(-[0-9.]+.gem\$)//g')\n        gem uninstall \$gemName\n        gem install \$gemNameWithVersion -P HighSecurity\n    "))
+        assertThat(gemCommands, hasItem("#!/bin/bash\n        gem cert --add /tmp/workspace/certificate/path\n        source /usr/share/opensearch/.rvm/scripts/rvm && rvm use jruby-9.3.0.0 && ruby --version\n        cd /tmp/workspace/test && gemNameWithVersion=\$(ls *.gem)\n        gem install \$gemNameWithVersion\n        gemName=\$(echo \$gemNameWithVersion | sed -E 's/(-[0-9.]+-*[a-z]*.gem\$)//g')\n        gem uninstall \$gemName\n        gem install \$gemNameWithVersion -P HighSecurity\n    "))
     }
 
     def getCommands(method, text) {
