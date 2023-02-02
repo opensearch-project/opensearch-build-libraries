@@ -20,6 +20,13 @@ def call(Map args = [:]){
             println(matched.split(" ")[0].trim())
             failedComponents.add(matched.split(" ")[0].trim())
         }
+        /* Due to an existing issue with queryWorkbench plugin breaking OSD during bootstrapping, there are false positive
+           issues getting created against OSD repo. Adding a temp check to ignore issue creation against OSD repo in-case
+           there are more than 1 failures reported for OSD build.
+         */
+        if (failedComponents.contains("OpenSearch-Dashboards") && failedComponents.size() > 1) {
+            failedComponents.removeElement("OpenSearch-Dashboards")
+        }
 
         def yamlFile = readYaml(file: "manifests/${INPUT_MANIFEST}")
         def currentVersion = yamlFile.build.version
