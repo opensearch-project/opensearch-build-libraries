@@ -16,6 +16,8 @@ class SignArtifactsLibTester extends LibFunctionTester {
     private String artifactPath
     private String type
     private String component
+    private boolean overwrite
+
 
     public SignArtifactsLibTester(sigtype, platform, artifactPath, type, component) {
         this.sigtype = sigtype
@@ -23,6 +25,15 @@ class SignArtifactsLibTester extends LibFunctionTester {
         this.artifactPath = artifactPath
         this.type = type
         this.component = component
+    }
+
+    public SignArtifactsLibTester(sigtype, platform, artifactPath, type, component, overwrite) {
+        this.sigtype = sigtype
+        this.platform = platform
+        this.artifactPath = artifactPath
+        this.type = type
+        this.component = component
+        this.overwrite = overwrite
     }
 
     void configure(helper, binding) {
@@ -43,8 +54,6 @@ class SignArtifactsLibTester extends LibFunctionTester {
         assertThat(call.args.platform.first(), notNullValue())
         if (call.args.artifactPath.first().toString().endsWith('.yml')) {
             assertThat(call.args.type.first(), notNullValue())
-        } else if (call.args.type.first() != 'maven') {
-            assertThat(call.args.sigtype.first(), notNullValue())
         }
     }
 
@@ -55,8 +64,7 @@ class SignArtifactsLibTester extends LibFunctionTester {
                     && call.args.type.first().toString().equals(this.type)
                     && (call.args.component.first() == null || call.args.component.first().toString().equals(this.component))
         } else {
-            return call.args.sigtype.first().toString().equals(this.sigtype)
-                    && call.args.platform.first().toString().equals(this.platform)
+            return call.args.platform.first().toString().equals(this.platform)
                     && call.args.artifactPath.first().toString().equals(this.artifactPath)
         }
     }

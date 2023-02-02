@@ -22,14 +22,21 @@ pipeline {
                     signArtifacts(
                             artifactPath: "${WORKSPACE}/artifacts",
                             sigtype: '.rpm',
-                            platform: 'linux'
+                            platform: 'linux',
+                            overwrite: false
                     )
 
                     signArtifacts(
                             artifactPath: "${WORKSPACE}/file.yml",
                             platform: 'linux',
-                            type: 'maven'
+                            type: 'maven',
                     )
+
+                    signArtifacts(
+                        artifactPath: "${WORKSPACE}/the_msi.msi",
+                        platform: 'windows',
+                        overwrite: true
+                )
                 }
             }
         }
