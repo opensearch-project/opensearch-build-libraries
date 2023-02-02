@@ -37,6 +37,7 @@ class TestPromoteLinuxArtifacts extends BuildPipelineTest {
         binding.setVariable('STAGE_NAME', 'stage')
         binding.setVariable('BUILD_URL', 'http://jenkins.us-east-1.elb.amazonaws.com/job/vars/42')
         binding.setVariable('DISTRIBUTION_BUILD_NUMBER', '33')
+        binding.setVariable('DISTRIBUTION_NAME', 'tar')
         binding.setVariable('DISTRIBUTION_PLATFORM', 'linux')
         binding.setVariable('DISTRIBUTION_ARCHITECTURE', 'x64')
         binding.setVariable('WORKSPACE', 'tests/jenkins')
