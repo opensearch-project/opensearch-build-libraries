@@ -21,7 +21,7 @@ repositories {
 
 dependencies {
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
-    implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.9', ext: 'pom'
+    implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '3.0.14', ext: 'pom'
     implementation group: 'com.cloudbees', name: 'groovy-cps', version: '1.31'
     testImplementation group: 'org.yaml', name: 'snakeyaml', version: '1.29'
     testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.4.1'
@@ -62,7 +62,7 @@ sourceSets {
 
 sharedLibrary {
     coreVersion = '2.358' // https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-core/
-    testHarnessVersion = '1736.vc72c458c5103' // https://mvnrepository.com/artifact/org.jenkins-ci.main/jenkins-test-harness?repo=jenkins-releases
+    testHarnessVersion = '1934.v90a_c07cf5b_21' // https://mvnrepository.com/artifact/org.jenkins-ci.main/jenkins-test-harness?repo=jenkins-releases
     pluginDependencies {
         workflowCpsGlobalLibraryPluginVersion = '570.v21311f4951f8' // https://repo.jenkins-ci.org/public/org/jenkins-ci/plugins/workflow/workflow-cps-global-lib/
         // see https://mvnrepository.com/artifact/org.jenkins-ci.plugins/<name>?repo=jenkins-releases for latest
@@ -72,7 +72,7 @@ sharedLibrary {
         dependency('org.jenkins-ci.plugins', 'script-security', '1229.v4880b_b_e905a_6')
         dependency('org.jenkins-ci.plugins', 'credentials', '1112.vc87b_7a_3597f6')
         dependency('org.jenkins-ci.plugins', 'git-client', '3.11.1')
-        dependency('org.jenkins-ci.plugins', 'junit', '1.55')
+        dependency('org.jenkins-ci.plugins', 'junit', '1166.va_436e268e972')
         dependency('org.jenkins-ci.plugins', 'mailer', '408.vd726a_1130320') // https://repo.jenkins-ci.org/public/org/jenkins-ci/plugins/mailer/
     }
 }
