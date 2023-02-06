@@ -41,6 +41,7 @@ class TestPromoteLinuxArtifacts extends BuildPipelineTest {
         binding.setVariable('DISTRIBUTION_PLATFORM', 'linux')
         binding.setVariable('DISTRIBUTION_ARCHITECTURE', 'x64')
         binding.setVariable('WORKSPACE', 'tests/jenkins')
+        helper.addFileExistsMock('tests/jenkins/sign.sh', true)
         binding.setVariable('GITHUB_BOT_TOKEN_NAME', 'github_bot_token_name')
         def configs = ["role": "dummy_role",
                        "external_id": "dummy_ID",

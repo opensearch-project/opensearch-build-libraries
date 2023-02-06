@@ -27,6 +27,7 @@ class TestPromoteYumRepos extends BuildPipelineTest {
                        "unsigned_bucket": "dummy_unsigned_bucket",
                        "signed_bucket": "dummy_signed_bucket"]
         binding.setVariable('configs', configs)
+        helper.addFileExistsMock('/tmp/workspace/sign.sh', true)
         helper.registerAllowedMethod("readJSON", [Map.class], {c -> configs})
         helper.registerAllowedMethod("git", [Map])
         helper.registerAllowedMethod("withCredentials", [Map, Closure], { args, closure ->

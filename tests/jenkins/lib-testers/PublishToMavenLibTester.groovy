@@ -28,6 +28,7 @@ class PublishToMavenLibTester extends LibFunctionTester {
         binding.setVariable('GITHUB_BOT_TOKEN_NAME', 'github_bot_token_name')
         binding.setVariable('WORKSPACE', 'workspace')
         helper.registerAllowedMethod('git', [Map])
+        helper.addFileExistsMock('workspace/sign.sh', true)
         helper.registerAllowedMethod('withCredentials', [Map, Closure], { args, closure ->
             closure.delegate = delegate
             return helper.callClosure(closure)

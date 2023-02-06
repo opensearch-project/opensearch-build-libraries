@@ -1,0 +1,26 @@
+/*
+ * Copyright OpenSearch Contributors
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * The OpenSearch Contributors require contributions made to
+ * this file be licensed under the Apache-2.0 license or a
+ * compatible open source license.
+ */
+
+pipeline {
+    agent none
+    stages {
+        stage('publishToNuget') {
+            steps {
+                script {
+                    publishToNuget(
+                        repository: 'https://github.com/opensearch-project/opensearch-net',
+                        tag: '1.2.0',
+                        apiKeyCredentialId: 'net-api-key',
+                        solutionFilePath: 'test-solution-file.sln'
+                    )
+                }
+            }
+        }
+    }
+}

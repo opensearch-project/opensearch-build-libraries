@@ -100,10 +100,14 @@ void call(Map args = [:]) {
         }
     }
     else {
+        String workdir = "${WORKSPACE}"
         echo 'PGP or Windows Signature Signing'
 
         if (!fileExists("$WORKSPACE/sign.sh")) {
-            git url: 'https://github.com/opensearch-project/opensearch-build.git', branch: 'main'
+            dir('opensearch-build') {
+                git url: 'https://github.com/opensearch-project/opensearch-build.git', branch: 'main'
+                workdir = "${WORKSPACE}/opensearch-build"
+            }
         }
 
         importPGPKey()
@@ -130,7 +134,7 @@ void call(Map args = [:]) {
                    export PROFILE_IDENTIFIER=$SIGNER_WINDOWS_PROFILE_IDENTIFIER
                    export PLATFORM_IDENTIFIER=$SIGNER_WINDOWS_PLATFORM_IDENTIFIER
 
-                   $WORKSPACE/sign.sh ${arguments}
+                   ${workdir}/sign.sh ${arguments}
                """
                 }
         }
@@ -148,7 +152,7 @@ void call(Map args = [:]) {
                    export UNSIGNED_BUCKET=$SIGNER_CLIENT_UNSIGNED_BUCKET
                    export SIGNED_BUCKET=$SIGNER_CLIENT_SIGNED_BUCKET
 
-                   $WORKSPACE/sign.sh ${arguments}
+                   ${workdir}/sign.sh ${arguments}
                """
                 }
         }
