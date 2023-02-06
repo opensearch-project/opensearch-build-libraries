@@ -13,8 +13,8 @@
 @param Map[source] <required> - Path to yml or artifact file.
 @param Map[destination] <required> - Artifact type in the manifest, [type] is required for signing yml.
 @param Map[signingPlatform] <optional> - The distribution platform for signing. Defaults to linux
-@param Map[sigtype] <optional> - signature type. Defaults to '.sig'
-@param Map[overwrite]<optional> - Allow output artifacts to overwrite the existing artifacts. Defaults to false
+@param Map[sigType] <optional> - signature type. Defaults to '.sig'
+@param Map[sigOverwrite]<optional> - Allow output artifacts to overwrite the existing artifacts. Defaults to false
  */
 void call(Map args = [:]) {
     lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
@@ -22,8 +22,8 @@ void call(Map args = [:]) {
     signArtifacts(
             artifactPath: args.source,
             platform: args.signingPlatform ?: 'linux',
-            sigtype: args.sigtype ?: '.sig',
-            overwrite: args.overwrite ?: false
+            sigtype: args.sigType ?: '.sig',
+            overwrite: args.sigOverwrite ?: false
             )
     println('Uploading the artifacts')
     withCredentials([

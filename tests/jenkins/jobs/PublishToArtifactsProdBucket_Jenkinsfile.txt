@@ -3,7 +3,7 @@
          PublishToArtifactsProdBucket_Jenkinsfile.echo(Executing on agent [label:none])
          PublishToArtifactsProdBucket_Jenkinsfile.stage(publishToartifactsDotOrg, groovy.lang.Closure)
             PublishToArtifactsProdBucket_Jenkinsfile.script(groovy.lang.Closure)
-               PublishToArtifactsProdBucket_Jenkinsfile.publishToArtifactsProdBucket({assumedRoleName=test-role, source=the-windows-msi.msi, destination=msi/, signingPlatform=windows, sigtype=null, overwrite=true})
+               PublishToArtifactsProdBucket_Jenkinsfile.publishToArtifactsProdBucket({assumedRoleName=test-role, source=the-windows-msi.msi, destination=msi/, signingPlatform=windows, sigType=null, sigOverwrite=true})
                   publishToArtifactsProdBucket.legacySCM(groovy.lang.Closure)
                   publishToArtifactsProdBucket.library({identifier=jenkins@main, retriever=null})
                   publishToArtifactsProdBucket.signArtifacts({artifactPath=the-windows-msi.msi, platform=windows, sigtype=null, overwrite=true})

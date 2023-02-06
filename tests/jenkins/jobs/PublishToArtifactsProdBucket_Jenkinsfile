@@ -18,8 +18,8 @@ pipeline {
                             source: 'the-windows-msi.msi',
                             destination: 'msi/',
                             signingPlatform: 'windows',
-                            sigtype: 'null',
-                            overwrite: true
+                            sigType: 'null',
+                            sigOverwrite: true
                         )
 
                         publishToArtifactsProdBucket(
