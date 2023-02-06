@@ -1,0 +1,69 @@
+   PublishToArtifactsProdBucket_Jenkinsfile.run()
+      PublishToArtifactsProdBucket_Jenkinsfile.pipeline(groovy.lang.Closure)
+         PublishToArtifactsProdBucket_Jenkinsfile.echo(Executing on agent [label:none])
+         PublishToArtifactsProdBucket_Jenkinsfile.stage(publishToartifactsDotOrg, groovy.lang.Closure)
+            PublishToArtifactsProdBucket_Jenkinsfile.script(groovy.lang.Closure)
+               PublishToArtifactsProdBucket_Jenkinsfile.publishToArtifactsProdBucket({assumedRoleName=test-role, source=the-windows-msi.msi, destination=msi/, signingPlatform=windows, sigType=null, sigOverwrite=true})
+                  publishToArtifactsProdBucket.legacySCM(groovy.lang.Closure)
+                  publishToArtifactsProdBucket.library({identifier=jenkins@main, retriever=null})
+                  publishToArtifactsProdBucket.signArtifacts({artifactPath=the-windows-msi.msi, platform=windows, sigtype=null, overwrite=true})
+                     signArtifacts.echo(PGP or Windows Signature Signing)
+                     signArtifacts.fileExists(/tmp/workspace/sign.sh)
+                     signArtifacts.dir(opensearch-build, groovy.lang.Closure)
+                        signArtifacts.git({url=https://github.com/opensearch-project/opensearch-build.git, branch=main})
+                     signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import -)
+                     signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
+                     signArtifacts.string({credentialsId=jenkins-signer-windows-role, variable=SIGNER_WINDOWS_ROLE})
+                     signArtifacts.string({credentialsId=jenkins-signer-windows-external-id, variable=SIGNER_WINDOWS_EXTERNAL_ID})
+                     signArtifacts.string({credentialsId=jenkins-signer-windows-unsigned-bucket, variable=SIGNER_WINDOWS_UNSIGNED_BUCKET})
+                     signArtifacts.string({credentialsId=jenkins-signer-windows-signed-bucket, variable=SIGNER_WINDOWS_SIGNED_BUCKET})
+                     signArtifacts.string({credentialsId=jenkins-signer-windows-profile-identifier, variable=SIGNER_WINDOWS_PROFILE_IDENTIFIER})
+                     signArtifacts.string({credentialsId=jenkins-signer-windows-platform-identifier, variable=SIGNER_WINDOWS_PLATFORM_IDENTIFIER})
+                     signArtifacts.withCredentials([[GITHUB_USER, GITHUB_TOKEN], SIGNER_WINDOWS_ROLE, SIGNER_WINDOWS_EXTERNAL_ID, SIGNER_WINDOWS_UNSIGNED_BUCKET, SIGNER_WINDOWS_SIGNED_BUCKET, SIGNER_WINDOWS_PROFILE_IDENTIFIER, SIGNER_WINDOWS_PLATFORM_IDENTIFIER], groovy.lang.Closure)
+                        signArtifacts.sh(
+                   #!/bin/bash
+                   set +x
+                   export ROLE=SIGNER_WINDOWS_ROLE
+                   export EXTERNAL_ID=SIGNER_WINDOWS_EXTERNAL_ID
+                   export UNSIGNED_BUCKET=SIGNER_WINDOWS_UNSIGNED_BUCKET
+                   export SIGNED_BUCKET=SIGNER_WINDOWS_SIGNED_BUCKET
+                   export PROFILE_IDENTIFIER=SIGNER_WINDOWS_PROFILE_IDENTIFIER
+                   export PLATFORM_IDENTIFIER=SIGNER_WINDOWS_PLATFORM_IDENTIFIER
+
+                   /tmp/workspace/opensearch-build/sign.sh the-windows-msi.msi --platform windows --sigtype null --overwrite 
+               )
+                  publishToArtifactsProdBucket.string({credentialsId=jenkins-aws-production-account, variable=AWS_ACCOUNT_ARTIFACT})
+                  publishToArtifactsProdBucket.string({credentialsId=jenkins-artifact-production-bucket-name, variable=ARTIFACT_PRODUCTION_BUCKET_NAME})
+                  publishToArtifactsProdBucket.withCredentials([AWS_ACCOUNT_ARTIFACT, ARTIFACT_PRODUCTION_BUCKET_NAME], groovy.lang.Closure)
+                     publishToArtifactsProdBucket.withAWS({role=test-role, roleAccount=AWS_ACCOUNT_ARTIFACT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
+                        publishToArtifactsProdBucket.s3Upload({file=the-windows-msi.msi, bucket=ARTIFACT_PRODUCTION_BUCKET_NAME, path=msi/})
+               PublishToArtifactsProdBucket_Jenkinsfile.publishToArtifactsProdBucket({assumedRoleName=test-role-2, source=reporting-cli-2.3.0.tg.gz, destination=reporting-cli/})
+                  publishToArtifactsProdBucket.legacySCM(groovy.lang.Closure)
+                  publishToArtifactsProdBucket.library({identifier=jenkins@main, retriever=null})
+                  publishToArtifactsProdBucket.signArtifacts({artifactPath=reporting-cli-2.3.0.tg.gz, platform=linux, sigtype=.sig, overwrite=false})
+                     signArtifacts.echo(PGP or Windows Signature Signing)
+                     signArtifacts.fileExists(/tmp/workspace/sign.sh)
+                     signArtifacts.dir(opensearch-build, groovy.lang.Closure)
+                        signArtifacts.git({url=https://github.com/opensearch-project/opensearch-build.git, branch=main})
+                     signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import -)
+                     signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
+                     signArtifacts.string({credentialsId=jenkins-signer-client-role, variable=SIGNER_CLIENT_ROLE})
+                     signArtifacts.string({credentialsId=jenkins-signer-client-external-id, variable=SIGNER_CLIENT_EXTERNAL_ID})
+                     signArtifacts.string({credentialsId=jenkins-signer-client-unsigned-bucket, variable=SIGNER_CLIENT_UNSIGNED_BUCKET})
+                     signArtifacts.string({credentialsId=jenkins-signer-client-signed-bucket, variable=SIGNER_CLIENT_SIGNED_BUCKET})
+                     signArtifacts.withCredentials([[GITHUB_USER, GITHUB_TOKEN], SIGNER_CLIENT_ROLE, SIGNER_CLIENT_EXTERNAL_ID, SIGNER_CLIENT_UNSIGNED_BUCKET, SIGNER_CLIENT_SIGNED_BUCKET], groovy.lang.Closure)
+                        signArtifacts.sh(
+                   #!/bin/bash
+                   set +x
+                   export ROLE=SIGNER_CLIENT_ROLE
+                   export EXTERNAL_ID=SIGNER_CLIENT_EXTERNAL_ID
+                   export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET
+                   export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET
+
+                   /tmp/workspace/opensearch-build/sign.sh reporting-cli-2.3.0.tg.gz --platform linux --sigtype .sig
+               )
+                  publishToArtifactsProdBucket.string({credentialsId=jenkins-aws-production-account, variable=AWS_ACCOUNT_ARTIFACT})
+                  publishToArtifactsProdBucket.string({credentialsId=jenkins-artifact-production-bucket-name, variable=ARTIFACT_PRODUCTION_BUCKET_NAME})
+                  publishToArtifactsProdBucket.withCredentials([AWS_ACCOUNT_ARTIFACT, ARTIFACT_PRODUCTION_BUCKET_NAME], groovy.lang.Closure)
+                     publishToArtifactsProdBucket.withAWS({role=test-role-2, roleAccount=AWS_ACCOUNT_ARTIFACT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
+                        publishToArtifactsProdBucket.s3Upload({file=reporting-cli-2.3.0.tg.gz, bucket=ARTIFACT_PRODUCTION_BUCKET_NAME, path=reporting-cli/})
