@@ -172,7 +172,6 @@ void call(Map args = [:]) {
                         echo "Start Signing Apt"
                         rm -rf ~/.aptly
                         mkdir \$ARTIFACT_PATH/base
-                        mkdir \$ARTIFACT_PATH/publish 
                         find \$ARTIFACT_PATH -type f -name "*.deb" | xargs -I {} mv -v {} \$ARTIFACT_PATH/base
                         aptly repo create -distribution=stable -component=main ${jobname}
                         aptly repo add ${jobname} \$ARTIFACT_PATH/base
@@ -180,8 +179,9 @@ void call(Map args = [:]) {
                         aptly snapshot create ${jobname}-${repoVersion} from repo ${jobname}
                         aptly publish snapshot -batch=true -passphrase-file=passphrase ${jobname}-${repoVersion}
                         rm -v passphrase
-                        cp -rvp ~/.aptly/public/* \$ARTIFACT_PATH/publish
-                        ls \$ARTIFACT_PATH/publish
+                        rm -rf \$ARTIFACT_PATH/*
+                        cp -rvp ~/.aptly/public/* \$ARTIFACT_PATH/
+                        ls \$ARTIFACT_PATH
 
                     """
                 }
@@ -190,7 +190,7 @@ void call(Map args = [:]) {
 
         withAWS(role: "${ARTIFACT_PROMOTION_ROLE_NAME}", roleAccount: "${AWS_ACCOUNT_ARTIFACT}", duration: 900, roleSessionName: 'jenkins-session') {
             println("Pushing Prod ${repoType}")
-            sh("aws s3 sync ${artifactPath}/publish s3://${ARTIFACT_PRODUCTION_BUCKET_NAME}/builds/testapt/${RepoProdPath}/ --no-progress")
+            sh("aws s3 sync ${artifactPath}/ s3://${ARTIFACT_PRODUCTION_BUCKET_NAME}/${RepoProdPath}/ --no-progress")
         }
     }
 }

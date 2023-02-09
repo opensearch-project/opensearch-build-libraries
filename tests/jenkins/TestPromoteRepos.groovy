@@ -13,7 +13,7 @@ import org.junit.*
 import java.util.*
 import java.nio.file.*
 
-class TestPromoteYumRepos extends BuildPipelineTest {
+class TestPromoteRepos extends BuildPipelineTest {
 
     @Override
     @Before
@@ -43,6 +43,6 @@ class TestPromoteYumRepos extends BuildPipelineTest {
 
     @Test
     public void testDefault() {
-        super.testPipeline("tests/jenkins/jobs/PromoteYumRepos_Jenkinsfile")
+        super.testPipeline("tests/jenkins/jobs/PromoteRepos_Jenkinsfile")
     }
 }
