@@ -12,6 +12,12 @@ void call(Map args = [:]) {
     String jobName = args.jobName ?: 'distribution-build-opensearch'
     def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.buildManifest))
 
+    echo "Start integTest for distribution type: " + buildManifest.getDistribution()
+
+    javaVersion = (jobName.equals('distribution-build-opensearch')) ? detectTestDockerAgent().javaVersion : 'None'
+    String javaHomeCommand = (jobName.equals('distribution-build-opensearch')) ? "env JAVA_HOME=/opt/java/${javaVersion}" : ''
+    echo "Possible Java Home: ${javaHomeCommand}"
+
     String buildId = buildManifest.build.id
     echo "Build Id: ${buildId}"
 
@@ -25,14 +31,31 @@ void call(Map args = [:]) {
     String component = args.componentName
     echo "Component: ${component}"
 
-    sh([
+    String switchUser = args.switchUserNonRoot
+    echo "Switch User to Non-Root (uid=1000): ${switchUser} "
+
+    String currentDir = sh (
+        script: 'pwd',
+        returnStdout: true
+    ).trim()
+    String switchCommandStart = switchUser.equals('true') ? "su - `id -un 1000` -c \" cd ${currentDir} &&" : ''
+    String switchCommandEnd = switchUser.equals('true') ? '"' : ''
+
+    String testCommand = 
+    [
+        switchCommandStart,
+        javaHomeCommand,
         './test.sh',
         'integ-test',
         "${args.testManifest}",
         "--component ${component}",
         "--test-run-id ${env.BUILD_NUMBER}",
         "--paths ${paths}",
-    ].join(' '))
+        switchCommandEnd,
+    ].join(' ')
+
+    echo "Run command: " + testCommand
+    sh(testCommand)
 }
 
 String generatePaths(buildManifest, artifactRootUrl, localPath) {
