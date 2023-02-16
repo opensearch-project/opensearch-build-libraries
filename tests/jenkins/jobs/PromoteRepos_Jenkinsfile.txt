@@ -3,7 +3,7 @@
          PromoteRepos_Jenkinsfile.echo(Executing on agent [label:none])
          PromoteRepos_Jenkinsfile.stage(promote yum repo, groovy.lang.Closure)
             PromoteRepos_Jenkinsfile.script(groovy.lang.Closure)
-               PromoteRepos_Jenkinsfile.promoteRepos({distributionRepoType=yum, buildNumber=123, jobName=opensearch, manifest=tests/data/opensearch-1.3.0.yml})
+               PromoteRepos_Jenkinsfile.promoteRepos({jobName=opensearch, buildNumber=123, distributionRepoType=yum, manifest=tests/data/opensearch-1.3.0.yml})
                   promoteRepos.legacySCM(groovy.lang.Closure)
                   promoteRepos.library({identifier=jenkins@main, retriever=null})
                   promoteRepos.readYaml({file=tests/data/opensearch-1.3.0.yml})
@@ -46,7 +46,7 @@
                 echo "Complete metadata update, awaiting signing repomd.xml"
                 cd -
             )
-                     promoteRepos.signArtifacts({artifactPath=/tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum/repodata/repomd.pom, sigtype=.sig, platform=linux})
+                     promoteRepos.signArtifacts({artifactPath=/tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum/repodata/repomd.pom, sigtype=.asc, platform=linux})
                         signArtifacts.echo(PGP or Windows Signature Signing)
                         signArtifacts.fileExists(/tmp/workspace/sign.sh)
                         signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import -)
@@ -64,7 +64,7 @@
                    export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET
                    export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET
 
-                   /tmp/workspace/sign.sh /tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum/repodata/repomd.pom --sigtype .sig --platform linux
+                   /tmp/workspace/sign.sh /tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum/repodata/repomd.pom --sigtype .asc --platform linux
                )
                      promoteRepos.sh(
                 set -e
@@ -75,12 +75,7 @@
                 ls -l
     
                 mv -v repomd.pom repomd.xml
-                mv -v repomd.pom.sig repomd.xml.sig
-    
-                # This step is required as yum only accept .asc and signing workflow only support .sig
-                cat repomd.xml.sig | gpg --enarmor | sed 's@ARMORED FILE@SIGNATURE@g' > repomd.xml.asc
-    
-                rm -vf repomd.xml.sig
+                mv -v repomd.pom.asc repomd.xml.asc
     
                 ls -l
     
@@ -91,7 +86,7 @@
                         promoteRepos.sh(aws s3 sync /tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum/ s3://ARTIFACT_PRODUCTION_BUCKET_NAME/releases/bundle/opensearch/1.x/yum/ --no-progress)
          PromoteRepos_Jenkinsfile.stage(promote apt repo, groovy.lang.Closure)
             PromoteRepos_Jenkinsfile.script(groovy.lang.Closure)
-               PromoteRepos_Jenkinsfile.promoteRepos({distributionRepoType=apt, buildNumber=123, jobName=opensearch, manifest=tests/data/opensearch-1.3.0.yml})
+               PromoteRepos_Jenkinsfile.promoteRepos({jobName=opensearch, buildNumber=123, distributionRepoType=apt, manifest=tests/data/opensearch-1.3.0.yml})
                   promoteRepos.legacySCM(groovy.lang.Closure)
                   promoteRepos.library({identifier=jenkins@main, retriever=null})
                   promoteRepos.readYaml({file=tests/data/opensearch-1.3.0.yml})
@@ -115,42 +110,44 @@
             ls -l
         )
                      promoteRepos.println(Apt Repo Starts)
+                     promoteRepos.sh(#!/bin/bash
+                set -e
+                set +x
+
+                ARTIFACT_PATH="/tmp/workspace/artifacts/releases/bundle/opensearch/1.x/apt"
+
+                echo "------------------------------------------------------------------------"
+                echo "Check Utility Versions"
+                gpg_version_requirement="2.2.0"
+                aptly_version_requirement="1.5.0"
+
+                gpg_version_check=`gpg --version | head -n 1 | grep -oE '[0-9.]+'`
+                gpg_version_check_final=`echo $gpg_version_check $gpg_version_requirement | tr ' ' '
+' | sort -V | head -n 1`
+                aptly_version_check=`aptly version | head -n 1 | grep -oE '[0-9.]+'`
+                aptly_version_check_final=`echo $aptly_version_check $aptly_version_requirement | tr ' ' '
+' | sort -V | head -n 1`
+               
+                echo -e "gpg_version_requirement gpg_version_check"
+                echo -e "$gpg_version_requirement $gpg_version_check"
+                echo -e "aptly_version_requirement aptly_version_check"
+                echo -e "$aptly_version_requirement $aptly_version_check"
+
+                if [[ $gpg_version_requirement = $gpg_version_check_final ]] && [[ $aptly_version_requirement = $aptly_version_check_final ]]; then
+                    echo "Utility version is equal or greater than set limit, continue."
+                else
+                    echo "Utility version is lower than set limit, exit 1"
+                    exit 1
+                fi
+
+            )
                      promoteRepos.string({credentialsId=jenkins-rpm-signing-account-number, variable=RPM_SIGNING_ACCOUNT_NUMBER})
                      promoteRepos.string({credentialsId=jenkins-rpm-signing-passphrase-secrets-arn, variable=RPM_SIGNING_PASSPHRASE_SECRETS_ARN})
                      promoteRepos.string({credentialsId=jenkins-rpm-signing-secret-key-secrets-arn, variable=RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN})
                      promoteRepos.string({credentialsId=jenkins-rpm-signing-key-id, variable=RPM_SIGNING_KEY_ID})
                      promoteRepos.withCredentials([RPM_SIGNING_ACCOUNT_NUMBER, RPM_SIGNING_PASSPHRASE_SECRETS_ARN, RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN, RPM_SIGNING_KEY_ID], groovy.lang.Closure)
-                        promoteRepos.echo(APT Sign Repo)
                         promoteRepos.withAWS({role=jenkins-prod-rpm-signing-assume-role, roleAccount=RPM_SIGNING_ACCOUNT_NUMBER, duration=900, roleSessionName=jenkins-signing-session}, groovy.lang.Closure)
                            promoteRepos.sh(#!/bin/bash
-                        set -e
-                        set +x
-
-                        ARTIFACT_PATH="/tmp/workspace/artifacts/releases/bundle/opensearch/1.x/apt"
-
-                        echo "------------------------------------------------------------------------"
-                        echo "Check Utility Versions"
-                        gpg_version_requirement="2.2.0"
-                        aptly_version_requirement="1.5.0"
-
-                        gpg_version_check=`gpg --version | head -n 1 | grep -oE '[0-9.]+'`
-                        gpg_version_check_final=`echo $gpg_version_check $gpg_version_requirement | tr ' ' '
-' | sort -V | head -n 1`
-                        aptly_version_check=`aptly version | head -n 1 | grep -oE '[0-9.]+'`
-                        aptly_version_check_final=`echo $aptly_version_check $aptly_version_requirement | tr ' ' '
-' | sort -V | head -n 1`
-                       
-                        echo -e "gpg_version_requirement gpg_version_check"
-                        echo -e "$gpg_version_requirement $gpg_version_check"
-                        echo -e "aptly_version_requirement aptly_version_check"
-                        echo -e "$aptly_version_requirement $aptly_version_check"
-
-                        if [[ $gpg_version_requirement = $gpg_version_check_final ]] && [[ $aptly_version_requirement = $aptly_version_check_final ]]; then
-                            echo "Utility version is equal or greater than set limit, continue."
-                        else
-                            echo "Utility version is lower than set limit, exit 1"
-                            exit 1
-                        fi
 
                         export GPG_TTY=`tty`
 
@@ -160,21 +157,29 @@
                         aws secretsmanager get-secret-value --region us-west-2 --secret-id "RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN" | jq -r .SecretBinary | base64 --decode | gpg --quiet --import --pinentry-mode loopback --passphrase-file passphrase -
 
                         echo "------------------------------------------------------------------------"
-                        echo "Start Signing Apt"
-                        rm -rf ~/.aptly
-                        mkdir $ARTIFACT_PATH/base
-                        find $ARTIFACT_PATH -type f -name "*.deb" | xargs -I {} mv -v {} $ARTIFACT_PATH/base
-                        aptly repo create -distribution=stable -component=main opensearch
-                        aptly repo add opensearch $ARTIFACT_PATH/base
-                        aptly repo show -with-packages opensearch
-                        aptly snapshot create opensearch-1.x from repo opensearch
-                        aptly publish snapshot -batch=true -passphrase-file=passphrase opensearch-1.x
-                        rm -v passphrase
-                        rm -rf $ARTIFACT_PATH/*
-                        cp -rvp ~/.aptly/public/* $ARTIFACT_PATH/
-                        ls $ARTIFACT_PATH
-
                     )
+                        promoteRepos.sh(#!/bin/bash
+
+                     echo "Start Signing Apt"
+                     rm -rf ~/.aptly
+                     mkdir $ARTIFACT_PATH/base
+                     find $ARTIFACT_PATH -type f -name "*.deb" | xargs -I {} mv -v {} $ARTIFACT_PATH/base
+                     aptly repo create -distribution=stable -component=main opensearch
+                     aptly repo add opensearch $ARTIFACT_PATH/base
+                     aptly repo show -with-packages opensearch
+                     aptly snapshot create opensearch-1.x from repo opensearch
+                     aptly publish snapshot -batch=true -passphrase-file=passphrase opensearch-1.x
+                     echo "------------------------------------------------------------------------"
+                     echo "Clean up gpg"
+                     gpg --batch --yes --delete-secret-keys RPM_SIGNING_KEY_ID
+                     gpg --batch --yes --delete-keys RPM_SIGNING_KEY_ID
+                     rm -v passphrase
+                     echo "------------------------------------------------------------------------"
+                     rm -rf $ARTIFACT_PATH/*
+                     cp -rvp ~/.aptly/public/* $ARTIFACT_PATH/
+                     ls $ARTIFACT_PATH
+
+                )
                      promoteRepos.withAWS({role=ARTIFACT_PROMOTION_ROLE_NAME, roleAccount=AWS_ACCOUNT_ARTIFACT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
                         promoteRepos.println(Pushing Prod apt)
                         promoteRepos.sh(aws s3 sync /tmp/workspace/artifacts/releases/bundle/opensearch/1.x/apt/ s3://ARTIFACT_PRODUCTION_BUCKET_NAME/releases/bundle/opensearch/1.x/apt/ --no-progress)

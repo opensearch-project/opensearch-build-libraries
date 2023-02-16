@@ -7,6 +7,15 @@
  * compatible open source license.
  */
 
+
+ /**
+ * Library to sign and promote repositories to artifacts.opensearch.org
+@param Map[jobName] <required> - Name of the distribution build workflow on Jenkins that build the artifacts
+@param Map[buildNumber] <required> - The build number of the artifacts in above build workflow
+@param Map[distributionRepoType] <required> - distribution repository type, e.g. yum / apt
+@param Map[manifest] <optional> - input manifest of the corresponding OpenSearch/OpenSearch-Dashboards product version (e.g. 2.0.0)
+ */
+
 void call(Map args = [:]) {
     def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
 
@@ -95,7 +104,7 @@ void call(Map args = [:]) {
 
             signArtifacts(
                 artifactPath: "${artifactPath}/repodata/repomd.pom",
-                sigtype: '.sig',
+                sigtype: '.asc',
                 platform: 'linux'
             )
 
@@ -108,12 +117,7 @@ void call(Map args = [:]) {
                 ls -l
     
                 mv -v repomd.pom repomd.xml
-                mv -v repomd.pom.sig repomd.xml.sig
-    
-                # This step is required as yum only accept .asc and signing workflow only support .sig
-                cat repomd.xml.sig | gpg --enarmor | sed 's@ARMORED FILE@SIGNATURE@g' > repomd.xml.asc
-    
-                rm -vf repomd.xml.sig
+                mv -v repomd.pom.asc repomd.xml.asc
     
                 ls -l
     
@@ -125,41 +129,43 @@ void call(Map args = [:]) {
 
             println("Apt Repo Starts")
 
+            sh """#!/bin/bash
+                set -e
+                set +x
+
+                ARTIFACT_PATH="${artifactPath}"
+
+                echo "------------------------------------------------------------------------"
+                echo "Check Utility Versions"
+                gpg_version_requirement="2.2.0"
+                aptly_version_requirement="1.5.0"
+
+                gpg_version_check=`gpg --version | head -n 1 | grep -oE '[0-9.]+'`
+                gpg_version_check_final=`echo \$gpg_version_check \$gpg_version_requirement | tr ' ' '\n' | sort -V | head -n 1`
+                aptly_version_check=`aptly version | head -n 1 | grep -oE '[0-9.]+'`
+                aptly_version_check_final=`echo \$aptly_version_check \$aptly_version_requirement | tr ' ' '\n' | sort -V | head -n 1`
+               
+                echo -e "gpg_version_requirement gpg_version_check"
+                echo -e "\$gpg_version_requirement \$gpg_version_check"
+                echo -e "aptly_version_requirement aptly_version_check"
+                echo -e "\$aptly_version_requirement \$aptly_version_check"
+
+                if [[ \$gpg_version_requirement = \$gpg_version_check_final ]] && [[ \$aptly_version_requirement = \$aptly_version_check_final ]]; then
+                    echo "Utility version is equal or greater than set limit, continue."
+                else
+                    echo "Utility version is lower than set limit, exit 1"
+                    exit 1
+                fi
+
+            """
+
             withCredentials([
             string(credentialsId: 'jenkins-rpm-signing-account-number', variable: 'RPM_SIGNING_ACCOUNT_NUMBER'),
             string(credentialsId: 'jenkins-rpm-signing-passphrase-secrets-arn', variable: 'RPM_SIGNING_PASSPHRASE_SECRETS_ARN'),
             string(credentialsId: 'jenkins-rpm-signing-secret-key-secrets-arn', variable: 'RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN'),
             string(credentialsId: 'jenkins-rpm-signing-key-id', variable: 'RPM_SIGNING_KEY_ID')]) {
-                echo 'APT Sign Repo'
-
                 withAWS(role: 'jenkins-prod-rpm-signing-assume-role', roleAccount: "${RPM_SIGNING_ACCOUNT_NUMBER}", duration: 900, roleSessionName: 'jenkins-signing-session') {
                     sh """#!/bin/bash
-                        set -e
-                        set +x
-
-                        ARTIFACT_PATH="${artifactPath}"
-
-                        echo "------------------------------------------------------------------------"
-                        echo "Check Utility Versions"
-                        gpg_version_requirement="2.2.0"
-                        aptly_version_requirement="1.5.0"
-
-                        gpg_version_check=`gpg --version | head -n 1 | grep -oE '[0-9.]+'`
-                        gpg_version_check_final=`echo \$gpg_version_check \$gpg_version_requirement | tr ' ' '\n' | sort -V | head -n 1`
-                        aptly_version_check=`aptly version | head -n 1 | grep -oE '[0-9.]+'`
-                        aptly_version_check_final=`echo \$aptly_version_check \$aptly_version_requirement | tr ' ' '\n' | sort -V | head -n 1`
-                       
-                        echo -e "gpg_version_requirement gpg_version_check"
-                        echo -e "\$gpg_version_requirement \$gpg_version_check"
-                        echo -e "aptly_version_requirement aptly_version_check"
-                        echo -e "\$aptly_version_requirement \$aptly_version_check"
-
-                        if [[ \$gpg_version_requirement = \$gpg_version_check_final ]] && [[ \$aptly_version_requirement = \$aptly_version_check_final ]]; then
-                            echo "Utility version is equal or greater than set limit, continue."
-                        else
-                            echo "Utility version is lower than set limit, exit 1"
-                            exit 1
-                        fi
 
                         export GPG_TTY=`tty`
 
@@ -169,22 +175,31 @@ void call(Map args = [:]) {
                         aws secretsmanager get-secret-value --region us-west-2 --secret-id "${RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN}" | jq -r .SecretBinary | base64 --decode | gpg --quiet --import --pinentry-mode loopback --passphrase-file passphrase -
 
                         echo "------------------------------------------------------------------------"
-                        echo "Start Signing Apt"
-                        rm -rf ~/.aptly
-                        mkdir \$ARTIFACT_PATH/base
-                        find \$ARTIFACT_PATH -type f -name "*.deb" | xargs -I {} mv -v {} \$ARTIFACT_PATH/base
-                        aptly repo create -distribution=stable -component=main ${jobname}
-                        aptly repo add ${jobname} \$ARTIFACT_PATH/base
-                        aptly repo show -with-packages ${jobname}
-                        aptly snapshot create ${jobname}-${repoVersion} from repo ${jobname}
-                        aptly publish snapshot -batch=true -passphrase-file=passphrase ${jobname}-${repoVersion}
-                        rm -v passphrase
-                        rm -rf \$ARTIFACT_PATH/*
-                        cp -rvp ~/.aptly/public/* \$ARTIFACT_PATH/
-                        ls \$ARTIFACT_PATH
-
                     """
                 }
+
+                sh """#!/bin/bash
+
+                     echo "Start Signing Apt"
+                     rm -rf ~/.aptly
+                     mkdir \$ARTIFACT_PATH/base
+                     find \$ARTIFACT_PATH -type f -name "*.deb" | xargs -I {} mv -v {} \$ARTIFACT_PATH/base
+                     aptly repo create -distribution=stable -component=main ${jobname}
+                     aptly repo add ${jobname} \$ARTIFACT_PATH/base
+                     aptly repo show -with-packages ${jobname}
+                     aptly snapshot create ${jobname}-${repoVersion} from repo ${jobname}
+                     aptly publish snapshot -batch=true -passphrase-file=passphrase ${jobname}-${repoVersion}
+                     echo "------------------------------------------------------------------------"
+                     echo "Clean up gpg"
+                     gpg --batch --yes --delete-secret-keys ${RPM_SIGNING_KEY_ID}
+                     gpg --batch --yes --delete-keys ${RPM_SIGNING_KEY_ID}
+                     rm -v passphrase
+                     echo "------------------------------------------------------------------------"
+                     rm -rf \$ARTIFACT_PATH/*
+                     cp -rvp ~/.aptly/public/* \$ARTIFACT_PATH/
+                     ls \$ARTIFACT_PATH
+
+                """
             }
         }
 
