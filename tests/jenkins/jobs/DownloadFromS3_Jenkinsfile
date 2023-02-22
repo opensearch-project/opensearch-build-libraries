@@ -14,10 +14,21 @@ pipeline {
             steps {
                 script {
                     downloadFromS3(
-                        destPath: '/tmp/src/path',
-                        bucket: 'dummy_bucket',
-                        path: '/download/path',
-                        force: true
+                        assumedRoleName: 'tmp-role',
+                        roleAccountNumberCred: 'role-credential-id',
+                        downloadPath: '/download/path',
+                        bucketName: 'dummy_bucket',
+                        localPath: "/tmp"
+                    )
+
+                    downloadFromS3(
+                        assumedRoleName: 'tmp-role',
+                        roleAccountNumberCred: 'role-credential-id',
+                        downloadPath: '/download/path',
+                        bucketName: 'dummy_bucket',
+                        localPath: "/tmp",
+                        force: true,
+                        region: 'us-west-2'
                     )
                 }
             }
