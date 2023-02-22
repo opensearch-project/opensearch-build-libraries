@@ -26,7 +26,7 @@ void call(Map args = [:]) {
             echo 'RPM Add Sign'
 
             withAWS(role: 'jenkins-prod-rpm-signing-assume-role', roleAccount: "${RPM_SIGNING_ACCOUNT_NUMBER}", duration: 900, roleSessionName: 'jenkins-signing-session') {
-                    sh """
+                    sh """#!/bin/bash
                         set -e
                         set +x
 

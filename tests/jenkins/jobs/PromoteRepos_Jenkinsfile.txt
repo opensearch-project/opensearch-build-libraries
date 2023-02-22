@@ -1,0 +1,185 @@
+   PromoteRepos_Jenkinsfile.run()
+      PromoteRepos_Jenkinsfile.pipeline(groovy.lang.Closure)
+         PromoteRepos_Jenkinsfile.echo(Executing on agent [label:none])
+         PromoteRepos_Jenkinsfile.stage(promote yum repo, groovy.lang.Closure)
+            PromoteRepos_Jenkinsfile.script(groovy.lang.Closure)
+               PromoteRepos_Jenkinsfile.promoteRepos({jobName=opensearch, buildNumber=123, distributionRepoType=yum, manifest=tests/data/opensearch-1.3.0.yml})
+                  promoteRepos.legacySCM(groovy.lang.Closure)
+                  promoteRepos.library({identifier=jenkins@main, retriever=null})
+                  promoteRepos.readYaml({file=tests/data/opensearch-1.3.0.yml})
+                  InputManifest.asBoolean()
+                  promoteRepos.string({credentialsId=jenkins-artifact-promotion-role, variable=ARTIFACT_PROMOTION_ROLE_NAME})
+                  promoteRepos.string({credentialsId=jenkins-aws-production-account, variable=AWS_ACCOUNT_ARTIFACT})
+                  promoteRepos.string({credentialsId=jenkins-artifact-production-bucket-name, variable=ARTIFACT_PRODUCTION_BUCKET_NAME})
+                  promoteRepos.withCredentials([ARTIFACT_PROMOTION_ROLE_NAME, AWS_ACCOUNT_ARTIFACT, ARTIFACT_PRODUCTION_BUCKET_NAME], groovy.lang.Closure)
+                     promoteRepos.withAWS({role=ARTIFACT_PROMOTION_ROLE_NAME, roleAccount=AWS_ACCOUNT_ARTIFACT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
+                        promoteRepos.println(Pulling Prod yum)
+                        promoteRepos.sh(aws s3 sync s3://ARTIFACT_PRODUCTION_BUCKET_NAME/releases/bundle/opensearch/1.x/yum/ /tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum/ --no-progress)
+                     promoteRepos.sh(
+            set -e
+            set +x
+
+            echo "Pulling 1.3.0 rpm"
+            cd /tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum
+            curl -SLO https://ci.opensearch.org/dbc/opensearch/1.3.0/123/linux/x64/rpm/dist/opensearch/opensearch-1.3.0-linux-x64.rpm
+            curl -SLO https://ci.opensearch.org/dbc/opensearch/1.3.0/123/linux/arm64/rpm/dist/opensearch/opensearch-1.3.0-linux-arm64.rpm
+
+            ls -l
+        )
+                     promoteRepos.println(Yum Repo Starts)
+                     promoteRepos.sh(
+                set -e
+                set +x
+
+                cd /tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum
+                rm -vf repodata/repomd.xml.asc
+    
+                echo "Update repo metadata"
+                createrepo --update .
+    
+                # Rename .xml to .pom for signing
+                # Please do not add .xml to signer filter
+                # As maven have many .xml and we do not want to sign them
+                # This is an outlier case for yum repo only
+                mv -v repodata/repomd.xml repodata/repomd.pom
+    
+                echo "Complete metadata update, awaiting signing repomd.xml"
+                cd -
+            )
+                     promoteRepos.signArtifacts({artifactPath=/tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum/repodata/repomd.pom, sigtype=.asc, platform=linux})
+                        signArtifacts.echo(PGP or Windows Signature Signing)
+                        signArtifacts.fileExists(/tmp/workspace/sign.sh)
+                        signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import -)
+                        signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
+                        signArtifacts.string({credentialsId=jenkins-signer-client-role, variable=SIGNER_CLIENT_ROLE})
+                        signArtifacts.string({credentialsId=jenkins-signer-client-external-id, variable=SIGNER_CLIENT_EXTERNAL_ID})
+                        signArtifacts.string({credentialsId=jenkins-signer-client-unsigned-bucket, variable=SIGNER_CLIENT_UNSIGNED_BUCKET})
+                        signArtifacts.string({credentialsId=jenkins-signer-client-signed-bucket, variable=SIGNER_CLIENT_SIGNED_BUCKET})
+                        signArtifacts.withCredentials([[GITHUB_USER, GITHUB_TOKEN], SIGNER_CLIENT_ROLE, SIGNER_CLIENT_EXTERNAL_ID, SIGNER_CLIENT_UNSIGNED_BUCKET, SIGNER_CLIENT_SIGNED_BUCKET], groovy.lang.Closure)
+                           signArtifacts.sh(
+                   #!/bin/bash
+                   set +x
+                   export ROLE=SIGNER_CLIENT_ROLE
+                   export EXTERNAL_ID=SIGNER_CLIENT_EXTERNAL_ID
+                   export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET
+                   export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET
+
+                   /tmp/workspace/sign.sh /tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum/repodata/repomd.pom --sigtype .asc --platform linux
+               )
+                     promoteRepos.sh(
+                set -e
+                set +x
+    
+                cd /tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum/repodata/
+    
+                ls -l
+    
+                mv -v repomd.pom repomd.xml
+                mv -v repomd.pom.asc repomd.xml.asc
+    
+                ls -l
+    
+                cd -
+            )
+                     promoteRepos.withAWS({role=ARTIFACT_PROMOTION_ROLE_NAME, roleAccount=AWS_ACCOUNT_ARTIFACT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
+                        promoteRepos.println(Pushing Prod yum)
+                        promoteRepos.sh(aws s3 sync /tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum/ s3://ARTIFACT_PRODUCTION_BUCKET_NAME/releases/bundle/opensearch/1.x/yum/ --no-progress)
+         PromoteRepos_Jenkinsfile.stage(promote apt repo, groovy.lang.Closure)
+            PromoteRepos_Jenkinsfile.script(groovy.lang.Closure)
+               PromoteRepos_Jenkinsfile.promoteRepos({jobName=opensearch, buildNumber=123, distributionRepoType=apt, manifest=tests/data/opensearch-1.3.0.yml})
+                  promoteRepos.legacySCM(groovy.lang.Closure)
+                  promoteRepos.library({identifier=jenkins@main, retriever=null})
+                  promoteRepos.readYaml({file=tests/data/opensearch-1.3.0.yml})
+                  InputManifest.asBoolean()
+                  promoteRepos.string({credentialsId=jenkins-artifact-promotion-role, variable=ARTIFACT_PROMOTION_ROLE_NAME})
+                  promoteRepos.string({credentialsId=jenkins-aws-production-account, variable=AWS_ACCOUNT_ARTIFACT})
+                  promoteRepos.string({credentialsId=jenkins-artifact-production-bucket-name, variable=ARTIFACT_PRODUCTION_BUCKET_NAME})
+                  promoteRepos.withCredentials([ARTIFACT_PROMOTION_ROLE_NAME, AWS_ACCOUNT_ARTIFACT, ARTIFACT_PRODUCTION_BUCKET_NAME], groovy.lang.Closure)
+                     promoteRepos.withAWS({role=ARTIFACT_PROMOTION_ROLE_NAME, roleAccount=AWS_ACCOUNT_ARTIFACT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
+                        promoteRepos.println(Pulling Prod apt)
+                        promoteRepos.sh(aws s3 sync s3://ARTIFACT_PRODUCTION_BUCKET_NAME/releases/bundle/opensearch/1.x/apt/ /tmp/workspace/artifacts/releases/bundle/opensearch/1.x/apt/ --no-progress)
+                     promoteRepos.sh(
+            set -e
+            set +x
+
+            echo "Pulling 1.3.0 deb"
+            cd /tmp/workspace/artifacts/releases/bundle/opensearch/1.x/apt
+            curl -SLO https://ci.opensearch.org/dbc/opensearch/1.3.0/123/linux/x64/deb/dist/opensearch/opensearch-1.3.0-linux-x64.deb
+            curl -SLO https://ci.opensearch.org/dbc/opensearch/1.3.0/123/linux/arm64/deb/dist/opensearch/opensearch-1.3.0-linux-arm64.deb
+
+            ls -l
+        )
+                     promoteRepos.println(Apt Repo Starts)
+                     promoteRepos.sh(#!/bin/bash
+                set -e
+                set +x
+
+                ARTIFACT_PATH="/tmp/workspace/artifacts/releases/bundle/opensearch/1.x/apt"
+
+                echo "------------------------------------------------------------------------"
+                echo "Check Utility Versions"
+                gpg_version_requirement="2.2.0"
+                aptly_version_requirement="1.5.0"
+
+                gpg_version_check=`gpg --version | head -n 1 | grep -oE '[0-9.]+'`
+                gpg_version_check_final=`echo $gpg_version_check $gpg_version_requirement | tr ' ' '
+' | sort -V | head -n 1`
+                aptly_version_check=`aptly version | head -n 1 | grep -oE '[0-9.]+'`
+                aptly_version_check_final=`echo $aptly_version_check $aptly_version_requirement | tr ' ' '
+' | sort -V | head -n 1`
+               
+                echo -e "gpg_version_requirement gpg_version_check"
+                echo -e "$gpg_version_requirement $gpg_version_check"
+                echo -e "aptly_version_requirement aptly_version_check"
+                echo -e "$aptly_version_requirement $aptly_version_check"
+
+                if [[ $gpg_version_requirement = $gpg_version_check_final ]] && [[ $aptly_version_requirement = $aptly_version_check_final ]]; then
+                    echo "Utility version is equal or greater than set limit, continue."
+                else
+                    echo "Utility version is lower than set limit, exit 1"
+                    exit 1
+                fi
+
+            )
+                     promoteRepos.string({credentialsId=jenkins-rpm-signing-account-number, variable=RPM_SIGNING_ACCOUNT_NUMBER})
+                     promoteRepos.string({credentialsId=jenkins-rpm-signing-passphrase-secrets-arn, variable=RPM_SIGNING_PASSPHRASE_SECRETS_ARN})
+                     promoteRepos.string({credentialsId=jenkins-rpm-signing-secret-key-secrets-arn, variable=RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN})
+                     promoteRepos.string({credentialsId=jenkins-rpm-signing-key-id, variable=RPM_SIGNING_KEY_ID})
+                     promoteRepos.withCredentials([RPM_SIGNING_ACCOUNT_NUMBER, RPM_SIGNING_PASSPHRASE_SECRETS_ARN, RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN, RPM_SIGNING_KEY_ID], groovy.lang.Closure)
+                        promoteRepos.withAWS({role=jenkins-prod-rpm-signing-assume-role, roleAccount=RPM_SIGNING_ACCOUNT_NUMBER, duration=900, roleSessionName=jenkins-signing-session}, groovy.lang.Closure)
+                           promoteRepos.sh(#!/bin/bash
+
+                        export GPG_TTY=`tty`
+
+                        echo "------------------------------------------------------------------------"
+                        echo "Import OpenSearch keys"
+                        aws secretsmanager get-secret-value --region us-west-2 --secret-id "RPM_SIGNING_PASSPHRASE_SECRETS_ARN" | jq -r .SecretBinary | base64 --decode > passphrase
+                        aws secretsmanager get-secret-value --region us-west-2 --secret-id "RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN" | jq -r .SecretBinary | base64 --decode | gpg --quiet --import --pinentry-mode loopback --passphrase-file passphrase -
+
+                        echo "------------------------------------------------------------------------"
+                    )
+                        promoteRepos.sh(#!/bin/bash
+
+                     echo "Start Signing Apt"
+                     rm -rf ~/.aptly
+                     mkdir $ARTIFACT_PATH/base
+                     find $ARTIFACT_PATH -type f -name "*.deb" | xargs -I {} mv -v {} $ARTIFACT_PATH/base
+                     aptly repo create -distribution=stable -component=main opensearch
+                     aptly repo add opensearch $ARTIFACT_PATH/base
+                     aptly repo show -with-packages opensearch
+                     aptly snapshot create opensearch-1.x from repo opensearch
+                     aptly publish snapshot -batch=true -passphrase-file=passphrase opensearch-1.x
+                     echo "------------------------------------------------------------------------"
+                     echo "Clean up gpg"
+                     gpg --batch --yes --delete-secret-keys RPM_SIGNING_KEY_ID
+                     gpg --batch --yes --delete-keys RPM_SIGNING_KEY_ID
+                     rm -v passphrase
+                     echo "------------------------------------------------------------------------"
+                     rm -rf $ARTIFACT_PATH/*
+                     cp -rvp ~/.aptly/public/* $ARTIFACT_PATH/
+                     ls $ARTIFACT_PATH
+
+                )
+                     promoteRepos.withAWS({role=ARTIFACT_PROMOTION_ROLE_NAME, roleAccount=AWS_ACCOUNT_ARTIFACT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
+                        promoteRepos.println(Pushing Prod apt)
+                        promoteRepos.sh(aws s3 sync /tmp/workspace/artifacts/releases/bundle/opensearch/1.x/apt/ s3://ARTIFACT_PRODUCTION_BUCKET_NAME/releases/bundle/opensearch/1.x/apt/ --no-progress)

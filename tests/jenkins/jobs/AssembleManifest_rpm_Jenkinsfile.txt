@@ -18,7 +18,7 @@
                      signArtifacts.withCredentials([RPM_SIGNING_ACCOUNT_NUMBER, RPM_SIGNING_PASSPHRASE_SECRETS_ARN, RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN, RPM_SIGNING_KEY_ID], groovy.lang.Closure)
                         signArtifacts.echo(RPM Add Sign)
                         signArtifacts.withAWS({role=jenkins-prod-rpm-signing-assume-role, roleAccount=RPM_SIGNING_ACCOUNT_NUMBER, duration=900, roleSessionName=jenkins-signing-session}, groovy.lang.Closure)
-                           signArtifacts.sh(
+                           signArtifacts.sh(#!/bin/bash
                         set -e
                         set +x
 
