@@ -6,20 +6,22 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
+import static org.hamcrest.CoreMatchers.notNullValue
+import static org.hamcrest.MatcherAssert.assertThat
 
-package jenkins.tests
+class PromoteReposLibTester extends LibFunctionTester {
 
-import org.junit.*
-import java.util.*
-import java.nio.file.*
+    private String jobName
+    private String buildNumber
+    private String distributionRepoType
 
-class TestPromoteYumRepos extends BuildPipelineTest {
+    public PromoteReposLibTester(jobName, buildNumber, distributionRepoType) {
+        this.jobName = jobName
+        this.buildNumber = buildNumber
+        this.distributionRepoType = distributionRepoType
+    }
 
-    @Override
-    @Before
-    void setUp() {
-        super.setUp()
-
+    void configure(helper, binding){
         binding.setVariable('PUBLIC_ARTIFACT_URL', 'https://ci.opensearch.org/dbc')
         binding.setVariable('GITHUB_BOT_TOKEN_NAME', 'github_bot_token_name')
         def configs = ["role": "dummy_role",
@@ -38,11 +40,21 @@ class TestPromoteYumRepos extends BuildPipelineTest {
             closure.delegate = delegate
             return helper.callClosure(closure)
         })
-
     }
 
-    @Test
-    public void testDefault() {
-        super.testPipeline("tests/jenkins/jobs/PromoteYumRepos_Jenkinsfile")
+    void parameterInvariantsAssertions(call){
+        assertThat(call.args.jobName.first(), notNullValue())
+        assertThat(call.args.buildNumber.first(), notNullValue())
+        assertThat(call.args.distributionRepoType.first(), notNullValue())
+    }
+
+    boolean expectedParametersMatcher(call) {
+        return call.args.jobName.first().toString().equals(this.jobName)
+                && call.args.buildNumber.first().toString().equals(this.buildNumber)
+                && call.args.distributionRepoType.first().toString().equals(this.distributionRepoType)
+    }
+
+    String libFunctionName() {
+        return 'promoteRepos'
     }
 }
