@@ -180,6 +180,11 @@ void call(Map args = [:]) {
 
                 sh """#!/bin/bash
 
+                     set -e
+                     set +x
+
+                     ARTIFACT_PATH="${artifactPath}"
+
                      echo "Start Signing Apt"
                      rm -rf ~/.aptly
                      mkdir \$ARTIFACT_PATH/base
