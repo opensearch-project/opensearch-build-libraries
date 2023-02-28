@@ -160,6 +160,11 @@
                     )
                         promoteRepos.sh(#!/bin/bash
 
+                     set -e
+                     set +x
+
+                     ARTIFACT_PATH="/tmp/workspace/artifacts/releases/bundle/opensearch/1.x/apt"
+
                      echo "Start Signing Apt"
                      rm -rf ~/.aptly
                      mkdir $ARTIFACT_PATH/base
