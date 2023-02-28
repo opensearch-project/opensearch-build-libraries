@@ -8,7 +8,7 @@
  */
 void call(Map args = [:]) {
 
-    lib = library(identifier: 'jenkins@2.0.1', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@2.0.2', retriever: legacySCM(scm))
 
     assembleManifest(args)
     uploadArtifacts(args)
