@@ -7,10 +7,6 @@
  * compatible open source license.
  */
 
-//import jenkins.tests.BuildPipelineTest
-//import org.junit.Before
-//import org.junit.Test
-
 package jenkins.tests
 
 import org.junit.Before
@@ -81,5 +77,30 @@ class TestRunIntegTestScript extends BuildPipelineTest {
         )
 
         super.testPipeline("tests/jenkins/jobs/RunIntegTestScript_LocalPath_Switch_Non_Root_Jenkinsfile")
+    }
+
+    @Test
+    void 'IntegTest LocalPath SwitchNonRoot=false'() {
+        runScript("tests/jenkins/jobs/RunIntegTestScript_LocalPath_Jenkinsfile")
+        assertThat(getShellCommands('sh', 'test.sh'), hasItems('  ./test.sh integ-test tests/data/opensearch-1.3.0-test.yml --component OpenSearch --test-run-id null --paths opensearch=tests/jenkins/artifacts/tar '))
+
+    }
+
+    @Test
+    void 'IntegTest LocalPath SwitchNonRoot=true'() {
+        runScript("tests/jenkins/jobs/RunIntegTestScript_LocalPath_Switch_Non_Root_Jenkinsfile")
+        assertThat(getShellCommands('sh', 'test.sh'), hasItems('su - `id -un 1000` -c \" cd bbb\nccc &&  ./test.sh integ-test tests/data/opensearch-1.3.0-test.yml --component OpenSearch --test-run-id null --paths opensearch=tests/jenkins/artifacts/tar \"'))
+
+    }
+
+    def getShellCommands(methodName, searchString) {
+        def shCommands = helper.callStack.findAll { call ->
+            call.methodName == methodName
+        }.collect { call ->
+            callArgsToString(call)
+        }.findAll { command ->
+            command.contains(searchString)
+        }
+        return shCommands
     }
 }
