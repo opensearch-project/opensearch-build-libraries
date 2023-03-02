@@ -17,13 +17,15 @@ class RunIntegTestScriptLibTester extends LibFunctionTester {
     private String buildManifest
     private String testManifest
     private String localPath
+    private String switchUserNonRoot
 
-    public RunIntegTestScriptLibTester(jobName, componentName, buildManifest, testManifest, localPath){
+    public RunIntegTestScriptLibTester(jobName, componentName, buildManifest, testManifest, localPath, switchUserNonRoot){
         this.jobName = jobName
         this.componentName = componentName
         this.buildManifest = buildManifest
         this.testManifest = testManifest
         this.localPath = localPath
+        this.switchUserNonRoot = switchUserNonRoot
     }
 
     void configure(helper, binding) {

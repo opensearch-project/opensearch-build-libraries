@@ -14,8 +14,8 @@ void call(Map args = [:]) {
 
     echo "Start integTest for distribution type: " + buildManifest.getDistribution()
 
-    javaVersion = (jobName.equals('distribution-build-opensearch')) ? detectTestDockerAgent().javaVersion : 'None'
-    String javaHomeCommand = (jobName.equals('distribution-build-opensearch')) ? "env JAVA_HOME=/opt/java/${javaVersion}" : ''
+    javaVersion = (jobName.equals('distribution-build-opensearch')) ? detectTestDockerAgent().javaVersion : ''
+    String javaHomeCommand = (jobName.equals('distribution-build-opensearch') && ! javaVersion.equals('')) ? "env JAVA_HOME=/opt/java/${javaVersion}" : ''
     echo "Possible Java Home: ${javaHomeCommand}"
 
     String buildId = buildManifest.build.id
@@ -31,8 +31,8 @@ void call(Map args = [:]) {
     String component = args.componentName
     echo "Component: ${component}"
 
-    String switchUser = args.switchUserNonRoot
-    echo "Switch User to Non-Root (uid=1000): ${switchUser} "
+    String switchUser = args.switchUserNonRoot ?: 'false'
+    echo "Switch User to Non-Root (uid=1000): ${switchUser}"
 
     String currentDir = sh (
         script: 'pwd',

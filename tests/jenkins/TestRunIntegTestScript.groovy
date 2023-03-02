@@ -7,9 +7,18 @@
  * compatible open source license.
  */
 
-import jenkins.tests.BuildPipelineTest
+//import jenkins.tests.BuildPipelineTest
+//import org.junit.Before
+//import org.junit.Test
+
+package jenkins.tests
+
 import org.junit.Before
 import org.junit.Test
+import static com.lesfurets.jenkins.unit.MethodCall.callArgsToString
+import static org.hamcrest.CoreMatchers.hasItem
+import static org.hamcrest.CoreMatchers.hasItems
+import static org.hamcrest.MatcherAssert.assertThat
 
 
 class TestRunIntegTestScript extends BuildPipelineTest {
@@ -21,6 +30,7 @@ class TestRunIntegTestScript extends BuildPipelineTest {
             'OpenSearch',
             'tests/data/opensearch-1.3.0-build.yml',
             'tests/data/opensearch-1.3.0-test.yml',
+            '',
             '',
             )
         )
@@ -36,6 +46,7 @@ class TestRunIntegTestScript extends BuildPipelineTest {
             'tests/data/opensearch-dashboards-1.2.0-build.yml',
             'tests/data/opensearch-dashboards-1.2.0-test.yml',
             '',
+            '',
             )
         )
 
@@ -50,9 +61,25 @@ class TestRunIntegTestScript extends BuildPipelineTest {
             'tests/data/opensearch-1.3.0-build.yml',
             'tests/data/opensearch-1.3.0-test.yml',
             'tests/jenkins/artifacts/tar',
+            '',
             )
         )
 
         super.testPipeline("tests/jenkins/jobs/RunIntegTestScript_LocalPath_Jenkinsfile")
+    }
+
+    @Test
+    public void TestRunIntegTestScript_LocalPath_Switch_Non_Root() {
+        this.registerLibTester(new RunIntegTestScriptLibTester(
+            'dummy_job',
+            'OpenSearch',
+            'tests/data/opensearch-1.3.0-build.yml',
+            'tests/data/opensearch-1.3.0-test.yml',
+            'tests/jenkins/artifacts/tar',
+            'true',
+            )
+        )
+
+        super.testPipeline("tests/jenkins/jobs/RunIntegTestScript_LocalPath_Switch_Non_Root_Jenkinsfile")
     }
 }
