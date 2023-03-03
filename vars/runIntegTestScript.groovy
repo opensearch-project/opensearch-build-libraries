@@ -32,13 +32,13 @@ void call(Map args = [:]) {
     echo "Component: ${component}"
 
     String switchUser = args.switchUserNonRoot ?: 'false'
+    if (! switchUser.equals('true') && ! switchUser.equals('false')) {
+        echo "args.switchUserNonRoot can only be 'true' or 'false', exit."
+        System.exit(1)
+    }
     echo "Switch User to Non-Root (uid=1000): ${switchUser}"
 
-    String currentDir = sh (
-        script: 'pwd',
-        returnStdout: true
-    ).trim()
-    String switchCommandStart = switchUser.equals('true') ? "su - `id -un 1000` -c \" cd ${currentDir} &&" : ''
+    String switchCommandStart = switchUser.equals('true') ? 'su `id -un 1000` -c "' : ''
     String switchCommandEnd = switchUser.equals('true') ? '"' : ''
 
     String testCommand = 
