@@ -18,6 +18,5 @@
                   runIntegTestScript.echo(Paths: opensearch=https://ci.opensearch.org/ci/dbc/distribution-build-opensearch/1.2.0/latest/linux/x64/tar opensearch-dashboards=https://ci.opensearch.org/ci/dbc/dummy_job/1.2.0/215/linux/x64/tar)
                   runIntegTestScript.echo(Component: functionalTestDashboards)
                   runIntegTestScript.echo(Switch User to Non-Root (uid=1000): false)
-                  runIntegTestScript.sh({script=pwd, returnStdout=true})
                   runIntegTestScript.echo(Run command:   ./test.sh integ-test tests/data/opensearch-dashboards-1.2.0-test.yml --component functionalTestDashboards --test-run-id null --paths opensearch=https://ci.opensearch.org/ci/dbc/distribution-build-opensearch/1.2.0/latest/linux/x64/tar opensearch-dashboards=https://ci.opensearch.org/ci/dbc/dummy_job/1.2.0/215/linux/x64/tar )
                   runIntegTestScript.sh(  ./test.sh integ-test tests/data/opensearch-dashboards-1.2.0-test.yml --component functionalTestDashboards --test-run-id null --paths opensearch=https://ci.opensearch.org/ci/dbc/distribution-build-opensearch/1.2.0/latest/linux/x64/tar opensearch-dashboards=https://ci.opensearch.org/ci/dbc/dummy_job/1.2.0/215/linux/x64/tar )
