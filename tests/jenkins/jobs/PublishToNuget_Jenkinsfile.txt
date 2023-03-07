@@ -5,7 +5,7 @@
             PublishToNuget_Jenkinsfile.script(groovy.lang.Closure)
                PublishToNuget_Jenkinsfile.publishToNuget({repository=https://github.com/opensearch-project/opensearch-net, tag=1.2.0, apiKeyCredentialId=net-api-key, solutionFilePath=test-solution-file.sln})
                   publishToNuget.legacySCM(groovy.lang.Closure)
-                  publishToNuget.library({identifier=jenkins@2.0.2, retriever=null})
+                  publishToNuget.library({identifier=jenkins@2.1.0, retriever=null})
                   publishToNuget.checkout({$class=GitSCM, branches=[{name=1.2.0}], userRemoteConfigs=[{url=https://github.com/opensearch-project/opensearch-net}]})
                   publishToNuget.sh(
     dotnet build /tmp/workspace/test-solution-file.sln --configuration Release
