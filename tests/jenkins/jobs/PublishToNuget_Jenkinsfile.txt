@@ -12,7 +12,7 @@
     find src -name OpenSearch*.dll>/tmp/workspace/dlls.txt
     )
                   publishToNuget.readFile({file=/tmp/workspace/dlls.txt})
-                  publishToNuget.signArtifacts({artifactPath=one.dll , platform=windows, overwrite=true})
+                  publishToNuget.signArtifacts({artifactPath=/tmp/workspace/one.dll, platform=windows, overwrite=true})
                      signArtifacts.echo(PGP or Windows Signature Signing)
                      signArtifacts.fileExists(/tmp/workspace/sign.sh)
                      signArtifacts.dir(opensearch-build, groovy.lang.Closure)
@@ -36,9 +36,9 @@
                    export PROFILE_IDENTIFIER=SIGNER_WINDOWS_PROFILE_IDENTIFIER
                    export PLATFORM_IDENTIFIER=SIGNER_WINDOWS_PLATFORM_IDENTIFIER
 
-                   /tmp/workspace/opensearch-build/sign.sh one.dll  --platform windows --overwrite 
+                   /tmp/workspace/opensearch-build/sign.sh /tmp/workspace/one.dll --platform windows --overwrite 
                )
-                  publishToNuget.signArtifacts({artifactPath= two.dll , platform=windows, overwrite=true})
+                  publishToNuget.signArtifacts({artifactPath=/tmp/workspace/two.dll, platform=windows, overwrite=true})
                      signArtifacts.echo(PGP or Windows Signature Signing)
                      signArtifacts.fileExists(/tmp/workspace/sign.sh)
                      signArtifacts.dir(opensearch-build, groovy.lang.Closure)
@@ -62,9 +62,9 @@
                    export PROFILE_IDENTIFIER=SIGNER_WINDOWS_PROFILE_IDENTIFIER
                    export PLATFORM_IDENTIFIER=SIGNER_WINDOWS_PLATFORM_IDENTIFIER
 
-                   /tmp/workspace/opensearch-build/sign.sh  two.dll  --platform windows --overwrite 
+                   /tmp/workspace/opensearch-build/sign.sh /tmp/workspace/two.dll --platform windows --overwrite 
                )
-                  publishToNuget.signArtifacts({artifactPath= three.dll, platform=windows, overwrite=true})
+                  publishToNuget.signArtifacts({artifactPath=/tmp/workspace/three.dll, platform=windows, overwrite=true})
                      signArtifacts.echo(PGP or Windows Signature Signing)
                      signArtifacts.fileExists(/tmp/workspace/sign.sh)
                      signArtifacts.dir(opensearch-build, groovy.lang.Closure)
@@ -88,7 +88,7 @@
                    export PROFILE_IDENTIFIER=SIGNER_WINDOWS_PROFILE_IDENTIFIER
                    export PLATFORM_IDENTIFIER=SIGNER_WINDOWS_PLATFORM_IDENTIFIER
 
-                   /tmp/workspace/opensearch-build/sign.sh  three.dll --platform windows --overwrite 
+                   /tmp/workspace/opensearch-build/sign.sh /tmp/workspace/three.dll --platform windows --overwrite 
                )
                   publishToNuget.string({credentialsId=net-api-key, variable=API_KEY})
                   publishToNuget.withCredentials([API_KEY], groovy.lang.Closure)
