@@ -7,7 +7,7 @@
  * compatible open source license.
  */
 void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@2.1.0', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@2.1.1', retriever: legacySCM(scm))
     buildManifest(args)
 
     String stashName = "${args.stashName}"
