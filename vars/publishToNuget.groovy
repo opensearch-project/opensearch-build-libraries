@@ -17,7 +17,7 @@
 
 
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@2.1.0', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@2.1.1', retriever: legacySCM(scm))
     checkout([$class: 'GitSCM', branches: [[name: "${args.tag}" ]], userRemoteConfigs: [[url: "${args.repository}" ]]])
     sh """
     dotnet build ${WORKSPACE}/${args.solutionFilePath} --configuration Release
