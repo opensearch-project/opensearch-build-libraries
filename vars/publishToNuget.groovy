@@ -26,7 +26,7 @@ void call(Map args = [:]) {
     dlls = readFile(file: "${WORKSPACE}/dlls.txt").readLines()
     dlls.each { item ->
         signArtifacts(
-            artifactPath: item,
+            artifactPath: "${WORKSPACE}/${item.trim()}",
             platform: 'windows',
             overwrite: true
             )
