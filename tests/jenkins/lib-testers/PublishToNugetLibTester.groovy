@@ -29,6 +29,7 @@ class PublishToNugetLibTester extends LibFunctionTester {
         helper.registerAllowedMethod('git', [Map])
         helper.addFileExistsMock('/tmp/workspace/sign.sh', false)
         helper.addReadFileMock('/tmp/workspace/dlls.txt', 'one.dll \n two.dll \n three.dll')
+        helper.addReadFileMock('/tmp/workspace/nupkg.txt', 'src/net/one.nupkg \n src/net/two.nupkg \n src/net/three.nupkg')
         helper.registerAllowedMethod("withCredentials", [Map, Closure], { args, closure ->
             closure.delegate = delegate
             return helper.callClosure(closure)
