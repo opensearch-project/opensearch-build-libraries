@@ -9,7 +9,7 @@
                   publishToNuget.checkout({$class=GitSCM, branches=[{name=1.2.0}], userRemoteConfigs=[{url=https://github.com/opensearch-project/opensearch-net}]})
                   publishToNuget.sh(
     dotnet build /tmp/workspace/test-solution-file.sln --configuration Release
-    find src -name OpenSearch*.dll>/tmp/workspace/dlls.txt
+    find src/OpenSearch.*/bin/Release/*/*.dll -type f -regextype posix-extended -regex "src/([^/]+)/bin/Release/[^/]+/\1\.dll">/tmp/workspace/dlls.txt
     )
                   publishToNuget.readFile({file=/tmp/workspace/dlls.txt})
                   publishToNuget.signArtifacts({artifactPath=/tmp/workspace/one.dll, platform=windows, overwrite=true})
@@ -90,12 +90,13 @@
 
                    /tmp/workspace/opensearch-build/sign.sh /tmp/workspace/three.dll --platform windows --overwrite 
                )
+                  publishToNuget.sh(
+        dotnet pack /tmp/workspace/test-solution-file.sln --configuration Release --no-build
+        find src -name OpenSearch*.nupkg > /tmp/workspace/nupkg.txt
+    )
                   publishToNuget.string({credentialsId=net-api-key, variable=API_KEY})
                   publishToNuget.withCredentials([API_KEY], groovy.lang.Closure)
-                     publishToNuget.sh(
-            dotnet pack /tmp/workspace/test-solution-file.sln --configuration Release --no-build
-            for package in `find src -name OpenSearch*.nupkg`
-                do
-                    dotnet nuget push $package --api-key API_KEY --source https://api.nuget.org/v3/index.json
-                done
-        )
+                     publishToNuget.readFile({file=/tmp/workspace/nupkg.txt})
+                     publishToNuget.sh(dotnet nuget push /tmp/workspace/src/net/one.nupkg --api-key API_KEY --source https://api.nuget.org/v3/index.json)
+                     publishToNuget.sh(dotnet nuget push /tmp/workspace/src/net/two.nupkg --api-key API_KEY --source https://api.nuget.org/v3/index.json)
+                     publishToNuget.sh(dotnet nuget push /tmp/workspace/src/net/three.nupkg --api-key API_KEY --source https://api.nuget.org/v3/index.json)
