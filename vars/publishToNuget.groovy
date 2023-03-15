@@ -19,9 +19,10 @@
 void call(Map args = [:]) {
     lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     checkout([$class: 'GitSCM', branches: [[name: "${args.tag}" ]], userRemoteConfigs: [[url: "${args.repository}" ]]])
+
     sh """
     dotnet build ${WORKSPACE}/${args.solutionFilePath} --configuration Release
-    find src -name OpenSearch*.dll>${WORKSPACE}/dlls.txt
+    find src/OpenSearch.*/bin/Release/*/*.dll -type f -regextype posix-extended -regex "src/([^/]+)/bin/Release/[^/]+/\\1\\.dll">${WORKSPACE}/dlls.txt
     """
     dlls = readFile(file: "${WORKSPACE}/dlls.txt").readLines()
     dlls.each { item ->
@@ -31,13 +32,16 @@ void call(Map args = [:]) {
             overwrite: true
             )
         }
+
+    sh """
+        dotnet pack ${WORKSPACE}/${args.solutionFilePath} --configuration Release --no-build
+        find src -name OpenSearch*.nupkg > ${WORKSPACE}/nupkg.txt
+    """
+
     withCredentials([string(credentialsId: "${args.apiKeyCredentialId}", variable: 'API_KEY')]) {
-        sh """
-            dotnet pack ${WORKSPACE}/${args.solutionFilePath} --configuration Release --no-build
-            for package in `find src -name OpenSearch*.nupkg`
-                do
-                    dotnet nuget push \$package --api-key ${API_KEY} --source https://api.nuget.org/v3/index.json
-                done
-        """
+        nupkgs = readFile(file: "${WORKSPACE}/nupkg.txt").readLines()
+        nupkgs.each{ nupkg ->
+            sh "dotnet nuget push ${WORKSPACE}/${nupkg.trim()} --api-key ${API_KEY} --source https://api.nuget.org/v3/index.json"
+        }
     }
 }
