@@ -1,0 +1,8 @@
+   ValidateArtifacts_Jenkinsfile.run()
+      ValidateArtifacts_Jenkinsfile.pipeline(groovy.lang.Closure)
+         ValidateArtifacts_Jenkinsfile.echo(Executing on agent [label:none])
+         ValidateArtifacts_Jenkinsfile.stage(validate, groovy.lang.Closure)
+            ValidateArtifacts_Jenkinsfile.script(groovy.lang.Closure)
+               ValidateArtifacts_Jenkinsfile.validateArtifacts({version=1.0.0, project=foo})
+                  validateArtifacts.fileExists(/tmp/workspace/validation.sh)
+                  validateArtifacts.sh(/tmp/workspace/validation.sh  --version 1.0.0 --project foo)
