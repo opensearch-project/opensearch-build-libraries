@@ -13,7 +13,7 @@ Wrapper that runs validation.sh script with provided args.
 */
 void call(Map args = [:]) {
     if (!fileExists("$WORKSPACE/validation.sh")) {
-        println("Validation.sh script not found, exit 1")
+        println("Validation.sh script not found in the workspace: ${WORKSPACE}, exit 1")
         System.exit(1)
     }
     String arguments = generateArguments(args)
