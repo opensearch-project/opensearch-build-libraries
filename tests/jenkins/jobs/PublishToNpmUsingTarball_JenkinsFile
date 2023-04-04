@@ -14,11 +14,12 @@ pipeline {
     }
     agent none
     stages {
-        stage('publishToNpm') {
+        stage('publishToNpmWithtgz') {
             steps {
                 script {
                     publishToNpm(
-                        publicationType: 'github'
+                        publicationType: 'artifact',
+                        artifactPath: "${WORKSPACE}/example.tgz"
                     )
                 }
             }

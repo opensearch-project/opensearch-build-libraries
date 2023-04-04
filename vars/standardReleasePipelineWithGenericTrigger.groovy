@@ -40,6 +40,7 @@ void call(Map arguments = [:], Closure body) {
             GenericTrigger(
                 genericVariables: [
                     [key: 'ref', value: (arguments.jsonValue ?: '$.release.tag_name')],
+                    [key: 'repository', value: '$.repository.html_url'],
                     [key: 'action', value: '$.action'],
                     [key: 'isDraft', value: '$.release.draft'],
                     [key: 'release_url', value: '$.release.url'],
@@ -55,6 +56,7 @@ void call(Map arguments = [:], Closure body) {
         }
         environment {
             tag = "$ref"
+            repository = "$repository"
         }
         stages {
             stage('Download artifacts') {

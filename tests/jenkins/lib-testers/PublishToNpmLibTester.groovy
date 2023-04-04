@@ -10,33 +10,36 @@ import static org.hamcrest.CoreMatchers.notNullValue
 import static org.hamcrest.MatcherAssert.assertThat
 
 class PublishToNpmLibTester extends LibFunctionTester {
-    
-    private String repository
-    private String tag
 
-    public PublishToNpmLibTester(repository, tag){
-        this.repository = repository
-        this.tag = tag
+    private String publicationType
+    private String artifactPath = ''
+    private List allowedpubs = ['github', 'artifact']
+
+    public PublishToNpmLibTester(publicationType) {
+        this.publicationType = publicationType
     }
 
-    void configure(helper, binding){
+    public PublishToNpmLibTester(publicationType, artifactPath) {
+        this.publicationType = publicationType
+        this.artifactPath = artifactPath
+    }
+
+    void configure(helper, binding) {
         helper.registerAllowedMethod("checkout", [Map], {})
         helper.registerAllowedMethod("withCredentials", [Map, Closure], { args, closure ->
             closure.delegate = delegate
             return helper.callClosure(closure)
         })
     }
-    void parameterInvariantsAssertions(call){
-        assertThat(call.args.repository.first(), notNullValue())
-        assertThat(call.args.tag.first(), notNullValue())
+    void parameterInvariantsAssertions(call) {
+        assertThat(call.args.publicationType.first(), notNullValue())
     }
 
     boolean expectedParametersMatcher(call) {
-        return call.args.repository.first().toString().equals(this.repository)
-        && call.args.tag.first().toString().equals(this.tag)
+        return allowedpubs.contains(call.args.publicationType.first().toString())
     }
 
-    String libFunctionName(){
+    String libFunctionName() {
         return 'publishToNpm'
     }
 }
