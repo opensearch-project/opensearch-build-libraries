@@ -1,0 +1,14 @@
+   PublishToNpmUsingTarball_JenkinsFile.run()
+      PublishToNpmUsingTarball_JenkinsFile.pipeline(groovy.lang.Closure)
+         PublishToNpmUsingTarball_JenkinsFile.echo(Executing on agent [label:none])
+         PublishToNpmUsingTarball_JenkinsFile.stage(publishToNpmWithtgz, groovy.lang.Closure)
+            PublishToNpmUsingTarball_JenkinsFile.script(groovy.lang.Closure)
+               PublishToNpmUsingTarball_JenkinsFile.publishToNpm({publicationType=artifact, artifactPath=/tmp/workspace/example.tgz})
+                  publishToNpm.string({credentialsId=jenkins-opensearch-publish-to-npm-token, variable=NPM_TOKEN})
+                  publishToNpm.withCredentials([NPM_TOKEN], groovy.lang.Closure)
+                     publishToNpm.sh(
+            npm set registry "https://registry.npmjs.org"
+            npm set //registry.npmjs.org/:_authToken NPM_TOKEN
+            npm publish /tmp/workspace/example.tgz --dry-run && npm publish /tmp/workspace/example.tgz --access public
+        )
+                  publishToNpm.sh(rm -rf /tmp/workspace/.nvmrc && rm -rf ~/.nvmrc)

@@ -96,7 +96,7 @@ class TestStandardReleasePipelineWithGenericTriggers extends BuildPipelineTest {
             c -> c.contains('generic')
         }
         assertThat(cmd.size(), equalTo(1))
-        assertThat(cmd, hasItem('{genericVariables=[{key=ref, value=$.release.tag_name}, {key=action, value=$.action}, {key=isDraft, value=$.release.draft}, {key=release_url, value=$.release.url}, {key=assets_url, value=$.release.assets_url}], tokenCredentialId=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, printContributedVariables=false, printPostContent=false, regexpFilterText=$isDraft $action, regexpFilterExpression=^true created$}'))
+        assertThat(cmd, hasItem('{genericVariables=[{key=ref, value=$.release.tag_name}, {key=repository, value=$.repository.html_url}, {key=action, value=$.action}, {key=isDraft, value=$.release.draft}, {key=release_url, value=$.release.url}, {key=assets_url, value=$.release.assets_url}], tokenCredentialId=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, printContributedVariables=false, printPostContent=false, regexpFilterText=$isDraft $action, regexpFilterExpression=^true created$}'))
     }
 
     @Test
@@ -137,7 +137,7 @@ class TestStandardReleasePipelineWithGenericTriggers extends BuildPipelineTest {
             c -> c.contains('generic')
         }
         assertThat(cmd.size(), equalTo(1))
-        assertThat(cmd, hasItem('{genericVariables=[{key=ref, value=.ref}, {key=action, value=$.action}, {key=isDraft, value=$.release.draft}, {key=release_url, value=$.release.url}, {key=assets_url, value=$.release.assets_url}], tokenCredentialId=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, printContributedVariables=false, printPostContent=false, regexpFilterText=$ref, regexpFilterExpression=^refs/tags/.*}'))
+        assertThat(cmd, hasItem('{genericVariables=[{key=ref, value=.ref}, {key=repository, value=$.repository.html_url}, {key=action, value=$.action}, {key=isDraft, value=$.release.draft}, {key=release_url, value=$.release.url}, {key=assets_url, value=$.release.assets_url}], tokenCredentialId=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, printContributedVariables=false, printPostContent=false, regexpFilterText=$ref, regexpFilterExpression=^refs/tags/.*}'))
     }
 
     @Test
