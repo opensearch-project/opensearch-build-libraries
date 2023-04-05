@@ -21,7 +21,7 @@ void call(Map args = [:]) {
     if (args.destinationRegistry == 'opensearchstaging' || args.destinationRegistry == 'opensearchproject') {
         def dockerJenkinsCredential = args.destinationRegistry == 'opensearchproject' ? "jenkins-production-dockerhub-credential" : "jenkins-staging-dockerhub-credential"
         withCredentials([usernamePassword(credentialsId: dockerJenkinsCredential, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-            def dockerLogin = sh(returnStdout: true, script: "echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin").trim()
+            def dockerLogin = sh(returnStdout: true, script: "set +x && echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin").trim()
             sh """gcrane cp ${args.sourceRegistry}/${args.sourceImage} ${args.destinationRegistry}/${args.destinationImage}; docker logout"""
         }
     }
@@ -31,13 +31,13 @@ void call(Map args = [:]) {
             string(credentialsId: 'jenkins-aws-production-account', variable: 'AWS_ACCOUNT_ARTIFACT')])
             {
                 withAWS(role: "${ARTIFACT_PROMOTION_ROLE_NAME}", roleAccount: "${AWS_ACCOUNT_ARTIFACT}", duration: 900, roleSessionName: 'jenkins-session') {
-                    def ecrLogin = sh(returnStdout: true, script: "aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${args.destinationRegistry}").trim()
+                    def ecrLogin = sh(returnStdout: true, script: "set +x && aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${args.destinationRegistry}").trim()
                     sh """gcrane cp ${args.sourceRegistry}/${args.sourceImage} ${args.destinationRegistry}/${args.destinationImage}; docker logout ${args.destinationRegistry}"""
                 }
             }
     }
     if(args.destinationRegistry == 'public.ecr.aws/opensearchstaging') {
-            def ecrLogin = sh(returnStdout: true, script: "aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${args.destinationRegistry}").trim()
+            def ecrLogin = sh(returnStdout: true, script: "set +x && aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${args.destinationRegistry}").trim()
             sh """gcrane cp ${args.sourceRegistry}/${args.sourceImage} ${args.destinationRegistry}/${args.destinationImage}; docker logout ${args.destinationRegistry}"""
     }
 }
