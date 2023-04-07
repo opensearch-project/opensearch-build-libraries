@@ -1,18 +1,18 @@
-   DockerCopy_Jenkinsfile.run()
-      DockerCopy_Jenkinsfile.pipeline(groovy.lang.Closure)
-         DockerCopy_Jenkinsfile.echo(Executing on agent [label:none])
-         DockerCopy_Jenkinsfile.stage(Parameters Check, groovy.lang.Closure)
-            DockerCopy_Jenkinsfile.script(groovy.lang.Closure)
-         DockerCopy_Jenkinsfile.stage(Copy Image to ECR/DockerHub, groovy.lang.Closure)
-            DockerCopy_Jenkinsfile.script(groovy.lang.Closure)
-               DockerCopy_Jenkinsfile.copyContainer({sourceImage=alpine:3.15.4, sourceRegistry=opensearchstaging, destinationImage=alpine:3.15.4, destinationRegistry=opensearchproject})
+   DockerCopyRecursive_Jenkinsfile.run()
+      DockerCopyRecursive_Jenkinsfile.pipeline(groovy.lang.Closure)
+         DockerCopyRecursive_Jenkinsfile.echo(Executing on agent [label:none])
+         DockerCopyRecursive_Jenkinsfile.stage(Parameters Check, groovy.lang.Closure)
+            DockerCopyRecursive_Jenkinsfile.script(groovy.lang.Closure)
+         DockerCopyRecursive_Jenkinsfile.stage(Copy Image to ECR/DockerHub Recursively, groovy.lang.Closure)
+            DockerCopyRecursive_Jenkinsfile.script(groovy.lang.Closure)
+               DockerCopyRecursive_Jenkinsfile.copyContainer({recursiveCopy=true, sourceImage=alpine:3.15.4, sourceRegistry=opensearchstaging, destinationImage=alpine:3.15.4, destinationRegistry=opensearchproject})
                   copyContainer.usernamePassword({credentialsId=jenkins-production-dockerhub-credential, usernameVariable=DOCKER_USERNAME, passwordVariable=DOCKER_PASSWORD})
                   copyContainer.withCredentials([[DOCKER_USERNAME, DOCKER_PASSWORD]], groovy.lang.Closure)
                      copyContainer.sh({returnStdout=true, script=set +x && echo DOCKER_PASSWORD | docker login --username DOCKER_USERNAME --password-stdin})
                      copyContainer.sh(
         set +x
 
-        if [ null = 'true' ]; then
+        if [ true = 'true' ]; then
             echo "Recursive copy from opensearchstaging/alpine to opensearchproject/alpine"
             for source_entry in `gcrane ls opensearchstaging/alpine`; do
                 image_tag=`echo $source_entry | cut -d/ -f3 | cut -d: -f2`
