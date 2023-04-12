@@ -10,11 +10,24 @@ import static org.hamcrest.CoreMatchers.notNullValue
 import static org.hamcrest.CoreMatchers.nullValue
 import static org.hamcrest.MatcherAssert.assertThat
 
-class CreateGithubIssueLibTester extends LibFunctionTester{
-    private List<String> message
+class CreateGithubIssueLibTester extends LibFunctionTester {
 
-    public CreateGithubIssueLibTester(message){
-        this.message = message
+    private String repoUrl
+    private String issueTitle
+    private String issueBody
+    private String label
+
+    public CreateGithubIssueLibTester(repoUrl, issueTitle, issueBody, label){
+        this.repoUrl = repoUrl
+        this.issueTitle = issueTitle
+        this.issueBody = issueBody
+        this.label = label
+    }
+
+    public CreateGithubIssueLibTester(repoUrl, issueTitle, issueBody){
+        this.repoUrl = repoUrl
+        this.issueTitle = issueTitle
+        this.issueBody = issueBody
     }
 
     @Override
@@ -24,20 +37,25 @@ class CreateGithubIssueLibTester extends LibFunctionTester{
 
     @Override
     void parameterInvariantsAssertions(Object call) {
-        assertThat(call.args.message.first(), notNullValue())
+        assertThat(call.args.repoUrl.first(), notNullValue())
+        assertThat(call.args.issueTitle.first(), notNullValue())
+        assertThat(call.args.issueBody.first(), notNullValue())
     }
 
     @Override
     boolean expectedParametersMatcher(Object call) {
-        //return false
-        return call.args.message.first().equals(this.message)
+        if (call.args.label.isEmpty()) { 
+            return call.args.label.first().equals('autocut')
+            && call.args.repoUrl.first().equals(this.repoUrl)
+            && call.args.issueTitle.first().equals(this.issueTitle)
+            && call.args.issueBody.first().equals(this.issueBody)}
+        return call.args.repoUrl.first().equals(this.repoUrl)
+            && call.args.issueTitle.first().equals(this.issueTitle)
+            && call.args.issueBody.first().equals(this.issueBody)
     }
 
     @Override
     void configure(Object helper, Object binding) {
-        helper.registerAllowedMethod("withCredentials", [Map])
-        helper.registerAllowedMethod("sleep", [Map])
-        binding.setVariable('BUILD_URL', 'www.example.com/jobs/test/123/')
-        binding.setVariable('INPUT_MANIFEST', '2.0.0/opensearch-2.0.0.yml')
+        helper.registerAllowedMethod('withCredentials', [Map])
     }
 }
