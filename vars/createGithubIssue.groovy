@@ -6,77 +6,34 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
-def call(Map args = [:]){
-    def failureMessages = args.message
-    List<String> failedComponents = []
 
-    if (failureMessages.size() == 1 && failureMessages[0] == "Build failed") {
-        println("No component failed, skip creating github issue.")
-    }
-    else {
-        for(message in failureMessages.unique()){
-            java.util.regex.Matcher match = (message =~ /(?<=\bcomponent\s).*/)
-            String matched = match[0]
-            println(matched.split(" ")[0].trim())
-            failedComponents.add(matched.split(" ")[0].trim())
-        }
-        /* Due to an existing issue with queryWorkbench plugin breaking OSD during bootstrapping, there are false positive
-           issues getting created against OSD repo. Adding a temp check to ignore issue creation against OSD repo in-case
-           there are more than 1 failures reported for OSD build.
-         */
-        if (failedComponents.contains("OpenSearch-Dashboards") && failedComponents.size() > 1) {
-            failedComponents.removeElement("OpenSearch-Dashboards")
-        }
-
-        def yamlFile = readYaml(file: "manifests/${INPUT_MANIFEST}")
-        def currentVersion = yamlFile.build.version
-
-        for(component in yamlFile.components){
-            if (failedComponents.contains(component.name)) {
-                println("Component ${component.name} failed, creating github issue")
-                compIndex = failedComponents.indexOf(component.name)
-                create_issue(component.name, component.repository, currentVersion, failureMessages[compIndex])
-                sleep(time:3,unit:"SECONDS")
-            }
-        }
-    }
-}
-
-def create_issue(component, url, currentVersion, failedMessage){
-    def versionLabel = "v${currentVersion}"
-    def label = "autocut"
-
-    def message = """***Received Error***: **${failedMessage}**.
-                      The distribution build for ${component} has failed.
-                      Please see build log at ${BUILD_URL}consoleFull""".stripIndent()
-
-
+/** Library to create GitHub issue across opensearch-project repositories.
+ @param Map args = [:] args A map of the following parameters
+ @param args.repoUrl <required> - GitHub repository URL to create issue
+ @param args.issueTitle <required> - GitHub issue title
+ @param args.issueBody <required> - GitHub issue body
+ @param args.label <optional> - GitHub issue label to be attached along with 'untriaged'. Defaults to autocut.
+ */
+void call(Map args = [:]) {
+    label = args.label ?: 'autocut'
     try {
         withCredentials([usernamePassword(credentialsId: 'jenkins-github-bot-token', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'GITHUB_USER')]) {
-            def issues = sh (
-                    script: "gh issue list --repo ${url} -S \"[AUTOCUT] OS Distribution Build Failed for ${component}-${currentVersion} in:title\" --label ${label}",
+            def issues = sh(
+                    script: "gh issue list --repo ${args.repoUrl} -S \"${args.issueTitle} in:title\" --label ${label}",
                     returnStdout: true
             )
 
-            def hasLabel = sh (
-                    script: "gh label list --repo ${url} -S ${versionLabel}",
-                    returnStdout: true
-            )
-
-            if (hasLabel){
-                label = "\"autocut,${versionLabel}\""
+            if (issues) {
+                println('Issue already exists in the repository, skipping.')
             }
-
-            if (issues){
-                println("Issue already exists in the repository, skipping.")
-            } else {
-                sh (
-                        script: "gh issue create --title \"[AUTOCUT] OS Distribution Build Failed for ${component}-${currentVersion}\" --body \"${message}\" --label ${label} --label \"untriaged\" --repo ${url}",
-                        returnStdout: true
+            else {
+                sh(
+                    script: "gh issue create --title \"${args.issueTitle}\" --body \"${args.issueBody}\" --label ${label} --label \"untriaged\" --repo ${args.repoUrl}",
+                    returnStdout: true
                 )
             }
         }
     } catch (Exception ex) {
-        println(ex.getMessage())
+        error("Unable to create GitHub issue for ${args.repoUrl}", ex.getMessage())
     }
 }

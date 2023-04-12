@@ -10,15 +10,13 @@
 pipeline {
     agent none
     stages {
-        stage('createGithubIssue') {
+        stage('notify') {
             steps {
                 script {
-                    createGithubIssue(
-                        repoUrl: 'https://github.com/opensearch-project/opensearch-build',
-                        issueTitle: 'Test GH issue title',
-                        issueBody: 'Test GH issue body',
-                        label: 'label101'
-                        )
+                    createBuildFailureGithubIssue(
+                        message: ["Error building OpenSearch, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component OpenSearch --snapshot"],
+                        inputManifestPath: 'tests/data/opensearch-2.0.0.yml'
+                    )
                 }
             }
         }
