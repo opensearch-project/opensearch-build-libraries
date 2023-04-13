@@ -1,0 +1,17 @@
+   CreateBuildFailureGithubIssue_Jenkinsfile.run()
+      CreateBuildFailureGithubIssue_Jenkinsfile.pipeline(groovy.lang.Closure)
+         CreateBuildFailureGithubIssue_Jenkinsfile.echo(Executing on agent [label:none])
+         CreateBuildFailureGithubIssue_Jenkinsfile.stage(notify, groovy.lang.Closure)
+            CreateBuildFailureGithubIssue_Jenkinsfile.script(groovy.lang.Closure)
+               CreateBuildFailureGithubIssue_Jenkinsfile.createBuildFailureGithubIssue({message=[Error building OpenSearch, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component OpenSearch --snapshot], inputManifestPath=tests/data/opensearch-2.0.0.yml})
+                  createBuildFailureGithubIssue.legacySCM(groovy.lang.Closure)
+                  createBuildFailureGithubIssue.library({identifier=jenkins@main, retriever=null})
+                  createBuildFailureGithubIssue.readYaml({file=tests/data/opensearch-2.0.0.yml})
+                  createBuildFailureGithubIssue.createGithubIssue({repoUrl=https://github.com/opensearch-project/OpenSearch.git, issueTitle=[AUTOCUT] Distribution Build Failed for OpenSearch-2.0.0, issueBody=***Received Error***: **Error building OpenSearch, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component OpenSearch --snapshot**.
+                      The distribution build for OpenSearch has failed for version: 2.0.0.
+                      Please see build log at www.example.com/jobs/test/123/consoleFull, label=autocut,v2.0.0})
+                     createGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
+                     createGithubIssue.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/OpenSearch.git -S "[AUTOCUT] Distribution Build Failed for OpenSearch-2.0.0 in:title" --label autocut,v2.0.0, returnStdout=true})
+                        createGithubIssue.println(Issue already exists in the repository, skipping.)
+                  createBuildFailureGithubIssue.sleep({time=3, unit=SECONDS})

@@ -9,25 +9,54 @@
 package jenkins.tests
 
 import jenkins.tests.BuildPipelineTest
-import org.junit.*
+import org.junit.Before
+import org.junit.Test
+import static com.lesfurets.jenkins.unit.MethodCall.callArgsToString
+import static org.hamcrest.CoreMatchers.hasItem
+import static org.hamcrest.MatcherAssert.assertThat
 
 class TestCreateGithubIssue extends BuildPipelineTest {
+
     @Override
     @Before
     void setUp() {
-        this.registerLibTester(new CreateGithubIssueLibTester(["Error building OpenSearch, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component OpenSearch --snapshot"]))
         super.setUp()
     }
 
     @Test
-    public void testCreateGithubIssue() {
-        helper.addShMock("gh issue list --repo https://github.com/opensearch-project/OpenSearch.git -S \"[AUTOCUT] OS Distribution Build Failed for OpenSearch-2.0.0 in:title\" --label autocut",'',0)
-        super.testPipeline("tests/jenkins/jobs/CreateGithubIssue_Jenkinsfile")
+    void testCreateGithubIssue() {
+        this.registerLibTester(new CreateGithubIssueLibTester(
+            'https://github.com/opensearch-project/opensearch-build',
+            'Test GH issue title',
+            'Test GH issue body',
+            'label101'
+            ))
+        helper.addShMock('gh issue list --repo https://github.com/opensearch-project/opensearch-build -S "Test GH issue title in:title" --label label101', '', 0)
+        super.testPipeline('tests/jenkins/jobs/CreateGithubIssue_Jenkinsfile')
+        assertThat(getCommands('sh', 'create'), hasItem('{script=gh issue create --title \"Test GH issue title\" --body \"Test GH issue body\" --label label101 --label \"untriaged\" --repo https://github.com/opensearch-project/opensearch-build, returnStdout=true}'))
     }
 
     @Test
-    public void testExistingGithubIssue() {
-        super.testPipeline("tests/jenkins/jobs/CreateGithubIssueExisting_Jenkinsfile")
+    void testExistingGithubIssueAndAutocutLabel() {
+        this.registerLibTester(new CreateGithubIssueLibTester(
+            'https://github.com/opensearch-project/opensearch-build',
+            'Test GH issue title',
+            'Test GH issue body'
+            ))
+        super.testPipeline('tests/jenkins/jobs/CreateGithubIssueExisting_JenkinsFile')
+        assertThat(getCommands('println', ''), hasItem('Issue already exists in the repository, skipping.'))
+        assertThat(getCommands('sh', 'script'), hasItem('{script=gh issue list --repo https://github.com/opensearch-project/opensearch-build -S "Test GH issue title in:title" --label autocut, returnStdout=true}'))
+    }
+
+    def getCommands(method, text) {
+        def shCommands = helper.callStack.findAll { call ->
+            call.methodName == method
+        }.collect { call ->
+            callArgsToString(call)
+        }.findAll { command ->
+            command.contains(text)
+        }
+        return shCommands
     }
 
 }
