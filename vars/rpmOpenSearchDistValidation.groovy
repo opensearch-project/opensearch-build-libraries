@@ -171,9 +171,9 @@ def call(Map args = [:]) {
         error("Something went wrong! Performance-analyzer is not actively running.")
     }
     //Check logs exist in the /tmp/
-    sh ('[[ -f /tmp/PerformanceAnalyzer.log ]] && echo "PerformanceAnalyzer.log exists" ' +
+    sh ('[[ -f /usr/share/opensearch/logs/PerformanceAnalyzer.log ]] && echo "PerformanceAnalyzer.log exists" ' +
             '|| (echo "PerformanceAnalyzer.log does not exist" && exit 1)')
-    sh ('[[ -f /tmp/performance_analyzer_agent_stats.log ]] && echo "performance_analyzer_agent_stats.log exists" ' +
+    sh ('[[ -f /usr/share/opensearch/logs/performance_analyzer_agent_stats.log ]] && echo "performance_analyzer_agent_stats.log exists" ' +
             '|| (echo "performance_analyzer_agent_stats.log does not exist" && exit 1)')
     //Validate the metrics name is CPU_Utilization
     def pa_metrics = sh (
