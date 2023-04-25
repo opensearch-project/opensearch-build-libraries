@@ -25,6 +25,7 @@ void call(Map args = [:]) {
 }
 
 void parameterCheck(String repository, String tag) {
+    // Will error out out if either or both are not present
     if (!repository || !tag) {
         currentBuild.result = 'ABORTED'
         error('repository and tag arguments are required.')
