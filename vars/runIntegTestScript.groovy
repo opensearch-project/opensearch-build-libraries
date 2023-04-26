@@ -14,9 +14,7 @@ void call(Map args = [:]) {
 
     echo "Start integTest for distribution type: " + buildManifest.getDistribution()
 
-    def TEST_MANIFEST = args.testManifest
-
-    javaVersion = (jobName.equals('distribution-build-opensearch')) ? detectTestDockerAgent().javaVersion : ''
+    javaVersion = (jobName.equals('distribution-build-opensearch')) ? detectTestDockerAgent(testManifest: args.testManifest).javaVersion : ''
     String javaHomeCommand = (jobName.equals('distribution-build-opensearch') && ! javaVersion.equals('')) ? "JAVA_HOME=/opt/java/${javaVersion}" : ''
     echo "Possible Java Home: ${javaHomeCommand}"
 
