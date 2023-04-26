@@ -14,8 +14,8 @@ void call(Map args = [:]) {
 
     echo "Start integTest for distribution type: " + buildManifest.getDistribution()
 
-    javaVersion = (jobName.equals('distribution-build-opensearch')) ? detectTestDockerAgent().javaVersion : ''
-    String javaHomeCommand = (jobName.equals('distribution-build-opensearch') && ! javaVersion.equals('')) ? "env JAVA_HOME=/opt/java/${javaVersion}" : ''
+    javaVersion = (jobName.equals('distribution-build-opensearch')) ? detectTestDockerAgent(testManifest: args.testManifest).javaVersion : ''
+    String javaHomeCommand = (jobName.equals('distribution-build-opensearch') && ! javaVersion.equals('')) ? "JAVA_HOME=/opt/java/${javaVersion}" : ''
     echo "Possible Java Home: ${javaHomeCommand}"
 
     String buildId = buildManifest.build.id
@@ -38,13 +38,14 @@ void call(Map args = [:]) {
     }
     echo "Switch User to Non-Root (uid=1000): ${switchUser}"
 
-    String switchCommandStart = switchUser.equals('true') ? 'su `id -un 1000` -c "' : ''
+    // Avoid issue related to docker ENV keyword is not correctly interpreted in su commands
+    // https://github.com/opensearch-project/opensearch-build-libraries/issues/197
+    String switchCommandStart = switchUser.equals('true') ? "su `id -un 1000` -c \"env PATH=\$PATH $javaHomeCommand" : "env PATH=\$PATH $javaHomeCommand"
     String switchCommandEnd = switchUser.equals('true') ? '"' : ''
 
     String testCommand = 
     [
         switchCommandStart,
-        javaHomeCommand,
         './test.sh',
         'integ-test',
         "${args.testManifest}",
