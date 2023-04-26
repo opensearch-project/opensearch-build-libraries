@@ -30,6 +30,7 @@ class RunIntegTestScriptLibTester extends LibFunctionTester {
 
     void configure(helper, binding) {
         binding.setVariable('env', ['BUILD_NUMBER': '987'])
+        binding.setVariable('TEST_MANIFEST', 'test/data/opensearch-1.3.0-test.yml')
     }
 
     void parameterInvariantsAssertions(call) {
