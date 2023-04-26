@@ -18,5 +18,5 @@
                   runIntegTestScript.echo(Paths: opensearch=tests/jenkins/artifacts/tar)
                   runIntegTestScript.echo(Component: OpenSearch)
                   runIntegTestScript.echo(Switch User to Non-Root (uid=1000): false)
-                  runIntegTestScript.echo(Run command:   ./test.sh integ-test tests/data/opensearch-1.3.0-test.yml --component OpenSearch --test-run-id null --paths opensearch=tests/jenkins/artifacts/tar )
-                  runIntegTestScript.sh(  ./test.sh integ-test tests/data/opensearch-1.3.0-test.yml --component OpenSearch --test-run-id null --paths opensearch=tests/jenkins/artifacts/tar )
+                  runIntegTestScript.echo(Run command: env  ./test.sh integ-test tests/data/opensearch-1.3.0-test.yml --component OpenSearch --test-run-id null --paths opensearch=tests/jenkins/artifacts/tar )
+                  runIntegTestScript.sh(env  ./test.sh integ-test tests/data/opensearch-1.3.0-test.yml --component OpenSearch --test-run-id null --paths opensearch=tests/jenkins/artifacts/tar )
