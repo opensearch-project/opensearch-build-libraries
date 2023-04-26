@@ -67,7 +67,7 @@ class TestRunIntegTestScript extends BuildPipelineTest {
     @Test
     public void TestRunIntegTestScript_LocalPath_Switch_Non_Root() {
         this.registerLibTester(new RunIntegTestScriptLibTester(
-            'dummy_job',
+            'distribution-build-opensearch',
             'OpenSearch',
             'tests/data/opensearch-1.3.0-build.yml',
             'tests/data/opensearch-1.3.0-test.yml',
@@ -82,14 +82,14 @@ class TestRunIntegTestScript extends BuildPipelineTest {
     @Test
     void 'IntegTest LocalPath SwitchNonRoot=false'() {
         runScript("tests/jenkins/jobs/RunIntegTestScript_LocalPath_Jenkinsfile")
-        assertThat(getShellCommands('sh', 'test.sh'), hasItems('  ./test.sh integ-test tests/data/opensearch-1.3.0-test.yml --component OpenSearch --test-run-id null --paths opensearch=tests/jenkins/artifacts/tar '))
+        assertThat(getShellCommands('sh', 'test.sh'), hasItems('env PATH=$PATH  ./test.sh integ-test tests/data/opensearch-1.3.0-test.yml --component OpenSearch --test-run-id null --paths opensearch=tests/jenkins/artifacts/tar '))
 
     }
 
     @Test
-    void 'IntegTest LocalPath SwitchNonRoot=true'() {
+    void 'IntegTest LocalPath SwitchNonRoot=true with JAVA_HOME'() {
         runScript("tests/jenkins/jobs/RunIntegTestScript_LocalPath_Switch_Non_Root_Jenkinsfile")
-        assertThat(getShellCommands('sh', 'test.sh'), hasItems('su `id -un 1000` -c \"  ./test.sh integ-test tests/data/opensearch-1.3.0-test.yml --component OpenSearch --test-run-id null --paths opensearch=tests/jenkins/artifacts/tar \"'))
+        assertThat(getShellCommands('sh', 'test.sh'), hasItems('su `id -un 1000` -c \"env PATH=$PATH JAVA_HOME=/opt/java/openjdk-11 ./test.sh integ-test tests/data/opensearch-1.3.0-test.yml --component OpenSearch --test-run-id null --paths opensearch=tests/jenkins/artifacts/tar \"'))
 
     }
 
