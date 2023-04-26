@@ -82,7 +82,7 @@ class TestRunIntegTestScript extends BuildPipelineTest {
     @Test
     void 'IntegTest LocalPath SwitchNonRoot=false'() {
         runScript("tests/jenkins/jobs/RunIntegTestScript_LocalPath_Jenkinsfile")
-        assertThat(getShellCommands('sh', 'test.sh'), hasItems('env  ./test.sh integ-test tests/data/opensearch-1.3.0-test.yml --component OpenSearch --test-run-id null --paths opensearch=tests/jenkins/artifacts/tar '))
+        assertThat(getShellCommands('sh', 'test.sh'), hasItems('env PATH=$PATH  ./test.sh integ-test tests/data/opensearch-1.3.0-test.yml --component OpenSearch --test-run-id null --paths opensearch=tests/jenkins/artifacts/tar '))
 
     }
 

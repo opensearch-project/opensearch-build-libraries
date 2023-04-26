@@ -40,7 +40,7 @@ void call(Map args = [:]) {
 
     // Avoid issue related to docker ENV keyword is not correctly interpreted in su commands
     // https://github.com/opensearch-project/opensearch-build-libraries/issues/197
-    String switchCommandStart = switchUser.equals('true') ? "su `id -un 1000` -c \"env PATH=\$PATH $javaHomeCommand" : "env $javaHomeCommand"
+    String switchCommandStart = switchUser.equals('true') ? "su `id -un 1000` -c \"env PATH=\$PATH $javaHomeCommand" : "env PATH=\$PATH $javaHomeCommand"
     String switchCommandEnd = switchUser.equals('true') ? '"' : ''
 
     String testCommand = 
