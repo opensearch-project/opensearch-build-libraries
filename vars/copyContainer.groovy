@@ -18,7 +18,7 @@
  */
 void call(Map args = [:]) {
 
-    recursive_copy = args.recursiveCopy
+    recursive_copy = args.recursiveCopy ?: false
     source_image = args.sourceImage
     source_image_no_tag = source_image.split(':')[0]
     source_registry = args.sourceRegistry
@@ -57,15 +57,15 @@ def gcraneCopy() {
     sh """
         set +x
 
-        if [ ${recursive_copy} = 'true' ]; then
-            echo "Recursive copy from ${source_registry}/${source_image_no_tag} to ${destination_registry}/${destination_image_no_tag}"
+        if [ ${recursive_copy} = true ]; then
+            echo "Copying all image tags recursively from ${source_registry}/${source_image_no_tag} to ${destination_registry}/${destination_image_no_tag}"
             for source_entry in `gcrane ls ${source_registry}/${source_image_no_tag}`; do
                 image_tag=`echo \$source_entry | cut -d/ -f3 | cut -d: -f2`
                 destination_entry="${destination_registry}/${destination_image_no_tag}:\$image_tag"
                 gcrane cp \$source_entry \$destination_entry
             done
         else
-            echo "Normal copy from ${source_registry}/${source_image} to ${destination_registry}/${destination_image}"
+            echo "Copying single image tag from ${source_registry}/${source_image} to ${destination_registry}/${destination_image}"
             gcrane cp ${source_registry}/${source_image} ${destination_registry}/${destination_image}
         fi
 

@@ -30,7 +30,7 @@ class TestCopyContainer extends BuildPipelineTest {
         binding.setVariable('SOURCE_IMAGE', sourceImage)
         binding.setVariable('DESTINATION_IMAGE_REGISTRY', 'opensearchproject')
         binding.setVariable('DESTINATION_IMAGE', destinationImage)
-        binding.setVariable('RECURSIVE_COPY', 'true')
+        binding.setVariable('RECURSIVE_COPY', true)
         helper.registerAllowedMethod('withAWS', [Map, Closure], null)
         super.setUp()
 
@@ -40,7 +40,7 @@ class TestCopyContainer extends BuildPipelineTest {
     public void testCopyContainerDockerStagingToDockerProd_verifyShellCommand() {
         super.testPipeline("tests/jenkins/jobs/DockerCopy_Jenkinsfile")
 
-        String gcrane_str = '''\n        set +x\n\n        if [ null = 'true' ]; then\n            echo \"Recursive copy from opensearchstaging/alpine to opensearchproject/alpine\"\n            for source_entry in `gcrane ls opensearchstaging/alpine`; do\n                image_tag=`echo $source_entry | cut -d/ -f3 | cut -d: -f2`\n                destination_entry=\"opensearchproject/alpine:$image_tag\"\n                gcrane cp $source_entry $destination_entry\n            done\n        else\n            echo \"Normal copy from opensearchstaging/alpine:3.15.4 to opensearchproject/alpine:3.15.4\"\n            gcrane cp opensearchstaging/alpine:3.15.4 opensearchproject/alpine:3.15.4\n        fi\n\n        docker logout\n        docker logout opensearchproject\n    '''
+        String gcrane_str = '''\n        set +x\n\n        if [ false = true ]; then\n            echo \"Copying all image tags recursively from opensearchstaging/alpine to opensearchproject/alpine\"\n            for source_entry in `gcrane ls opensearchstaging/alpine`; do\n                image_tag=`echo $source_entry | cut -d/ -f3 | cut -d: -f2`\n                destination_entry=\"opensearchproject/alpine:$image_tag\"\n                gcrane cp $source_entry $destination_entry\n            done\n        else\n            echo \"Copying single image tag from opensearchstaging/alpine:3.15.4 to opensearchproject/alpine:3.15.4\"\n            gcrane cp opensearchstaging/alpine:3.15.4 opensearchproject/alpine:3.15.4\n        fi\n\n        docker logout\n        docker logout opensearchproject\n    '''
         assertThat(getShellCommands('sh', 'gcrane'), hasItem(gcrane_str))
     }
 
@@ -48,7 +48,7 @@ class TestCopyContainer extends BuildPipelineTest {
     public void testCopyContainerDockerStagingToDockerProdRecursive_verifyShellCommand() {
         super.testPipeline("tests/jenkins/jobs/DockerCopyRecursive_Jenkinsfile")
 
-        String gcrane_recursive_str = '''\n        set +x\n\n        if [ true = 'true' ]; then\n            echo \"Recursive copy from opensearchstaging/alpine to opensearchproject/alpine\"\n            for source_entry in `gcrane ls opensearchstaging/alpine`; do\n                image_tag=`echo $source_entry | cut -d/ -f3 | cut -d: -f2`\n                destination_entry=\"opensearchproject/alpine:$image_tag\"\n                gcrane cp $source_entry $destination_entry\n            done\n        else\n            echo \"Normal copy from opensearchstaging/alpine:3.15.4 to opensearchproject/alpine:3.15.4\"\n            gcrane cp opensearchstaging/alpine:3.15.4 opensearchproject/alpine:3.15.4\n        fi\n\n        docker logout\n        docker logout opensearchproject\n    '''
+        String gcrane_recursive_str = '''\n        set +x\n\n        if [ true = true ]; then\n            echo \"Copying all image tags recursively from opensearchstaging/alpine to opensearchproject/alpine\"\n            for source_entry in `gcrane ls opensearchstaging/alpine`; do\n                image_tag=`echo $source_entry | cut -d/ -f3 | cut -d: -f2`\n                destination_entry=\"opensearchproject/alpine:$image_tag\"\n                gcrane cp $source_entry $destination_entry\n            done\n        else\n            echo \"Copying single image tag from opensearchstaging/alpine:3.15.4 to opensearchproject/alpine:3.15.4\"\n            gcrane cp opensearchstaging/alpine:3.15.4 opensearchproject/alpine:3.15.4\n        fi\n\n        docker logout\n        docker logout opensearchproject\n    '''
 
         assertThat(getShellCommands('sh', 'gcrane'), hasItem(gcrane_recursive_str))
     }

@@ -12,15 +12,15 @@
                      copyContainer.sh(
         set +x
 
-        if [ true = 'true' ]; then
-            echo "Recursive copy from opensearchstaging/alpine to opensearchproject/alpine"
+        if [ true = true ]; then
+            echo "Copying all image tags recursively from opensearchstaging/alpine to opensearchproject/alpine"
             for source_entry in `gcrane ls opensearchstaging/alpine`; do
                 image_tag=`echo $source_entry | cut -d/ -f3 | cut -d: -f2`
                 destination_entry="opensearchproject/alpine:$image_tag"
                 gcrane cp $source_entry $destination_entry
             done
         else
-            echo "Normal copy from opensearchstaging/alpine:3.15.4 to opensearchproject/alpine:3.15.4"
+            echo "Copying single image tag from opensearchstaging/alpine:3.15.4 to opensearchproject/alpine:3.15.4"
             gcrane cp opensearchstaging/alpine:3.15.4 opensearchproject/alpine:3.15.4
         fi
 
