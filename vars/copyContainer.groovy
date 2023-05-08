@@ -9,12 +9,12 @@
 /**@
  * Copies a container from one docker registry to another
  *
- * @param args A map of the following parameters
- * @param args.recursiveCopy Copy all the tags of a sourceImage to destinationImage if 'true' and <IMAGE_TAG> is ignored in sourceImage/destinationImage, default to 'false'
- * @param args.sourceImage The Source Image name and tag <IMAGE_NAME>:<IMAGE_TAG> Eg: opensearch:1.3.2
- * @param args.sourceRegistry The source docker registry, currently supports 'DockerHub' or 'ECR'
- * @param args.destinationImage The Destination Image name and tag <IMAGE_NAME>:<IMAGE_TAG> Eg: opensearch:1.3.2
- * @param args.destinationRegistry The destination docker registry, currently supports 'DockerHub' or 'ECR'
+ * @param [Required] args A map of the following parameters
+ * @param [Required] args.recursiveCopy Copy all the tags of a sourceImage to destinationImage if 'true' and <IMAGE_TAG> is ignored in sourceImage/destinationImage, default to 'false'
+ * @param [Required] args.sourceImage The Source Image name and tag <IMAGE_NAME>:<IMAGE_TAG> Eg: opensearch:1.3.2
+ * @param [Required] args.sourceRegistry The source docker registry, currently supports 'DockerHub' or 'ECR'
+ * @param [Required] args.destinationImage The Destination Image name and tag <IMAGE_NAME>:<IMAGE_TAG> Eg: opensearch:1.3.2
+ * @param [Required] args.destinationRegistry The destination docker registry, currently supports 'DockerHub' or 'ECR'
  */
 void call(Map args = [:]) {
 
