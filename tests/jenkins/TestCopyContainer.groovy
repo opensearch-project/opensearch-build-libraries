@@ -30,7 +30,7 @@ class TestCopyContainer extends BuildPipelineTest {
         binding.setVariable('SOURCE_IMAGE', sourceImage)
         binding.setVariable('DESTINATION_IMAGE_REGISTRY', 'opensearchproject')
         binding.setVariable('DESTINATION_IMAGE', destinationImage)
-        binding.setVariable('RECURSIVE_COPY', true)
+        binding.setVariable('ALL_TAGS', true)
         helper.registerAllowedMethod('withAWS', [Map, Closure], null)
         super.setUp()
 
@@ -40,17 +40,22 @@ class TestCopyContainer extends BuildPipelineTest {
     public void testCopyContainerDockerStagingToDockerProd_verifyShellCommand() {
         super.testPipeline("tests/jenkins/jobs/DockerCopy_Jenkinsfile")
 
-        String gcrane_str = '''\n        set +x\n\n        if [ false = true ]; then\n            echo \"Copying all image tags recursively from opensearchstaging/alpine to opensearchproject/alpine\"\n            for source_entry in `gcrane ls opensearchstaging/alpine`; do\n                image_tag=`echo $source_entry | cut -d/ -f3 | cut -d: -f2`\n                destination_entry=\"opensearchproject/alpine:$image_tag\"\n                gcrane cp $source_entry $destination_entry\n            done\n        else\n            echo \"Copying single image tag from opensearchstaging/alpine:3.15.4 to opensearchproject/alpine:3.15.4\"\n            gcrane cp opensearchstaging/alpine:3.15.4 opensearchproject/alpine:3.15.4\n        fi\n\n        docker logout\n        docker logout opensearchproject\n    '''
-        assertThat(getShellCommands('sh', 'gcrane'), hasItem(gcrane_str))
+        String crane_str = 'set -x && crane cp opensearchstaging/alpine:3.15.4 opensearchproject/alpine:3.15.4'
+        assertThat(getShellCommands('sh', 'crane'), hasItem(crane_str))
+
+        String docker_str = 'set +x && docker logout && docker logout opensearchproject'
+        assertThat(getShellCommands('sh', 'docker'), hasItem(docker_str))
     }
 
     @Test
-    public void testCopyContainerDockerStagingToDockerProdRecursive_verifyShellCommand() {
-        super.testPipeline("tests/jenkins/jobs/DockerCopyRecursive_Jenkinsfile")
+    public void testCopyContainerDockerStagingToDockerProdAllTags_verifyShellCommand() {
+        super.testPipeline("tests/jenkins/jobs/DockerCopyAllTags_Jenkinsfile")
 
-        String gcrane_recursive_str = '''\n        set +x\n\n        if [ true = true ]; then\n            echo \"Copying all image tags recursively from opensearchstaging/alpine to opensearchproject/alpine\"\n            for source_entry in `gcrane ls opensearchstaging/alpine`; do\n                image_tag=`echo $source_entry | cut -d/ -f3 | cut -d: -f2`\n                destination_entry=\"opensearchproject/alpine:$image_tag\"\n                gcrane cp $source_entry $destination_entry\n            done\n        else\n            echo \"Copying single image tag from opensearchstaging/alpine:3.15.4 to opensearchproject/alpine:3.15.4\"\n            gcrane cp opensearchstaging/alpine:3.15.4 opensearchproject/alpine:3.15.4\n        fi\n\n        docker logout\n        docker logout opensearchproject\n    '''
+        String crane_all_tags_str = 'set -x && crane cp opensearchstaging/alpine opensearchproject/alpine --all-tags'
+        assertThat(getShellCommands('sh', 'crane'), hasItem(crane_all_tags_str))
 
-        assertThat(getShellCommands('sh', 'gcrane'), hasItem(gcrane_recursive_str))
+        String docker_all_tags_str = 'set +x && docker logout && docker logout opensearchproject'
+        assertThat(getShellCommands('sh', 'docker'), hasItem(docker_all_tags_str))
     }
 
     def getShellCommands(methodName, searchString) {
