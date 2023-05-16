@@ -1,0 +1,77 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * The OpenSearch Contributors require contributions made to
+ * this file be licensed under the Apache-2.0 license or a
+ * compatible open source license.
+ */
+
+pipeline {
+    agent none
+    stages {
+        stage('benchmark-test') {
+            parallel {
+                stage('test-with-security') {
+                    steps {
+                        script {
+                            def bundleManifestObj = downloadBuildManifest(
+                                url: BUNDLE_MANIFEST_URL,
+                                path: BUNDLE_MANIFEST
+                            )
+                            runBenchmarkTestScript(bundleManifest: BUNDLE_MANIFEST,
+                            workload: TEST_WORKLOAD,
+                            insecure: "false",
+                            singleNode: SINGLE_NODE_CLUSTER,
+                            minDistribution: MIN_DISTRIBUTION,
+                            use50PercentHeap: USE_50_PERCENT_HEAP,
+                            suffix: "${env.BUILD_NUMBER}-secure",
+                            managerNodeCount: MANAGER_NODE_COUNT,
+                            dataNodeCount: DATA_NODE_COUNT,
+                            clientNodeCount: CLIENT_NODE_COUNT,
+                            ingestNodeCount: INGEST_NODE_COUNT,
+                            mlNodeCount: ML_NODE_COUNT,
+                            userTag: USER_TAGS.isEmpty() ? "security-enabled:true" : "${USER_TAGS},security-enabled:true",
+                            workloadParams: WORKLOAD_PARAMS,
+                            additionalConfig: ADDITIONAL_CONFIG,
+                            dataStorageSize: DATA_NODE_STORAGE,
+                            mlStorageSize: ML_NODE_STORAGE,
+                            jvmSysProps: JVM_SYS_PROPS,
+                            captureNodeStat: CAPTURE_NODE_STAT
+                            )
+                        }
+                    }
+                }
+                stage('test-without-security') {
+                    steps {
+                        script {
+                            def bundleManifestObj = downloadBuildManifest(
+                                url: BUNDLE_MANIFEST_URL,
+                                path: BUNDLE_MANIFEST
+                            )
+                            runBenchmarkTestScript(bundleManifest: BUNDLE_MANIFEST,
+                            workload: TEST_WORKLOAD,
+                            insecure: "true",
+                            singleNode: SINGLE_NODE_CLUSTER,
+                            minDistribution: MIN_DISTRIBUTION,
+                            use50PercentHeap: USE_50_PERCENT_HEAP,
+                            suffix: "${env.BUILD_NUMBER}",
+                            managerNodeCount: MANAGER_NODE_COUNT,
+                            dataNodeCount: DATA_NODE_COUNT,
+                            clientNodeCount: CLIENT_NODE_COUNT,
+                            ingestNodeCount: INGEST_NODE_COUNT,
+                            mlNodeCount: ML_NODE_COUNT,
+                            userTag: USER_TAGS.isEmpty() ? "security-enabled:false" : "${USER_TAGS},security-enabled:false",
+                            workloadParams: WORKLOAD_PARAMS,
+                            additionalConfig: ADDITIONAL_CONFIG,
+                            dataStorageSize: DATA_NODE_STORAGE,
+                            mlStorageSize: ML_NODE_STORAGE,
+                            jvmSysProps: JVM_SYS_PROPS,
+                            captureNodeStat: CAPTURE_NODE_STAT
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
