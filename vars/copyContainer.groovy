@@ -56,8 +56,13 @@ void call(Map args = [:]) {
 def craneCopy() {
 
     if (all_tags == true) {
-        echo "Copying all the tags of image ${source_registry}/${source_image_no_tag} to ${destination_registry}/${destination_image_no_tag}"
-        sh("set -x && crane cp ${source_registry}/${source_image_no_tag} ${destination_registry}/${destination_image_no_tag} --all-tags")
+        if (destination_registry.contains('opensearchstaging') && destination_image_no_tag.equals('ci-runner')) {
+            echo "Copying all the tags of image ${source_registry}/${source_image_no_tag} to ${destination_registry}/${destination_image_no_tag}"
+            sh("set -x && crane cp ${source_registry}/${source_image_no_tag} ${destination_registry}/${destination_image_no_tag} --all-tags")
+        }
+        else {
+            error("'destination_registry' must be opensearchstaging resgistry and 'destination_image' must be ci-runner")
+        }
     }
     else {
         echo "Copying single image tag from ${source_registry}/${source_image} to ${destination_registry}/${destination_image}"
