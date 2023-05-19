@@ -56,7 +56,7 @@ void call(Map args = [:]) {
 def craneCopy() {
 
     if (all_tags == true) {
-        echo "Copying all image tags from ${source_registry}/${source_image_no_tag} to ${destination_registry}/${destination_image_no_tag}"
+        echo "Copying all the tags of image ${source_registry}/${source_image_no_tag} to ${destination_registry}/${destination_image_no_tag}"
         sh("set -x && crane cp ${source_registry}/${source_image_no_tag} ${destination_registry}/${destination_image_no_tag} --all-tags")
     }
     else {
