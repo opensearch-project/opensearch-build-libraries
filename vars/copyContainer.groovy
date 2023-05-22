@@ -61,7 +61,7 @@ def craneCopy() {
             sh("set -x && crane cp ${source_registry}/${source_image_no_tag} ${destination_registry}/${destination_image_no_tag} --all-tags")
         }
         else {
-            error("'destination_registry' must be opensearchstaging resgistry and 'destination_image' must be ci-runner")
+            error("'destination_registry' must be opensearchstaging registry and 'destination_image' must be ci-runner")
         }
     }
     else {
