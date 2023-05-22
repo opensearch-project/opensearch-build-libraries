@@ -5,7 +5,7 @@
             CreateBuildFailureGithubIssue_Jenkinsfile.script(groovy.lang.Closure)
                CreateBuildFailureGithubIssue_Jenkinsfile.createBuildFailureGithubIssue({message=[Error building OpenSearch, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component OpenSearch --snapshot], inputManifestPath=tests/data/opensearch-2.0.0.yml})
                   createBuildFailureGithubIssue.legacySCM(groovy.lang.Closure)
-                  createBuildFailureGithubIssue.library({identifier=jenkins@4.2.0, retriever=null})
+                  createBuildFailureGithubIssue.library({identifier=jenkins@4.2.1, retriever=null})
                   createBuildFailureGithubIssue.readYaml({file=tests/data/opensearch-2.0.0.yml})
                   createBuildFailureGithubIssue.createGithubIssue({repoUrl=https://github.com/opensearch-project/OpenSearch.git, issueTitle=[AUTOCUT] Distribution Build Failed for OpenSearch-2.0.0, issueBody=***Received Error***: **Error building OpenSearch, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component OpenSearch --snapshot**.
                       The distribution build for OpenSearch has failed for version: 2.0.0.
