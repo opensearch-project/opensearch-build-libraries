@@ -79,8 +79,8 @@ void call(Map args = [:]) {
 }
 
 void editBenchmarkConfig(String config_file) {
-    withCredentials([string(credentialsId: 'beta_datastore_username', variable: 'DATASTORE_USER'),
-                     string(credentialsId: 'beta_datastore_password', variable: 'DATASTORE_PASSWORD')]) {
+    withCredentials([string(credentialsId: 'benchmark-metrics-datastore-user', variable: 'DATASTORE_USER'),
+                     string(credentialsId: 'benchmark-metrics-datastore-password', variable: 'DATASTORE_PASSWORD')]) {
         def file = readFile(file: "${config_file}")
         def contents = file.replace("insert_user_here", "${DATASTORE_USER}")
         contents = contents.replace("insert_password_here", "${DATASTORE_PASSWORD}")
