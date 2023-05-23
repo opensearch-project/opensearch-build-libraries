@@ -23,14 +23,15 @@ pipeline {
                         }
                     }
                 }
-                stage('Copy Image to ECR/DockerHub') {
+                stage('Copy Image to ECR/DockerHub with All Tags') {
                     steps {
                         script {
                             copyContainer(
+                                allTags: "${ALL_TAGS}",
                                 sourceImage: "${SOURCE_IMAGE}",
                                 sourceRegistry: "${SOURCE_IMAGE_REGISTRY}",
                                 destinationImage: "${DESTINATION_IMAGE}",
-                                destinationRegistry: "public.ecr.aws/opensearchstaging"
+                                destinationRegistry: "${DESTINATION_IMAGE_REGISTRY}"
                             )
                         }
                     }

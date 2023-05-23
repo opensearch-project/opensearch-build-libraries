@@ -16,8 +16,8 @@ import static com.lesfurets.jenkins.unit.MethodCall.callArgsToString
 
 class TestCopyContainer extends BuildPipelineTest {
 
-    String sourceImage = 'alpine:3.15.4'
-    String destinationImage = 'alpine:3.15.4'
+    String sourceImage = 'ci-runner:centos7-123'
+    String destinationImage = 'ci-runner:centos7-123'
 
     @Before
     void setUp() {
@@ -28,8 +28,9 @@ class TestCopyContainer extends BuildPipelineTest {
         binding.setVariable('DATA_PREPPER_STAGING_CONTAINER_REPOSITORY', 'sample_dataprepper_ecr_url')
         binding.setVariable('SOURCE_IMAGE_REGISTRY', 'opensearchstaging')
         binding.setVariable('SOURCE_IMAGE', sourceImage)
-        binding.setVariable('DESTINATION_IMAGE_REGISTRY', 'opensearchproject')
+        binding.setVariable('DESTINATION_IMAGE_REGISTRY', 'opensearchstaging')
         binding.setVariable('DESTINATION_IMAGE', destinationImage)
+        binding.setVariable('ALL_TAGS', true)
         helper.registerAllowedMethod('withAWS', [Map, Closure], null)
         super.setUp()
 
@@ -38,28 +39,34 @@ class TestCopyContainer extends BuildPipelineTest {
     @Test
     public void testCopyContainerDockerStagingToDockerProd_verifyShellCommand() {
         super.testPipeline("tests/jenkins/jobs/DockerCopy_Jenkinsfile")
-         def shellCommands = getCommandExecutions('sh', 'gcrane').findAll {
-            shCommand -> shCommand.contains('gcrane')
-         }
 
-         assertThat(shellCommands.size(), equalTo(1))
-         assertThat(shellCommands, hasItem("gcrane cp opensearchstaging/alpine:3.15.4 opensearchproject/alpine:3.15.4; docker logout".toString()))
+        String craneStr = 'set -x && crane cp opensearchstaging/ci-runner:centos7-123 public.ecr.aws/opensearchstaging/ci-runner:centos7-123'
+        assertThat(getShellCommands('sh', 'crane'), hasItem(craneStr))
+
+        String dockerStr = 'set +x && docker logout && docker logout public.ecr.aws/opensearchstaging'
+        assertThat(getShellCommands('sh', 'docker logout'), hasItem(dockerStr))
     }
 
-    def getCommandExecutions(methodName, command) {
-    def shCommands = helper.callStack.findAll {
-        call ->
+    @Test
+    public void testCopyContainerDockerStagingToDockerProdAllTags_verifyShellCommand() {
+        super.testPipeline("tests/jenkins/jobs/DockerCopyAllTags_Jenkinsfile")
+
+        String craneAllTagsStr = 'set -x && crane cp opensearchstaging/ci-runner opensearchstaging/ci-runner --all-tags'
+        assertThat(getShellCommands('sh', 'crane'), hasItem(craneAllTagsStr))
+
+        String dockerAllTagsStr = 'set +x && docker logout && docker logout opensearchstaging'
+        assertThat(getShellCommands('sh', 'docker logout'), hasItem(dockerAllTagsStr))
+    }
+
+    def getShellCommands(methodName, searchString) {
+        def shCommands = helper.callStack.findAll { call ->
             call.methodName == methodName
-    }.
-    collect {
-        call ->
+        }.collect { call ->
             callArgsToString(call)
-    }.findAll {
-        shCommand ->
-            shCommand.contains(command)
+        }.findAll { command ->
+            command.contains(searchString)
+        }
+        return shCommands
     }
-
-    return shCommands
-}
 
 }
