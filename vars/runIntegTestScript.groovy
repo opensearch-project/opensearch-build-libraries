@@ -28,6 +28,9 @@ void call(Map args = [:]) {
     String paths = generatePaths(buildManifest, artifactRootUrl, localPath)
     echo "Paths: ${paths}"
 
+    String basePath = generateBasePaths(buildManifest)
+    echo "Base Path ${basePath}"
+
     String component = args.componentName
     echo "Component: ${component}"
 
@@ -43,7 +46,7 @@ void call(Map args = [:]) {
     String switchCommandStart = switchUser.equals('true') ? "su `id -un 1000` -c \"env PATH=\$PATH $javaHomeCommand" : "env PATH=\$PATH $javaHomeCommand"
     String switchCommandEnd = switchUser.equals('true') ? '"' : ''
 
-    String testCommand = 
+    String testCommand =
     [
         switchCommandStart,
         './test.sh',
@@ -52,6 +55,7 @@ void call(Map args = [:]) {
         "--component ${component}",
         "--test-run-id ${env.BUILD_NUMBER}",
         "--paths ${paths}",
+        "--base-path ${basePath}",
         switchCommandEnd,
     ].join(' ')
 
@@ -79,4 +83,8 @@ String generatePaths(buildManifest, artifactRootUrl, localPath) {
             "opensearch=${localPath}" :
             "opensearch=${localPath} opensearch-dashboards=${localPath}"
     }
+}
+
+String generateBasePaths(buildManifest) {
+    return ["${env.PUBLIC_ARTIFACT_URL}", "${env.JOB_NAME}", buildManifest.build.version, buildManifest.build.id, buildManifest.build.platform, buildManifest.build.architecture, buildManifest.build.distribution].join("/")
 }
