@@ -43,7 +43,7 @@ void call(Map args = [:]) {
     sh """
         cp -v ${srcDir}/${baseName}.${extension} ${srcDir}/${baseName}-latest.${extension}
         cp -v ${srcDir}/${baseName}.${extension}.sha512 ${srcDir}/${baseName}-latest.${extension}.sha512
-        cp -v ${srcDir}/../manifest.yml ${srcDir}/${baseName}-latest.${extension}.yml
+        cp -v ${srcDir}/../manifest.yml ${srcDir}/${baseName}-latest.${extension}.build-manifest.yml
         sed -i "s/.${extension}/-latest.${extension}/g" ${srcDir}/${baseName}-latest.${extension}.sha512
     """
     withCredentials([
@@ -53,7 +53,7 @@ void call(Map args = [:]) {
             withAWS(role: "${ARTIFACT_PROMOTION_ROLE_NAME}", roleAccount: "${AWS_ACCOUNT_ARTIFACT}", duration: 900, roleSessionName: 'jenkins-session') {
                 s3Upload(file: "${srcDir}/${baseName}-latest.${extension}", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "${dstDir}/${baseName}-latest.${extension}")
                 s3Upload(file: "${srcDir}/${baseName}-latest.${extension}.sha512", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "${dstDir}/${baseName}-latest.${extension}.sha512")
-                s3Upload(file: "${srcDir}/${baseName}-latest.${extension}.yml", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "${dstDir}/${baseName}-latest.${extension}.yml")
+                s3Upload(file: "${srcDir}/${baseName}-latest.${extension}.build-manifest.yml", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "${dstDir}/${baseName}-latest.${extension}.build-manifest.yml")
             }
         }
 }
