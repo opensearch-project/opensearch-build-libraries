@@ -25,6 +25,7 @@ class TestSignArtifacts extends BuildPipelineTest {
         this.registerLibTester(new SignArtifactsLibTester('.rpm', 'linux', "${this.workspace}/artifacts", 'null', null, false))
         this.registerLibTester(new SignArtifactsLibTester(null, 'linux', "${this.workspace}/file.yml", 'maven', null))
         this.registerLibTester(new SignArtifactsLibTester(null, 'windows', "${this.workspace}/the_msi.msi", null, null, true))
+        this.registerLibTester(new SignArtifactsLibTester(null, 'mac', "${this.workspace}/the_pkg.pkg", null, null, true))
         super.setUp()
     }
 
