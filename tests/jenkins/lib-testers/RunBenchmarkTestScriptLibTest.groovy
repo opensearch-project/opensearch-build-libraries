@@ -17,6 +17,7 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
     private String singleNode
     private String minDistribution
     private String use50PercentHeap
+    private String enableRemoteStore
     private String suffix
     private String managerNodeCount
     private String dataNodeCount
@@ -32,13 +33,14 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
     private String captureNodeStat
 
     public RunBenchmarkTestScriptLibTester(bundleManifest, insecure, workload, singleNode, minDistribution, use50PercentHeap,
-    managerNodeCount, dataNodeCount, userTag, workloadParams, additionalConfig, captureNodeStat){
+                                           enableRemoteStore, managerNodeCount, dataNodeCount, userTag, workloadParams, additionalConfig, captureNodeStat){
         this.bundleManifest = bundleManifest
         this.insecure = insecure
         this.workload = workload
         this.singleNode = singleNode
         this.minDistribution = minDistribution
         this.use50PercentHeap = use50PercentHeap
+        this.enableRemoteStore = enableRemoteStore
         this.managerNodeCount = managerNodeCount
         this.dataNodeCount = dataNodeCount
         this.userTag = userTag
@@ -104,6 +106,7 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
         binding.setVariable('SINGLE_NODE_CLUSTER', singleNode)
         binding.setVariable('MIN_DISTRIBUTION', minDistribution)
         binding.setVariable('USE_50_PERCENT_HEAP', use50PercentHeap)
+        binding.setVariable('ENABLE_REMOTE_STORE', enableRemoteStore)
         binding.setVariable('SUFFIX', suffix)
         binding.setVariable('MANAGER_NODE_COUNT', managerNodeCount)
         binding.setVariable('DATA_NODE_COUNT', dataNodeCount)
