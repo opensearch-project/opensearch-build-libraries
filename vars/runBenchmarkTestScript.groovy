@@ -22,6 +22,7 @@
  * @param args.clientNodeCount <optional> - Number of client nodes in multi-node cluster, default is 0.
  * @param args.ingestNodeCount <optional> - Number of ingest nodes in multi-node cluster, default is 0.
  * @param args.mlNodeCount <optional> - Number of ml nodes in multi-node cluster, default is 0.
+ * @param args.enableRemoteStore <optional> - Enable remote-store feature in OpenSearch cluster
  * @param args.workloadParams <optional> - Additional parameters for benchmark workload type, e.g., number_of_replicas:1,number_of_shards:5.
  * @param args.dataStorageSize <optional> - Data node ebs storage size, default is 100G.
  * @param args.mlStorageSize <optional> - Ml node ebs storage size, default is 100G.
@@ -62,6 +63,7 @@ void call(Map args = [:]) {
             args.singleNode.toBoolean() ? "--single-node" : "",
             args.minDistribution.toBoolean() ? "--min-distribution" : "",
             args.use50PercentHeap.toBoolean() ? "--use-50-percent-heap" : "",
+            args.enableRemoteStore.toBoolean() ? "--enable-remote-store" : "",
             args.captureNodeStat.toBoolean() ? "--capture-node-stat" : "",
             isNullOrEmpty(args.suffix.toString()) ? "" : "--suffix ${args.suffix}",
             isNullOrEmpty(args.managerNodeCount.toString()) ? "" : "--manager-node-count ${args.managerNodeCount}",

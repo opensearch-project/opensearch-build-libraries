@@ -27,6 +27,7 @@ class TestRunBenchmarkTestScript extends BuildPipelineTest {
                 'true',
                 'false',
                 'true',
+                'false',
                 '',
                 '',
                 '',
@@ -69,7 +70,7 @@ class TestRunBenchmarkTestScript extends BuildPipelineTest {
     }
 
     @Test
-    void testRunPerfTestScript_verifyScriptExecutionsSingleNode() {
+    void testRunBenchmarkTestScript_verifyScriptExecutionsSingleNode() {
         runScript("tests/jenkins/jobs/BenchmarkTest_Jenkinsfile")
 
         def testScriptCommands = getCommandExecutions('sh', './test.sh').findAll {
@@ -78,10 +79,10 @@ class TestRunBenchmarkTestScript extends BuildPipelineTest {
 
         assertThat(testScriptCommands.size(), equalTo(2))
         assertThat(testScriptCommands, hasItem(
-                "./test.sh benchmark-test --bundle-manifest tests/data/opensearch-1.3.0-bundle.yml --config /tmp/workspace/config.yml --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag distribution-build-id:1236,arch:x64,os-commit-id:22408088f002a4fc8cdd3b2ed7438866c14c5069,security-enabled:true  --single-node  --use-50-percent-heap  --suffix 307-secure      --workload-params key2:value2 --additional-config cluster.indices.replication.strategy:SEGMENT --data-node-storage 200 --ml-node-storage 200 ".toString()
+                "./test.sh benchmark-test --bundle-manifest tests/data/opensearch-1.3.0-bundle.yml --config /tmp/workspace/config.yml --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag distribution-build-id:1236,arch:x64,os-commit-id:22408088f002a4fc8cdd3b2ed7438866c14c5069,security-enabled:true  --single-node  --use-50-percent-heap   --suffix 307-secure      --workload-params key2:value2 --additional-config cluster.indices.replication.strategy:SEGMENT --data-node-storage 200 --ml-node-storage 200 ".toString()
         ))
         assertThat(testScriptCommands, hasItem(
-		        "./test.sh benchmark-test --bundle-manifest tests/data/opensearch-1.3.0-bundle.yml --config /tmp/workspace/config.yml --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag distribution-build-id:1236,arch:x64,os-commit-id:22408088f002a4fc8cdd3b2ed7438866c14c5069,security-enabled:false --without-security --single-node  --use-50-percent-heap  --suffix 307      --workload-params key2:value2 --additional-config cluster.indices.replication.strategy:SEGMENT --data-node-storage 200 --ml-node-storage 200 ".toString()
+		        "./test.sh benchmark-test --bundle-manifest tests/data/opensearch-1.3.0-bundle.yml --config /tmp/workspace/config.yml --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag distribution-build-id:1236,arch:x64,os-commit-id:22408088f002a4fc8cdd3b2ed7438866c14c5069,security-enabled:false --without-security --single-node  --use-50-percent-heap   --suffix 307      --workload-params key2:value2 --additional-config cluster.indices.replication.strategy:SEGMENT --data-node-storage 200 --ml-node-storage 200 ".toString()
         ))
     }
 
