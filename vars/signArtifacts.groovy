@@ -115,7 +115,7 @@ void call(Map args = [:]) {
         String arguments = generateArguments(args)
 
         // Sign artifacts
-        // def configSecret = args.platform == "windows" ? "jenkins-signer-windows-config" : "jenkins-signer-client-creds"
+
         if (args.platform == 'windows') {
             withCredentials([usernamePassword(credentialsId: "${GITHUB_BOT_TOKEN_NAME}", usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN'),
                 string(credentialsId: 'jenkins-signer-windows-role', variable: 'SIGNER_WINDOWS_ROLE'),
@@ -134,6 +134,23 @@ void call(Map args = [:]) {
                    export PROFILE_IDENTIFIER=$SIGNER_WINDOWS_PROFILE_IDENTIFIER
                    export PLATFORM_IDENTIFIER=$SIGNER_WINDOWS_PLATFORM_IDENTIFIER
 
+                   ${workdir}/sign.sh ${arguments}
+               """
+                }
+        }
+        else if (args.platform == 'mac') {
+            withCredentials([usernamePassword(credentialsId: "${GITHUB_BOT_TOKEN_NAME}", usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN'),
+                string(credentialsId: 'jenkins-signer-mac-role', variable: 'SIGNER_MAC_ROLE'),
+                string(credentialsId: 'jenkins-signer-mac-external-id', variable: 'SIGNER_MAC_EXTERNAL_ID'),
+                string(credentialsId: 'jenkins-signer-mac-unsigned-bucket', variable: 'SIGNER_MAC_UNSIGNED_BUCKET'),
+                string(credentialsId: 'jenkins-signer-mac-signed-bucket', variable: 'SIGNER_MAC_SIGNED_BUCKET')]) {
+                sh """
+                   #!/bin/bash
+                   set +x
+                   export ROLE=$SIGNER_MAC_ROLE
+                   export EXTERNAL_ID=$SIGNER_MAC_EXTERNAL_ID
+                   export UNSIGNED_BUCKET=$SIGNER_MAC_UNSIGNED_BUCKET
+                   export SIGNED_BUCKET=$SIGNER_MAC_SIGNED_BUCKET
                    ${workdir}/sign.sh ${arguments}
                """
                 }
