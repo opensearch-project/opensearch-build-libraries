@@ -155,7 +155,7 @@ void call(Map args = [:]) {
                """
                 }
         }
-        else if (args.platform == 'linux') {
+        else {
             withCredentials([usernamePassword(credentialsId: "${GITHUB_BOT_TOKEN_NAME}", usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN'),
                 string(credentialsId: 'jenkins-signer-client-role', variable: 'SIGNER_CLIENT_ROLE'),
                 string(credentialsId: 'jenkins-signer-client-external-id', variable: 'SIGNER_CLIENT_EXTERNAL_ID'),
@@ -172,9 +172,6 @@ void call(Map args = [:]) {
                    ${workdir}/sign.sh ${arguments}
                """
                 }
-        }
-        else {
-            error('Unsupported signing platform', args.platform)
         }
     }
 }
