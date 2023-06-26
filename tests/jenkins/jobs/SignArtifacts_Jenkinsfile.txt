@@ -147,3 +147,22 @@
 
                    /tmp/workspace/sign.sh /tmp/workspace/the_msi.msi --platform windows --overwrite 
                )
+               SignArtifacts_Jenkinsfile.signArtifacts({artifactPath=/tmp/workspace/the_pkg.pkg, platform=mac, overwrite=true})
+                  signArtifacts.echo(PGP or Windows Signature Signing)
+                  signArtifacts.fileExists(/tmp/workspace/sign.sh)
+                  signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import -)
+                  signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
+                  signArtifacts.string({credentialsId=jenkins-signer-mac-role, variable=SIGNER_MAC_ROLE})
+                  signArtifacts.string({credentialsId=jenkins-signer-mac-external-id, variable=SIGNER_MAC_EXTERNAL_ID})
+                  signArtifacts.string({credentialsId=jenkins-signer-mac-unsigned-bucket, variable=SIGNER_MAC_UNSIGNED_BUCKET})
+                  signArtifacts.string({credentialsId=jenkins-signer-mac-signed-bucket, variable=SIGNER_MAC_SIGNED_BUCKET})
+                  signArtifacts.withCredentials([[GITHUB_USER, GITHUB_TOKEN], SIGNER_MAC_ROLE, SIGNER_MAC_EXTERNAL_ID, SIGNER_MAC_UNSIGNED_BUCKET, SIGNER_MAC_SIGNED_BUCKET], groovy.lang.Closure)
+                     signArtifacts.sh(
+                   #!/bin/bash
+                   set +x
+                   export ROLE=SIGNER_MAC_ROLE
+                   export EXTERNAL_ID=SIGNER_MAC_EXTERNAL_ID
+                   export UNSIGNED_BUCKET=SIGNER_MAC_UNSIGNED_BUCKET
+                   export SIGNED_BUCKET=SIGNER_MAC_SIGNED_BUCKET
+                   /tmp/workspace/sign.sh /tmp/workspace/the_pkg.pkg --platform mac --overwrite 
+               )
