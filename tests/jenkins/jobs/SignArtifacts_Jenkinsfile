@@ -17,26 +17,32 @@ pipeline {
                             artifactPath: "${WORKSPACE}/artifacts",
                             sigtype: '.sig',
                             platform: 'linux'
-                    )
+                            )
 
                     signArtifacts(
                             artifactPath: "${WORKSPACE}/artifacts",
                             sigtype: '.rpm',
                             platform: 'linux',
                             overwrite: false
-                    )
+                            )
 
                     signArtifacts(
                             artifactPath: "${WORKSPACE}/file.yml",
                             platform: 'linux',
                             type: 'maven',
-                    )
+                            )
 
                     signArtifacts(
                         artifactPath: "${WORKSPACE}/the_msi.msi",
                         platform: 'windows',
                         overwrite: true
-                )
+                        )
+
+                    signArtifacts(
+                        artifactPath: "${WORKSPACE}/the_pkg.pkg",
+                        platform: 'mac',
+                        overwrite: true
+                        )   
                 }
             }
         }
