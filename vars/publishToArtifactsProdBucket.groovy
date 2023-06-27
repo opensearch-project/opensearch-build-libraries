@@ -18,19 +18,19 @@
  */
 void call(Map args = [:]) {
     lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
-    println('Signing the artifacts')
-    signArtifacts(
-            artifactPath: args.source,
-            platform: args.signingPlatform ?: 'linux',
-            sigtype: args.sigType ?: '.sig',
-            overwrite: args.sigOverwrite ?: false
-            )
-    println('Uploading the artifacts')
-    withCredentials([
-        string(credentialsId: 'jenkins-aws-production-account', variable: 'AWS_ACCOUNT_ARTIFACT'),
-        string(credentialsId: 'jenkins-artifact-production-bucket-name', variable: 'ARTIFACT_PRODUCTION_BUCKET_NAME')]) {
-            withAWS(role: "${args.assumedRoleName}", roleAccount: "${AWS_ACCOUNT_ARTIFACT}", duration: 900, roleSessionName: 'jenkins-session') {
-                s3Upload(file: "${args.source}", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "${args.destination}")
-        }
-    }
+    println("Signing the artifacts ${args.source}, platform: ${args.signingPlatform}, sigType: ${args.sigType}")
+    // signArtifacts(
+    //         artifactPath: args.source,
+    //         platform: args.signingPlatform ?: 'linux',
+    //         sigtype: args.sigType ?: '.sig',
+    //         overwrite: args.sigOverwrite ?: false
+    //         )
+    println("Uploading the artifacts file: ${args.source}, destination: ${args.destination}")
+    // withCredentials([
+    //     string(credentialsId: 'jenkins-aws-production-account', variable: 'AWS_ACCOUNT_ARTIFACT'),
+    //     string(credentialsId: 'jenkins-artifact-production-bucket-name', variable: 'ARTIFACT_PRODUCTION_BUCKET_NAME')]) {
+    //         withAWS(role: "${args.assumedRoleName}", roleAccount: "${AWS_ACCOUNT_ARTIFACT}", duration: 900, roleSessionName: 'jenkins-session') {
+    //             s3Upload(file: "${args.source}", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "${args.destination}")
+    //     }
+    // }
 }
