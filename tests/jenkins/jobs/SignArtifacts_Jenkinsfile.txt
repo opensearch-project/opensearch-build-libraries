@@ -4,7 +4,6 @@
          SignArtifacts_Jenkinsfile.stage(sign, groovy.lang.Closure)
             SignArtifacts_Jenkinsfile.script(groovy.lang.Closure)
                SignArtifacts_Jenkinsfile.signArtifacts({artifactPath=/tmp/workspace/artifacts, sigtype=.sig, platform=linux})
-                  signArtifacts.echo(PGP or Windows Signature Signing)
                   signArtifacts.fileExists(/tmp/workspace/sign.sh)
                   signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import -)
                   signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
@@ -104,7 +103,6 @@
 
                     )
                SignArtifacts_Jenkinsfile.signArtifacts({artifactPath=/tmp/workspace/file.yml, platform=linux, type=maven})
-                  signArtifacts.echo(PGP or Windows Signature Signing)
                   signArtifacts.fileExists(/tmp/workspace/sign.sh)
                   signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import -)
                   signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
@@ -124,9 +122,7 @@
                    /tmp/workspace/sign.sh /tmp/workspace/file.yml --platform linux --type maven
                )
                SignArtifacts_Jenkinsfile.signArtifacts({artifactPath=/tmp/workspace/the_msi.msi, platform=windows, overwrite=true})
-                  signArtifacts.echo(PGP or Windows Signature Signing)
                   signArtifacts.fileExists(/tmp/workspace/sign.sh)
-                  signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import -)
                   signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
                   signArtifacts.string({credentialsId=jenkins-signer-windows-role, variable=SIGNER_WINDOWS_ROLE})
                   signArtifacts.string({credentialsId=jenkins-signer-windows-external-id, variable=SIGNER_WINDOWS_EXTERNAL_ID})
@@ -148,9 +144,7 @@
                    /tmp/workspace/sign.sh /tmp/workspace/the_msi.msi --platform windows --overwrite 
                )
                SignArtifacts_Jenkinsfile.signArtifacts({artifactPath=/tmp/workspace/the_pkg.pkg, platform=mac, overwrite=true})
-                  signArtifacts.echo(PGP or Windows Signature Signing)
                   signArtifacts.fileExists(/tmp/workspace/sign.sh)
-                  signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import -)
                   signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
                   signArtifacts.string({credentialsId=jenkins-signer-mac-role, variable=SIGNER_MAC_ROLE})
                   signArtifacts.string({credentialsId=jenkins-signer-mac-external-id, variable=SIGNER_MAC_EXTERNAL_ID})
