@@ -34,7 +34,6 @@
                      promoteArtifacts.findFiles({glob=**/opensearch-min-2.0.0-rc1*.tar*,**/opensearch-2.0.0-rc1*.tar*})
                      promoteArtifacts.getPath()
                      createSignatureFiles.signArtifacts({sigtype=.sig, artifactPath=tests/jenkins/tests/jenkins/file/found.zip})
-                        signArtifacts.echo(PGP or Windows Signature Signing)
                         signArtifacts.fileExists(tests/jenkins/sign.sh)
                         signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import -)
                         signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})

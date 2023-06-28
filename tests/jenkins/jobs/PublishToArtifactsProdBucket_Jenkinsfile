@@ -18,7 +18,6 @@ pipeline {
                             source: 'the-windows-msi.msi',
                             destination: 'msi/',
                             signingPlatform: 'windows',
-                            sigType: 'null',
                             sigOverwrite: true
                         )
 
