@@ -101,7 +101,6 @@ void call(Map args = [:]) {
     }
     else {
         String workdir = "${WORKSPACE}"
-        echo 'PGP or Windows Signature Signing'
 
         if (!fileExists("$WORKSPACE/sign.sh")) {
             dir('opensearch-build') {
@@ -110,13 +109,12 @@ void call(Map args = [:]) {
             }
         }
 
-        importPGPKey()
-
         String arguments = generateArguments(args)
 
         // Sign artifacts
 
         if (args.platform == 'windows') {
+            println('Using Windows signing')
             withCredentials([usernamePassword(credentialsId: "${GITHUB_BOT_TOKEN_NAME}", usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN'),
                 string(credentialsId: 'jenkins-signer-windows-role', variable: 'SIGNER_WINDOWS_ROLE'),
                 string(credentialsId: 'jenkins-signer-windows-external-id', variable: 'SIGNER_WINDOWS_EXTERNAL_ID'),
@@ -139,6 +137,7 @@ void call(Map args = [:]) {
                 }
         }
         else if (args.platform == 'mac') {
+            println('Using MAC signing')
             withCredentials([usernamePassword(credentialsId: "${GITHUB_BOT_TOKEN_NAME}", usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN'),
                 string(credentialsId: 'jenkins-signer-mac-role', variable: 'SIGNER_MAC_ROLE'),
                 string(credentialsId: 'jenkins-signer-mac-external-id', variable: 'SIGNER_MAC_EXTERNAL_ID'),
@@ -156,6 +155,8 @@ void call(Map args = [:]) {
                 }
         }
         else {
+            println('Using PGP signing')
+            importPGPKey()
             withCredentials([usernamePassword(credentialsId: "${GITHUB_BOT_TOKEN_NAME}", usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN'),
                 string(credentialsId: 'jenkins-signer-client-role', variable: 'SIGNER_CLIENT_ROLE'),
                 string(credentialsId: 'jenkins-signer-client-external-id', variable: 'SIGNER_CLIENT_EXTERNAL_ID'),

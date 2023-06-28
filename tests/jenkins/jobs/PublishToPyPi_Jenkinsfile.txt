@@ -7,7 +7,6 @@
                   publishToPyPi.legacySCM(groovy.lang.Closure)
                   publishToPyPi.library({identifier=jenkins@4.4.0, retriever=null})
                   publishToPyPi.signArtifacts({artifactPath=/tmp/workspace/dist, sigtype=.asc, platform=linux})
-                     signArtifacts.echo(PGP or Windows Signature Signing)
                      signArtifacts.fileExists(/tmp/workspace/sign.sh)
                      signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import -)
                      signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})

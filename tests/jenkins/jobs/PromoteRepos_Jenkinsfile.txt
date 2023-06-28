@@ -47,7 +47,6 @@
                 cd -
             )
                      promoteRepos.signArtifacts({artifactPath=/tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum/repodata/repomd.pom, sigtype=.asc, platform=linux})
-                        signArtifacts.echo(PGP or Windows Signature Signing)
                         signArtifacts.fileExists(/tmp/workspace/sign.sh)
                         signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import -)
                         signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
