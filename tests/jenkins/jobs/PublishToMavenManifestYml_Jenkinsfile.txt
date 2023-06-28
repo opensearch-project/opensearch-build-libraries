@@ -201,7 +201,6 @@ fi
 })
                      loadCustomScript.sh(chmod a+x ./stage-maven-release.sh)
                   publishToMaven.signArtifacts({artifactPath=/path/to/signing/manifest.yml, type=maven, platform=linux, sigtype=.asc})
-                     signArtifacts.echo(PGP or Windows Signature Signing)
                      signArtifacts.fileExists(workspace/sign.sh)
                      signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import -)
                      signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
