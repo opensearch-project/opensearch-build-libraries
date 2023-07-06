@@ -127,7 +127,7 @@ class TestStandardReleasePipelineWithGenericTriggers extends BuildPipelineTest {
         }
 
         assertThat(echoCommand.size(), equalTo(1))
-        assertThat(echoCommand, hasItem('Executing on agent [docker:[image:opensearchstaging/ci-runner:release-centos7-clients-v1, reuseNode:false, stages:[:], args:-e JAVA_HOME=/opt/java/openjdk-11, alwaysPull:true, containerPerStageRoot:false, label:Jenkins-Agent-AL2-X64-C54xlarge-Docker-Host]]'))
+        assertThat(echoCommand, hasItem('Executing on agent [docker:[image:opensearchstaging/ci-runner:release-centos7-clients-v4, reuseNode:false, stages:[:], args:-e JAVA_HOME=/opt/java/openjdk-11, alwaysPull:true, containerPerStageRoot:false, label:Jenkins-Agent-AL2-X64-C54xlarge-Docker-Host]]'))
     }
 
     @Test
