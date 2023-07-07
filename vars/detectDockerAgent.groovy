@@ -7,7 +7,7 @@
  * compatible open source license.
  */
 Map call(Map args = [:]) {
-    def lib = library(identifier: "jenkins@4.4.0", retriever: legacySCM(scm))
+    def lib = library(identifier: "jenkins@5.0.0", retriever: legacySCM(scm))
     String manifest = args.manifest ?: "manifests/${INPUT_MANIFEST}"
     def inputManifest = lib.jenkins.InputManifest.new(readYaml(file: manifest))
     dockerImage = inputManifest.ci?.image?.name ?: 'opensearchstaging/ci-runner:ci-runner-centos7-v1'
