@@ -7,7 +7,7 @@
  * compatible open source license.
  */
 void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@5.0.0', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@5.1.0', retriever: legacySCM(scm))
     def inputManifest = lib.jenkins.InputManifest.new(readYaml(file: args.inputManifest))
     def build_qualifier = inputManifest.build.qualifier
     def build_number = args.buildNumber ?: "${BUILD_NUMBER}"
