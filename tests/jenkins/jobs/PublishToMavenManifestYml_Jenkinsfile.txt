@@ -5,7 +5,7 @@
             PublishToMavenManifestYml_Jenkinsfile.script(groovy.lang.Closure)
                PublishToMavenManifestYml_Jenkinsfile.publishToMaven({signingArtifactsPath=/path/to/signing/manifest.yml, mavenArtifactsPath=/path/to/maven/artifacts, autoPublish=false})
                   publishToMaven.legacySCM(groovy.lang.Closure)
-                  publishToMaven.library({identifier=jenkins@5.1.0, retriever=null})
+                  publishToMaven.library({identifier=jenkins@5.0.0, retriever=null})
                   publishToMaven.loadCustomScript({scriptPath=publish/stage-maven-release.sh, scriptName=stage-maven-release.sh})
                      loadCustomScript.libraryResource(publish/stage-maven-release.sh)
                      loadCustomScript.writeFile({file=stage-maven-release.sh, text=#!/bin/bash
