@@ -71,7 +71,7 @@ void call(Map args = [:]) {
             isNullOrEmpty(args.clientNodeCount.toString()) ? "" : "--client-node-count ${args.clientNodeCount}",
             isNullOrEmpty(args.ingestNodeCount.toString()) ? "" : "--ingest-node-count ${args.ingestNodeCount}",
             isNullOrEmpty(args.mlNodeCount.toString()) ? "" : "--ml-node-count ${args.mlNodeCount}",
-            isNullOrEmpty(args.workloadParams.toString()) ? "" : "--workload-params ${args.workloadParams}",
+            isNullOrEmpty(args.workloadParams.toString()) ? "" : "--workload-params '${args.workloadParams}'",
             isNullOrEmpty(args.additionalConfig.toString()) ? "" : "--additional-config ${args.additionalConfig}",
             isNullOrEmpty(args.dataStorageSize.toString()) ? "" : "--data-node-storage ${args.dataStorageSize}",
             isNullOrEmpty(args.mlStorageSize.toString()) ? "" : "--ml-node-storage ${args.mlStorageSize}",
