@@ -26,30 +26,34 @@ void call(Map args = [:]) {
     destination_image_no_tag = destination_image.split(':')[0]
     destination_registry = args.destinationRegistry
 
-    if (args.destinationRegistry == 'opensearchstaging' || args.destinationRegistry == 'opensearchproject') {
-        def dockerJenkinsCredential = args.destinationRegistry == 'opensearchproject' ? "jenkins-production-dockerhub-credential" : "jenkins-staging-dockerhub-credential"
-        withCredentials([usernamePassword(credentialsId: dockerJenkinsCredential, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+    if (source_registry == 'opensearchstaging' || destination_registry == 'opensearchstaging') {
+        withCredentials([usernamePassword(credentialsId: 'jenkins-staging-dockerhub-credential', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
             sh("set +x && echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin")
-            craneCopy()
         }
     }
 
-    if (args.destinationRegistry == 'public.ecr.aws/opensearchproject') {
+    if (source_registry == 'opensearchproject' || destination_registry == 'opensearchproject') {
+        withCredentials([usernamePassword(credentialsId: 'jenkins-production-dockerhub-credential', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+            sh("set +x && echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin")
+        }
+    }
+
+    if (source_registry == 'public.ecr.aws/opensearchstaging' || destination_registry == 'public.ecr.aws/opensearchstaging') {
+        sh("set +x && aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${destination_registry}")
+    }
+
+    if (source_registry == 'public.ecr.aws/opensearchproject' || destination_registry == 'public.ecr.aws/opensearchproject') {
         withCredentials([
             string(credentialsId: 'jenkins-artifact-promotion-role', variable: 'ARTIFACT_PROMOTION_ROLE_NAME'),
             string(credentialsId: 'jenkins-aws-production-account', variable: 'AWS_ACCOUNT_ARTIFACT')])
             {
                 withAWS(role: "${ARTIFACT_PROMOTION_ROLE_NAME}", roleAccount: "${AWS_ACCOUNT_ARTIFACT}", duration: 900, roleSessionName: 'jenkins-session') {
-                    sh("set +x && aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${args.destinationRegistry}")
-                    craneCopy()
+                    sh("set +x && aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${destination_registry}")
                 }
             }
     }
 
-    if(args.destinationRegistry == 'public.ecr.aws/opensearchstaging') {
-        sh("set +x && aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${args.destinationRegistry}")
-        craneCopy()
-    }
+    craneCopy()
 
 }
 
@@ -69,7 +73,7 @@ def craneCopy() {
         sh("set -x && crane cp ${source_registry}/${source_image} ${destination_registry}/${destination_image}")
     }
 
-    sh("set +x && docker logout && docker logout ${destination_registry}")
+    sh("set +x && docker logout && docker logout public.ecr.aws")
 
     return
 }
