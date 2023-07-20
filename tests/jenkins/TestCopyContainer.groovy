@@ -43,7 +43,7 @@ class TestCopyContainer extends BuildPipelineTest {
         String craneStr = 'set -x && crane cp opensearchstaging/ci-runner:centos7-123 public.ecr.aws/opensearchstaging/ci-runner:centos7-123'
         assertThat(getShellCommands('sh', 'crane'), hasItem(craneStr))
 
-        String dockerStr = 'set +x && docker logout && docker logout public.ecr.aws/opensearchstaging'
+        String dockerStr = 'set +x && docker logout && docker logout public.ecr.aws'
         assertThat(getShellCommands('sh', 'docker logout'), hasItem(dockerStr))
     }
 
@@ -54,7 +54,7 @@ class TestCopyContainer extends BuildPipelineTest {
         String craneAllTagsStr = 'set -x && crane cp opensearchstaging/ci-runner opensearchstaging/ci-runner --all-tags'
         assertThat(getShellCommands('sh', 'crane'), hasItem(craneAllTagsStr))
 
-        String dockerAllTagsStr = 'set +x && docker logout && docker logout opensearchstaging'
+        String dockerAllTagsStr = 'set +x && docker logout && docker logout public.ecr.aws'
         assertThat(getShellCommands('sh', 'docker logout'), hasItem(dockerAllTagsStr))
     }
 
