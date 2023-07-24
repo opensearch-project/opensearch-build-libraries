@@ -7,4 +7,7 @@
                   createGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
                   createGithubIssue.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
                      createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/opensearch-build -S "Test GH issue title in:title" --label autocut, returnStdout=true})
-                     createGithubIssue.println(Issue already exists in the repository, skipping.)
+                     createGithubIssue.println(Issue already exists, adding a comment.)
+                     createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/opensearch-build -S "Test GH issue title in:title" --label autocut --json number --jq '.[0].number', returnStdout=true})
+                     createGithubIssue.sh({script=gh issue comment bbb
+ccc --repo https://github.com/opensearch-project/opensearch-build --body "Test GH issue body", returnStdout=true})

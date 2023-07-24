@@ -7,40 +7,32 @@
  * compatible open source license.
  */
 
-/** Library to create GitHub issue across opensearch-project repositories.
+/** Library to close GitHub issue across opensearch-project repositories.
  @param Map args = [:] args A map of the following parameters
  @param args.repoUrl <required> - GitHub repository URL to create issue
  @param args.issueTitle <required> - GitHub issue title
- @param args.issueBody <required> - GitHub issue body
+ @param args.closeComment <required> - GitHub issue leave a closing comment
  @param args.label <optional> - GitHub issue label to be attached along with 'untriaged'. Defaults to autocut.
  */
 void call(Map args = [:]) {
     label = args.label ?: 'autocut'
     try {
         withCredentials([usernamePassword(credentialsId: 'jenkins-github-bot-token', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'GITHUB_USER')]) {
-            def issues = sh(
-                    script: "gh issue list --repo ${args.repoUrl} -S \"${args.issueTitle} in:title\" --label ${label}",
-                    returnStdout: true
-            )
-            if (issues) {
-                println('Issue already exists, adding a comment.')
-                def issuesNumber = sh(
+            def issuesNumber = sh(
                     script: "gh issue list --repo ${args.repoUrl} -S \"${args.issueTitle} in:title\" --label ${label} --json number --jq '.[0].number'",
                     returnStdout: true
-                ).trim()
+            ).trim()
+            if (!issuesNumber.isEmpty()) {
+                def repoPath = args.repoUrl.replaceFirst("https://github.com/", "").replaceAll("\\.git\$", "")
                 sh(
-                   script: "gh issue comment ${issuesNumber} --repo ${args.repoUrl} --body \"${args.issueBody}\"",
-                   returnStdout: true
+                        script: "gh issue close ${issuesNumber} -R ${repoPath} --comment \"${args.closeComment}\"",
+                        returnStdout: true
                 )
-            }
-            else {
-                sh(
-                    script: "gh issue create --title \"${args.issueTitle}\" --body \"${args.issueBody}\" --label ${label} --label \"untriaged\" --repo ${args.repoUrl}",
-                    returnStdout: true
-                )
+            } else {
+                println("No open distribution failure AUTOCUT issues to close for the repo ${args.repoUrl}")
             }
         }
     } catch (Exception ex) {
-        error("Unable to create GitHub issue for ${args.repoUrl}", ex.getMessage())
+        error("Unable to close GitHub issue for ${args.repoUrl}", ex.getMessage())
     }
 }

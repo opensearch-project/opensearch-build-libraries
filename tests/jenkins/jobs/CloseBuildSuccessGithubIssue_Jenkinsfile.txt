@@ -1,0 +1,18 @@
+   CloseBuildSuccessGithubIssue_Jenkinsfile.run()
+      CloseBuildSuccessGithubIssue_Jenkinsfile.pipeline(groovy.lang.Closure)
+         CloseBuildSuccessGithubIssue_Jenkinsfile.echo(Executing on agent [label:none])
+         CloseBuildSuccessGithubIssue_Jenkinsfile.stage(notify, groovy.lang.Closure)
+            CloseBuildSuccessGithubIssue_Jenkinsfile.script(groovy.lang.Closure)
+               CloseBuildSuccessGithubIssue_Jenkinsfile.closeBuildSuccessGithubIssue({message=[Build successful OpenSearch], inputManifestPath=tests/data/opensearch-2.0.0.yml})
+                  closeBuildSuccessGithubIssue.legacySCM(groovy.lang.Closure)
+                  closeBuildSuccessGithubIssue.library({identifier=jenkins@main, retriever=null})
+                  closeBuildSuccessGithubIssue.readYaml({file=tests/data/opensearch-2.0.0.yml})
+                  closeBuildSuccessGithubIssue.closeGithubIssue({repoUrl=https://github.com/opensearch-project/OpenSearch.git, issueTitle=[AUTOCUT] Distribution Build Failed for OpenSearch-2.0.0, closeComment=Closing the issue as the distribution build for OpenSearch has passed for version: **2.0.0**.
+                    Please see build log at www.example.com/jobs/test/123/consoleFull, label=autocut,v2.0.0})
+                     closeGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
+                     closeGithubIssue.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+                        closeGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/OpenSearch.git -S "[AUTOCUT] Distribution Build Failed for OpenSearch-2.0.0 in:title" --label autocut,v2.0.0 --json number --jq '.[0].number', returnStdout=true})
+                        closeGithubIssue.sh({script=gh issue close bbb
+ccc -R opensearch-project/OpenSearch --comment "Closing the issue as the distribution build for OpenSearch has passed for version: **2.0.0**.
+                    Please see build log at www.example.com/jobs/test/123/consoleFull", returnStdout=true})
+                  closeBuildSuccessGithubIssue.sleep({time=3, unit=SECONDS})

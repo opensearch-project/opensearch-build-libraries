@@ -13,5 +13,10 @@
                      createGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
                      createGithubIssue.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
                         createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/OpenSearch.git -S "[AUTOCUT] Distribution Build Failed for OpenSearch-2.0.0 in:title" --label autocut,v2.0.0, returnStdout=true})
-                        createGithubIssue.println(Issue already exists in the repository, skipping.)
+                        createGithubIssue.println(Issue already exists, adding a comment.)
+                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/OpenSearch.git -S "[AUTOCUT] Distribution Build Failed for OpenSearch-2.0.0 in:title" --label autocut,v2.0.0 --json number --jq '.[0].number', returnStdout=true})
+                        createGithubIssue.sh({script=gh issue comment bbb
+ccc --repo https://github.com/opensearch-project/OpenSearch.git --body "***Received Error***: **Error building OpenSearch, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component OpenSearch --snapshot**.
+                      The distribution build for OpenSearch has failed for version: 2.0.0.
+                      Please see build log at www.example.com/jobs/test/123/consoleFull", returnStdout=true})
                   createBuildFailureGithubIssue.sleep({time=3, unit=SECONDS})
