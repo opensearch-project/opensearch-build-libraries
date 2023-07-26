@@ -51,7 +51,7 @@ void call(Map args = [:]) {
                 ./gradlew --stop
                 rm -rf ~/.gradle
 
-                if ! (uname -s | grep -i NT); then
+                if command -v docker > /dev/null; then
                     echo "Check existing dockercontainer"
                     docker ps -a
                     docker stop `docker ps -qa` > /dev/null 2>&1 || echo
