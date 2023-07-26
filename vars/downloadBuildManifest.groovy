@@ -7,7 +7,7 @@
  * compatible open source license.
  */
 def call(Map args = [:]) {
-    def lib = library(identifier: "jenkins@5.2.0", retriever: legacySCM(scm))
+    def lib = library(identifier: "jenkins@5.3.0", retriever: legacySCM(scm))
 
     sh "curl -sSL ${args.url} --output ${args.path}"
     def buildManifestObj = lib.jenkins.BuildManifest.new(readYaml(file: args.path))
