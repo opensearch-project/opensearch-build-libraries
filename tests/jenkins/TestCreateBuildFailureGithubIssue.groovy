@@ -34,7 +34,10 @@ class TestCreateBuildFailureGithubIssue extends BuildPipelineTest {
     @Test
     public void testExistingGithubIssue() {
         super.testPipeline('tests/jenkins/jobs/CreateBuildFailureGithubIssue_Jenkinsfile', 'tests/jenkins/jobs/CreateBuildFailureGithubExistingIssueCheck_Jenkinsfile')
-        assertThat(getCommands('println', ''), hasItem('Issue already exists in the repository, skipping.'))
+        assertThat(getCommands('println', ''), hasItem('Issue already exists, adding a comment.'))
+        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue list --repo https://github.com/opensearch-project/OpenSearch.git -S \"[AUTOCUT] Distribution Build Failed for OpenSearch-2.0.0 in:title\" --label autocut,v2.0.0, returnStdout=true}"))
+        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue list --repo https://github.com/opensearch-project/OpenSearch.git -S \"[AUTOCUT] Distribution Build Failed for OpenSearch-2.0.0 in:title\" --label autocut,v2.0.0 --json number --jq '.[0].number', returnStdout=true}"))
+        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue comment bbb\nccc --repo https://github.com/opensearch-project/OpenSearch.git --body \"***Received Error***: **Error building OpenSearch, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component OpenSearch --snapshot**.\n                      The distribution build for OpenSearch has failed for version: 2.0.0.\n                      Please see build log at www.example.com/jobs/test/123/consoleFull\", returnStdout=true}"))
     }
 
     def getCommands(method, text) {

@@ -40,7 +40,7 @@ Jenkins workflow regression tests typically output a .txt file into [tests/jenki
 For example, [TestHello.groovy](tests/jenkins/TestHello.groovy) executes [Hello_Jenkinsfile](tests/jenkins/jobs/Hello_Jenkinsfile)
 and outputs [Hello_Jenkinsfile.txt](tests/jenkins/jobs/Hello_Jenkinsfile.txt). If the job execution changes, the regression test will fail.
 
-- To update the recorded .txt file run `./gradlew test -info -Ppipeline.stack.write=true` or update its value in [gradle.properties](gradle.properties).
+- To update the recorded .txt file run `./gradlew test -info -Dpipeline.stack.write=true` or update its value in [gradle.properties](gradle.properties).
 
 - To run a specific test case, run `./gradlew test -info --tests=TestCaseClassName`
 

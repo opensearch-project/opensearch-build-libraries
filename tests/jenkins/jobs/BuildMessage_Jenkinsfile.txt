@@ -1,0 +1,6 @@
+   BuildMessage_Jenkinsfile.run()
+      BuildMessage_Jenkinsfile.pipeline(groovy.lang.Closure)
+         BuildMessage_Jenkinsfile.echo(Executing on agent [label:none])
+         BuildMessage_Jenkinsfile.stage(notify, groovy.lang.Closure)
+            BuildMessage_Jenkinsfile.script(groovy.lang.Closure)
+               BuildMessage_Jenkinsfile.buildMessage({search=pass})

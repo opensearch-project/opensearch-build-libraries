@@ -11,12 +11,12 @@ package jenkins.tests
 import jenkins.tests.BuildPipelineTest
 import org.junit.*
 
-class TestBuildFailureMessage extends BuildPipelineTest {
+class TestBuildMessage extends BuildPipelineTest {
 
 
     @Before
     void setUp() {
-        this.registerLibTester(new BuildFailureMessageLibTester())
+        this.registerLibTester(new BuildMessageLibTester('pass'))
         super.setUp()
         def currentBuild = binding.getVariable('currentBuild')
         binding.setVariable("currentBuild", currentBuild)
@@ -24,6 +24,6 @@ class TestBuildFailureMessage extends BuildPipelineTest {
 
     @Test
     void testBuildFailureMsg() {
-        super.testPipeline("tests/jenkins/jobs/BuildFailureMessage_Jenkinsfile")
+        super.testPipeline("tests/jenkins/jobs/BuildMessage_Jenkinsfile")
     }
 }
