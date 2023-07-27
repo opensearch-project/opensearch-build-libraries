@@ -41,11 +41,13 @@ class TestCreateGithubIssue extends BuildPipelineTest {
         this.registerLibTester(new CreateGithubIssueLibTester(
             'https://github.com/opensearch-project/opensearch-build',
             'Test GH issue title',
-            'Test GH issue body'
+            'Test GH issue body',
             ))
         super.testPipeline('tests/jenkins/jobs/CreateGithubIssueExisting_JenkinsFile')
-        assertThat(getCommands('println', ''), hasItem('Issue already exists in the repository, skipping.'))
-        assertThat(getCommands('sh', 'script'), hasItem('{script=gh issue list --repo https://github.com/opensearch-project/opensearch-build -S "Test GH issue title in:title" --label autocut, returnStdout=true}'))
+        assertThat(getCommands('println', ''), hasItem('Issue already exists, adding a comment.'))
+        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue list --repo https://github.com/opensearch-project/opensearch-build -S \"Test GH issue title in:title\" --label autocut, returnStdout=true}"))
+        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue list --repo https://github.com/opensearch-project/opensearch-build -S \"Test GH issue title in:title\" --label autocut --json number --jq '.[0].number', returnStdout=true}"))
+        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue comment bbb\nccc --repo https://github.com/opensearch-project/opensearch-build --body \"Test GH issue body\", returnStdout=true}"))
     }
 
     def getCommands(method, text) {
