@@ -13,16 +13,12 @@ pipeline {
         stage('notify') {
             steps {
                 script {
-                    try {
-                        buildFailureMessage()
-                        currentBuild.result = 'SUCCESS'
-                    } catch (Exception err) {
-//https://github.com/jenkinsci/JenkinsPipelineUnit/issues/509
-                        currentBuild.result = 'SUCCESS'
-                    }
+                    closeBuildSuccessGithubIssue(
+                        message: ["Build successful OpenSearch"],
+                        inputManifestPath: 'tests/data/opensearch-2.0.0.yml'
+                    )
                 }
             }
         }
     }
 }
-
