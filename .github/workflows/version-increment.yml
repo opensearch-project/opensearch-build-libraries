@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - build.gradle
+    branches: main
   workflow_dispatch:
 
 jobs:
