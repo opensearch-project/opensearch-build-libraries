@@ -27,7 +27,7 @@ class TestCloseBuildSuccessGithubIssue extends BuildPipelineTest {
 
     @Test
     public void testExistingGithubIssue() {
-        super.testPipeline('tests/jenkins/jobs/CloseBuildSuccessGithubIssue_Jenkinsfile')
+        super.testPipeline('tests/jenkins/jobs/CloseBuildSuccessGithubIssue_JenkinsFile')
         assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue list --repo https://github.com/opensearch-project/OpenSearch.git -S \"[AUTOCUT] Distribution Build Failed for OpenSearch-2.0.0 in:title\" --label autocut,v2.0.0 --json number --jq '.[0].number', returnStdout=true}"))
         assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue close bbb\nccc -R opensearch-project/OpenSearch --comment \"Closing the issue as the distribution build for OpenSearch has passed for version: **2.0.0**.\n                    Please see build log at www.example.com/jobs/test/123/consoleFull\", returnStdout=true}"))
     }

@@ -14,12 +14,7 @@ import com.cloudbees.groovy.cps.NonCPS
 import org.apache.commons.io.IOUtils
 @NonCPS
 def call(Map args = [:]){
-    String QUERY_STRING = ''
-    if (args.search == 'fail') {
-       QUERY_STRING = "Error building"
-    } else if (args.search == 'pass') {
-       QUERY_STRING = "Build successful"
-    }
+    String QUERY_STRING = args.search
     List<String> message = []
     Reader performance_log = currentBuild.getRawBuild().getLogReader()
     String logContent = IOUtils.toString(performance_log)
@@ -27,7 +22,7 @@ def call(Map args = [:]){
     performance_log = null
     logContent.eachLine() { line ->
         line=line.replace("\"", "")
-        //Gets the exact match for Error building
+        //Gets the exact match of the log starting with args.search
         def java.util.regex.Matcher match = (line =~ /$QUERY_STRING.*/)
         if (match.find()) {
             line=match[0]
@@ -36,7 +31,7 @@ def call(Map args = [:]){
     }
     //if no match returns as Build failed
     if(message.isEmpty()){
-        message=["Build failed"]
+        message=["The search QUERY_STRING not identified in build log"]
     }
     return message
 }

@@ -29,7 +29,7 @@ void call(Map args = [:]) {
                         returnStdout: true
                 )
             } else {
-                println("No open distribution failure AUTOCUT issues to close for the repo ${args.repoUrl}")
+                println("No open distribution failure AUTOCUT issues found that needs to be closed for the repo ${args.repoUrl}")
             }
         }
     } catch (Exception ex) {
