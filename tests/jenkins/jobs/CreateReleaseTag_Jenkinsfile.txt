@@ -5,7 +5,7 @@
             CreateReleaseTag_Jenkinsfile.script(groovy.lang.Closure)
                CreateReleaseTag_Jenkinsfile.createReleaseTag({distManifest=tests/data/opensearch-build-1.1.0.yml, tagVersion=1.1.0})
                   createReleaseTag.legacySCM(groovy.lang.Closure)
-                  createReleaseTag.library({identifier=jenkins@5.4.0, retriever=null})
+                  createReleaseTag.library({identifier=jenkins@5.4.1, retriever=null})
                   createReleaseTag.readYaml({file=tests/data/opensearch-build-1.1.0.yml})
                   BundleManifest.asBoolean()
                   BundleManifest.getNames()
