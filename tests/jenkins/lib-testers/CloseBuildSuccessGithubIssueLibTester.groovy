@@ -12,9 +12,13 @@ import static org.hamcrest.MatcherAssert.assertThat
 
 class CloseBuildSuccessGithubIssueLibTester extends LibFunctionTester{
     private List<String> message
+    private String search
+    private String inputManifestPath
 
-    public CloseBuildSuccessGithubIssueLibTester(message){
+    public CloseBuildSuccessGithubIssueLibTester(message, search, inputManifestPath){
         this.message = message
+        this.search = search
+        this.inputManifestPath = inputManifestPath
     }
 
     @Override
@@ -25,11 +29,15 @@ class CloseBuildSuccessGithubIssueLibTester extends LibFunctionTester{
     @Override
     void parameterInvariantsAssertions(Object call) {
         assertThat(call.args.message.first(), notNullValue())
+        assertThat(call.args.search.first(), notNullValue())
+        assertThat(call.args.inputManifestPath.first(), notNullValue())
     }
 
     @Override
     boolean expectedParametersMatcher(Object call) {
         return call.args.message.first().equals(this.message)
+        return call.args.search.first().equals(this.search)
+        return call.args.inputManifestPath.first().equals(this.inputManifestPath)
     }
 
     @Override
