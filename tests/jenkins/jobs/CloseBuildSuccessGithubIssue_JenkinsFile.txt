@@ -3,7 +3,7 @@
          CloseBuildSuccessGithubIssue_JenkinsFile.echo(Executing on agent [label:none])
          CloseBuildSuccessGithubIssue_JenkinsFile.stage(notify, groovy.lang.Closure)
             CloseBuildSuccessGithubIssue_JenkinsFile.script(groovy.lang.Closure)
-               CloseBuildSuccessGithubIssue_JenkinsFile.closeBuildSuccessGithubIssue({message=[Build successful OpenSearch], inputManifestPath=tests/data/opensearch-2.0.0.yml})
+               CloseBuildSuccessGithubIssue_JenkinsFile.closeBuildSuccessGithubIssue({message=[Successfully built OpenSearch], search=Successfully built, inputManifestPath=tests/data/opensearch-2.0.0.yml})
                   closeBuildSuccessGithubIssue.legacySCM(groovy.lang.Closure)
                   closeBuildSuccessGithubIssue.library({identifier=jenkins@main, retriever=null})
                   closeBuildSuccessGithubIssue.readYaml({file=tests/data/opensearch-2.0.0.yml})

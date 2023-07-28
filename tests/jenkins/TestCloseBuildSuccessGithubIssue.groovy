@@ -20,7 +20,7 @@ class TestCloseBuildSuccessGithubIssue extends BuildPipelineTest {
     @Override
     @Before
     void setUp() {
-        this.registerLibTester(new CloseBuildSuccessGithubIssueLibTester(['Build successful OpenSearch']))
+        this.registerLibTester(new CloseBuildSuccessGithubIssueLibTester(['Successfully built OpenSearch'], "Successfully built", "tests/data/opensearch-2.0.0.yml"))
         super.setUp()
     }
 
