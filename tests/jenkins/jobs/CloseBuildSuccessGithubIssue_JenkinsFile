@@ -14,7 +14,8 @@ pipeline {
             steps {
                 script {
                     closeBuildSuccessGithubIssue(
-                        message: ["Build successful OpenSearch"],
+                        message: ["Successfully built OpenSearch"],
+                        search: "Successfully built",
                         inputManifestPath: 'tests/data/opensearch-2.0.0.yml'
                     )
                 }
