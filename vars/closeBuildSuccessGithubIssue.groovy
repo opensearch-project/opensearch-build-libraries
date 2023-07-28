@@ -9,14 +9,16 @@
  /** Library to close GitHub issue across opensearch-project repositories.
  @param Map args = [:] args A map of the following parameters
  @param args.message <required> - message retrieved from buildMessage() method.
+ @param args.search <required> - Filter the logs based on the passed args.search.
  @param args.inputManifestPath <required> - Path to input manifest.
  */
 void call(Map args = [:]) {
     lib = library(identifier: 'jenkins@5.4.0', retriever: legacySCM(scm))
     def passMessages = args.message
+    def queryString = args.search
     List<String> passedComponents = []
     for (message in passMessages.unique()) {
-        java.util.regex.Matcher match = (message =~ /(?<=\bBuild successful\s).*/)
+        java.util.regex.Matcher match = (message =~ /(?<=\b${queryString}\s).*/)
         String matched = match[0]
         println(matched.split(" ")[0].trim())
         passedComponents.add(matched.split(" ")[0].trim())
