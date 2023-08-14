@@ -14,22 +14,23 @@ import org.yaml.snakeyaml.Yaml
 
 class PatchDockerImageLibTester extends LibFunctionTester {
 
-    private String product
-    private String tag
+    private String project
+    private String version
     private boolean rerelease
 
-    public PatchDockerImageLibTester(product, tag, rerelease){
-        this.product = product
-        this.tag = tag
+    public PatchDockerImageLibTester(project, version, rerelease){
+        this.project = project
+        this.version = version
         this.rerelease = rerelease
     }
 
     void configure(helper, binding) {
         def inputManifest = "tests/data/opensearch-1.3.0.yml"
+        binding.setVariable('MANIFEST', inputManifest)
 
-        helper.addReadFileMock('versionnumber', '1.3.0')
+        helper.addReadFileMock('versionNumber', '1.3.0')
         helper.addReadFileMock('time', '2023-06-19T19:12:59Z')
-        helper.addReadFileMock('number', '1880')
+        helper.addReadFileMock('buildNumber', '1880')
         helper.registerAllowedMethod('readYaml', [Map.class], { args ->
             return new Yaml().load((inputManifest as File).text)
         })
@@ -37,13 +38,13 @@ class PatchDockerImageLibTester extends LibFunctionTester {
     }
 
     void parameterInvariantsAssertions(call) {
-        assertThat(call.args.product.first(), notNullValue())
-        assertThat(call.args.tag.first(), notNullValue())
+        assertThat(call.args.project.first(), notNullValue())
+        assertThat(call.args.version.first(), notNullValue())
     }
 
     boolean expectedParametersMatcher(call) {
-        return call.args.product.first().toString().equals(this.product)
-                && call.args.tag.first().toString().equals(this.tag)
+        return call.args.project.first().toString().equals(this.project)
+                && call.args.version.first().toString().equals(this.version)
     }
 
     String libFunctionName() {

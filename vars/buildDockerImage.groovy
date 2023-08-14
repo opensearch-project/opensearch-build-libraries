@@ -12,6 +12,12 @@ void call(Map args = [:]) {
     def build_qualifier = inputManifest.build.qualifier
     def build_number = args.buildNumber ?: "${BUILD_NUMBER}"
 
+    String image_tag =""
+
+    if (args.buildDate != null){
+        image_tag = "." + "${args.buildDate}"
+    }
+
     if (build_qualifier != null && build_qualifier != 'null') {
         build_qualifier = "-" + build_qualifier
     }
@@ -23,7 +29,7 @@ void call(Map args = [:]) {
     if (args.artifactUrlX64 == null || args.artifactUrlArm64 ==  null) {
         echo 'Skipping docker build, one of x64 or arm64 artifacts was not built.'
     } else {
-        echo 'Trigger docker-build'
+        echo 'Triggering docker-build'
         dockerBuild: {
             build job: 'docker-build',
             parameters: [
@@ -50,20 +56,20 @@ void call(Map args = [:]) {
             ]
         }
 
-        echo 'Trigger docker create tag with build number'
-        if (args.buildOption == "build_docker_with_build_number_tag") {
+        echo 'Triggering docker create tag with build number'
+        if (args.buildOption == "build_docker_with_build_number_tag" || args.buildOption == "re_release_docker_image") {
             dockerCopy: {
                 build job: 'docker-copy',
                 parameters: [
                     string(name: 'SOURCE_IMAGE_REGISTRY', value: 'opensearchstaging'),
                     string(name: 'SOURCE_IMAGE', value: "${filename}:${inputManifest.build.version}${build_qualifier}"),
                     string(name: 'DESTINATION_IMAGE_REGISTRY', value: 'opensearchstaging'),
-                    string(name: 'DESTINATION_IMAGE', value: "${filename}:${inputManifest.build.version}${build_qualifier}.${build_number}")
+                    string(name: 'DESTINATION_IMAGE', value: "${filename}:${inputManifest.build.version}${build_qualifier}.${build_number}${image_tag}")
                 ]
             }
         }
 
-        echo "Trigger docker-scan for ${filename} version ${inputManifest.build.version}${build_qualifier}"
+        echo "Triggering docker-scan for ${filename} version ${inputManifest.build.version}${build_qualifier}"
         dockerScan: {
             build job: 'docker-scan',
             parameters: [

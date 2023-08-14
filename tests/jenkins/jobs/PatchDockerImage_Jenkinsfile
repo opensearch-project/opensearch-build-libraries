@@ -14,9 +14,9 @@ pipeline {
             steps {
                 script {
                     patchDockerImage(
-                        product: "opensearch",
-                        tag: "latest",
-                        rerelease: "true"
+                        project: "opensearch",
+                        version: "1",
+                        rerelease: "re_release_docker_image"
                     )
                 }
             }
