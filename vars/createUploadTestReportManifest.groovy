@@ -7,11 +7,11 @@
  * compatible open source license.
  */
 
-/** Library to close GitHub issue across opensearch-project repositories.
+/** Library to run the report workflow to generate test-report manifest.
  @param Map args = [:] args A map of the following parameters
  @param args.testManifest <required> - The path of the test manifest used
  @param args.buildManifest <required> - The path of the build manifest of OpenSearch artifacts.
- @param args.buildManifestDashboards <optional> - The path of the build manifest of OpenSearch Dashboards
+ @param args.dashboardsBuildManifest <optional> - The path of the build manifest of OpenSearch Dashboards
  @param args.testRunID <required> - Test run id of the test workflow being reported.
  @param args.testType <required> - Type of the test workflow being reported.
  @param args.componentName <Optional> - Components that workflow runs on.
@@ -20,16 +20,16 @@
 def call(Map args = [:]) {
     lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
 
-    def testID = args.testRunID;
+    def testRunID = args.testRunID;
     def testType = args.testType;
 
     def testManifest = lib.jenkins.TestManifest.new(readYaml(file: args.testManifest))
     def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.buildManifest))
-    def buildManifestDashboards = args.buildManifestDashboards ? lib.jenkins.BuildManifest.new(readYaml(file: args.buildManifestDashboards)) : null;
+    def dashboardsBuildManifest = args.dashboardsBuildManifest ? lib.jenkins.BuildManifest.new(readYaml(file: args.dashboardsBuildManifest)) : null;
 
     echo "Start Reporting workflow for test type: " + buildManifest.getDistribution()
 
-    String paths = generatePaths(testManifest, buildManifest, buildManifestDashboards)
+    String paths = generatePaths(testManifest, buildManifest, dashboardsBuildManifest)
     echo "Paths: ${paths}"
 
     String basePath = generateBasePaths(buildManifest)
@@ -43,16 +43,16 @@ def call(Map args = [:]) {
                     './report.sh',
                     "${args.testManifest}",
                     "--artifact-paths ${paths}",
-                    "--test-run-id ${testID}",
+                    "--test-run-id ${testRunID}",
                     "--test-type ${testType}",
                     "--base-path ${basePath}",
-                    "--component ${component}",
+                    isNullOrEmpty(component) ? "" : "--component ${component}",
             ].join(' ')
 
     echo "Run command: " + reportCommand
     sh(reportCommand)
 
-    String finalUploadPath = generateUploadPath(testManifest, buildManifest, buildManifestDashboards, testID)
+    String finalUploadPath = generateUploadPath(testManifest, buildManifest, dashboardsBuildManifest, testRunID)
     withCredentials([
             string(credentialsId: 'jenkins-artifact-bucket-name', variable: 'ARTIFACT_BUCKET_NAME'),
             string(credentialsId: 'jenkins-aws-account-public', variable: 'AWS_ACCOUNT_PUBLIC')]) {
@@ -64,14 +64,14 @@ def call(Map args = [:]) {
     }
 }
 
-String generatePaths(testManifest, buildManifest, buildManifestDashboards) {
+String generatePaths(testManifest, buildManifest, dashboardsBuildManifest) {
     String buildId = buildManifest.build.id
     String artifactRootUrl = buildManifest.getArtifactRootUrl('distribution-build-opensearch', buildId)
 
     String artifactRootUrlDashboards
-    if (buildManifestDashboards != null) {
-        String buildIdDashboards = buildManifestDashboards.build.id
-        artifactRootUrlDashboards = buildManifestDashboards.getArtifactRootUrl('distribution-build-opensearch-dashboards', buildIdDashboards)
+    if (dashboardsBuildManifest != null) {
+        String buildIdDashboards = dashboardsBuildManifest.build.id
+        artifactRootUrlDashboards = dashboardsBuildManifest.getArtifactRootUrl('distribution-build-opensearch-dashboards', buildIdDashboards)
     }
 
     echo "Artifact root URL: ${artifactRootUrl}"
@@ -86,13 +86,15 @@ String generateBasePaths(buildManifest) {
     return ["${env.PUBLIC_ARTIFACT_URL}", "${env.JOB_NAME}", buildManifest.build.version, buildManifest.build.id, buildManifest.build.platform, buildManifest.build.architecture, buildManifest.build.distribution].join("/")
 }
 
-String generateUploadPath(testManifest, buildManifest, buildManifestDashboards, testID) {
+String generateUploadPath(testManifest, buildManifest, dashboardsBuildManifest, testRunID) {
     def product = testManifest.name
-    def productBuildManifest = (product.equals("OpenSearch")) ? buildManifest : buildManifestDashboards
+    def productBuildManifest = (product.equals("OpenSearch")) ? buildManifest : dashboardsBuildManifest
 
     String buildId = productBuildManifest.build.id
     echo "Build Id: ${buildId}"
 
     def artifactPath = productBuildManifest.getArtifactRoot("${env.JOB_NAME}", buildId)
-    return [artifactPath, "test-results", testID, "integ-test", "test-report.yml"].join("/")
+    return [artifactPath, "test-results", testRunID, "integ-test", "test-report.yml"].join("/")
 }
+
+boolean isNullOrEmpty(String str) { return (str == null || str.allWhitespace || str.isEmpty()) }
