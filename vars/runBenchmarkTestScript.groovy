@@ -22,6 +22,7 @@
  * @param args.clientNodeCount <optional> - Number of client nodes in multi-node cluster, default is 0.
  * @param args.ingestNodeCount <optional> - Number of ingest nodes in multi-node cluster, default is 0.
  * @param args.mlNodeCount <optional> - Number of ml nodes in multi-node cluster, default is 0.
+ * @param args.dataInstanceType <optional> - EC2 instance type for data node, defaults to r5.xlarge.
  * @param args.enableRemoteStore <optional> - Enable remote-store feature in OpenSearch cluster
  * @param args.workloadParams <optional> - Additional parameters for benchmark workload type, e.g., number_of_replicas:1,number_of_shards:5.
  * @param args.dataStorageSize <optional> - Data node ebs storage size, default is 100G.
@@ -71,6 +72,7 @@ void call(Map args = [:]) {
             isNullOrEmpty(args.clientNodeCount.toString()) ? "" : "--client-node-count ${args.clientNodeCount}",
             isNullOrEmpty(args.ingestNodeCount.toString()) ? "" : "--ingest-node-count ${args.ingestNodeCount}",
             isNullOrEmpty(args.mlNodeCount.toString()) ? "" : "--ml-node-count ${args.mlNodeCount}",
+            isNullOrEmpty(args.dataInstanceType.toString()) ? "" : "--data-instance-type ${args.dataInstanceType}",
             isNullOrEmpty(args.workloadParams.toString()) ? "" : "--workload-params '${args.workloadParams}'",
             isNullOrEmpty(args.additionalConfig.toString()) ? "" : "--additional-config ${args.additionalConfig}",
             isNullOrEmpty(args.dataStorageSize.toString()) ? "" : "--data-node-storage ${args.dataStorageSize}",
