@@ -30,13 +30,7 @@ class CreateUploadTestReportManifestLibTester extends LibFunctionTester {
     }
 
     void configure(helper, binding) {
-        binding.setVariable('env', ['JOB_NAME': 'dummy_integ_test'])
-        binding.setVariable('ARTIFACT_BUCKET_NAME', 'DUMMY_BUCKET_NAME')
-        binding.setVariable('AWS_ACCOUNT_PUBLIC', 'DUMMY_AWS_ACCOUNT_PUBLIC')
-        binding.setVariable('ARTIFACT_BUCKET_NAME', 'DUMMY_ARTIFACT_BUCKET_NAME')
-        binding.setVariable('PUBLIC_ARTIFACT_URL', 'DUMMY_PUBLIC_ARTIFACT_URL')
-        binding.setVariable('env', ['BUILD_NUMBER': '487'])
-        binding.setVariable('STAGE_NAME', 'DUMMY_STAGE_NAME')
+        binding.setVariable('env', ['JOB_NAME': 'dummy_integ_test', 'BUILD_NUMBER': '487', 'PUBLIC_ARTIFACT_URL': 'DUMMY_PUBLIC_ARTIFACT_URL' ])
         helper.registerAllowedMethod("withCredentials", [Map, Closure], { args, closure ->
             closure.delegate = delegate
             return helper.callClosure(closure)
