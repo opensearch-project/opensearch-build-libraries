@@ -6,9 +6,9 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
- /** Library to find a pattern in jenkins build log.
+ /** Library to search string in jenkins build log.
  @param Map args = [:] args A map of the following parameters
- @param args.search <required> - Use 'pass' to get the components passed and 'fail' for components failed.
+ @param args.search <required> - String to be searched in build logs.
  */
 import com.cloudbees.groovy.cps.NonCPS
 import org.apache.commons.io.IOUtils
@@ -29,9 +29,8 @@ def call(Map args = [:]){
             message.add(line)
         }
     }
-    //if no match returns as Build failed
-    if(message.isEmpty()){
-        message=["The search QUERY_STRING not identified in build log"]
+    if (message.isEmpty()) {
+        message = null
     }
     return message
 }
