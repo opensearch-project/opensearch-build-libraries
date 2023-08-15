@@ -16,7 +16,8 @@ pipeline {
                     buildManifest(
                         inputManifest: "tests/data/opensearch-2.0.0.yml",
                         distribution: "tar",
-                        snapshot: true
+                        snapshot: true,
+                        continueOnError: true
                     )
                     buildManifest(
                         componentName: "job-scheduler",
@@ -28,6 +29,7 @@ pipeline {
                         componentName: "common-utils",
                         inputManifest: "tests/data/opensearch-2.0.0.yml",
                         distribution: "rpm",
+                        lock: true,
                         snapshot: true
                     )
                 }
