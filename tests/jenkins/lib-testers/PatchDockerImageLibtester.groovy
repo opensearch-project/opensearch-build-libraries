@@ -31,6 +31,7 @@ class PatchDockerImageLibTester extends LibFunctionTester {
         helper.addReadFileMock('versionNumber', '1.3.0')
         helper.addReadFileMock('time', '2023-06-19T19:12:59Z')
         helper.addReadFileMock('buildNumber', '1880')
+        helper.addReadFileMock('latestVersionNumber', '2.5.0')
         helper.registerAllowedMethod('readYaml', [Map.class], { args ->
             return new Yaml().load((inputManifest as File).text)
         })

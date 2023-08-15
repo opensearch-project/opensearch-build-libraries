@@ -10,23 +10,25 @@
 void call(Map args = [:]) {
     def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     String docker_image = "opensearchproject/${args.product}:${args.tag}"
+    String latest_docker_image = "opensearchproject/${args.product}:latest"
     boolean tag_latest = false
 
-    if (args.tag == "2"){
-        tag_latest = true
-    }
 
     sh """#!/bin/bash
     set -e
     set +x
     docker pull ${docker_image}
+    docker pull ${latest_docker_image}
     docker inspect --format '{{ index .Config.Labels "org.label-schema.version"}}' ${docker_image} > versionNumber
     docker inspect --format '{{ index .Config.Labels "org.label-schema.build-date"}}' ${docker_image} > time
-    docker inspect --format '{{ index .Config.Labels "org.label-schema.description"}}' ${docker_image} > buildNumber"""
+    docker inspect --format '{{ index .Config.Labels "org.label-schema.description"}}' ${docker_image} > buildNumber
+    docker inspect --format '{{ index .Config.Labels "org.label-schema.version"}}' ${latest_docker_image} > latestVersionNumber
+    """
 
     version = readFile('versionNumber').trim()
     build_time = readFile('time').trim()
     build_number = readFile('buildNumber').trim()
+    latest_version = readFile('latestVersionNumber').trim()
 
     def inputManifest = lib.jenkins.InputManifest.new(readYaml(file: "manifests/${version}/${args.product}-${version}.yml"))
 
@@ -46,19 +48,25 @@ void call(Map args = [:]) {
         build_qualifier = ''
     }
 
+    if (latest_version == version){
+        tag_latest = true
+    }
+
     buildDockerImage(
         inputManifest: "manifests/${version}/${args.product}-${version}.yml",
         buildNumber: "${build_number}",
         buildDate: "${build_date}",
-        buildOption: "${args.rerelease}",
+        buildOption: "${args.re_release}",
         artifactUrlX64: "${artifactUrlX64}",
         artifactUrlArm64: "${artifactUrlARM64}"
     )
 
     echo 'Triggering docker-promote'
-    if(args.rerelease == "re_release_docker_image"){
+    if(args.re_release == "re_release_docker_image"){
         dockerPromote: {
             build job: 'docker-promote',
+            propagate: true,
+            wait: true,
             parameters: [
                 string(name: 'SOURCE_IMAGES', value: "${args.product}:${inputManifest.build.version}${build_qualifier}.${build_number}.${build_date}"),
                 string(name: 'RELEASE_VERSION', value: "${version}"),

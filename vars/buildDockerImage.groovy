@@ -6,15 +6,22 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
+/**
+@param Map[inputManifest] <Required> - path to Input Manifest.
+@param Map[buildNumber] <Required> - Build number of the corresponding Artifact.
+@param Map[buildDate] <Optional> - Date on which the artifacts were built.
+@param Map[artifactUrlX64] <Required> - Url Path to X64 Tarball.
+@param Map[artifactUrlARM64] <Required> - Url Path to ARM64 Tarball.
+@param Map[buildOption] <Required> - Build Option for building the image with different options.
+*/
 void call(Map args = [:]) {
     def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     def inputManifest = lib.jenkins.InputManifest.new(readYaml(file: args.inputManifest))
     def build_qualifier = inputManifest.build.qualifier
     def build_number = args.buildNumber ?: "${BUILD_NUMBER}"
+    String image_tag = ""
 
-    String image_tag =""
-
-    if (args.buildDate != null){
+    if (args.buildDate != null && args.buildDate != 'null'){
         image_tag = "." + "${args.buildDate}"
     }
 
@@ -32,6 +39,8 @@ void call(Map args = [:]) {
         echo 'Triggering docker-build'
         dockerBuild: {
             build job: 'docker-build',
+            propagate: true,
+            wait: true,
             parameters: [
                 string(name: 'DOCKER_BUILD_GIT_REPOSITORY', value: 'https://github.com/opensearch-project/opensearch-build'),
                 string(name: 'DOCKER_BUILD_GIT_REPOSITORY_REFERENCE', value: 'main'),
@@ -60,6 +69,8 @@ void call(Map args = [:]) {
         if (args.buildOption == "build_docker_with_build_number_tag" || args.buildOption == "re_release_docker_image") {
             dockerCopy: {
                 build job: 'docker-copy',
+                propagate: true,
+                wait: true,
                 parameters: [
                     string(name: 'SOURCE_IMAGE_REGISTRY', value: 'opensearchstaging'),
                     string(name: 'SOURCE_IMAGE', value: "${filename}:${inputManifest.build.version}${build_qualifier}"),
@@ -72,6 +83,8 @@ void call(Map args = [:]) {
         echo "Triggering docker-scan for ${filename} version ${inputManifest.build.version}${build_qualifier}"
         dockerScan: {
             build job: 'docker-scan',
+            propagate: true,
+            wait: true,
             parameters: [
                 string(name: 'IMAGE_FULL_NAME', value: "opensearchstaging/${filename}:${inputManifest.build.version}${build_qualifier}")
             ]

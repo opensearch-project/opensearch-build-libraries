@@ -16,7 +16,7 @@ pipeline {
                     patchDockerImage(
                         project: "opensearch",
                         version: "1",
-                        rerelease: "re_release_docker_image"
+                        re_release: "re_release_docker_image"
                     )
                 }
             }
