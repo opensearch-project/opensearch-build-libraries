@@ -20,6 +20,8 @@
 def call(Map args = [:]) {
     lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
 
+    if (!parameterCheck(args.testManifest, args.buildManifest, args.testRunID, args.testType)) return null
+
     def testRunID = args.testRunID;
     def testType = args.testType;
 
@@ -98,3 +100,23 @@ String generateUploadPath(testManifest, buildManifest, dashboardsBuildManifest, 
 }
 
 boolean isNullOrEmpty(String str) { return (str == null || str.allWhitespace || str.isEmpty()) }
+
+boolean parameterCheck(String testManifest, String buildManifest, String testRunID, String testType) {
+    if (isNullOrEmpty(testManifest)) {
+        print("Required argument testManifest is null or empty. Skip running report workflow.")
+        return false
+    }
+    if (isNullOrEmpty(buildManifest)) {
+        print("Required argument buildManifest is null or empty. Skip running report workflow.")
+        return false
+    }
+    if (isNullOrEmpty(testRunID)) {
+        print("Required argument testRunID is null or empty. Skip running report workflow.")
+        return false
+    }
+    if (isNullOrEmpty(testType)) {
+        print("Required argument testType is null or empty. Skip running report workflow.")
+        return false
+    }
+    return true
+}
