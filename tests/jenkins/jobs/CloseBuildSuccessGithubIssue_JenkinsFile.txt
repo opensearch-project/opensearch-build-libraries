@@ -5,7 +5,7 @@
             CloseBuildSuccessGithubIssue_JenkinsFile.script(groovy.lang.Closure)
                CloseBuildSuccessGithubIssue_JenkinsFile.closeBuildSuccessGithubIssue({message=[Successfully built OpenSearch], search=Successfully built, inputManifestPath=tests/data/opensearch-2.0.0.yml})
                   closeBuildSuccessGithubIssue.legacySCM(groovy.lang.Closure)
-                  closeBuildSuccessGithubIssue.library({identifier=jenkins@5.4.1, retriever=null})
+                  closeBuildSuccessGithubIssue.library({identifier=jenkins@5.5.0, retriever=null})
                   closeBuildSuccessGithubIssue.readYaml({file=tests/data/opensearch-2.0.0.yml})
                   closeBuildSuccessGithubIssue.closeGithubIssue({repoUrl=https://github.com/opensearch-project/OpenSearch.git, issueTitle=[AUTOCUT] Distribution Build Failed for OpenSearch-2.0.0, closeComment=Closing the issue as the distribution build for OpenSearch has passed for version: **2.0.0**.
                     Please see build log at www.example.com/jobs/test/123/consoleFull, label=autocut,v2.0.0})
