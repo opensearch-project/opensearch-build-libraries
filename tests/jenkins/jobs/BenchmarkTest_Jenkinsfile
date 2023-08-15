@@ -38,7 +38,8 @@ pipeline {
                             dataStorageSize: DATA_NODE_STORAGE,
                             mlStorageSize: ML_NODE_STORAGE,
                             jvmSysProps: JVM_SYS_PROPS,
-                            captureNodeStat: CAPTURE_NODE_STAT
+                            captureNodeStat: CAPTURE_NODE_STAT,
+                            captureSegmentReplicationStat: CAPTURE_SEGMENT_REPLICATION_STAT
                             )
                         }
                     }
@@ -70,7 +71,8 @@ pipeline {
                             dataStorageSize: DATA_NODE_STORAGE,
                             mlStorageSize: ML_NODE_STORAGE,
                             jvmSysProps: JVM_SYS_PROPS,
-                            captureNodeStat: CAPTURE_NODE_STAT
+                            captureNodeStat: CAPTURE_NODE_STAT,
+                            captureSegmentReplicationStat: CAPTURE_SEGMENT_REPLICATION_STAT
                             )
                         }
                     }
