@@ -7,28 +7,42 @@
  * compatible open source license.
  */
 
+/**
+Library to support Docker Image Re-Release Automation
+@param Map[product] <Required> - Product type refers to opensearch or opensearch-dashboards.
+@param Map[tag] <Required> - Tag of the product that needs to be re-released.
+@param Map[re_release] <Optional> - This Build-Option can be checked to release the image after Docker-Build.
+*/
 void call(Map args = [:]) {
     def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     String docker_image = "opensearchproject/${args.product}:${args.tag}"
     String latest_docker_image = "opensearchproject/${args.product}:latest"
     boolean tag_latest = false
-
+    String build_option = "build_docker_image"
 
     sh """#!/bin/bash
     set -e
     set +x
     docker pull ${docker_image}
     docker pull ${latest_docker_image}
-    docker inspect --format '{{ index .Config.Labels "org.label-schema.version"}}' ${docker_image} > versionNumber
-    docker inspect --format '{{ index .Config.Labels "org.label-schema.build-date"}}' ${docker_image} > time
-    docker inspect --format '{{ index .Config.Labels "org.label-schema.description"}}' ${docker_image} > buildNumber
-    docker inspect --format '{{ index .Config.Labels "org.label-schema.version"}}' ${latest_docker_image} > latestVersionNumber
     """
 
-    version = readFile('versionNumber').trim()
-    build_time = readFile('time').trim()
-    build_number = readFile('buildNumber').trim()
-    latest_version = readFile('latestVersionNumber').trim()
+    def version = sh (
+            script: """docker inspect --format '{{ index .Config.Labels "org.label-schema.version"}}' ${docker_image}""",
+            returnStdout: true
+    ).trim()
+    def build_time = sh (
+            script: """docker inspect --format '{{ index .Config.Labels "org.label-schema.build-date"}}' ${docker_image}""",
+            returnStdout: true
+    ).trim()
+    def build_number = sh (
+            script: """docker inspect --format '{{ index .Config.Labels "org.label-schema.description"}}' ${docker_image}""",
+            returnStdout: true
+    ).trim()
+    def latest_version = sh (
+            script: """docker inspect --format '{{ index .Config.Labels "org.label-schema.version"}}' ${latest_docker_image}""",
+            returnStdout: true
+    ).trim()
 
     def inputManifest = lib.jenkins.InputManifest.new(readYaml(file: "manifests/${version}/${args.product}-${version}.yml"))
 
@@ -52,19 +66,23 @@ void call(Map args = [:]) {
         tag_latest = true
     }
 
+    if (args.re_release){
+        build_option = "re_release_docker_image"
+    }
+
     buildDockerImage(
         inputManifest: "manifests/${version}/${args.product}-${version}.yml",
         buildNumber: "${build_number}",
         buildDate: "${build_date}",
-        buildOption: "${args.re_release}",
+        buildOption: "${build_option}",
         artifactUrlX64: "${artifactUrlX64}",
         artifactUrlArm64: "${artifactUrlARM64}"
     )
 
-    echo 'Triggering docker-promote'
-    if(args.re_release == "re_release_docker_image"){
+    echo 'Triggering docker-promotion'
+    if(args.re_release){
         dockerPromote: {
-            build job: 'docker-promote',
+            build job: 'docker-promotion',
             propagate: true,
             wait: true,
             parameters: [

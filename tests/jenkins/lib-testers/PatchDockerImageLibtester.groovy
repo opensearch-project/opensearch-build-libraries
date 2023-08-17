@@ -14,24 +14,32 @@ import org.yaml.snakeyaml.Yaml
 
 class PatchDockerImageLibTester extends LibFunctionTester {
 
-    private String project
-    private String version
-    private boolean rerelease
+    private String product
+    private String tag
+    private String re_release
 
-    public PatchDockerImageLibTester(project, version, rerelease){
-        this.project = project
-        this.version = version
-        this.rerelease = rerelease
+    public PatchDockerImageLibTester(product, tag, re_release){
+        this.product = product
+        this.tag = tag
+        this.re_release = re_release
     }
 
     void configure(helper, binding) {
         def inputManifest = "tests/data/opensearch-1.3.0.yml"
         binding.setVariable('MANIFEST', inputManifest)
 
-        helper.addReadFileMock('versionNumber', '1.3.0')
-        helper.addReadFileMock('time', '2023-06-19T19:12:59Z')
-        helper.addReadFileMock('buildNumber', '1880')
-        helper.addReadFileMock('latestVersionNumber', '2.5.0')
+        helper.addShMock("""docker inspect --format '{{ index .Config.Labels "org.label-schema.version"}}' opensearchproject/opensearch:1""") { script ->
+            return [stdout: "1.3.0", exitValue: 0]
+        }
+        helper.addShMock("""docker inspect --format '{{ index .Config.Labels "org.label-schema.description"}}' opensearchproject/opensearch:1""") { script ->
+            return [stdout: "7756", exitValue: 0]
+        }
+        helper.addShMock("""docker inspect --format '{{ index .Config.Labels "org.label-schema.build-date"}}' opensearchproject/opensearch:1""") { script ->
+            return [stdout: "2023-06-19T19:12:59Z", exitValue: 0]
+        }
+        helper.addShMock("""docker inspect --format '{{ index .Config.Labels "org.label-schema.version"}}' opensearchproject/opensearch:latest""") { script ->
+            return [stdout: "2.5.0", exitValue: 0]
+        }
         helper.registerAllowedMethod('readYaml', [Map.class], { args ->
             return new Yaml().load((inputManifest as File).text)
         })
@@ -39,13 +47,13 @@ class PatchDockerImageLibTester extends LibFunctionTester {
     }
 
     void parameterInvariantsAssertions(call) {
-        assertThat(call.args.project.first(), notNullValue())
-        assertThat(call.args.version.first(), notNullValue())
+        assertThat(call.args.product.first(), notNullValue())
+        assertThat(call.args.tag.first(), notNullValue())
     }
 
     boolean expectedParametersMatcher(call) {
-        return call.args.project.first().toString().equals(this.project)
-                && call.args.version.first().toString().equals(this.version)
+        return call.args.product.first().toString().equals(this.product)
+                && call.args.tag.first().toString().equals(this.tag)
     }
 
     String libFunctionName() {

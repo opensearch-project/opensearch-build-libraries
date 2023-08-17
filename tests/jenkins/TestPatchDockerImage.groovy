@@ -17,9 +17,9 @@ class TestPatchDockerImage extends BuildPipelineTest {
     @Before
     void setUp() {
         this.registerLibTester(new PatchDockerImageLibTester(
-            "opensearch",
-            "1",
-            "re_release_docker_image"
+            'opensearch',
+            '1',
+            'true'
             )
         )
         super.setUp()

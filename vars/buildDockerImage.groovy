@@ -6,8 +6,10 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
+
 /**
-@param Map[inputManifest] <Required> - path to Input Manifest.
+Library to build Docker Image with different Build Options
+@param Map[inputManifest] <Required> - Path to Input Manifest.
 @param Map[buildNumber] <Required> - Build number of the corresponding Artifact.
 @param Map[buildDate] <Optional> - Date on which the artifacts were built.
 @param Map[artifactUrlX64] <Required> - Url Path to X64 Tarball.
