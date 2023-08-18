@@ -21,11 +21,11 @@ void call(Map args = [:]) {
     }
     else {
         for (message in failureMessages.unique()) {
-            java.util.regex.Matcher match = (message =~ /(?<=\bcomponent\s).*/)
+            java.util.regex.Matcher match = (message =~ /(?<=\bError building\s).*/)
             String matched = match[0]
-            println(matched.split(" ")[0].trim())
-            failedComponents.add(matched.split(" ")[0].trim())
-        }
+            failedComponents.add(matched.split(" ")[0].split(",")[0].trim())
+            }
+            failedComponents = failedComponents.unique()
         /* Due to an existing issue with queryWorkbench plugin breaking OSD during bootstrapping, there are false positive
            issues getting created against OSD repo. Adding a temp check to ignore issue creation against OSD repo in-case
            there are more than 1 failures reported for OSD build.
