@@ -24,6 +24,7 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
     private String clientNodeCount = ''
     private String ingestNodeCount = ''
     private String mlNodeCount = ''
+    private String dataInstanceType
     private String userTag
     private String workloadParams
     private String additionalConfig
@@ -31,9 +32,11 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
     private String mlStorageSize = '200'
     private String jvmSysProps = ''
     private String captureNodeStat
+    private String captureSegmentReplicationStat
 
     public RunBenchmarkTestScriptLibTester(bundleManifest, insecure, workload, singleNode, minDistribution, use50PercentHeap,
-                                           enableRemoteStore, managerNodeCount, dataNodeCount, userTag, workloadParams, additionalConfig, captureNodeStat){
+                                           enableRemoteStore, managerNodeCount, dataNodeCount, dataInstanceType, userTag, workloadParams,
+                                           additionalConfig, captureNodeStat, captureSegmentReplicationStat){
         this.bundleManifest = bundleManifest
         this.insecure = insecure
         this.workload = workload
@@ -43,10 +46,12 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
         this.enableRemoteStore = enableRemoteStore
         this.managerNodeCount = managerNodeCount
         this.dataNodeCount = dataNodeCount
+        this.dataInstanceType = dataInstanceType
         this.userTag = userTag
         this.workloadParams = workloadParams
         this.additionalConfig = additionalConfig
         this.captureNodeStat = captureNodeStat
+        this.captureSegmentReplicationStat = captureSegmentReplicationStat
     }
 
 
@@ -118,8 +123,10 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
         binding.setVariable('ML_NODE_COUNT', mlNodeCount)
         binding.setVariable('DATA_NODE_STORAGE', dataStorageSize)
         binding.setVariable('ML_NODE_STORAGE', mlStorageSize)
+        binding.setVariable('DATA_INSTANCE_TYPE', dataInstanceType)
         binding.setVariable('JVM_SYS_PROPS', jvmSysProps)
         binding.setVariable('CAPTURE_NODE_STAT', captureNodeStat)
+        binding.setVariable('CAPTURE_SEGMENT_REPLICATION_STAT', captureSegmentReplicationStat)
         binding.setVariable('JOB_NAME', 'benchmark-test')
         binding.setVariable('BENCHMARK_TEST_CONFIG_LOCATION', 'test_config')
         binding.setVariable('PUBLIC_ARTIFACT_URL', 'test://artifact.url')

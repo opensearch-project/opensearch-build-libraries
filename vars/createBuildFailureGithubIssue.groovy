@@ -16,7 +16,7 @@ void call(Map args = [:]) {
     def failureMessages = args.message
     List<String> failedComponents = []
 
-    if (failureMessages.size() == 1 && failureMessages[0] == 'Build failed') {
+    if (failureMessages == null) {
         println('No component failed, skip creating github issue.')
     }
     else {

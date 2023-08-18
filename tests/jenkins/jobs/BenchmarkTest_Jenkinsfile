@@ -31,13 +31,15 @@ pipeline {
                             clientNodeCount: CLIENT_NODE_COUNT,
                             ingestNodeCount: INGEST_NODE_COUNT,
                             mlNodeCount: ML_NODE_COUNT,
+                            dataInstanceType: DATA_INSTANCE_TYPE,
                             userTag: USER_TAGS.isEmpty() ? "security-enabled:true" : "${USER_TAGS},security-enabled:true",
                             workloadParams: WORKLOAD_PARAMS,
                             additionalConfig: ADDITIONAL_CONFIG,
                             dataStorageSize: DATA_NODE_STORAGE,
                             mlStorageSize: ML_NODE_STORAGE,
                             jvmSysProps: JVM_SYS_PROPS,
-                            captureNodeStat: CAPTURE_NODE_STAT
+                            captureNodeStat: CAPTURE_NODE_STAT,
+                            captureSegmentReplicationStat: CAPTURE_SEGMENT_REPLICATION_STAT
                             )
                         }
                     }
@@ -62,13 +64,15 @@ pipeline {
                             clientNodeCount: CLIENT_NODE_COUNT,
                             ingestNodeCount: INGEST_NODE_COUNT,
                             mlNodeCount: ML_NODE_COUNT,
+                            dataInstanceType: DATA_INSTANCE_TYPE,
                             userTag: USER_TAGS.isEmpty() ? "security-enabled:false" : "${USER_TAGS},security-enabled:false",
                             workloadParams: WORKLOAD_PARAMS,
                             additionalConfig: ADDITIONAL_CONFIG,
                             dataStorageSize: DATA_NODE_STORAGE,
                             mlStorageSize: ML_NODE_STORAGE,
                             jvmSysProps: JVM_SYS_PROPS,
-                            captureNodeStat: CAPTURE_NODE_STAT
+                            captureNodeStat: CAPTURE_NODE_STAT,
+                            captureSegmentReplicationStat: CAPTURE_SEGMENT_REPLICATION_STAT
                             )
                         }
                     }

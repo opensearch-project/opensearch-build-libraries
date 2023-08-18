@@ -16,12 +16,14 @@
  * @param args.minDistribution <optional> - Use min distribution of OpenSearch for cluster, default is false.
  * @param args.use50PercentHeap <optional> - Use 50 percent of physical memory as heap, default is false.
  * @param args.captureNodeStat <optional> - Make opensearch-benchmark to capture node stats during run, default is false
+ * @param args.captureSegmentReplicationStat <optional> - Enable opensearch-benchmark to capture segment_replication stat metrics such as replication lag., default is false
  * @param args.suffix <optional> - Suffix to be added to stack name for benchmark test.
  * @param args.managerNodeCount <optional> - Number of manager nodes in multi-node cluster, default is 3.
  * @param args.dataNodeCount <optional> - Number of data nodes in multi-node cluster, default is 2.
  * @param args.clientNodeCount <optional> - Number of client nodes in multi-node cluster, default is 0.
  * @param args.ingestNodeCount <optional> - Number of ingest nodes in multi-node cluster, default is 0.
  * @param args.mlNodeCount <optional> - Number of ml nodes in multi-node cluster, default is 0.
+ * @param args.dataInstanceType <optional> - EC2 instance type for data node, defaults to r5.xlarge.
  * @param args.enableRemoteStore <optional> - Enable remote-store feature in OpenSearch cluster
  * @param args.workloadParams <optional> - Additional parameters for benchmark workload type, e.g., number_of_replicas:1,number_of_shards:5.
  * @param args.dataStorageSize <optional> - Data node ebs storage size, default is 100G.
@@ -65,12 +67,14 @@ void call(Map args = [:]) {
             args.use50PercentHeap.toBoolean() ? "--use-50-percent-heap" : "",
             args.enableRemoteStore.toBoolean() ? "--enable-remote-store" : "",
             args.captureNodeStat.toBoolean() ? "--capture-node-stat" : "",
+            args.captureSegmentReplicationStat.toBoolean() ? "--capture-segment-replication-stat" : "",
             isNullOrEmpty(args.suffix.toString()) ? "" : "--suffix ${args.suffix}",
             isNullOrEmpty(args.managerNodeCount.toString()) ? "" : "--manager-node-count ${args.managerNodeCount}",
             isNullOrEmpty(args.dataNodeCount.toString()) ? "" : "--data-node-count ${args.dataNodeCount}",
             isNullOrEmpty(args.clientNodeCount.toString()) ? "" : "--client-node-count ${args.clientNodeCount}",
             isNullOrEmpty(args.ingestNodeCount.toString()) ? "" : "--ingest-node-count ${args.ingestNodeCount}",
             isNullOrEmpty(args.mlNodeCount.toString()) ? "" : "--ml-node-count ${args.mlNodeCount}",
+            isNullOrEmpty(args.dataInstanceType.toString()) ? "" : "--data-instance-type ${args.dataInstanceType}",
             isNullOrEmpty(args.workloadParams.toString()) ? "" : "--workload-params '${args.workloadParams}'",
             isNullOrEmpty(args.additionalConfig.toString()) ? "" : "--additional-config ${args.additionalConfig}",
             isNullOrEmpty(args.dataStorageSize.toString()) ? "" : "--data-node-storage ${args.dataStorageSize}",
