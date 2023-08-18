@@ -6,11 +6,26 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
+
+/**
+Library to build Docker Image with different Build Options
+@param Map[inputManifest] <Required> - Path to Input Manifest.
+@param Map[buildNumber] <Required> - Build number of the corresponding Artifact.
+@param Map[buildDate] <Optional> - Date on which the artifacts were built.
+@param Map[artifactUrlX64] <Required> - Url Path to X64 Tarball.
+@param Map[artifactUrlARM64] <Required> - Url Path to ARM64 Tarball.
+@param Map[buildOption] <Required> - Build Option for building the image with different options.
+*/
 void call(Map args = [:]) {
     def lib = library(identifier: 'jenkins@5.5.0', retriever: legacySCM(scm))
     def inputManifest = lib.jenkins.InputManifest.new(readYaml(file: args.inputManifest))
     def build_qualifier = inputManifest.build.qualifier
     def build_number = args.buildNumber ?: "${BUILD_NUMBER}"
+    String image_tag = ""
+
+    if (args.buildDate != null && args.buildDate != 'null'){
+        image_tag = "." + "${args.buildDate}"
+    }
 
     if (build_qualifier != null && build_qualifier != 'null') {
         build_qualifier = "-" + build_qualifier
@@ -23,9 +38,11 @@ void call(Map args = [:]) {
     if (args.artifactUrlX64 == null || args.artifactUrlArm64 ==  null) {
         echo 'Skipping docker build, one of x64 or arm64 artifacts was not built.'
     } else {
-        echo 'Trigger docker-build'
+        echo 'Triggering docker-build'
         dockerBuild: {
             build job: 'docker-build',
+            propagate: true,
+            wait: true,
             parameters: [
                 string(name: 'DOCKER_BUILD_GIT_REPOSITORY', value: 'https://github.com/opensearch-project/opensearch-build'),
                 string(name: 'DOCKER_BUILD_GIT_REPOSITORY_REFERENCE', value: 'main'),
@@ -50,22 +67,26 @@ void call(Map args = [:]) {
             ]
         }
 
-        echo 'Trigger docker create tag with build number'
-        if (args.buildOption == "build_docker_with_build_number_tag") {
+        echo 'Triggering docker create tag with build number'
+        if (args.buildOption == "build_docker_with_build_number_tag" || args.buildOption == "re_release_docker_image") {
             dockerCopy: {
                 build job: 'docker-copy',
+                propagate: true,
+                wait: true,
                 parameters: [
                     string(name: 'SOURCE_IMAGE_REGISTRY', value: 'opensearchstaging'),
                     string(name: 'SOURCE_IMAGE', value: "${filename}:${inputManifest.build.version}${build_qualifier}"),
                     string(name: 'DESTINATION_IMAGE_REGISTRY', value: 'opensearchstaging'),
-                    string(name: 'DESTINATION_IMAGE', value: "${filename}:${inputManifest.build.version}${build_qualifier}.${build_number}")
+                    string(name: 'DESTINATION_IMAGE', value: "${filename}:${inputManifest.build.version}${build_qualifier}.${build_number}${image_tag}")
                 ]
             }
         }
 
-        echo "Trigger docker-scan for ${filename} version ${inputManifest.build.version}${build_qualifier}"
+        echo "Triggering docker-scan for ${filename} version ${inputManifest.build.version}${build_qualifier}"
         dockerScan: {
             build job: 'docker-scan',
+            propagate: true,
+            wait: true,
             parameters: [
                 string(name: 'IMAGE_FULL_NAME', value: "opensearchstaging/${filename}:${inputManifest.build.version}${build_qualifier}")
             ]
