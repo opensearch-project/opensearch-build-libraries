@@ -42,7 +42,13 @@ pipeline {
                         artifactPath: "${WORKSPACE}/the_pkg.pkg",
                         platform: 'mac',
                         overwrite: true
-                        )   
+                        )
+
+                    signArtifacts(
+                        artifactPath: "${WORKSPACE}/the_jar.jar",
+                        platform: 'jar_signer',
+                        overwrite: true
+                        ) 
                 }
             }
         }
