@@ -26,6 +26,7 @@ class TestSignArtifacts extends BuildPipelineTest {
         this.registerLibTester(new SignArtifactsLibTester(null, 'linux', "${this.workspace}/file.yml", 'maven', null))
         this.registerLibTester(new SignArtifactsLibTester(null, 'windows', "${this.workspace}/the_msi.msi", null, null, true))
         this.registerLibTester(new SignArtifactsLibTester(null, 'mac', "${this.workspace}/the_pkg.pkg", null, null, true))
+        this.registerLibTester(new SignArtifactsLibTester(null, 'jar_signer', "${this.workspace}/the_jar.jar", null, null, true))
         super.setUp()
     }
 
@@ -40,6 +41,7 @@ class TestSignArtifacts extends BuildPipelineTest {
 
         def signCommands = getShellCommands('sign.sh')
         assertThat(signCommands, hasItem('\n                   #!/bin/bash\n                   set +x\n                   export ROLE=SIGNER_CLIENT_ROLE\n                   export EXTERNAL_ID=SIGNER_CLIENT_EXTERNAL_ID\n                   export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET\n                   export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET\n\n                   /tmp/workspace/sign.sh /tmp/workspace/artifacts --sigtype .sig --platform linux\n               '))
+        assertThat(signCommands, hasItem('\n                   #!/bin/bash\n                   set +x\n                   export ROLE=JAR_SIGNER_ROLE\n                   export EXTERNAL_ID=JAR_SIGNER_EXTERNAL_ID\n                   export UNSIGNED_BUCKET=JAR_SIGNER_UNSIGNED_BUCKET\n                   export SIGNED_BUCKET=JAR_SIGNER_SIGNED_BUCKET\n                   /tmp/workspace/sign.sh /tmp/workspace/the_jar.jar --platform jar_signer --overwrite \n               '))
     }
 
     @Test

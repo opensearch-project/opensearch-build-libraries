@@ -154,6 +154,24 @@ void call(Map args = [:]) {
                """
                 }
         }
+        else if (args.platform == 'jar_signer') {
+            println('Using jar signing')
+            withCredentials([usernamePassword(credentialsId: "${GITHUB_BOT_TOKEN_NAME}", usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN'),
+                string(credentialsId: 'jenkins-jar-signer-role', variable: 'JAR_SIGNER_ROLE'),
+                string(credentialsId: 'jenkins-jar-signer-external-id', variable: 'JAR_SIGNER_EXTERNAL_ID'),
+                string(credentialsId: 'jenkins-jar-signer-unsigned-bucket', variable: 'JAR_SIGNER_UNSIGNED_BUCKET'),
+                string(credentialsId: 'jenkins-jar-signer-signed-bucket', variable: 'JAR_SIGNER_SIGNED_BUCKET')]) {
+                sh """
+                   #!/bin/bash
+                   set +x
+                   export ROLE=$JAR_SIGNER_ROLE
+                   export EXTERNAL_ID=$JAR_SIGNER_EXTERNAL_ID
+                   export UNSIGNED_BUCKET=$JAR_SIGNER_UNSIGNED_BUCKET
+                   export SIGNED_BUCKET=$JAR_SIGNER_SIGNED_BUCKET
+                   ${workdir}/sign.sh ${arguments}
+               """
+                }
+        }
         else {
             println('Using PGP signing')
             importPGPKey()
