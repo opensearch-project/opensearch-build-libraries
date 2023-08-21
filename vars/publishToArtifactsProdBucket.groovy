@@ -19,7 +19,7 @@
 void call(Map args = [:]) {
     lib = library(identifier: 'jenkins@5.6.1', retriever: legacySCM(scm))
     println('Signing the artifacts')
-    if (args.signingPlatform == 'windows' || args.signingPlatform == 'mac') {
+    if (args.signingPlatform == 'windows' || args.signingPlatform == 'mac' || args.signingPlatform == 'jar_signer') {
         signArtifacts(
             artifactPath: args.source,
             platform: args.signingPlatform,
