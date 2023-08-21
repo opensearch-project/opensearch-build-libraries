@@ -14,7 +14,7 @@
  */
 def call(Map args = [:]) {
 
-    def lib = library(identifier: 'jenkins@5.5.0', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@5.6.1', retriever: legacySCM(scm))
     def BundleManifestObj = lib.jenkins.BundleManifest.new(readYaml(file: args.bundleManifest))
     def distFile = args.rpmDistribution
     def name = BundleManifestObj.build.getFilename()   //opensearch
