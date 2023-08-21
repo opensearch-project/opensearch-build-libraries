@@ -33,7 +33,7 @@
  * @param args.configName <optional> - Name of the config file that needs to be downloaded from S3 bucket, default is config.yml.
  */
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@5.5.0', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@5.6.1', retriever: legacySCM(scm))
     def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.bundleManifest))
 
     config_name = isNullOrEmpty(args.config) ? 'config.yml' : args.config
