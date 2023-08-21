@@ -33,10 +33,11 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
     private String jvmSysProps = ''
     private String captureNodeStat
     private String captureSegmentReplicationStat
+    private String telemetryParams
 
     public RunBenchmarkTestScriptLibTester(bundleManifest, insecure, workload, singleNode, minDistribution, use50PercentHeap,
                                            enableRemoteStore, managerNodeCount, dataNodeCount, dataInstanceType, userTag, workloadParams,
-                                           additionalConfig, captureNodeStat, captureSegmentReplicationStat){
+                                           additionalConfig, captureNodeStat, captureSegmentReplicationStat, telemetryParams){
         this.bundleManifest = bundleManifest
         this.insecure = insecure
         this.workload = workload
@@ -52,6 +53,7 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
         this.additionalConfig = additionalConfig
         this.captureNodeStat = captureNodeStat
         this.captureSegmentReplicationStat = captureSegmentReplicationStat
+        this.telemetryParams = telemetryParams
     }
 
 
@@ -133,5 +135,6 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
         binding.setVariable('STAGE_NAME', 'test_stage')
         binding.setVariable('TEST_WORKLOAD', workload)
         binding.setVariable('WEBHOOK_URL', 'test://artifact.url')
+        binding.setVariable('TELEMETRY_PARAMS', telemetryParams)
     }
 }
