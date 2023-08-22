@@ -18,7 +18,7 @@
  */
 
 def call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@5.6.1', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@5.7.0', retriever: legacySCM(scm))
 
     if (!parameterCheck(args.testManifest, args.buildManifest, args.testRunID, args.testType)) return null
 
