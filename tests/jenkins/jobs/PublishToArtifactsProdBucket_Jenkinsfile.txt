@@ -18,8 +18,7 @@
                      signArtifacts.string({credentialsId=jenkins-signer-windows-profile-identifier, variable=SIGNER_WINDOWS_PROFILE_IDENTIFIER})
                      signArtifacts.string({credentialsId=jenkins-signer-windows-platform-identifier, variable=SIGNER_WINDOWS_PLATFORM_IDENTIFIER})
                      signArtifacts.withCredentials([[GITHUB_USER, GITHUB_TOKEN], SIGNER_WINDOWS_ROLE, SIGNER_WINDOWS_EXTERNAL_ID, SIGNER_WINDOWS_UNSIGNED_BUCKET, SIGNER_WINDOWS_SIGNED_BUCKET, SIGNER_WINDOWS_PROFILE_IDENTIFIER, SIGNER_WINDOWS_PLATFORM_IDENTIFIER], groovy.lang.Closure)
-                        signArtifacts.sh(
-                   #!/bin/bash
+                        signArtifacts.sh(#!/bin/bash
                    set +x
                    export ROLE=SIGNER_WINDOWS_ROLE
                    export EXTERNAL_ID=SIGNER_WINDOWS_EXTERNAL_ID
@@ -49,8 +48,7 @@
                      signArtifacts.string({credentialsId=jenkins-signer-client-unsigned-bucket, variable=SIGNER_CLIENT_UNSIGNED_BUCKET})
                      signArtifacts.string({credentialsId=jenkins-signer-client-signed-bucket, variable=SIGNER_CLIENT_SIGNED_BUCKET})
                      signArtifacts.withCredentials([[GITHUB_USER, GITHUB_TOKEN], SIGNER_CLIENT_ROLE, SIGNER_CLIENT_EXTERNAL_ID, SIGNER_CLIENT_UNSIGNED_BUCKET, SIGNER_CLIENT_SIGNED_BUCKET], groovy.lang.Closure)
-                        signArtifacts.sh(
-                   #!/bin/bash
+                        signArtifacts.sh(#!/bin/bash
                    set +x
                    export ROLE=SIGNER_CLIENT_ROLE
                    export EXTERNAL_ID=SIGNER_CLIENT_EXTERNAL_ID
