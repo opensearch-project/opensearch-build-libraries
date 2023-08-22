@@ -17,7 +17,7 @@ Library to build Docker Image with different Build Options
 @param Map[buildOption] <Required> - Build Option for building the image with different options.
 */
 void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@5.6.1', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@5.7.0', retriever: legacySCM(scm))
     def inputManifest = lib.jenkins.InputManifest.new(readYaml(file: args.inputManifest))
     def build_qualifier = inputManifest.build.qualifier
     def build_number = args.buildNumber ?: "${BUILD_NUMBER}"
