@@ -35,13 +35,13 @@ class TestPublishToArtifactsProdBucket extends BuildPipelineTest {
     @Test
     void 'verify_signing_with_defaults'(){
         runScript('tests/jenkins/jobs/PublishToArtifactsProdBucket_Jenkinsfile')
-        assertThat(getShellCommands('sh', 'sign.sh'), hasItem('\n                   #!/bin/bash\n                   set +x\n                   export ROLE=SIGNER_CLIENT_ROLE\n                   export EXTERNAL_ID=SIGNER_CLIENT_EXTERNAL_ID\n                   export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET\n                   export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET\n\n                   /tmp/workspace/opensearch-build/sign.sh reporting-cli-2.3.0.tg.gz --platform linux --sigtype .sig\n               '))
+        assertThat(getShellCommands('sh', 'sign.sh'), hasItem('#!/bin/bash\n                   set +x\n                   export ROLE=SIGNER_CLIENT_ROLE\n                   export EXTERNAL_ID=SIGNER_CLIENT_EXTERNAL_ID\n                   export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET\n                   export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET\n\n                   /tmp/workspace/opensearch-build/sign.sh reporting-cli-2.3.0.tg.gz --platform linux --sigtype .sig\n               '))
     }
 
     @Test
     void 'verify_signing_with_args'(){
         runScript('tests/jenkins/jobs/PublishToArtifactsProdBucket_Jenkinsfile')
-        assertThat(getShellCommands('sh', 'sign.sh'), hasItem("\n                   #!/bin/bash\n                   set +x\n                   export ROLE=SIGNER_WINDOWS_ROLE\n                   export EXTERNAL_ID=SIGNER_WINDOWS_EXTERNAL_ID\n                   export UNSIGNED_BUCKET=SIGNER_WINDOWS_UNSIGNED_BUCKET\n                   export SIGNED_BUCKET=SIGNER_WINDOWS_SIGNED_BUCKET\n                   export PROFILE_IDENTIFIER=SIGNER_WINDOWS_PROFILE_IDENTIFIER\n                   export PLATFORM_IDENTIFIER=SIGNER_WINDOWS_PLATFORM_IDENTIFIER\n\n                   /tmp/workspace/opensearch-build/sign.sh the-windows-msi.msi --platform windows --overwrite \n               "))
+        assertThat(getShellCommands('sh', 'sign.sh'), hasItem("#!/bin/bash\n                   set +x\n                   export ROLE=SIGNER_WINDOWS_ROLE\n                   export EXTERNAL_ID=SIGNER_WINDOWS_EXTERNAL_ID\n                   export UNSIGNED_BUCKET=SIGNER_WINDOWS_UNSIGNED_BUCKET\n                   export SIGNED_BUCKET=SIGNER_WINDOWS_SIGNED_BUCKET\n                   export PROFILE_IDENTIFIER=SIGNER_WINDOWS_PROFILE_IDENTIFIER\n                   export PLATFORM_IDENTIFIER=SIGNER_WINDOWS_PLATFORM_IDENTIFIER\n\n                   /tmp/workspace/opensearch-build/sign.sh the-windows-msi.msi --platform windows --overwrite \n               "))
     }
 
     @Test
