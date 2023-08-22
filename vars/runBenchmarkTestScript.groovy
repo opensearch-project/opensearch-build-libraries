@@ -31,6 +31,7 @@
  * @param args.jvmSysProps <optional> - Custom JVM properties to be set for OS cluster.
  * @param args.userTag <optional> - Additional metadata tags to be added to benchmark run metrics, e.g., run-type:adhoc,arch:x64
  * @param args.configName <optional> - Name of the config file that needs to be downloaded from S3 bucket, default is config.yml.
+ * @param args.telemetryParams <optional> - Allows to set parameters for telemetry devices such as node-stat etc., e.g. {"node-stats-include-indices": "true"}
  */
 void call(Map args = [:]) {
     lib = library(identifier: 'jenkins@5.7.0', retriever: legacySCM(scm))
@@ -79,7 +80,8 @@ void call(Map args = [:]) {
             isNullOrEmpty(args.additionalConfig.toString()) ? "" : "--additional-config ${args.additionalConfig}",
             isNullOrEmpty(args.dataStorageSize.toString()) ? "" : "--data-node-storage ${args.dataStorageSize}",
             isNullOrEmpty(args.mlStorageSize.toString()) ? "" : "--ml-node-storage ${args.mlStorageSize}",
-            isNullOrEmpty(args.jvmSysProps.toString()) ? "" : "--jvm-sys-props ${args.jvmSysProps}"
+            isNullOrEmpty(args.jvmSysProps.toString()) ? "" : "--jvm-sys-props ${args.jvmSysProps}",
+            isNullOrEmpty(args.telemetryParams.toString()) ? "" : "--telemetry-params '${args.telemetryParams}'"
     ].join(' '))
 
 }
