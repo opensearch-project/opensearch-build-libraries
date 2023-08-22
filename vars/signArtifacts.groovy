@@ -122,8 +122,7 @@ void call(Map args = [:]) {
                 string(credentialsId: 'jenkins-signer-windows-signed-bucket', variable: 'SIGNER_WINDOWS_SIGNED_BUCKET'),
                 string(credentialsId: 'jenkins-signer-windows-profile-identifier', variable: 'SIGNER_WINDOWS_PROFILE_IDENTIFIER'),
                 string(credentialsId: 'jenkins-signer-windows-platform-identifier', variable: 'SIGNER_WINDOWS_PLATFORM_IDENTIFIER')]) {
-                sh """
-                   #!/bin/bash
+                sh """#!/bin/bash
                    set +x
                    export ROLE=$SIGNER_WINDOWS_ROLE
                    export EXTERNAL_ID=$SIGNER_WINDOWS_EXTERNAL_ID
@@ -143,8 +142,7 @@ void call(Map args = [:]) {
                 string(credentialsId: 'jenkins-signer-mac-external-id', variable: 'SIGNER_MAC_EXTERNAL_ID'),
                 string(credentialsId: 'jenkins-signer-mac-unsigned-bucket', variable: 'SIGNER_MAC_UNSIGNED_BUCKET'),
                 string(credentialsId: 'jenkins-signer-mac-signed-bucket', variable: 'SIGNER_MAC_SIGNED_BUCKET')]) {
-                sh """
-                   #!/bin/bash
+                sh """#!/bin/bash
                    set +x
                    export ROLE=$SIGNER_MAC_ROLE
                    export EXTERNAL_ID=$SIGNER_MAC_EXTERNAL_ID
@@ -161,8 +159,7 @@ void call(Map args = [:]) {
                 string(credentialsId: 'jenkins-jar-signer-external-id', variable: 'JAR_SIGNER_EXTERNAL_ID'),
                 string(credentialsId: 'jenkins-jar-signer-unsigned-bucket', variable: 'JAR_SIGNER_UNSIGNED_BUCKET'),
                 string(credentialsId: 'jenkins-jar-signer-signed-bucket', variable: 'JAR_SIGNER_SIGNED_BUCKET')]) {
-                sh """
-                   #!/bin/bash
+                sh """#!/bin/bash
                    set +x
                    export ROLE=$JAR_SIGNER_ROLE
                    export EXTERNAL_ID=$JAR_SIGNER_EXTERNAL_ID
@@ -180,8 +177,7 @@ void call(Map args = [:]) {
                 string(credentialsId: 'jenkins-signer-client-external-id', variable: 'SIGNER_CLIENT_EXTERNAL_ID'),
                 string(credentialsId: 'jenkins-signer-client-unsigned-bucket', variable: 'SIGNER_CLIENT_UNSIGNED_BUCKET'),
                 string(credentialsId: 'jenkins-signer-client-signed-bucket', variable: 'SIGNER_CLIENT_SIGNED_BUCKET')]) {
-                sh """
-                   #!/bin/bash
+                sh """#!/bin/bash
                    set +x
                    export ROLE=$SIGNER_CLIENT_ROLE
                    export EXTERNAL_ID=$SIGNER_CLIENT_EXTERNAL_ID
