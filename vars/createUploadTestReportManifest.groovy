@@ -28,13 +28,15 @@ def call(Map args = [:]) {
     def testManifest = lib.jenkins.TestManifest.new(readYaml(file: args.testManifest))
     def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.buildManifest))
     def dashboardsBuildManifest = args.dashboardsBuildManifest ? lib.jenkins.BuildManifest.new(readYaml(file: args.dashboardsBuildManifest)) : null;
+    def product = testManifest.name
 
     echo "Start Reporting workflow for test type: " + buildManifest.getDistribution()
 
     String paths = generatePaths(testManifest, buildManifest, dashboardsBuildManifest)
     echo "Paths: ${paths}"
 
-    String basePath = generateBasePaths(buildManifest)
+    def productBuildManifest = (product.equals("OpenSearch")) ? buildManifest : dashboardsBuildManifest
+    String basePath = generateBasePaths(productBuildManifest)
     echo "Base Path ${basePath}"
 
     String component = args.componentName
