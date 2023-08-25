@@ -29,6 +29,8 @@ void call(Map args = [:]) {
         gem install \$gemNameWithVersion
         gemName=\$(echo \$gemNameWithVersion | sed -E 's/(-[0-9.]+-*[a-z]*.gem\$)//g')
         gem uninstall \$gemName
+        gem install \$gemNameWithVersion -P MediumSecurity
+        gem uninstall \$gemName
         gem install \$gemNameWithVersion -P HighSecurity
     """
 
