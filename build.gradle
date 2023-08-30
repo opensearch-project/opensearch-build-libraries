@@ -77,6 +77,7 @@ sharedLibrary {
         dependency('org.jenkins-ci.plugins', 'mailer', '408.vd726a_1130320') // https://repo.jenkins-ci.org/public/org/jenkins-ci/plugins/mailer/
         dependency('org.jenkins-ci.plugins', 'cloudbees-folder', '6.848.ve3b_fd7839a_81')  // https://plugins.jenkins.io/cloudbees-folder/releases/
         dependency('org.apache.sshd', 'sshd-core', '2.10.0')  // https://mvnrepository.com/artifact/org.apache.sshd/sshd-core
+        dependency('org.json', 'json', '20230618')  // https://mvnrepository.com/artifact/org.json/json
     }
 }
 
