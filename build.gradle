@@ -67,6 +67,7 @@ sharedLibrary {
         workflowCpsGlobalLibraryPluginVersion = '609.vd95673f149b_b' // https://repo.jenkins-ci.org/public/org/jenkins-ci/plugins/workflow/workflow-cps-global-lib/
         // see https://mvnrepository.com/artifact/org.jenkins-ci.plugins/<name>?repo=jenkins-releases for latest
         dependency('io.jenkins.plugins', 'pipeline-groovy-lib', '671.v07c339c842e8')    // https://plugins.jenkins.io/pipeline-groovy-lib/releases/
+        dependency('com.fasterxml.woodstox', 'woodstox-core', '6.5.1')  // https://mvnrepository.com/artifact/com.fasterxml.woodstox/woodstox-core
         dependency('org.jenkins-ci.plugins.workflow', 'workflow-cps', '3606.v0b_d8b_e512dcf')
         dependency('org.jenkins-ci.plugins.workflow', 'workflow-multibranch', '2.26.1')
         dependency('org.jenkins-ci.plugins', 'pipeline-input-step', '456.vd8a_957db_5b_e9') // https://repo.jenkins-ci.org/public/org/jenkins-ci/plugins/pipeline-input-step/
@@ -77,6 +78,7 @@ sharedLibrary {
         dependency('org.jenkins-ci.plugins', 'mailer', '408.vd726a_1130320') // https://repo.jenkins-ci.org/public/org/jenkins-ci/plugins/mailer/
         dependency('org.jenkins-ci.plugins', 'cloudbees-folder', '6.848.ve3b_fd7839a_81')  // https://plugins.jenkins.io/cloudbees-folder/releases/
         dependency('org.apache.sshd', 'sshd-core', '2.10.0')  // https://mvnrepository.com/artifact/org.apache.sshd/sshd-core
+        dependency('org.apache.ivy', 'ivy', '2.5.2')  // https://mvnrepository.com/artifact/org.apache.sshd/sshd-core      
         dependency('org.json', 'json', '20230618')  // https://mvnrepository.com/artifact/org.json/json
     }
 }
