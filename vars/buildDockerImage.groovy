@@ -19,9 +19,16 @@ Library to build Docker Image with different Build Options
 void call(Map args = [:]) {
     def lib = library(identifier: 'jenkins@5.7.1', retriever: legacySCM(scm))
     def inputManifest = lib.jenkins.InputManifest.new(readYaml(file: args.inputManifest))
+    def build_version = inputManifest.build.version
     def build_qualifier = inputManifest.build.qualifier
     def build_number = args.buildNumber ?: "${BUILD_NUMBER}"
     String image_tag = ""
+    String image_base_os = "al2023"
+
+    // Keep al2 for the 1.x versions
+    if (build_version.split("\\.")[0] == "1") {
+        image_base_os = "al2"
+    }
 
     if (args.buildDate != null && args.buildDate != 'null'){
         image_tag = "." + "${args.buildDate}"
@@ -55,8 +62,8 @@ void call(Map args = [:]) {
                         [
                             'bash',
                             'build-image-multi-arch.sh',
-                            "-v ${inputManifest.build.version}${build_qualifier}",
-                            "-f ./dockerfiles/${filename}.al2.dockerfile",
+                            "-v ${build_version}${build_qualifier}",
+                            "-f ./dockerfiles/${filename}.${image_base_os}.dockerfile",
                             "-p ${filename}",
                             "-a 'x64,arm64'",
                             "-r opensearchstaging/${filename}",
@@ -75,20 +82,20 @@ void call(Map args = [:]) {
                 wait: true,
                 parameters: [
                     string(name: 'SOURCE_IMAGE_REGISTRY', value: 'opensearchstaging'),
-                    string(name: 'SOURCE_IMAGE', value: "${filename}:${inputManifest.build.version}${build_qualifier}"),
+                    string(name: 'SOURCE_IMAGE', value: "${filename}:${build_version}${build_qualifier}"),
                     string(name: 'DESTINATION_IMAGE_REGISTRY', value: 'opensearchstaging'),
-                    string(name: 'DESTINATION_IMAGE', value: "${filename}:${inputManifest.build.version}${build_qualifier}.${build_number}${image_tag}")
+                    string(name: 'DESTINATION_IMAGE', value: "${filename}:${build_version}${build_qualifier}.${build_number}${image_tag}")
                 ]
             }
         }
 
-        echo "Triggering docker-scan for ${filename} version ${inputManifest.build.version}${build_qualifier}"
+        echo "Triggering docker-scan for ${filename} version ${build_version}${build_qualifier}"
         dockerScan: {
             build job: 'docker-scan',
             propagate: true,
             wait: true,
             parameters: [
-                string(name: 'IMAGE_FULL_NAME', value: "opensearchstaging/${filename}:${inputManifest.build.version}${build_qualifier}")
+                string(name: 'IMAGE_FULL_NAME', value: "opensearchstaging/${filename}:${build_version}${build_qualifier}")
             ]
         }
 
