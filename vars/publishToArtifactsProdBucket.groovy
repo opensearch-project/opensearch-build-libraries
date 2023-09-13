@@ -17,7 +17,7 @@
 @param Map[sigOverwrite]<optional> - Allow output artifacts to overwrite the existing artifacts. Defaults to false
  */
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@5.8.0', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@5.9.0', retriever: legacySCM(scm))
     println('Signing the artifacts')
     if (args.signingPlatform == 'windows' || args.signingPlatform == 'mac' || args.signingPlatform == 'jar_signer') {
         signArtifacts(
