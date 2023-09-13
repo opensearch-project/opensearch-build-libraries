@@ -80,6 +80,23 @@ class TestRunIntegTestScript extends BuildPipelineTest {
     }
 
     @Test
+    void 'IntegTest Windows Zip'() {
+        this.registerLibTester(new RunIntegTestScriptLibTester(
+                'dummy_job',
+                'OpenSearch',
+                'tests/data/opensearch-2.8.0-build-windows.yml',
+                'tests/data/opensearch-2.8.0-test.yml',
+                '',
+                '',
+            )
+        )
+        super.setUp()
+        runScript("tests/jenkins/jobs/RunIntegTestScript_Windows_Jenkinsfile")
+        assertThat(getShellCommands('sh', 'test.sh'), hasItems('env PATH=$PATH  ./test.sh integ-test tests/data/opensearch-2.8.0-test.yml --component OpenSearch --test-run-id 987 --paths opensearch=https://ci.opensearch.org/ci/dbc/dummy_job/2.8.0/7923/windows/x64/zip --base-path https://dummy_link/dummy_integ_test/2.8.0/7923/windows/x64/zip '))
+
+    }
+
+    @Test
     void 'IntegTest LocalPath SwitchNonRoot=false'() {
         this.registerLibTester(new RunIntegTestScriptLibTester(
                 'dummy_job',
