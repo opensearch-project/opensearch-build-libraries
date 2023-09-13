@@ -165,6 +165,10 @@ class BuildManifest implements Serializable {
         return this.build.architecture
     }
 
+    public String getArtifactPlatform() {
+        return this.build.platform
+    }
+
     public String getArtifactBuildId() {
         return this.build.id
     }
