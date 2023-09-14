@@ -15,15 +15,15 @@ void call(Map args = [:]) {
     String architecture = buildManifest.getArtifactArchitecture()
     String distribution = buildManifest.getDistribution()
     String platform = buildManifest.getArtifactPlatform()
+    String filename = buildManifest.build.getFilename()
     echo "Start integTest on: " + distribution + " " + architecture + " " + platform
 
-    def javaVersion = (jobName.equals('distribution-build-opensearch')) ? detectTestDockerAgent(testManifest: args.testManifest).javaVersion : ''
-    String javaHomeCommand = (jobName.equals('distribution-build-opensearch') && ! javaVersion.equals('')) ? "JAVA_HOME=/opt/java/${javaVersion}" : ''
-    if (platform.equals('windows')) { // Windows use scoop to switch the Java Version
+    def javaVersion = (filename == 'opensearch') ? detectTestDockerAgent(testManifest: args.testManifest).javaVersion : ''
+    String javaHomeCommand = (javaVersion != '' && platform != 'windows') ? "JAVA_HOME=/opt/java/${javaVersion}" : ''
+    if (filename == 'opensearch' && platform == 'windows') { // Windows use scoop to switch the Java Version
         String javaVersionNumber = javaVersion.replaceAll("[^0-9]", "") // Only get number
         echo("Switching to Java ${javaVersionNumber} on Windows Docker Container")
         sh("scoop reset `scoop list jdk | grep ${javaVersionNumber} | head -1 | cut -d ' ' -f1`")
-        javaHomeCommand = ''
     }
     echo "Possible Java Home: ${javaHomeCommand}"
 
