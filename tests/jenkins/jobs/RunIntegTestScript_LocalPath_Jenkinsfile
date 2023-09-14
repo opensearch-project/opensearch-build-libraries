@@ -15,9 +15,9 @@ pipeline {
                 script {
                     runIntegTestScript(
                         jobName: 'dummy_job',
-                        componentName: 'OpenSearch',
-                        buildManifest: 'tests/data/opensearch-1.3.0-build.yml',
-                        testManifest: 'tests/data/opensearch-1.3.0-test.yml',
+                        componentName: 'OpenSearch-Dashboards',
+                        buildManifest: 'tests/data/opensearch-dashboards-1.2.0-build.yml',
+                        testManifest: 'tests/data/opensearch-dashboards-1.2.0-test.yml',
                         localPath: 'tests/jenkins/artifacts/tar',
                     )
                 }
