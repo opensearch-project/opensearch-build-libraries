@@ -22,12 +22,12 @@ class TestRunIntegTestScript extends BuildPipelineTest {
     @Test
     public void TestRunIntegTestScript() {
         this.registerLibTester(new RunIntegTestScriptLibTester(
-            'dummy_job',
-            'OpenSearch',
-            'tests/data/opensearch-1.3.0-build.yml',
-            'tests/data/opensearch-1.3.0-test.yml',
-            '',
-            '',
+                'dummy_job',
+                'OpenSearch',
+                'tests/data/opensearch-1.3.0-build.yml',
+                'tests/data/opensearch-1.3.0-test.yml',
+                '',
+                '',
             )
         )
         super.setUp()
@@ -37,12 +37,12 @@ class TestRunIntegTestScript extends BuildPipelineTest {
     @Test
     public void TestRunIntegTestScript_OpenSearch_Dashboards() {
         this.registerLibTester(new RunIntegTestScriptLibTester(
-            'dummy_job',
-            'functionalTestDashboards',
-            'tests/data/opensearch-dashboards-1.2.0-build.yml',
-            'tests/data/opensearch-dashboards-1.2.0-test.yml',
-            '',
-            '',
+                'dummy_job',
+                'functionalTestDashboards',
+                'tests/data/opensearch-dashboards-1.2.0-build.yml',
+                'tests/data/opensearch-dashboards-1.2.0-test.yml',
+                '',
+                '',
             )
         )
         super.setUp()
@@ -52,12 +52,12 @@ class TestRunIntegTestScript extends BuildPipelineTest {
     @Test
     public void TestRunIntegTestScript_LocalPath() {
         this.registerLibTester(new RunIntegTestScriptLibTester(
-            'dummy_job',
-            'OpenSearch',
-            'tests/data/opensearch-1.3.0-build.yml',
-            'tests/data/opensearch-1.3.0-test.yml',
-            'tests/jenkins/artifacts/tar',
-            '',
+                'dummy_job',
+                'OpenSearch-Dashboards',
+                'tests/data/opensearch-dashboards-1.2.0-build.yml',
+                'tests/data/opensearch-dashboards-1.2.0-test.yml',
+                'tests/jenkins/artifacts/tar',
+                '',
             )
         )
         super.setUp()
@@ -67,12 +67,12 @@ class TestRunIntegTestScript extends BuildPipelineTest {
     @Test
     public void TestRunIntegTestScript_LocalPath_Switch_Non_Root() {
         this.registerLibTester(new RunIntegTestScriptLibTester(
-            'distribution-build-opensearch',
-            'OpenSearch',
-            'tests/data/opensearch-1.3.0-build.yml',
-            'tests/data/opensearch-1.3.0-test.yml',
-            'tests/jenkins/artifacts/tar',
-            'true',
+                'dummy_job',
+                'OpenSearch',
+                'tests/data/opensearch-1.3.0-build.yml',
+                'tests/data/opensearch-1.3.0-test.yml',
+                'tests/jenkins/artifacts/tar',
+                'true',
             )
         )
         super.setUp()
@@ -100,28 +100,28 @@ class TestRunIntegTestScript extends BuildPipelineTest {
     void 'IntegTest LocalPath SwitchNonRoot=false'() {
         this.registerLibTester(new RunIntegTestScriptLibTester(
                 'dummy_job',
-                'OpenSearch',
-                'tests/data/opensearch-1.3.0-build.yml',
-                'tests/data/opensearch-1.3.0-test.yml',
+                'OpenSearch-Dashboards',
+                'tests/data/opensearch-dashboards-1.2.0-build.yml',
+                'tests/data/opensearch-dashboards-1.2.0-test.yml',
                 'tests/jenkins/artifacts/tar',
-                'false'
+                'false',
             )
         )
         super.setUp()
         runScript("tests/jenkins/jobs/RunIntegTestScript_LocalPath_Jenkinsfile")
-        assertThat(getShellCommands('sh', 'test.sh'), hasItems('env PATH=$PATH  ./test.sh integ-test tests/data/opensearch-1.3.0-test.yml --component OpenSearch --test-run-id 987 --paths opensearch=tests/jenkins/artifacts/tar --base-path https://dummy_link/dummy_integ_test/1.3.0/c3ff7a232d25403fa8cc14c97799c323/linux/x64/tar '))
+        assertThat(getShellCommands('sh', 'test.sh'), hasItems('env PATH=$PATH  ./test.sh integ-test tests/data/opensearch-dashboards-1.2.0-test.yml --component OpenSearch-Dashboards --test-run-id 987 --paths opensearch=tests/jenkins/artifacts/tar opensearch-dashboards=tests/jenkins/artifacts/tar --base-path https://dummy_link/dummy_integ_test/1.2.0/215/linux/x64/tar '))
 
     }
 
     @Test
     void 'IntegTest LocalPath SwitchNonRoot=true with JAVA_HOME'() {
         this.registerLibTester(new RunIntegTestScriptLibTester(
-                'distribution-build-opensearch',
+                'dummy_job',
                 'OpenSearch',
                 'tests/data/opensearch-1.3.0-build.yml',
                 'tests/data/opensearch-1.3.0-test.yml',
                 'tests/jenkins/artifacts/tar',
-                'true'
+                'true',
             )
         )
         super.setUp()
