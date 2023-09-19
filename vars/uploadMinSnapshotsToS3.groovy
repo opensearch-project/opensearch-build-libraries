@@ -12,21 +12,22 @@ void call(Map args = [:]) {
     String manifest = args.manifest ?: "manifests/${INPUT_MANIFEST}"
 
     def inputManifest = lib.jenkins.InputManifest.new(readYaml(file: manifest))
-    echo("Retreving build manifest from: $WORKSPACE/${args.distribution}/builds/${inputManifest.build.getFilename()}/manifest.yml")
+    String productName = inputManifest.build.getFilename()
+    echo("Retreving build manifest from: $WORKSPACE/${args.distribution}/builds/${productName}/manifest.yml")
 
-    productName = inputManifest.build.getFilename()
     def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: "$WORKSPACE/${args.distribution}/builds/${productName}/manifest.yml"))
-    version = buildManifest.build.version
-    architecture = buildManifest.build.architecture
-    platform = buildManifest.build.platform
-    id = buildManifest.build.id
-    extension = buildManifest.build.getExtension()
+    String version = buildManifest.build.version
+    String architecture = buildManifest.build.architecture
+    String platform = buildManifest.build.platform
+    String id = buildManifest.build.id
+    String distribution = buildManifest.build.distribution
+    String extension = buildManifest.build.getExtension()
 
     // Setup src & dst variables for artifacts
     // Replace backslash with forward slash ('\' to '/') in path
     // Compatible with both Windows as well as any nix* env
     // Else the map in groovy will treat '\' as escape char on Windows
-    String srcDir = "${WORKSPACE}/${args.distribution}/builds/${productName}/dist".replace("\\", "/")
+    String srcDir = "${WORKSPACE}/${distribution}/builds/${productName}/dist".replace("\\", "/")
     String dstDir = "snapshots/core/${productName}/${version}"
     String baseName = "${productName}-min-${version}-${platform}-${architecture}"
 
@@ -38,7 +39,7 @@ void call(Map args = [:]) {
         action(argsMap)
     }
 
-    echo('Start copying files')
+    echo("Start copying files: ver-${version} arch-${architecture} plat-${platform} build-${id} dist-${distribution} ext-${extension}")
 
     sh """
         cp -v ${srcDir}/${baseName}.${extension} ${srcDir}/${baseName}-latest.${extension}
