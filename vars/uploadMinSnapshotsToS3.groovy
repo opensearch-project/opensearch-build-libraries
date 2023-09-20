@@ -10,18 +10,29 @@ void call(Map args = [:]) {
     def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     List<Closure> fileActions = args.fileActions ?: []
     String manifest = args.manifest ?: "manifests/${INPUT_MANIFEST}"
+    String distribution_arg = args.distribution ?: 'None'
+
+    if (distribution_arg == 'None') {
+        echo("Missing distribution type")
+        System.exit(1)
+    }
 
     def inputManifest = lib.jenkins.InputManifest.new(readYaml(file: manifest))
     String productName = inputManifest.build.getFilename()
-    echo("Retreving build manifest from: $WORKSPACE/${args.distribution}/builds/${productName}/manifest.yml")
+    echo("Retreving build manifest from: $WORKSPACE/${distribution_arg}/builds/${productName}/manifest.yml")
 
-    def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: "$WORKSPACE/${args.distribution}/builds/${productName}/manifest.yml"))
+    def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: "$WORKSPACE/${distribution_arg}/builds/${productName}/manifest.yml"))
     String version = buildManifest.build.version
     String architecture = buildManifest.build.architecture
     String platform = buildManifest.build.platform
     String id = buildManifest.build.id
     String distribution = buildManifest.build.distribution
     String extension = buildManifest.build.getExtension()
+
+    if (distribution_arg != distribution) {
+        echo("User enters $distribution_arg does not match build manifest $distribution")
+        System.exit(1)
+    }
 
     // Setup src & dst variables for artifacts
     // Replace backslash with forward slash ('\' to '/') in path
