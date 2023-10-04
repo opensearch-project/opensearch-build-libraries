@@ -126,7 +126,7 @@ class TestRunIntegTestScript extends BuildPipelineTest {
         )
         super.setUp()
         runScript("tests/jenkins/jobs/RunIntegTestScript_LocalPath_Switch_Non_Root_Jenkinsfile")
-        assertThat(getShellCommands('sh', 'test.sh'), hasItems('su `id -un 1000` -c \"env PATH=$PATH JAVA_HOME=/opt/java/openjdk-11 ./test.sh integ-test tests/data/opensearch-1.3.0-test.yml --component OpenSearch --test-run-id 987 --paths opensearch=tests/jenkins/artifacts/tar --base-path https://dummy_link/dummy_integ_test/1.3.0/c3ff7a232d25403fa8cc14c97799c323/linux/x64/tar \"'))
+        assertThat(getShellCommands('sh', 'test.sh'), hasItems('su `id -un 1000` -c \"env PATH=$PATH JAVA_HOME=/opt/java/openjdk-11 ./test.sh integ-test tests/data/opensearch-1.3.0-test.yml --component OpenSearch --test-run-id 987 --paths opensearch=tests/jenkins/artifacts/tar --base-path https://dummy_link/dummy_integ_test/1.3.0/29/linux/x64/tar \"'))
 
     }
 
