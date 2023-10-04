@@ -30,7 +30,7 @@ void call(Map args = [:]) {
     String extension = buildManifest.build.getExtension()
 
     if (distribution_arg != distribution) {
-        echo("User enters $distribution_arg does not match build manifest $distribution")
+        echo("User entered $distribution_arg does not match the distribution specified in the build manifest $distribution")
         System.exit(1)
     }
 
@@ -50,7 +50,7 @@ void call(Map args = [:]) {
         action(argsMap)
     }
 
-    echo("Start copying files: ver-${version} arch-${architecture} plat-${platform} build-${id} dist-${distribution} ext-${extension}")
+    echo("Start copying files: version-${version} architecture-${architecture} platform-${platform} buildid-${id} distribution-${distribution} extension-${extension}")
 
     sh """
         cp -v ${srcDir}/${baseName}.${extension} ${srcDir}/${baseName}-latest.${extension}
