@@ -13,15 +13,18 @@ class UploadMinSnapshotsToS3LibTester extends LibFunctionTester {
 
     private List<Closure> fileActions
     private String manifest
+    private String distribution
 
-    public UploadMinSnapshotsToS3LibTester(fileActions, manifest){
+    public UploadMinSnapshotsToS3LibTester(fileActions, manifest, distribution){
         this.fileActions = fileActions
         this.manifest = manifest
+        this.distribution = distribution
     }
 
     void parameterInvariantsAssertions(call){
         assertThat(call.args.fileActions.first(), notNullValue())
         assertThat(call.args.manifest.first(), notNullValue())
+        assertThat(call.args.distribution.first(), notNullValue())
     }
 
     boolean expectedParametersMatcher(call) {
@@ -29,7 +32,7 @@ class UploadMinSnapshotsToS3LibTester extends LibFunctionTester {
         for (actionCall in call.args.fileActions) {
             actionMatch = this.fileActions.any( actionThis -> actionCall.toString().contains(actionThis.toString()) )
         }
-        return actionMatch && call.args.manifest.first().toString().equals(this.manifest)
+        return actionMatch && call.args.manifest.first().toString().equals(this.manifest) && call.args.distribution.first().toString().equals(this.distribution)
     }
 
     String libFunctionName(){
