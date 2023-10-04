@@ -34,7 +34,7 @@
  * @param args.telemetryParams <optional> - Allows to set parameters for telemetry devices such as node-stat etc., e.g. {"node-stats-include-indices": "true"}
  */
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@5.9.1', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@5.9.2', retriever: legacySCM(scm))
     def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.bundleManifest))
 
     config_name = isNullOrEmpty(args.config) ? 'config.yml' : args.config

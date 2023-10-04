@@ -14,7 +14,7 @@ Library to support Docker Image Re-Release Automation
 @param Map[re_release] <Optional> - This Build-Option can be checked to release the image after Docker-Build.
 */
 void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@5.9.1', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@5.9.2', retriever: legacySCM(scm))
     String docker_image = "opensearchproject/${args.product}:${args.tag}"
     String latest_docker_image = "opensearchproject/${args.product}:latest"
     boolean tag_latest = false
