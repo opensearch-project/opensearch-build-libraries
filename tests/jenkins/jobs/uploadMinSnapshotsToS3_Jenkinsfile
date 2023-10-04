@@ -15,7 +15,7 @@ pipeline {
                 script {
                     uploadMinSnapshotsToS3(
                         fileActions: [createSha512Checksums()],
-                        manifest: 'tests/data/opensearch-1.3.0-build.yml',
+                        manifest: 'tests/data/opensearch-1.3.0.yml',
                         distribution: 'tar'
                     )
                 }
