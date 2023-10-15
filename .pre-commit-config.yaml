@@ -1,0 +1,14 @@
+---
+default_stages: [commit]
+repos:
+  - repo: local
+    hooks:
+      - id: npm-groovy-lint
+        stages: [commit]
+        name: npm-groovy-lint
+        entry: bash -c 'npm-groovy-lint tests/jenkins'
+        language: system
+        types: [groovy]
+        description: Groovy & Jenkinsfile Linter
+  
+  
