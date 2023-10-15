@@ -10,5 +10,3 @@ repos:
         language: system
         types: [groovy]
         description: Groovy & Jenkinsfile Linter
-  
-  
