@@ -19,6 +19,8 @@ pipeline {
                                 path: BUNDLE_MANIFEST
                             )
                             runBenchmarkTestScript(bundleManifest: BUNDLE_MANIFEST,
+                            distributionUrl: DISTRIBUTION_URL,
+                            distributionVersion: DISTRIBUTION_VERSION,
                             workload: TEST_WORKLOAD,
                             insecure: "false",
                             singleNode: SINGLE_NODE_CLUSTER,
@@ -53,6 +55,8 @@ pipeline {
                                 path: BUNDLE_MANIFEST
                             )
                             runBenchmarkTestScript(bundleManifest: BUNDLE_MANIFEST,
+                            distributionUrl: DISTRIBUTION_URL,
+                            distributionVersion: DISTRIBUTION_VERSION,
                             workload: TEST_WORKLOAD,
                             insecure: "true",
                             singleNode: SINGLE_NODE_CLUSTER,
