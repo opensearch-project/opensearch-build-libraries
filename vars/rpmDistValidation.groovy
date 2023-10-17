@@ -13,7 +13,7 @@
  */
 def call(Map args = [:]) {
 
-    def lib = library(identifier: 'jenkins@5.9.2', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@5.10.0', retriever: legacySCM(scm))
     def bundleManifestURL = args.bundleManifestURL
     sh ("curl -sL $bundleManifestURL -o $WORKSPACE/manifest.yml")
     def bundleManifest = "$WORKSPACE/manifest.yml"

@@ -12,7 +12,7 @@
  @param args.inputManifestPath <required> - Path to input manifest.
  */
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@5.9.2', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@5.10.0', retriever: legacySCM(scm))
     def failureMessages = args.message
     List<String> failedComponents = []
 

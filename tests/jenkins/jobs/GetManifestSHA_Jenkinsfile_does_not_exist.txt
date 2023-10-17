@@ -9,7 +9,7 @@
                   getManifestSHA.sha1(tests/data/opensearch-1.3.0.yml.lock)
                   getManifestSHA.echo(Manifest SHA: sha1)
                   getManifestSHA.legacySCM(groovy.lang.Closure)
-                  getManifestSHA.library({identifier=jenkins@5.9.2, retriever=null})
+                  getManifestSHA.library({identifier=jenkins@5.10.0, retriever=null})
                   getManifestSHA.readYaml({file=tests/data/opensearch-1.3.0.yml.lock})
                   InputManifest.asBoolean()
                   InputManifest.getSHAsRoot(get-manifest-sha-build)
