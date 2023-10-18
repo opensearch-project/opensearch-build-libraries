@@ -9,7 +9,9 @@
 /** Library to execute benchmark-test using opensearch-benchmark and opensearch-cluster-cdk
  *
  * @param Map args = [:] args A map of the following parameters
- * @param args.bundleManifest <required> - OpenSearch bundle manifest url.
+ * @param args.bundleManifest <optional> - OpenSearch bundle manifest url.
+ * @param args.distributionUrl <optional> - Download link for the OpenSearch bundle tarball.
+ * @param args.distributionVersion <optional> - Provide OpenSearch version if using distributionUrl param
  * @param args.insecure <optional> - Force the security of the cluster to be disabled, default is false.
  * @param args.workload <required> - Name of the workload that OpenSearch Benchmark should run, default is nyc_taxis.
  * @param args.singleNode <optional> - Create single node OS cluster, default is true.
@@ -35,7 +37,11 @@
  */
 void call(Map args = [:]) {
     lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
-    def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.bundleManifest))
+    def buildManifest = null
+
+    if (!isNullOrEmpty(args.bundleManifest as String)){
+        buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.bundleManifest))
+    }
 
     config_name = isNullOrEmpty(args.config) ? 'config.yml' : args.config
     benchmark_config = 'benchmark.ini'
@@ -46,9 +52,14 @@ void call(Map args = [:]) {
             s3Download(file: 'benchmark.ini', bucket: "${ARTIFACT_BUCKET_NAME}", path: "${BENCHMARK_TEST_CONFIG_LOCATION}/${benchmark_config}", force: true)
 
             /*Added sleep to let the file get downloaded first before write happens. Without the sleep the write is
-            happening in parallel to download resulting in file not found error
+            happening in parallel to download resulting in file not found error. To avoid pip install conflict errors
+            when runnin with and without security run in parallel add enough gap between execution.
              */
-            sleep(5)
+            if (args.insecure.toBoolean()) {
+                sleep(5)
+            } else {
+                sleep(15)
+            }
         }
     }
     editBenchmarkConfig("${WORKSPACE}/benchmark.ini")
@@ -57,7 +68,9 @@ void call(Map args = [:]) {
     sh([
             './test.sh',
             'benchmark-test',
-            "--bundle-manifest ${args.bundleManifest}",
+            isNullOrEmpty(args.bundleManifest.toString()) ? "" : "--bundle-manifest ${args.bundleManifest}",
+            isNullOrEmpty(args.distributionUrl.toString()) ? "" : "--distribution-url ${args.distributionUrl}",
+            isNullOrEmpty(args.distributionVersion.toString()) ? "" : "--distribution-version ${args.distributionVersion}",
             "--config ${WORKSPACE}/config.yml",
             "--workload ${args.workload}",
             "--benchmark-config ${WORKSPACE}/benchmark.ini",
@@ -98,11 +111,17 @@ void editBenchmarkConfig(String config_file) {
 }
 
 String getMetadataTags(tags, buildManifest) {
-    def metadataTags = "distribution-build-id:${buildManifest.getArtifactBuildId()},arch:${buildManifest.getArtifactArchitecture()}," +
-            "os-commit-id:${buildManifest.getCommitId("OpenSearch")}"
-    if (!isNullOrEmpty(tags)){
+    def metadataTags = null
+    if (buildManifest != null) {
+        metadataTags = "distribution-build-id:${buildManifest.getArtifactBuildId()},arch:${buildManifest.getArtifactArchitecture()}," +
+                "os-commit-id:${buildManifest.getCommitId("OpenSearch")}"
+    }
+
+    if (!isNullOrEmpty(tags) && buildManifest != null){
         metadataTags = metadataTags + ',' + tags
         return metadataTags
+    } else if (!isNullOrEmpty(tags)) {
+        return tags
     }
     return metadataTags
 }
