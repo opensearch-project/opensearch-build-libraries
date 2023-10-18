@@ -12,6 +12,8 @@ import static org.hamcrest.MatcherAssert.assertThat
 class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
 
     private String bundleManifest
+    private String distributionUrl
+    private String distributionVersion
     private String insecure
     private String workload
     private String singleNode
@@ -35,10 +37,12 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
     private String captureSegmentReplicationStat
     private String telemetryParams
 
-    public RunBenchmarkTestScriptLibTester(bundleManifest, insecure, workload, singleNode, minDistribution, use50PercentHeap,
+    public RunBenchmarkTestScriptLibTester(bundleManifest, distributionUrl, distributionVersion, insecure, workload, singleNode, minDistribution, use50PercentHeap,
                                            enableRemoteStore, managerNodeCount, dataNodeCount, dataInstanceType, userTag, workloadParams,
                                            additionalConfig, captureNodeStat, captureSegmentReplicationStat, telemetryParams){
         this.bundleManifest = bundleManifest
+        this.distributionUrl = distributionUrl
+        this.distributionVersion = distributionVersion
         this.insecure = insecure
         this.workload = workload
         this.singleNode = singleNode
@@ -64,18 +68,27 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
 
     @Override
     void parameterInvariantsAssertions(Object call) {
-        assertThat(call.args.bundleManifest.first(), notNullValue())
+        if (!this.bundleManifest.isEmpty()) {
+            assertThat(call.args.bundleManifest.first(), notNullValue())
+        }
         if (!this.insecure.isEmpty()) {
             assertThat(call.args.insecure.first(), notNullValue())
         }
         if (!this.workload.isEmpty()) {
             assertThat(call.args.workload.first(), notNullValue())
         }
+        if (!this.distributionUrl.isEmpty()) {
+            assertThat(call.args.distributionUrl.first(), notNullValue())
+            assertThat(call.args.distributionVersion.first(), notNullValue())
+        }
     }
 
     @Override
     boolean expectedParametersMatcher(Object call) {
-        return call.args.bundleManifest.first().toString().equals(this.bundleManifest)
+        if (!this.bundleManifest.isEmpty()) {
+            return call.args.bundleManifest.first().toString().equals(this.bundleManifest)
+        }
+        return call.args.distributionUrl.first().toString().equals(this.distributionUrl)
     }
 
     @Override
@@ -105,6 +118,8 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
         binding.setVariable('BUILD_NUMBER', '307')
         binding.setVariable('BUILD_URL', 'test://artifact.url')
         binding.setVariable('BUNDLE_MANIFEST', bundleManifest)
+        binding.setVariable('DISTRIBUTION_URL', distributionUrl)
+        binding.setVariable('DISTRIBUTION_VERSION', distributionVersion)
         binding.setVariable('BUNDLE_MANIFEST_URL', 'test://artifact.url')
         binding.setVariable('GITHUB_BOT_TOKEN_NAME', 'bot_token_name')
         binding.setVariable('GITHUB_USER', 'test_user')
