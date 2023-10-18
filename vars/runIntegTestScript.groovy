@@ -23,7 +23,7 @@ void call(Map args = [:]) {
     if (filename == 'opensearch' && platform == 'windows') { // Windows use scoop to switch the Java Version
         String javaVersionNumber = javaVersion.replaceAll("[^0-9]", "") // Only get number
         echo("Switching to Java ${javaVersionNumber} on Windows Docker Container")
-        sh("scoop reset `scoop list jdk | grep ${javaVersionNumber} | head -1 | cut -d ' ' -f1`")
+        sh("scoop reset `scoop list jdk | cut -d ' ' -f1 | grep ${javaVersionNumber} | head -1`")
     }
     echo "Possible Java Home: ${javaHomeCommand}"
 
