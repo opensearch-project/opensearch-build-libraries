@@ -4,8 +4,13 @@ name: groovy-tests
 on: [push, pull_request]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  tests:
+    strategy:
+      matrix:
+        os:
+          - windows-latest
+          - ubuntu-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Setup Java
         uses: actions/setup-java@v1
