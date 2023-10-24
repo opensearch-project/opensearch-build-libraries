@@ -6,7 +6,7 @@ repos:
       - id: npm-groovy-lint
         stages: [commit]
         name: npm-groovy-lint
-        entry: bash -c 'npm-groovy-lint tests/jenkins src/jenkins'
+        entry: bash -c 'npm-groovy-lint tests/jenkins src/jenkins vars'
         language: system
         types: [groovy]
         description: Groovy & Jenkinsfile Linter
