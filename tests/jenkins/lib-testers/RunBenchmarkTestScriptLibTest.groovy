@@ -29,6 +29,9 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
     private String dataInstanceType
     private String userTag
     private String workloadParams
+    private String testProcedure
+    private String excludeTasks
+    private String includeTasks
     private String additionalConfig
     private String dataStorageSize = '200'
     private String mlStorageSize = '200'
@@ -39,6 +42,7 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
 
     public RunBenchmarkTestScriptLibTester(bundleManifest, distributionUrl, distributionVersion, insecure, workload, singleNode, minDistribution, use50PercentHeap,
                                            enableRemoteStore, managerNodeCount, dataNodeCount, dataInstanceType, userTag, workloadParams,
+                                           testProcedure, excludeTasks, includeTasks,
                                            additionalConfig, captureNodeStat, captureSegmentReplicationStat, telemetryParams){
         this.bundleManifest = bundleManifest
         this.distributionUrl = distributionUrl
@@ -54,6 +58,9 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
         this.dataInstanceType = dataInstanceType
         this.userTag = userTag
         this.workloadParams = workloadParams
+        this.testProcedure = testProcedure
+        this.excludeTasks = excludeTasks
+        this.includeTasks = includeTasks
         this.additionalConfig = additionalConfig
         this.captureNodeStat = captureNodeStat
         this.captureSegmentReplicationStat = captureSegmentReplicationStat
@@ -134,6 +141,9 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
         binding.setVariable('DATA_NODE_COUNT', dataNodeCount)
         binding.setVariable('USER_TAGS', userTag)
         binding.setVariable('WORKLOAD_PARAMS', workloadParams)
+        binding.setVariable('TEST_PROCEDURE', testProcedure)
+        binding.setVariable('EXCLUDE_TASKS', excludeTasks)
+        binding.setVariable('INCLUDE_TASKS', includeTasks)
         binding.setVariable('ADDITIONAL_CONFIG', additionalConfig)
         binding.setVariable('CLIENT_NODE_COUNT', clientNodeCount)
         binding.setVariable('INGEST_NODE_COUNT', ingestNodeCount)
