@@ -28,6 +28,9 @@
  * @param args.dataInstanceType <optional> - EC2 instance type for data node, defaults to r5.xlarge.
  * @param args.enableRemoteStore <optional> - Enable remote-store feature in OpenSearch cluster
  * @param args.workloadParams <optional> - Additional parameters for benchmark workload type, e.g., number_of_replicas:1,number_of_shards:5.
+ * @param args.testProcedure <optional> - Defines a test procedure to use. If empty runs default test procedure for the supplied workload.
+ * @param args.excludeTasks <optional> - Defines a comma-separated list of test procedure tasks not to run. Default runs all.
+ * @param args.includeTasks <optional> - Defines a comma-separated list of test procedure tasks to run. Default runs all.
  * @param args.dataStorageSize <optional> - Data node ebs storage size, default is 100G.
  * @param args.mlStorageSize <optional> - Ml node ebs storage size, default is 100G.
  * @param args.jvmSysProps <optional> - Custom JVM properties to be set for OS cluster.
@@ -90,6 +93,9 @@ void call(Map args = [:]) {
             isNullOrEmpty(args.mlNodeCount.toString()) ? "" : "--ml-node-count ${args.mlNodeCount}",
             isNullOrEmpty(args.dataInstanceType.toString()) ? "" : "--data-instance-type ${args.dataInstanceType}",
             isNullOrEmpty(args.workloadParams.toString()) ? "" : "--workload-params '${args.workloadParams}'",
+            isNullOrEmpty(args.testProcedure.toString()) ? "" : "--test-procedure ${args.testProcedure}",
+            isNullOrEmpty(args.excludeTasks.toString()) ? "" : "--exclude-tasks ${args.excludeTasks}",
+            isNullOrEmpty(args.includeTasks.toString()) ? "" : "--include-tasks ${args.includeTasks}",
             isNullOrEmpty(args.additionalConfig.toString()) ? "" : "--additional-config ${args.additionalConfig}",
             isNullOrEmpty(args.dataStorageSize.toString()) ? "" : "--data-node-storage ${args.dataStorageSize}",
             isNullOrEmpty(args.mlStorageSize.toString()) ? "" : "--ml-node-storage ${args.mlStorageSize}",
