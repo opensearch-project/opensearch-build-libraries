@@ -7,7 +7,7 @@
  * compatible open source license.
  */
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@5.10.2', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@5.11.0', retriever: legacySCM(scm))
 
     String jobName = args.jobName ?: 'distribution-build-opensearch'
     def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.buildManifest))
