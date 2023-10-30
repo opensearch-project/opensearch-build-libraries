@@ -76,6 +76,7 @@ Install this pre-commit hook using pip.
 
 ```
 pip install pre-commit
+pre-commit install
 ```
 
 To run the linter outside of the pre-commit hook
