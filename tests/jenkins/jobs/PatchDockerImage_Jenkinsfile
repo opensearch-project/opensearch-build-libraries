@@ -15,8 +15,7 @@ pipeline {
                 script {
                     patchDockerImage(
                         product: "opensearch",
-                        tag: "1",
-                        re_release: "true"
+                        tag: "1"
                     )
                 }
             }
