@@ -14,10 +14,11 @@ pipeline {
             steps {
                 script {
                     createGithubIssue(
-                        repoUrl: 'https://github.com/opensearch-project/opensearch-build',
-                        issueTitle: 'Test GH issue title',
-                        issueBody: 'Test GH issue body',
-                        label: 'label101'
+                        repoUrl: "https://github.com/opensearch-project/opensearch-build",
+                        issueTitle: "Test GH issue title",
+                        issueBody: "Test GH issue body",
+                        label: "label101",
+                        daysToReOpen: "5"
                         )
                 }
             }
