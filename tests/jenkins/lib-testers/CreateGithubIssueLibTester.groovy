@@ -16,6 +16,7 @@ class CreateGithubIssueLibTester extends LibFunctionTester {
     private String issueTitle
     private String issueBody
     private String label
+    private String daysToReOpen
 
     public CreateGithubIssueLibTester(repoUrl, issueTitle, issueBody, label){
         this.repoUrl = repoUrl
@@ -28,6 +29,14 @@ class CreateGithubIssueLibTester extends LibFunctionTester {
         this.repoUrl = repoUrl
         this.issueTitle = issueTitle
         this.issueBody = issueBody
+    }
+
+    public CreateGithubIssueLibTester(repoUrl, issueTitle, issueBody, label, daysToReOpen){
+        this.repoUrl = repoUrl
+        this.issueTitle = issueTitle
+        this.issueBody = issueBody
+        this.label = label
+        this.daysToReOpen = daysToReOpen
     }
 
     @Override
@@ -46,6 +55,11 @@ class CreateGithubIssueLibTester extends LibFunctionTester {
     boolean expectedParametersMatcher(Object call) {
         if (call.args.label.isEmpty()) { 
             return call.args.label.first().equals('autocut')
+            && call.args.repoUrl.first().equals(this.repoUrl)
+            && call.args.issueTitle.first().equals(this.issueTitle)
+            && call.args.issueBody.first().equals(this.issueBody)}
+       if (call.args.daysToReOpen.isEmpty()) { 
+            return call.args.daysToReOpen.first().equals('3')
             && call.args.repoUrl.first().equals(this.repoUrl)
             && call.args.issueTitle.first().equals(this.issueTitle)
             && call.args.issueBody.first().equals(this.issueBody)}

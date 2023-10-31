@@ -20,5 +20,6 @@ out.txt
 
 .project
 .classpath
+bin/*
 
 
