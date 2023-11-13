@@ -11,14 +11,13 @@
 Library to support Docker Image Re-Release Automation
 @param Map[product] <Required> - Product type refers to opensearch or opensearch-dashboards.
 @param Map[tag] <Required> - Tag of the product that needs to be re-released.
-@param Map[re_release] <Optional> - This Build-Option can be checked to release the image after Docker-Build.
 */
 void call(Map args = [:]) {
     def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     String docker_image = "opensearchproject/${args.product}:${args.tag}"
     String latest_docker_image = "opensearchproject/${args.product}:latest"
     boolean tag_latest = false
-    String build_option = "build_docker_image"
+    String build_option = "re_release_docker_image"
 
     sh """#!/bin/bash
     set -e
@@ -31,8 +30,8 @@ void call(Map args = [:]) {
             script: """docker inspect --format '{{ index .Config.Labels "org.label-schema.version"}}' ${docker_image}""",
             returnStdout: true
     ).trim()
-    def build_time = sh (
-            script: """docker inspect --format '{{ index .Config.Labels "org.label-schema.build-date"}}' ${docker_image}""",
+    def build_date = sh (
+            script: """date +%Y%m%d""",
             returnStdout: true
     ).trim()
     def build_number = sh (
@@ -50,9 +49,6 @@ void call(Map args = [:]) {
 
     artifactUrlARM64 = "https://ci.opensearch.org/ci/dbc/distribution-build-${args.product}/${version}/${build_number}/linux/arm64/tar/dist/${args.product}/${args.product}-${version}-linux-arm64.tar.gz"
 
-    //slice the build-date value (For Example: 2023-08-11T02:17:43Z -> 20230811)
-    build_date = build_time[0..3] + build_time[5..6] + build_time[8..9]
-
     def build_qualifier = inputManifest.build.qualifier
 
     if (build_qualifier != null && build_qualifier != 'null') {
@@ -66,10 +62,6 @@ void call(Map args = [:]) {
         tag_latest = true
     }
 
-    if (args.re_release){
-        build_option = "re_release_docker_image"
-    }
-
     buildDockerImage(
         inputManifest: "manifests/${version}/${args.product}-${version}.yml",
         buildNumber: "${build_number}",
@@ -80,16 +72,14 @@ void call(Map args = [:]) {
     )
 
     echo 'Triggering docker-promotion'
-    if(args.re_release){
-        dockerPromote: {
-            build job: 'docker-promotion',
-            propagate: true,
-            wait: true,
-            parameters: [
-                string(name: 'SOURCE_IMAGES', value: "${args.product}:${inputManifest.build.version}${build_qualifier}.${build_number}.${build_date}"),
-                string(name: 'RELEASE_VERSION', value: "${version}"),
-                booleanParam(name: 'TAG_LATEST', value: "${tag_latest}")
-            ]
-        }
+    dockerPromote: {
+        build job: 'docker-promotion',
+        propagate: true,
+        wait: true,
+        parameters: [
+            string(name: 'SOURCE_IMAGES', value: "${args.product}:${inputManifest.build.version}${build_qualifier}.${build_number}.${build_date}"),
+            string(name: 'RELEASE_VERSION', value: "${version}"),
+            booleanParam(name: 'TAG_LATEST', value: "${tag_latest}")
+        ]
     }
 }

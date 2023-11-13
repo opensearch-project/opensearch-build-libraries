@@ -3,7 +3,7 @@
          PatchDockerImage_Jenkinsfile.echo(Executing on agent [label:none])
          PatchDockerImage_Jenkinsfile.stage(Patch docker image, groovy.lang.Closure)
             PatchDockerImage_Jenkinsfile.script(groovy.lang.Closure)
-               PatchDockerImage_Jenkinsfile.patchDockerImage({product=opensearch, tag=1, re_release=true})
+               PatchDockerImage_Jenkinsfile.patchDockerImage({product=opensearch, tag=1})
                   patchDockerImage.legacySCM(groovy.lang.Closure)
                   patchDockerImage.library({identifier=jenkins@main, retriever=null})
                   patchDockerImage.sh(#!/bin/bash
@@ -13,7 +13,7 @@
     docker pull opensearchproject/opensearch:latest
     )
                   patchDockerImage.sh({script=docker inspect --format '{{ index .Config.Labels "org.label-schema.version"}}' opensearchproject/opensearch:1, returnStdout=true})
-                  patchDockerImage.sh({script=docker inspect --format '{{ index .Config.Labels "org.label-schema.build-date"}}' opensearchproject/opensearch:1, returnStdout=true})
+                  patchDockerImage.sh({script=date +%Y%m%d, returnStdout=true})
                   patchDockerImage.sh({script=docker inspect --format '{{ index .Config.Labels "org.label-schema.description"}}' opensearchproject/opensearch:1, returnStdout=true})
                   patchDockerImage.sh({script=docker inspect --format '{{ index .Config.Labels "org.label-schema.version"}}' opensearchproject/opensearch:latest, returnStdout=true})
                   patchDockerImage.readYaml({file=manifests/1.3.0/opensearch-1.3.0.yml})

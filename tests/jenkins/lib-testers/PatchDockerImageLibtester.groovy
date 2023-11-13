@@ -16,12 +16,10 @@ class PatchDockerImageLibTester extends LibFunctionTester {
 
     private String product
     private String tag
-    private String re_release
 
-    public PatchDockerImageLibTester(product, tag, re_release){
+    public PatchDockerImageLibTester(product, tag){
         this.product = product
         this.tag = tag
-        this.re_release = re_release
     }
 
     void configure(helper, binding) {
@@ -34,8 +32,8 @@ class PatchDockerImageLibTester extends LibFunctionTester {
         helper.addShMock("""docker inspect --format '{{ index .Config.Labels "org.label-schema.description"}}' opensearchproject/opensearch:1""") { script ->
             return [stdout: "7756", exitValue: 0]
         }
-        helper.addShMock("""docker inspect --format '{{ index .Config.Labels "org.label-schema.build-date"}}' opensearchproject/opensearch:1""") { script ->
-            return [stdout: "2023-06-19T19:12:59Z", exitValue: 0]
+        helper.addShMock("""date +%Y%m%d""") { script ->
+            return [stdout: "20230619", exitValue: 0]
         }
         helper.addShMock("""docker inspect --format '{{ index .Config.Labels "org.label-schema.version"}}' opensearchproject/opensearch:latest""") { script ->
             return [stdout: "2.5.0", exitValue: 0]
