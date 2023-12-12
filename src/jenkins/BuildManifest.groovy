@@ -116,7 +116,11 @@ class BuildManifest implements Serializable {
     public String getIndexFileRoot(String jobName) {
         return [
                 jobName,
-                this.build.version
+                this.build.version,
+                "index",
+                this.build.platform,
+                this.build.architecture,
+                this.build.distribution
         ].join("/")
     }
 
