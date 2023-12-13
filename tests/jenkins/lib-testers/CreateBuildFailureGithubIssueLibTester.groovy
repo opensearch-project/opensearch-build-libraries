@@ -36,6 +36,6 @@ class CreateBuildFailureGithubIssueLibTester extends LibFunctionTester{
     void configure(Object helper, Object binding) {
         helper.registerAllowedMethod('withCredentials', [Map])
         helper.registerAllowedMethod('sleep', [Map])
-        binding.setVariable('BUILD_URL', 'www.example.com/jobs/test/123/')
+        binding.setVariable('env', ['RUN_DISPLAY_URL': 'www.example.com/job/build_url/32/display/redirect'])
     }
 }

@@ -43,7 +43,8 @@ void call(Map args = [:]) {
                 compIndex = failedComponents.indexOf(component.name)
                 ghIssueBody = """***Received Error***: **${failureMessages[compIndex]}**.
                       The distribution build for ${component.name} has failed for version: ${currentVersion}.
-                      Please see build log at ${BUILD_URL}consoleFull""".stripIndent()
+                      Please see build log at ${env.RUN_DISPLAY_URL}.
+                      The failed build stage will be marked as unstable(!). Please see ./build.sh step for more details""".stripIndent()
                 createGithubIssue(
                     repoUrl: component.repository,
                     issueTitle: "[AUTOCUT] Distribution Build Failed for ${component.name}-${currentVersion}",
