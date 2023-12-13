@@ -38,7 +38,7 @@ class TestCreateBuildFailureGithubIssue extends BuildPipelineTest {
             return [stdout: "", exitValue: 0]
         }
         super.testPipeline('tests/jenkins/jobs/CreateBuildFailureGithubIssue_Jenkinsfile')
-        assertThat(getCommands('sh', 'create'), hasItem('{script=gh issue create --title \"[AUTOCUT] Distribution Build Failed for performance-analyzer-2.0.0\" --body \"***Received Error***: **Error building performance-analyzer, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0ed in the next build. This might have performance impact if it keeps failing. Run the javaToolchains task for more det.yml --component performance-analyzer**.\n                      The distribution build for performance-analyzer has failed for version: 2.0.0.\n                      Please see build log at www.example.com/jobs/test/123/consoleFull\" --label autocut,v2.0.0 --label \"untriaged\" --repo https://github.com/opensearch-project/performance-analyzer.git, returnStdout=true}'))
+        assertThat(getCommands('sh', 'create'), hasItem('{script=gh issue create --title \"[AUTOCUT] Distribution Build Failed for performance-analyzer-2.0.0\" --body \"***Received Error***: **Error building performance-analyzer, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0ed in the next build. This might have performance impact if it keeps failing. Run the javaToolchains task for more det.yml --component performance-analyzer**.\n                      The distribution build for performance-analyzer has failed for version: 2.0.0.\n                      Please see build log at www.example.com/job/build_url/32/display/redirect.\n                      The failed build stage will be marked as unstable(!). Please see ./build.sh step for more details\" --label autocut,v2.0.0 --label \"untriaged\" --repo https://github.com/opensearch-project/performance-analyzer.git, returnStdout=true}'))
     }
 
     @Test
@@ -54,7 +54,7 @@ class TestCreateBuildFailureGithubIssue extends BuildPipelineTest {
         }
         super.testPipeline('tests/jenkins/jobs/CreateBuildFailureGithubIssue_Jenkinsfile', 'tests/jenkins/jobs/CreateBuildFailureGithubExistingIssueCheck_Jenkinsfile')
         assertThat(getCommands('println', ''), hasItem('Issue already exists, adding a comment'))
-        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue comment bbb\nccc --repo https://github.com/opensearch-project/OpenSearch.git --body \"***Received Error***: **Error building OpenSearch, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component OpenSearch --snapshot**.\n                      The distribution build for OpenSearch has failed for version: 2.0.0.\n                      Please see build log at www.example.com/jobs/test/123/consoleFull\", returnStdout=true}"))
+        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue comment bbb\nccc --repo https://github.com/opensearch-project/OpenSearch.git --body \"***Received Error***: **Error building OpenSearch, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component OpenSearch --snapshot**.\n                      The distribution build for OpenSearch has failed for version: 2.0.0.\n                      Please see build log at www.example.com/job/build_url/32/display/redirect.\n                      The failed build stage will be marked as unstable(!). Please see ./build.sh step for more details\", returnStdout=true}"))
     }
 
     def getCommands(method, text) {
