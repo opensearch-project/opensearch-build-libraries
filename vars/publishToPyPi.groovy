@@ -13,7 +13,7 @@
 @param args.artifactsPath <optional> - The directory containing distribution files to upload to the repository. Defaults to 'dist/*'
 */
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@5.11.1', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@5.12.0', retriever: legacySCM(scm))
     String releaseArtifactsDir = args.artifactsPath ? "${WORKSPACE}/${args.artifactsPath}" : "${WORKSPACE}/dist"
 
     signArtifacts(
