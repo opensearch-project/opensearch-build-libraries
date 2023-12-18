@@ -46,7 +46,7 @@ def call(Map args = [:]) {
     //Install OpenSearch with designated version via yum
     println("Start installation with yum.")
     rpmCommands(
-            command: "install",
+            command: "sudo env OPENSEARCH_INITIAL_ADMIN_PASSWORD=myStrongPassword123! install",
             product: "$name-$rpmVersion"
     )
     println("RPM distribution for $name is installed with yum.")
@@ -103,7 +103,7 @@ def call(Map args = [:]) {
 
     //Check the starting cluster
     def cluster_info_json = sh (
-            script:  "curl -s \"https://localhost:9200\" -u admin:admin --insecure",
+            script:  "curl -s \"https://localhost:9200\" -u admin:myStrongPassword123! --insecure",
             returnStdout: true
     ).trim()
     println("Cluster info is: \n" + cluster_info_json)
