@@ -18,19 +18,8 @@
  @param args.continueOnError <optional> - Do not fail the distribution build on any plugin component failure. Defaults to null
  */
 void call(Map args = [:]) {
-//    if (args.incremental == true) {
-//        retrievePreviousBuild()
-//    }
+    if (args.incremental == true) {
+        retrievePreviousBuild()
+    }
 
-    sh(([
-        './build.sh',
-        args.inputManifest ?: "manifests/${INPUT_MANIFEST}",
-        args.distribution ? "-d ${args.distribution}" : null,
-        args.componentName ? "--component ${args.componentName}" : null,
-        args.platform ? "-p ${args.platform}" : null,
-        args.architecture ? "-a ${args.architecture}" : null,
-        args.snapshot ? '--snapshot' : null,
-        args.lock ? '--lock' : null,
-        args.continueOnError ? '--continue-on-error' : null,
-    ] - null).join(' '))
 }
