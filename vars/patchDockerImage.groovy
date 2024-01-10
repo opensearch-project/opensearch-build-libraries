@@ -13,7 +13,7 @@ Library to support Docker Image Re-Release Automation
 @param Map[tag] <Required> - Tag of the product that needs to be re-released.
 */
 void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@6.0.0', retriever: legacySCM(scm))
     String docker_image = "opensearchproject/${args.product}:${args.tag}"
     String latest_docker_image = "opensearchproject/${args.product}:latest"
     boolean tag_latest = false
