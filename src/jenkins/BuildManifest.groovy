@@ -6,11 +6,12 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
-
 package jenkins
 
 class BuildManifest implements Serializable {
+
     class Build implements Serializable {
+
         String id
         String name
         String version
@@ -57,6 +58,7 @@ class BuildManifest implements Serializable {
                     this.architecture,
             ].join('-') + '.' + getExtension()
         }
+
     }
 
     class Components extends HashMap<String, Component> {
@@ -67,9 +69,11 @@ class BuildManifest implements Serializable {
                 this[component.name] = component
             }
         }
+
     }
 
     class Component implements Serializable {
+
         String name
         String version
         String ref
@@ -103,25 +107,25 @@ class BuildManifest implements Serializable {
                 buildNumber,
                 this.build.platform,
                 this.build.architecture
-        ].join("/")
+        ].join('/')
     }
 
     public String getArtifactRoot(String jobName, String buildNumber) {
         return [
                 this.getArtifactRootWithoutDistribution(jobName, buildNumber),
                 this.build.distribution
-        ].join("/")
+        ].join('/')
     }
-    
+
     public String getIndexFileRoot(String jobName) {
         return [
                 jobName,
                 this.build.version,
-                "index",
+                'index',
                 this.build.platform,
                 this.build.architecture,
                 this.build.distribution
-        ].join("/")
+        ].join('/')
     }
 
     public String getArtifactRootUrlWithoutDistribution(String publicArtifactUrl = 'https://ci.opensearch.org/ci/dbc', String jobName, String buildNumber) {
@@ -144,7 +148,7 @@ class BuildManifest implements Serializable {
             'builds',
             this.build.getFilename(),
             'manifest.yml'
-        ].join("/")
+        ].join('/')
     }
 
     public String getBundleManifestUrl(String publicArtifactUrl = 'https://ci.opensearch.org/ci/dbc', String jobName, String buildNumber) {
@@ -153,7 +157,7 @@ class BuildManifest implements Serializable {
             'dist',
             this.build.getFilename(),
             'manifest.yml'
-        ].join("/")
+        ].join('/')
     }
 
     public String getArtifactUrl(String publicArtifactUrl = 'https://ci.opensearch.org/ci/dbc', String jobName, String buildNumber) {
@@ -162,7 +166,7 @@ class BuildManifest implements Serializable {
             'dist',
             this.build.getFilename(),
             this.build.getFilenameWithExtension()
-        ].join("/")
+        ].join('/')
     }
 
     public String getArtifactArchitecture() {
@@ -182,7 +186,7 @@ class BuildManifest implements Serializable {
     }
 
     public String getMinArtifact() {
-        components.get(build.name.replace(' ','-'))?.artifacts?.get("dist")?.first()
+        components.get(build.name.replace(' ', '-'))?.artifacts?.get('dist')?.first()
     }
 
     public String getCommitId (String name) {
@@ -191,11 +195,12 @@ class BuildManifest implements Serializable {
 
     public ArrayList getNames() {
         def componentsName = []
-        this.components.each{key, value -> componentsName.add(key)}
+        this.components.each { key, value -> componentsName.add(key) }
         return componentsName
     }
 
     public String getRepo(String name) {
         return this.components.get(name).repository
     }
+
 }
