@@ -18,9 +18,12 @@
  @param args.continueOnError <optional> - Do not fail the distribution build on any plugin component failure. Defaults to null
  */
 void call(Map args = [:]) {
-//    if (args.incremental == true) {
-//        retrievePreviousBuild()
-//    }
+    boolean incremental_enabled = args.incremental != null && !args.incremental.isEmpty() && !args.incremental.equalsIgnoreCase("false")
+
+    if (incremental_enabled) {
+        echo("Start retreiving library")
+        retrievePreviousBuild(args)
+    }
 
     sh(([
         './build.sh',
@@ -32,5 +35,6 @@ void call(Map args = [:]) {
         args.snapshot ? '--snapshot' : null,
         args.lock ? '--lock' : null,
         args.continueOnError ? '--continue-on-error' : null,
+        incremental_enabled ? '--incremental': null
     ] - null).join(' '))
 }

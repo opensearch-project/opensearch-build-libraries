@@ -1,0 +1,35 @@
+/*
+ * Copyright OpenSearch Contributors
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * The OpenSearch Contributors require contributions made to
+ * this file be licensed under the Apache-2.0 license or a
+ * compatible open source license.
+ */
+
+pipeline {
+    agent none
+    stages {
+        stage('Test build manifest jenkins var') {
+            steps {
+                script {
+                    retrievePreviousBuild(
+                        inputManifest: "tests/data/opensearch-input-2.12.0.yml",
+                        distribution: "tar",
+                        architecture: "x64",
+                        platform: "linux",
+                        incremental: "123"
+                    )
+                    retrievePreviousBuild(
+                        inputManifest: "tests/data/opensearch-dashboards-input-2.12.0.yml",
+                        distribution: "zip",
+                        architecture: "x64",
+                        platform: "windows",
+                        incremental: "1234"
+                    )
+                }
+            }
+        }
+    }
+}
+
