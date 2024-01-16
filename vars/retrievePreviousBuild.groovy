@@ -28,20 +28,11 @@ void call(Map args = [:]) {
     def DISTRIBUTION_BUILD_NUMBER
 
     if (args.incremental.equalsIgnoreCase("latest")) {
-        withCredentials([string(credentialsId: 'jenkins-artifact-bucket-name', variable: 'ARTIFACT_BUCKET_NAME')]) {
-            downloadFromS3(
-                    assumedRoleName: "opensearch-bundle",
-                    roleAccountNumberCred: "jenkins-aws-account-public",
-                    downloadPath: "${DISTRIBUTION_JOB_NAME}/${revision}/index.json",
-                    bucketName: "${ARTIFACT_BUCKET_NAME}",
-                    localPath: "${prefixPath}/index.json",
-                    force: true,
-            )
-        }
         DISTRIBUTION_BUILD_NUMBER = sh(
-                script:  "cat ${prefixPath}/index.json | jq -r \".latest\"",
+                script:  "curl -sL https://ci.opensearch.org/ci/dbc/${DISTRIBUTION_JOB_NAME}/${revision}/index.json | jq -r \".latest\"",
                 returnStdout: true
         ).trim()
+        //Once we have new index.json, URL will be changed to: https://ci.opensearch.org/ci/dbc/${DISTRIBUTION_JOB_NAME}/${revision}/index/${platform}/${architecture}/${distribution}/index.json
     } else {
         DISTRIBUTION_BUILD_NUMBER = args.incremental
     }
