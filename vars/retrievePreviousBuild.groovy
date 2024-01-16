@@ -15,7 +15,7 @@
  @param args.incremental <required> - String value contains the build number of previous build or the latest.
  */
 void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@jenkins_incremental', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     def inputManifestObj = lib.jenkins.InputManifest.new(readYaml(file: args.inputManifest))
 
     def DISTRIBUTION_JOB_NAME = "${JOB_NAME}"
@@ -58,7 +58,7 @@ void call(Map args = [:]) {
                 force: true,
         )
     }
-    sh("mkdir -p ${distribution} && mv ${prefixPath}/${artifactPath} ${WORKSPACE}")
+    sh("mkdir -p ${distribution} && mv -v ${prefixPath}/${artifactPath} ${WORKSPACE}")
     if (inputManifestObj.build.getFilename().equals("opensearch")) {
         echo("Setting up Maven Local for OpenSearch build.")
         sh("mkdir -p ~/.m2/repository/org/ && cp -r ${distribution}/builds/opensearch/maven/org/opensearch/ ~/.m2/repository/org/")

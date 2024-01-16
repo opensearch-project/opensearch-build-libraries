@@ -35,6 +35,6 @@ void call(Map args = [:]) {
         args.snapshot ? '--snapshot' : null,
         args.lock ? '--lock' : null,
         args.continueOnError ? '--continue-on-error' : null,
-        incremental_enabled ? '--incremental': null
+        incremental_enabled ? '--incremental' : null
     ] - null).join(' '))
 }
