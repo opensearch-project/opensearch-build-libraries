@@ -15,7 +15,7 @@
  */
 
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@6.0.0', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@6.1.0', retriever: legacySCM(scm))
     loadCustomScript(scriptPath: 'publish/stage-maven-release.sh',
                      scriptName: 'stage-maven-release.sh')
     def autoPublish = args.autoPublish ?: false

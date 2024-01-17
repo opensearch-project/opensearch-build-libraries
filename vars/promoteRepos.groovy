@@ -17,7 +17,7 @@
  */
 
 void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@6.0.0', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@6.1.0', retriever: legacySCM(scm))
 
     String manifest = args.manifest ?: "manifests/${INPUT_MANIFEST}"
     def inputManifest = lib.jenkins.InputManifest.new(readYaml(file: manifest))
