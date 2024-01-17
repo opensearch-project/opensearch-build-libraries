@@ -10,8 +10,10 @@
 package jenkins
 
 class TestManifest {
+
     class Ci implements Serializable {
         class Image implements Serializable {
+
             String name
             String args
 
@@ -19,6 +21,7 @@ class TestManifest {
                 this.name = data.name
                 this.args = data.args
             }
+
         }
 
         Image image
@@ -26,14 +29,45 @@ class TestManifest {
         Ci(Map data) {
             this.image = new TestManifest.Ci.Image(data.image)
         }
+
+    }
+
+    class Components extends HashMap<String, Component> {
+
+        Components(ArrayList data) {
+            data.each { item ->
+                Component component = new Component(item)
+                this[component.name] = component
+            }
+        }
+
+    }
+
+    class Component implements Serializable {
+
+        String name
+
+        Component(Map data) {
+            this.name = data.name
+        }
+
     }
 
     String name
 
     Ci ci
+    Components components
 
     TestManifest(Map data) {
         this.name = data.name
         this.ci = data.ci ? new TestManifest.Ci(data.ci) : null
+        this.components = data.components ? new TestManifest.Components(data.components) : null
     }
+
+    public ArrayList getComponentNames() {
+        def componentsName = []
+        this.components.each { key, value -> componentsName.add(key) }
+        return componentsName
+    }
+
 }
