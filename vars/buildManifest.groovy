@@ -16,12 +16,13 @@
  @param args.snapshot <optional> - Boolean value. Defaults to null.
  @param args.lock <optional> - Generate a stable reference manifest. Defaults to null.
  @param args.continueOnError <optional> - Do not fail the distribution build on any plugin component failure. Defaults to null
+ @param args.incremental <optional> - Boolean value to enable incremental build.
  */
 void call(Map args = [:]) {
-    boolean incremental_enabled = args.incremental != null && !args.incremental.isEmpty() && !args.incremental.equalsIgnoreCase("false")
+    boolean incremental_enabled = args.incremental != null && args.incremental
 
     if (incremental_enabled) {
-        echo("Incremental build enabled! Retrieving previous build library")
+        echo("Incremental build enabled! Retrieving previous build library.")
         retrievePreviousBuild(args)
     }
 

@@ -15,14 +15,14 @@ class RetrievePreviousBuildLibTester extends LibFunctionTester {
     private String distribution = 'tar'
     private String platform = 'linux'
     private String architecture = 'tar'
-    private String incremental = 'latest'
+    private String previousBuildId = 'latest'
 
-    public RetrievePreviousBuildLibTester(String inputManifestPath, String platform, String architecture, String distribution, String incremental){
+    public RetrievePreviousBuildLibTester(String inputManifestPath, String platform, String architecture, String distribution, String previousBuildId){
         this.inputManifestPath = inputManifestPath
         this.platform = platform
         this.architecture = architecture
         this.distribution = distribution
-        this.incremental = incremental
+        this.previousBuildId = previousBuildId
     }
 
     @Override
@@ -35,7 +35,7 @@ class RetrievePreviousBuildLibTester extends LibFunctionTester {
         assertThat(call.args.platform.first(), notNullValue())
         assertThat(call.args.architecture.first(), notNullValue())
         assertThat(call.args.distribution.first(), notNullValue())
-        assertThat(call.args.incremental.first(), notNullValue())
+        assertThat(call.args.previousBuildId.first(), notNullValue())
     }
 
     @Override
@@ -44,7 +44,7 @@ class RetrievePreviousBuildLibTester extends LibFunctionTester {
             && call.args.platform.first().equals(this.platform)
             && call.args.architecture.first().equals(this.architecture)
             && call.args.distribution.first().equals(this.distribution)
-            && call.args.incremental.first().equals(this.incremental)
+            && call.args.previousBuildId.first().equals(this.previousBuildId)
     }
 
     @Override

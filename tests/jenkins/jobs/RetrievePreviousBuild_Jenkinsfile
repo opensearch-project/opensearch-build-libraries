@@ -18,14 +18,14 @@ pipeline {
                         distribution: "tar",
                         architecture: "x64",
                         platform: "linux",
-                        incremental: "123"
+                        previousBuildId: "123"
                     )
                     retrievePreviousBuild(
                         inputManifest: "tests/data/opensearch-dashboards-input-2.12.0.yml",
                         distribution: "zip",
                         architecture: "x64",
                         platform: "windows",
-                        incremental: "1234"
+                        previousBuildId: "1234"
                     )
                 }
             }
