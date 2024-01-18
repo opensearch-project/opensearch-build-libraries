@@ -19,23 +19,24 @@ void call(Map args = [:]) {
     def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     def inputManifestObj = lib.jenkins.InputManifest.new(readYaml(file: args.inputManifest))
 
-    def DISTRIBUTION_JOB_NAME = args.jobName ? args.jobName : "${JOB_NAME}"
+    def DISTRIBUTION_JOB_NAME = args.jobName ?: "${JOB_NAME}"
     def version = inputManifestObj.build.version
 
     def DISTRIBUTION_PLATFORM = args.platform
     def DISTRIBUTION_ARCHITECTURE = args.architecture
     def distribution = args.distribution
     def prefixPath = "${WORKSPACE}/download"
+    def previousBuildId = args.previousBuildId ?: "latest"
     def DISTRIBUTION_BUILD_NUMBER
 
-    if (args.previousBuildId.equalsIgnoreCase("latest")) {
+    if (previousBuildId.equalsIgnoreCase("latest")) {
         DISTRIBUTION_BUILD_NUMBER = sh(
                 script:  "curl -sL https://ci.opensearch.org/ci/dbc/${DISTRIBUTION_JOB_NAME}/${version}/index.json | jq -r \".latest\"",
                 returnStdout: true
         ).trim()
         //Once we have new index.json, URL will be changed to: https://ci.opensearch.org/ci/dbc/${DISTRIBUTION_JOB_NAME}/${version}/index/${platform}/${architecture}/${distribution}/index.json
     } else {
-        DISTRIBUTION_BUILD_NUMBER = args.previousBuildId
+        DISTRIBUTION_BUILD_NUMBER = previousBuildId
     }
 
     def artifactPath = "${DISTRIBUTION_JOB_NAME}/${version}/${DISTRIBUTION_BUILD_NUMBER}/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}"
