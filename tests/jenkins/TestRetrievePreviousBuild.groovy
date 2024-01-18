@@ -39,6 +39,15 @@ class TestRetrievePreviousBuild extends BuildPipelineTest {
         assertThat(shCommands, hasItems('mkdir -p zip && mv -v /tmp/workspace/download/dummy_job/2.12.0/1234/windows/x64/zip /tmp/workspace'))
         assertThat(shCommands, not(hasItems('mkdir -p ~/.m2/repository/org/ && cp -r zip/builds/opensearch/maven/org/opensearch/ ~/.m2/repository/org/')))
 
+        def s3DownloadCommands = getCommands('s3Download', 'bucket').findAll {
+            shCommand -> shCommand.contains('bucket')
+        }
+
+        assertThat(s3DownloadCommands, hasItems(
+                "{file=/tmp/workspace/download, bucket=ARTIFACT_BUCKET_NAME, path=dummy_job/2.12.0/123/linux/x64/tar/, force=true}".toString()))
+
+        assertThat(s3DownloadCommands, hasItems(
+                "{file=/tmp/workspace/download, bucket=ARTIFACT_BUCKET_NAME, path=dummy_job/2.12.0/1234/windows/x64/zip/, force=true}".toString()))
     }
 
     def getCommands(method, text) {
