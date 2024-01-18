@@ -58,7 +58,7 @@ def call(Map args = [:]) {
 
     //Start the installed OpenSearch-Dashboards distribution
     systemdCommands(
-            command: "sudo env OPENSEARCH_INITIAL_ADMIN_PASSWORD=myStrongPassword123! start",
+            command: "start",
             product: "opensearch"
     )
     systemdCommands(
@@ -78,18 +78,22 @@ def call(Map args = [:]) {
         error("Something went run! Installed $name is not actively running.")
     }
 
+    def versionNumbers = version.split('\\.')*.toInteger()
+
+    def adminPassword = versionNumbers[0] > 2 || (versionNumbers[0] == 2 && versionNumbers[1] >= 12) ? "myStrongPassword123!" : "admin"
+
     // Get the OpenSearch-Dashboards api status after start.
     def osd_status_json = -1
     for (int i = 0; i < 10; i++) {
         if (osd_status_json != 0) {
             sleep 10
             osd_status_json = sh (
-                    script: "curl -s \"http://localhost:5601/api/status\" -u admin:myStrongPassword123!",
+                    script: "curl -s \"http://localhost:5601/api/status\" -u admin:${adminPassword}",
                     returnStatus: true
             )
         } else {
             osd_status_json = sh (
-                    script: "curl -s \"http://localhost:5601/api/status\" -u admin:myStrongPassword123!",
+                    script: "curl -s \"http://localhost:5601/api/status\" -u admin:${adminPassword}",
                     returnStdout: true
             ).trim()
             break

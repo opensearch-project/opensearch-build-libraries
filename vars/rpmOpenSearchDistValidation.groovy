@@ -101,9 +101,13 @@ def call(Map args = [:]) {
         error("Something went wrong! Installed $name is not actively running.")
     }
 
+    def versionNumbers = version.split('\\.')*.toInteger()
+
+    def adminPassword = versionNumbers[0] > 2 || (versionNumbers[0] == 2 && versionNumbers[1] >= 12) ? "myStrongPassword123!" : "admin"
+
     //Check the starting cluster
     def cluster_info_json = sh (
-            script:  "curl -s \"https://localhost:9200\" -u admin:myStrongPassword123! --insecure",
+            script:  "curl -s \"https://localhost:9200\" -u admin:${adminPassword} --insecure",
             returnStdout: true
     ).trim()
     println("Cluster info is: \n" + cluster_info_json)
