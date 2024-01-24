@@ -31,10 +31,9 @@ void call(Map args = [:]) {
 
     if (previousBuildId.equalsIgnoreCase("latest")) {
         DISTRIBUTION_BUILD_NUMBER = sh(
-                script:  "curl -sL https://ci.opensearch.org/ci/dbc/${DISTRIBUTION_JOB_NAME}/${version}/index.json | jq -r \".latest\"",
+                script:  "curl -sL https://ci.opensearch.org/ci/dbc/${DISTRIBUTION_JOB_NAME}/${version}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\"",
                 returnStdout: true
         ).trim()
-        //Once we have new index.json, URL will be changed to: https://ci.opensearch.org/ci/dbc/${DISTRIBUTION_JOB_NAME}/${version}/index/${platform}/${architecture}/${distribution}/index.json
     } else {
         DISTRIBUTION_BUILD_NUMBER = previousBuildId
     }
