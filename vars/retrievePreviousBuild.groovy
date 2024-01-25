@@ -30,10 +30,23 @@ void call(Map args = [:]) {
     def DISTRIBUTION_BUILD_NUMBER
 
     if (previousBuildId.equalsIgnoreCase("latest")) {
-        DISTRIBUTION_BUILD_NUMBER = sh(
-                script:  "curl -sL https://ci.opensearch.org/ci/dbc/${DISTRIBUTION_JOB_NAME}/${version}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\"",
-                returnStdout: true
-        ).trim()
+        def latestIndexStatus = sh (
+                script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${version}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\" > /dev/null 2>&1",
+                returnStatus: true
+        )
+        if (latestIndexStatus == 0) {
+            echo("Use new URL path for the latest index.")
+            DISTRIBUTION_BUILD_NUMBER = sh(
+                    script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${version}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\"",
+                    returnStdout: true
+            ).trim()
+        } else {
+            echo("Use old URL path for the latest index.")
+            DISTRIBUTION_BUILD_NUMBER = sh(
+                    script: "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${version}/index.json | jq -r \".latest\"",
+                    returnStdout: true
+            ).trim()
+        }
     } else {
         DISTRIBUTION_BUILD_NUMBER = previousBuildId
     }
