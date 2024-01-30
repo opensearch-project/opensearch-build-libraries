@@ -11,10 +11,11 @@
 Library to build Docker Image with different Build Options
 @param Map[inputManifest] <Required> - Path to Input Manifest.
 @param Map[buildNumber] <Required> - Build number of the corresponding Artifact.
-@param Map[buildDate] <Optional> - Date on which the artifacts were built.
 @param Map[artifactUrlX64] <Required> - Url Path to X64 Tarball.
 @param Map[artifactUrlARM64] <Required> - Url Path to ARM64 Tarball.
 @param Map[buildOption] <Required> - Build Option for building the image with different options.
+@param Map[buildGitRef] <Optional> - Build Git Reference of the opensearch-build repository, default to 'main'.
+@param Map[buildDate] <Optional> - Date on which the artifacts were built.
 */
 void call(Map args = [:]) {
     def lib = library(identifier: 'jenkins@6.1.1', retriever: legacySCM(scm))
@@ -22,6 +23,7 @@ void call(Map args = [:]) {
     def build_version = inputManifest.build.version
     def build_qualifier = inputManifest.build.qualifier
     def build_number = args.buildNumber ?: "${BUILD_NUMBER}"
+    def build_git_ref = args.buildGitRef ?: "main"
     String image_tag = ""
     String image_base_os = "al2023"
 
@@ -52,7 +54,7 @@ void call(Map args = [:]) {
             wait: true,
             parameters: [
                 string(name: 'DOCKER_BUILD_GIT_REPOSITORY', value: 'https://github.com/opensearch-project/opensearch-build'),
-                string(name: 'DOCKER_BUILD_GIT_REPOSITORY_REFERENCE', value: 'main'),
+                string(name: 'DOCKER_BUILD_GIT_REPOSITORY_REFERENCE', value: "${build_git_ref}"),
                 string(name: 'DOCKER_BUILD_SCRIPT_WITH_COMMANDS', value: [
                         'id',
                         'pwd',
