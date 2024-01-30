@@ -7,7 +7,7 @@
  * compatible open source license.
  */
 void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@6.1.1', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@6.2.0', retriever: legacySCM(scm))
     def git_repo_url = args.gitRepoUrl ?: 'null'
     def git_reference = args.gitReference ?: 'null'
 
