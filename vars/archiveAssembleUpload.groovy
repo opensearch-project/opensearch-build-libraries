@@ -7,7 +7,7 @@
  * compatible open source license.
  */
 def call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@6.2.0', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@6.3.0', retriever: legacySCM(scm))
     def inputManifestObj = lib.jenkins.InputManifest.new(readYaml(file: args.inputManifest))
 
     String stashName = "${args.stashName}"
