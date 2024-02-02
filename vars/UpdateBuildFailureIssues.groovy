@@ -49,7 +49,8 @@ void call(Map args = [:]) {
                 issueBody: ghIssueBody,
                 label: "autocut,v${currentVersion}"
             )
-        } else if (passedComponents.contains(component.name) && !failedComponents.contains(component.name)) {
+        }
+        if (passedComponents.contains(component.name) && !failedComponents.contains(component.name)) {
             println("Component ${component.name} passed, closing github issue")
             ghIssueBody = """Closing the issue as the distribution build for ${component.name} has passed for version: **${currentVersion}**.
                     Please see build log at ${env.RUN_DISPLAY_URL}""".stripIndent()
