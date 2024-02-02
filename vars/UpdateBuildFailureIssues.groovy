@@ -16,8 +16,8 @@ void call(Map args = [:]) {
     lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     def failureMessages = args.failureMessages
     def passMessages = args.passMessages
-    def yamlFile = readYaml(file: args.inputManifestPath)
-    def currentVersion = yamlFile.build.version
+    def inputManifest = readYaml(file: args.inputManifestPath)
+    def currentVersion = inputManifest.build.version
 
     List<String> failedComponents = []
     List<String> passedComponents = []
@@ -35,7 +35,7 @@ void call(Map args = [:]) {
     }
     passedComponents = passedComponents.unique()
 
-    for (component in yamlFile.components) {
+    for (component in inputManifest.components) {
         if (failedComponents.contains(component.name)) {
             println("Component ${component.name} failed, creating github issue")
             exactComponentFailureMessage = getExactErrorMessage(failureMessages, component.name)
@@ -48,8 +48,7 @@ void call(Map args = [:]) {
                 issueTitle: "[AUTOCUT] Distribution Build Failed for ${component.name}-${currentVersion}",
                 issueBody: ghIssueBody,
                 label: "autocut,v${currentVersion}"
-                )
-            sleep(time:3, unit:'SECONDS')
+            )
         } else if (passedComponents.contains(component.name) && !failedComponents.contains(component.name)) {
             println("Component ${component.name} passed, closing github issue")
             ghIssueBody = """Closing the issue as the distribution build for ${component.name} has passed for version: **${currentVersion}**.
@@ -60,8 +59,8 @@ void call(Map args = [:]) {
                 closeComment: ghIssueBody,
                 label: "autocut,v${currentVersion}"
             )
-            sleep(time:3, unit:'SECONDS')
         }
+        sleep(time:3, unit:'SECONDS')
     }
 }
 

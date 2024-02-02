@@ -7,6 +7,7 @@
                   UpdateBuildFailureIssues.legacySCM(groovy.lang.Closure)
                   UpdateBuildFailureIssues.library({identifier=jenkins@main, retriever=null})
                   UpdateBuildFailureIssues.readYaml({file=tests/data/opensearch-2.2.0.yml})
+                  UpdateBuildFailureIssues.sleep({time=3, unit=SECONDS})
                   UpdateBuildFailureIssues.createGithubIssue({repoUrl=https://github.com/opensearch-project/common-utils.git, issueTitle=[AUTOCUT] Distribution Build Failed for common-utils-2.2.0, issueBody=***Received Error***: **Error building common-utils, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component common-utils**.
                     common-utils failed during the distribution build for version: 2.2.0.
                     Please see build log at www.example.com/job/build_url/32/display/redirect.
@@ -23,6 +24,8 @@ ccc --repo https://github.com/opensearch-project/common-utils.git --body "***Rec
                     Please see build log at www.example.com/job/build_url/32/display/redirect.
                     The failed build stage will be marked as unstable(!). Please see ./build.sh step for more details", returnStdout=true})
                   UpdateBuildFailureIssues.sleep({time=3, unit=SECONDS})
+                  UpdateBuildFailureIssues.sleep({time=3, unit=SECONDS})
+                  UpdateBuildFailureIssues.sleep({time=3, unit=SECONDS})
                   UpdateBuildFailureIssues.createGithubIssue({repoUrl=https://github.com/opensearch-project/performance-analyzer.git, issueTitle=[AUTOCUT] Distribution Build Failed for performance-analyzer-2.2.0, issueBody=***Received Error***: **Error building performance-analyzer, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0ed in the next build. This might have performance impact if it keeps failing. Run the javaToolchains task for more det.yml --component performance-analyzer**.
                     performance-analyzer failed during the distribution build for version: 2.2.0.
                     Please see build log at www.example.com/job/build_url/32/display/redirect.
@@ -38,6 +41,11 @@ ccc --repo https://github.com/opensearch-project/performance-analyzer.git --body
                     performance-analyzer failed during the distribution build for version: 2.2.0.
                     Please see build log at www.example.com/job/build_url/32/display/redirect.
                     The failed build stage will be marked as unstable(!). Please see ./build.sh step for more details", returnStdout=true})
+                  UpdateBuildFailureIssues.sleep({time=3, unit=SECONDS})
+                  UpdateBuildFailureIssues.sleep({time=3, unit=SECONDS})
+                  UpdateBuildFailureIssues.sleep({time=3, unit=SECONDS})
+                  UpdateBuildFailureIssues.sleep({time=3, unit=SECONDS})
+                  UpdateBuildFailureIssues.sleep({time=3, unit=SECONDS})
                   UpdateBuildFailureIssues.sleep({time=3, unit=SECONDS})
                   UpdateBuildFailureIssues.createGithubIssue({repoUrl=https://github.com/opensearch-project/notifications.git, issueTitle=[AUTOCUT] Distribution Build Failed for notifications-2.2.0, issueBody=***Received Error***: **Error building notifications, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component notifications**.
                     notifications failed during the distribution build for version: 2.2.0.
@@ -86,6 +94,7 @@ ccc --repo https://github.com/opensearch-project/anomaly-detection.git --body "*
                     Please see build log at www.example.com/job/build_url/32/display/redirect.
                     The failed build stage will be marked as unstable(!). Please see ./build.sh step for more details" --label autocut,v2.2.0 --label "untriaged" --repo https://github.com/opensearch-project/asynchronous-search.git, returnStdout=true})
                   UpdateBuildFailureIssues.sleep({time=3, unit=SECONDS})
+                  UpdateBuildFailureIssues.sleep({time=3, unit=SECONDS})
                   UpdateBuildFailureIssues.closeGithubIssue({repoUrl=https://github.com/opensearch-project/index-management.git, issueTitle=[AUTOCUT] Distribution Build Failed for index-management-2.2.0, closeComment=Closing the issue as the distribution build for index-management has passed for version: **2.2.0**.
                     Please see build log at www.example.com/job/build_url/32/display/redirect, label=autocut,v2.2.0})
                      closeGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
@@ -103,4 +112,6 @@ ccc -R opensearch-project/index-management --comment "Closing the issue as the d
                         closeGithubIssue.sh({script=gh issue close bbb
 ccc -R opensearch-project/sql --comment "Closing the issue as the distribution build for sql has passed for version: **2.2.0**.
                     Please see build log at www.example.com/job/build_url/32/display/redirect", returnStdout=true})
+                  UpdateBuildFailureIssues.sleep({time=3, unit=SECONDS})
+                  UpdateBuildFailureIssues.sleep({time=3, unit=SECONDS})
                   UpdateBuildFailureIssues.sleep({time=3, unit=SECONDS})
