@@ -24,7 +24,6 @@ def call(Map args = [:]) {
                     returnStdout: true
             ).trim()
             return running_status
-            break
         case ("start"):
             sh ("systemctl start $product")
             break
