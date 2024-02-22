@@ -16,13 +16,20 @@ void call(Map args = [:]) {
         println("Validation.sh script not found in the workspace: ${WORKSPACE}, exit 1")
         System.exit(1)
     }
-    String arguments = generateArguments(args)
-    sh "${WORKSPACE}/validation.sh ${arguments}"
-}
 
-String generateArguments(args) {
-    String arguments = ''
-    // generate of command line arguments
-    args.each { key, value -> arguments += " --${key } ${value }" }
-    return arguments
+    sh([
+        './validation.sh',
+        args.version ? "--version ${args.version}" : "",
+        args.file_path ? "--file-path ${args.file_path}" : "",
+        args.distribution ? "--distribution ${args.distribution}" : "",
+        args.platform ? "--platform ${args.platform}" : "",
+        args.arch ? "--arch ${args.arch}" : "",
+        args.projects ? "--projects ${args.projects}" : "",
+        args.docker_source ? "--docker-source ${args.docker_source}" : "",
+        args.os_build_number ? "--os-build-number ${args.os_build_number}" : "",
+        args.osd_build_number ? "--osd-build-number ${args.osd_build_number}" : "",
+        args.artifact_type ? "--artifact-type ${args.artifact_type}" : "",
+        args.allow_http ? '--allow-http' : "",
+        args.docker_args ? "--${args.docker_args}" : "",
+    ].join(' ').trim())
 }

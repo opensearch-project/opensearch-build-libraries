@@ -15,7 +15,10 @@ pipeline {
                 script {
                     validateArtifacts(
                             version: '1.0.0',
-                            project: 'foo'
+                            distribution: 'tar',
+                            arch: 'x64',
+                            platform: 'linux',
+                            projects: 'opensearch'
                     )
                 }
             }

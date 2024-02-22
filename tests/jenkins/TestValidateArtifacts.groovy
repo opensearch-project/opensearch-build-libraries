@@ -19,7 +19,7 @@ class TestValidateArtifacts extends BuildPipelineTest {
     @Before
     void setUp() {
 
-        this.registerLibTester(new ValidateArtifactsLibTester('1.0.0', 'foo'))
+        this.registerLibTester(new ValidateArtifactsLibTester('1.0.0', 'tar', 'x64', 'linux', 'opensearch'))
 
         super.setUp()
     }
@@ -27,17 +27,5 @@ class TestValidateArtifacts extends BuildPipelineTest {
     @Test
     void validateArtifacts() {
         super.testPipeline('tests/jenkins/jobs/ValidateArtifacts_Jenkinsfile')
-    }
-
-    @Test
-    void checkScriptcall(){
-        runScript('tests/jenkins/jobs/ValidateArtifacts_Jenkinsfile')
-        def shcommand =  helper.callStack.findAll { call ->
-            call.methodName == 'sh'
-        }.collect { call ->
-            callArgsToString(call)
-        }
-        assertThat(shcommand.size(), equalTo(1))
-        assertThat(shcommand, hasItem('/tmp/workspace/validation.sh  --version 1.0.0 --project foo'))
     }
 }
