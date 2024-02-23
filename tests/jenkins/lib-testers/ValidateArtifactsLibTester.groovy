@@ -12,11 +12,18 @@ import static org.hamcrest.MatcherAssert.assertThat
 class ValidateArtifactsLibTester extends LibFunctionTester {
 
     private String version
-    private String project
+    private String distribution
+    private String arch
+    private String platform
+    private String projects
 
-    public ValidateArtifactsLibTester(version, project) {
+    public ValidateArtifactsLibTester(version, distribution, arch, platform, projects) {
         this.version = version
-        this.project = project
+        this.distribution = distribution
+        this.arch = arch
+        this.platform = platform
+        this.projects = projects
+
     }
 
     void configure(helper, binding) {
@@ -25,12 +32,12 @@ class ValidateArtifactsLibTester extends LibFunctionTester {
 
     void parameterInvariantsAssertions(call) {
         assertThat(call.args.version.first(), notNullValue())
-        assertThat(call.args.project.first(), notNullValue())
+        assertThat(call.args.projects.first(), notNullValue())
     }
 
     boolean expectedParametersMatcher(call) {
         return call.args.version.first().toString().equals(this.version)
-            && call.args.project.first().toString().equals(this.project)
+            && call.args.projects.first().toString().equals(this.projects)
     }
 
     String libFunctionName() {
