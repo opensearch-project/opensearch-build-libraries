@@ -3,6 +3,6 @@
          ValidateArtifacts_Jenkinsfile.echo(Executing on agent [label:none])
          ValidateArtifacts_Jenkinsfile.stage(validate, groovy.lang.Closure)
             ValidateArtifacts_Jenkinsfile.script(groovy.lang.Closure)
-               ValidateArtifacts_Jenkinsfile.validateArtifacts({version=1.0.0, project=foo})
+               ValidateArtifacts_Jenkinsfile.validateArtifacts({version=1.0.0, distribution=tar, arch=x64, platform=linux, projects=opensearch})
                   validateArtifacts.fileExists(/tmp/workspace/validation.sh)
-                  validateArtifacts.sh(/tmp/workspace/validation.sh  --version 1.0.0 --project foo)
+                  validateArtifacts.sh(./validation.sh --version 1.0.0  --distribution tar --platform linux --arch x64 --projects opensearch)
