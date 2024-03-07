@@ -53,12 +53,35 @@ class InputManifest {
         }
     }
 
+    class Components extends HashMap<String, Component> {
+
+        Components(ArrayList data) {
+            data.each { item ->
+                Component component = new Component(item)
+                this[component.name] = component
+            }
+        }
+    }
+
+    class Component implements Serializable {
+        String name
+        String repository
+
+        Component(Map data) {
+            this.name = data.name
+            this.repository = data.repository
+        }
+
+    }
+
     Build build
     Ci ci
+    Components components
 
     InputManifest(Map data) {
         this.build = new InputManifest.Build(data.build)
         this.ci = data.ci ? new InputManifest.Ci(data.ci) : null
+        this.components = new InputManifest.Components(data.components)
     }
 
     String getSHAsRoot(String jobName) {
@@ -68,4 +91,15 @@ class InputManifest {
             'shas'
         ].join("/")
     }
+
+    public ArrayList getNames() {
+        def componentsName = []
+        this.components.each { key, value -> componentsName.add(key) }
+        return componentsName
+    }
+
+    public String getRepo(String name) {
+        return this.components.get(name).repository
+    }
+
 }
