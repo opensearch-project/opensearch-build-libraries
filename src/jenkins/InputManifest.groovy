@@ -65,10 +65,12 @@ class InputManifest {
 
     class Component implements Serializable {
         String name
+        String ref
         String repository
 
         Component(Map data) {
             this.name = data.name
+            this.ref = data.ref
             this.repository = data.repository
         }
 
