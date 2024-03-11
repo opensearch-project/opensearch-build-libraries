@@ -34,6 +34,10 @@ pipeline {
                     echo inputManifest.build.version
                     echo inputManifest.build.getFilename()
                     echo inputManifest.getSHAsRoot('bundle-build')
+                    def componentNames = inputManifest.getNames()
+                    echo componentNames.join(', ')
+                    echo inputManifest.getRepo('OpenSearch')
+                    echo inputManifest.getRepo('dashboards-reports')
                 }
             }
         }
