@@ -5,7 +5,7 @@
             UploadTestResults_Jenkinsfile.script(groovy.lang.Closure)
                UploadTestResults_Jenkinsfile.uploadTestResults({buildManifestFileName=tests/data/opensearch-1.3.0-build.yml, jobName=dummy_job})
                   uploadTestResults.legacySCM(groovy.lang.Closure)
-                  uploadTestResults.library({identifier=jenkins@6.3.2, retriever=null})
+                  uploadTestResults.library({identifier=jenkins@6.3.3, retriever=null})
                   uploadTestResults.readYaml({file=tests/data/opensearch-1.3.0-build.yml})
                   BuildManifest.asBoolean()
                   uploadTestResults.echo(Build Id: 29)
