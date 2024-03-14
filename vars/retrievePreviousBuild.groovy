@@ -15,7 +15,7 @@
  @param args.distribution <required> - Distribution of previous build to retrieve.
  @param args.previousBuildId <optional> - Build id of previous build for incremental build. Defaults to latest.
  */
-void call(Map args = [:]) {
+void call(Map args = [:], int distribution_build_number) {
     def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     def inputManifestObj = lib.jenkins.InputManifest.new(readYaml(file: args.inputManifest))
 
@@ -26,30 +26,8 @@ void call(Map args = [:]) {
     def DISTRIBUTION_ARCHITECTURE = args.architecture
     def distribution = args.distribution
     def prefixPath = "${WORKSPACE}/download"
-    def previousBuildId = args.previousBuildId ?: "latest"
-    def DISTRIBUTION_BUILD_NUMBER
-
-    if (previousBuildId.equalsIgnoreCase("latest")) {
-        def latestIndexStatus = sh (
-                script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${version}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\" > /dev/null 2>&1",
-                returnStatus: true
-        )
-        if (latestIndexStatus == 0) {
-            echo("Use new URL path for the latest index.")
-            DISTRIBUTION_BUILD_NUMBER = sh(
-                    script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${version}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\"",
-                    returnStdout: true
-            ).trim()
-        } else {
-            echo("Use old URL path for the latest index.")
-            DISTRIBUTION_BUILD_NUMBER = sh(
-                    script: "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${version}/index.json | jq -r \".latest\"",
-                    returnStdout: true
-            ).trim()
-        }
-    } else {
-        DISTRIBUTION_BUILD_NUMBER = previousBuildId
-    }
+//    def previousBuildId = args.previousBuildId ?: "latest"
+    def DISTRIBUTION_BUILD_NUMBER = args.distributionBuildNumber
 
     def artifactPath = "${DISTRIBUTION_JOB_NAME}/${version}/${DISTRIBUTION_BUILD_NUMBER}/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}"
 
