@@ -33,7 +33,7 @@ void call(Map args = [:]) {
     def previousBuildId = args.previousBuildId ?: "latest"
     def DISTRIBUTION_BUILD_NUMBER
 
-    if (previousBuildId.equalsIgnoreCase("latest")) {
+    if (incremental_enabled && previousBuildId.equalsIgnoreCase("latest")) {
         def latestIndexStatus = sh (
                 script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${version}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\" > /dev/null 2>&1",
                 returnStatus: true

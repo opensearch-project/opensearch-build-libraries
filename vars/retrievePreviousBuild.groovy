@@ -15,7 +15,7 @@
  @param args.distribution <required> - Distribution of previous build to retrieve.
  @param args.previousBuildId <optional> - Build id of previous build for incremental build. Defaults to latest.
  */
-void call(Map args = [:], int distribution_build_number) {
+void call(Map args = [:]) {
     def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     def inputManifestObj = lib.jenkins.InputManifest.new(readYaml(file: args.inputManifest))
 
@@ -26,7 +26,6 @@ void call(Map args = [:], int distribution_build_number) {
     def DISTRIBUTION_ARCHITECTURE = args.architecture
     def distribution = args.distribution
     def prefixPath = "${WORKSPACE}/download"
-//    def previousBuildId = args.previousBuildId ?: "latest"
     def DISTRIBUTION_BUILD_NUMBER = args.distributionBuildNumber
 
     def artifactPath = "${DISTRIBUTION_JOB_NAME}/${version}/${DISTRIBUTION_BUILD_NUMBER}/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}"
