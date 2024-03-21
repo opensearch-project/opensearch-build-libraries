@@ -13,19 +13,13 @@ pipeline {
         stage('Test build manifest jenkins var') {
             steps {
                 script {
-                    retrievePreviousBuild(
+                    buildManifest(
                         inputManifest: "tests/data/opensearch-input-2.12.0.yml",
                         distribution: "tar",
-                        architecture: "x64",
                         platform: "linux",
-                        distributionBuildNumber: "123"
-                    )
-                    retrievePreviousBuild(
-                        inputManifest: "tests/data/opensearch-dashboards-input-2.12.0.yml",
-                        distribution: "zip",
                         architecture: "x64",
-                        platform: "windows",
-                        distributionBuildNumber: "1234"
+                        incremental: true,
+                        previousBuildId: "latest"
                     )
                 }
             }
