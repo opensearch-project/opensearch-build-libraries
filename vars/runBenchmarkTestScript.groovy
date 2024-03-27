@@ -12,6 +12,7 @@
  * @param args.bundleManifest <optional> - OpenSearch bundle manifest url.
  * @param args.distributionUrl <optional> - Download link for the OpenSearch bundle tarball.
  * @param args.distributionVersion <optional> - Provide OpenSearch version if using distributionUrl param
+ * @param args.endpoint <optional> - Endpoint to the cluster.
  * @param args.insecure <optional> - Force the security of the cluster to be disabled, default is false.
  * @param args.workload <required> - Name of the workload that OpenSearch Benchmark should run, default is nyc_taxis.
  * @param args.singleNode <optional> - Create single node OS cluster, default is true.
@@ -51,7 +52,9 @@ void call(Map args = [:]) {
     withCredentials([string(credentialsId: 'jenkins-aws-account-public', variable: 'AWS_ACCOUNT_PUBLIC'),
                      string(credentialsId: 'jenkins-artifact-bucket-name', variable: 'ARTIFACT_BUCKET_NAME')]) {
         withAWS(role: 'opensearch-test', roleAccount: "${AWS_ACCOUNT_PUBLIC}", duration: 900, roleSessionName: 'jenkins-session') {
-            s3Download(file: 'config.yml', bucket: "${ARTIFACT_BUCKET_NAME}", path: "${BENCHMARK_TEST_CONFIG_LOCATION}/${config_name}", force: true)
+            if(isNullOrEmpty(args.endpoint)) {
+                s3Download(file: 'config.yml', bucket: "${ARTIFACT_BUCKET_NAME}", path: "${BENCHMARK_TEST_CONFIG_LOCATION}/${config_name}", force: true)
+            }
             s3Download(file: 'benchmark.ini', bucket: "${ARTIFACT_BUCKET_NAME}", path: "${BENCHMARK_TEST_CONFIG_LOCATION}/${benchmark_config}", force: true)
 
             /*Added sleep to let the file get downloaded first before write happens. Without the sleep the write is
@@ -71,38 +74,38 @@ void call(Map args = [:]) {
     sh([
             './test.sh',
             'benchmark-test',
-            isNullOrEmpty(args.bundleManifest.toString()) ? "" : "--bundle-manifest ${args.bundleManifest}",
-            isNullOrEmpty(args.distributionUrl.toString()) ? "" : "--distribution-url ${args.distributionUrl}",
-            isNullOrEmpty(args.distributionVersion.toString()) ? "" : "--distribution-version ${args.distributionVersion}",
-            "--config ${WORKSPACE}/config.yml",
+            isNullOrEmpty(args.bundleManifest) ? "" : "--bundle-manifest ${args.bundleManifest}",
+            isNullOrEmpty(args.distributionUrl) ? "" : "--distribution-url ${args.distributionUrl}",
+            isNullOrEmpty(args.distributionVersion) ? "" : "--distribution-version ${args.distributionVersion}",
+            isNullOrEmpty(args.endpoint) ? "" : "--cluster-endpoint ${args.endpoint}",
+            isNullOrEmpty(args.endpoint) ? "--config ${WORKSPACE}/config.yml" : "",
             "--workload ${args.workload}",
             "--benchmark-config ${WORKSPACE}/benchmark.ini",
             "--user-tag ${userTags}",
-            args.insecure.toBoolean() ? "--without-security" : "",
-            args.singleNode.toBoolean() ? "--single-node" : "",
-            args.minDistribution.toBoolean() ? "--min-distribution" : "",
-            args.use50PercentHeap.toBoolean() ? "--use-50-percent-heap" : "",
-            args.enableRemoteStore.toBoolean() ? "--enable-remote-store" : "",
-            args.captureNodeStat.toBoolean() ? "--capture-node-stat" : "",
-            args.captureSegmentReplicationStat.toBoolean() ? "--capture-segment-replication-stat" : "",
-            isNullOrEmpty(args.suffix.toString()) ? "" : "--suffix ${args.suffix}",
-            isNullOrEmpty(args.managerNodeCount.toString()) ? "" : "--manager-node-count ${args.managerNodeCount}",
-            isNullOrEmpty(args.dataNodeCount.toString()) ? "" : "--data-node-count ${args.dataNodeCount}",
-            isNullOrEmpty(args.clientNodeCount.toString()) ? "" : "--client-node-count ${args.clientNodeCount}",
-            isNullOrEmpty(args.ingestNodeCount.toString()) ? "" : "--ingest-node-count ${args.ingestNodeCount}",
-            isNullOrEmpty(args.mlNodeCount.toString()) ? "" : "--ml-node-count ${args.mlNodeCount}",
-            isNullOrEmpty(args.dataInstanceType.toString()) ? "" : "--data-instance-type ${args.dataInstanceType}",
-            isNullOrEmpty(args.workloadParams.toString()) ? "" : "--workload-params '${args.workloadParams}'",
-            isNullOrEmpty(args.testProcedure.toString()) ? "" : "--test-procedure ${args.testProcedure}",
-            isNullOrEmpty(args.excludeTasks.toString()) ? "" : "--exclude-tasks ${args.excludeTasks}",
-            isNullOrEmpty(args.includeTasks.toString()) ? "" : "--include-tasks ${args.includeTasks}",
-            isNullOrEmpty(args.additionalConfig.toString()) ? "" : "--additional-config ${args.additionalConfig}",
-            isNullOrEmpty(args.dataStorageSize.toString()) ? "" : "--data-node-storage ${args.dataStorageSize}",
-            isNullOrEmpty(args.mlStorageSize.toString()) ? "" : "--ml-node-storage ${args.mlStorageSize}",
-            isNullOrEmpty(args.jvmSysProps.toString()) ? "" : "--jvm-sys-props ${args.jvmSysProps}",
-            isNullOrEmpty(args.telemetryParams.toString()) ? "" : "--telemetry-params '${args.telemetryParams}'"
-    ].join(' '))
-
+            args.insecure?.toBoolean() ? "--without-security" : "",
+            args.singleNode?.toBoolean() ? "--single-node" : "",
+            args.minDistribution?.toBoolean() ? "--min-distribution" : "",
+            args.use50PercentHeap?.toBoolean() ? "--use-50-percent-heap" : "",
+            args.enableRemoteStore?.toBoolean() ? "--enable-remote-store" : "",
+            args.captureNodeStat?.toBoolean() ? "--capture-node-stat" : "",
+            args.captureSegmentReplicationStat?.toBoolean() ? "--capture-segment-replication-stat" : "",
+            isNullOrEmpty(args.suffix) ? "" : "--suffix ${args.suffix}",
+            isNullOrEmpty(args.managerNodeCount) ? "" : "--manager-node-count ${args.managerNodeCount}",
+            isNullOrEmpty(args.dataNodeCount) ? "" : "--data-node-count ${args.dataNodeCount}",
+            isNullOrEmpty(args.clientNodeCount) ? "" : "--client-node-count ${args.clientNodeCount}",
+            isNullOrEmpty(args.ingestNodeCount) ? "" : "--ingest-node-count ${args.ingestNodeCount}",
+            isNullOrEmpty(args.mlNodeCount) ? "" : "--ml-node-count ${args.mlNodeCount}",
+            isNullOrEmpty(args.dataInstanceType) ? "" : "--data-instance-type ${args.dataInstanceType}",
+            isNullOrEmpty(args.workloadParams) ? "" : "--workload-params '${args.workloadParams}'",
+            isNullOrEmpty(args.testProcedure) ? "" : "--test-procedure ${args.testProcedure}",
+            isNullOrEmpty(args.excludeTasks) ? "" : "--exclude-tasks ${args.excludeTasks}",
+            isNullOrEmpty(args.includeTasks) ? "" : "--include-tasks ${args.includeTasks}",
+            isNullOrEmpty(args.additionalConfig) ? "" : "--additional-config ${args.additionalConfig}",
+            isNullOrEmpty(args.dataStorageSize) ? "" : "--data-node-storage ${args.dataStorageSize}",
+            isNullOrEmpty(args.mlStorageSize) ? "" : "--ml-node-storage ${args.mlStorageSize}",
+            isNullOrEmpty(args.jvmSysProps) ? "" : "--jvm-sys-props ${args.jvmSysProps}",
+            isNullOrEmpty(args.telemetryParams) ? "" : "--telemetry-params '${args.telemetryParams}'"
+    ].join(' ').trim())
 }
 
 void editBenchmarkConfig(String config_file) {
