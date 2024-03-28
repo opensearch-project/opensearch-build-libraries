@@ -21,8 +21,50 @@
 void call(Map args = [:]) {
     boolean incremental_enabled = args.incremental != null && args.incremental
 
+    def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
+    def inputManifestObj = lib.jenkins.InputManifest.new(readYaml(file: args.inputManifest))
+
+    def DISTRIBUTION_JOB_NAME = args.jobName ?: "${JOB_NAME}"
+    def version = inputManifestObj.build.version
+
+    def DISTRIBUTION_PLATFORM = args.platform
+    def DISTRIBUTION_ARCHITECTURE = args.architecture
+    def distribution = args.distribution
+    def previousBuildId = args.previousBuildId ?: "latest"
+    def DISTRIBUTION_BUILD_NUMBER
+
+    if (incremental_enabled && previousBuildId.equalsIgnoreCase("latest")) {
+        def latestIndexStatus = sh (
+                script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${version}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\" > /dev/null 2>&1",
+                returnStatus: true
+        )
+        def latestIndexStatusOld = sh (
+                script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${version}/index.json | jq -r \".latest\" > /dev/null 2>&1",
+                returnStatus: true
+        )
+        if (latestIndexStatus == 0) {
+            echo("Use new URL path for the latest index.")
+            DISTRIBUTION_BUILD_NUMBER = sh(
+                    script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${version}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\"",
+                    returnStdout: true
+            ).trim()
+        } else if (latestIndexStatusOld == 0) {
+            echo("Use old URL path for the latest index.")
+            DISTRIBUTION_BUILD_NUMBER = sh(
+                    script: "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${version}/index.json | jq -r \".latest\"",
+                    returnStdout: true
+            ).trim()
+        } else {
+            echo("No latest build for ${version} is available. Building all components from the manifest.")
+            incremental_enabled = false
+        }
+    } else {
+        DISTRIBUTION_BUILD_NUMBER = previousBuildId
+    }
+
     if (incremental_enabled) {
         echo("Incremental build enabled! Retrieving previous build library.")
+        args.distributionBuildNumber = DISTRIBUTION_BUILD_NUMBER
         retrievePreviousBuild(args)
     }
 

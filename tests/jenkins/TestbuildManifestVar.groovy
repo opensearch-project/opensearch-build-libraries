@@ -8,13 +8,25 @@
  */
 package jenkins.tests
 
-import org.junit.Test
+import org.junit.*
 import jenkins.tests.BuildPipelineTest
 import static com.lesfurets.jenkins.unit.MethodCall.callArgsToString
 import static org.hamcrest.CoreMatchers.hasItems
 import static org.hamcrest.MatcherAssert.assertThat
 
 class TestbuildManifestVar extends BuildPipelineTest {
+    @Before
+    void setUp() {
+        super.setUp()
+
+        binding.setVariable('JOB_NAME', 'dummy-build-job')
+        binding.setVariable('PUBLIC_ARTIFACT_URL', 'dummy-url')
+        helper.registerAllowedMethod("withAWS", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        helper.registerAllowedMethod("s3Download", [Map])
+    }
 
     @Test
     void testbuildManifestWithSnapshotContinueOnError() {
@@ -38,6 +50,13 @@ class TestbuildManifestVar extends BuildPipelineTest {
         super.testPipeline('tests/jenkins/jobs/BuildShManifest_Jenkinsfile')
         def shCommands = getCommands('sh', 'build.sh')
         assertThat(shCommands, hasItems('./build.sh tests/data/opensearch-2.0.0.yml -d rpm --component common-utils --snapshot --lock'))
+    }
+
+    @Test
+    void testbuildManifestWithIncrementalBuild() {
+        super.testPipeline('tests/jenkins/jobs/BuildShManifestIncremental_Jenkinsfile')
+        def shCommands = getCommands('sh', 'build.sh')
+        assertThat(shCommands, hasItems('./build.sh tests/data/opensearch-input-2.12.0.yml -d tar -p linux -a x64 --incremental'))
     }
 
     def getCommands(method, text) {
