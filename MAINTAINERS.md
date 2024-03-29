@@ -10,3 +10,5 @@ This document contains a list of maintainers in this repo. See [opensearch-proje
 | Sayali Gaikawad | [gaiksaya](https://github.com/gaiksaya)             | Amazon      |
 | Prudhvi Godithi | [prudhvigodithi](https://github.com/prudhvigodithi) | Amazon      |
 | Rishabh Singh   | [rishabh6788](https://github.com/rishabh6788)       | Amazon      |
+| Divya Madala    | [Divyaasm](https://github.com/Divyaasm)             | Amazon      |
+| Zelin Hao       | [zelinh](https://github.com/zelinh)                 | Amazon      |
