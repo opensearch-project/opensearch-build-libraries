@@ -61,10 +61,10 @@ class TestRunBenchmarkTestScriptNoManifest extends BuildPipelineTest {
 
         assertThat(testScriptCommands.size(), equalTo(2))
         assertThat(testScriptCommands, hasItem(
-                "./test.sh benchmark-test  --distribution-url https://www.exmaple.com/example.tar.gz --distribution-version 3.0.0 --config /tmp/workspace/config.yml --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag security-enabled:true  --single-node  --use-50-percent-heap   --capture-segment-replication-stat --suffix 307-secure      --data-instance-type r5.8xlarge  --test-procedure custom-test-procedure   --additional-config cluster.indices.replication.strategy:SEGMENT --data-node-storage 200 --ml-node-storage 200  ".toString()
+                "./test.sh benchmark-test  --distribution-url https://www.exmaple.com/example.tar.gz --distribution-version 3.0.0  --config /tmp/workspace/config.yml --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag security-enabled:true  --single-node  --use-50-percent-heap   --capture-segment-replication-stat --suffix 307-secure      --data-instance-type r5.8xlarge  --test-procedure custom-test-procedure   --additional-config cluster.indices.replication.strategy:SEGMENT --data-node-storage 200 --ml-node-storage 200"
         ))
         assertThat(testScriptCommands, hasItem(
-                "./test.sh benchmark-test  --distribution-url https://www.exmaple.com/example.tar.gz --distribution-version 3.0.0 --config /tmp/workspace/config.yml --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag security-enabled:false --without-security --single-node  --use-50-percent-heap   --capture-segment-replication-stat --suffix 307      --data-instance-type r5.8xlarge  --test-procedure custom-test-procedure   --additional-config cluster.indices.replication.strategy:SEGMENT --data-node-storage 200 --ml-node-storage 200  ".toString()
+                "./test.sh benchmark-test  --distribution-url https://www.exmaple.com/example.tar.gz --distribution-version 3.0.0  --config /tmp/workspace/config.yml --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag security-enabled:false --without-security --single-node  --use-50-percent-heap   --capture-segment-replication-stat --suffix 307      --data-instance-type r5.8xlarge  --test-procedure custom-test-procedure   --additional-config cluster.indices.replication.strategy:SEGMENT --data-node-storage 200 --ml-node-storage 200"
         ))
     }
 
