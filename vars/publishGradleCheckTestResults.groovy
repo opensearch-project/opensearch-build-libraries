@@ -107,7 +107,7 @@ void indexFailedTestData() {
                         }
                 }'
                 echo "INDEX NAME IS \$INDEX_NAME"
-                curl -I "${METRICS_HOST_URL}/\$INDEX_NAME" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" | grep -E 'HTTP\\/[0-9]+(\\.[0-9]+)? [0-9]+'
+                curl -I "${METRICS_HOST_URL}/\$INDEX_NAME" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" | grep -E "HTTP\\/[0-9]+(\\.[0-9]+)? 200"
                 if [ \$? -eq 0 ]; then
                     echo "Index already exists. Indexing Results"
                 else
