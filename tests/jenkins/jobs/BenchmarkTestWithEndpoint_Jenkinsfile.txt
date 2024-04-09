@@ -16,4 +16,4 @@
                   runBenchmarkTestScript.withCredentials([DATASTORE_USER, DATASTORE_PASSWORD], groovy.lang.Closure)
                      runBenchmarkTestScript.readFile({file=/tmp/workspace/benchmark.ini})
                      runBenchmarkTestScript.writeFile({file=/tmp/workspace/benchmark.ini, text=})
-                  runBenchmarkTestScript.sh(./test.sh benchmark-test    --cluster-endpoint opensearch-ABCxdfdfhyfk.com  --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag true,security-enabled:true)
+                  runBenchmarkTestScript.sh(set +x && ./test.sh benchmark-test    --cluster-endpoint opensearch-ABCxdfdfhyfk.com  --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag true,security-enabled:true)
