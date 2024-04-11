@@ -71,41 +71,46 @@ void call(Map args = [:]) {
     editBenchmarkConfig("${WORKSPACE}/benchmark.ini")
     String userTags = getMetadataTags(args.userTag.toString(), buildManifest)
 
-    sh([
-            './test.sh',
-            'benchmark-test',
-            isNullOrEmpty(args.bundleManifest) ? "" : "--bundle-manifest ${args.bundleManifest}",
-            isNullOrEmpty(args.distributionUrl) ? "" : "--distribution-url ${args.distributionUrl}",
-            isNullOrEmpty(args.distributionVersion) ? "" : "--distribution-version ${args.distributionVersion}",
-            isNullOrEmpty(args.endpoint) ? "" : "--cluster-endpoint ${args.endpoint}",
-            isNullOrEmpty(args.endpoint) ? "--config ${WORKSPACE}/config.yml" : "",
-            "--workload ${args.workload}",
-            "--benchmark-config ${WORKSPACE}/benchmark.ini",
-            "--user-tag ${userTags}",
-            args.insecure?.toBoolean() ? "--without-security" : "",
-            args.singleNode?.toBoolean() ? "--single-node" : "",
-            args.minDistribution?.toBoolean() ? "--min-distribution" : "",
-            args.use50PercentHeap?.toBoolean() ? "--use-50-percent-heap" : "",
-            args.enableRemoteStore?.toBoolean() ? "--enable-remote-store" : "",
-            args.captureNodeStat?.toBoolean() ? "--capture-node-stat" : "",
-            args.captureSegmentReplicationStat?.toBoolean() ? "--capture-segment-replication-stat" : "",
-            isNullOrEmpty(args.suffix) ? "" : "--suffix ${args.suffix}",
-            isNullOrEmpty(args.managerNodeCount) ? "" : "--manager-node-count ${args.managerNodeCount}",
-            isNullOrEmpty(args.dataNodeCount) ? "" : "--data-node-count ${args.dataNodeCount}",
-            isNullOrEmpty(args.clientNodeCount) ? "" : "--client-node-count ${args.clientNodeCount}",
-            isNullOrEmpty(args.ingestNodeCount) ? "" : "--ingest-node-count ${args.ingestNodeCount}",
-            isNullOrEmpty(args.mlNodeCount) ? "" : "--ml-node-count ${args.mlNodeCount}",
-            isNullOrEmpty(args.dataInstanceType) ? "" : "--data-instance-type ${args.dataInstanceType}",
-            isNullOrEmpty(args.workloadParams) ? "" : "--workload-params '${args.workloadParams}'",
-            isNullOrEmpty(args.testProcedure) ? "" : "--test-procedure ${args.testProcedure}",
-            isNullOrEmpty(args.excludeTasks) ? "" : "--exclude-tasks ${args.excludeTasks}",
-            isNullOrEmpty(args.includeTasks) ? "" : "--include-tasks ${args.includeTasks}",
-            isNullOrEmpty(args.additionalConfig) ? "" : "--additional-config ${args.additionalConfig}",
-            isNullOrEmpty(args.dataStorageSize) ? "" : "--data-node-storage ${args.dataStorageSize}",
-            isNullOrEmpty(args.mlStorageSize) ? "" : "--ml-node-storage ${args.mlStorageSize}",
-            isNullOrEmpty(args.jvmSysProps) ? "" : "--jvm-sys-props ${args.jvmSysProps}",
-            isNullOrEmpty(args.telemetryParams) ? "" : "--telemetry-params '${args.telemetryParams}'"
-    ].join(' ').trim())
+    def command = [
+        './test.sh',
+        'benchmark-test',
+        isNullOrEmpty(args.bundleManifest) ? "" : "--bundle-manifest ${args.bundleManifest}",
+        isNullOrEmpty(args.distributionUrl) ? "" : "--distribution-url ${args.distributionUrl}",
+        isNullOrEmpty(args.distributionVersion) ? "" : "--distribution-version ${args.distributionVersion}",
+        isNullOrEmpty(args.endpoint) ? "" : "--cluster-endpoint ${args.endpoint}",
+        isNullOrEmpty(args.endpoint) ? "--config ${WORKSPACE}/config.yml" : "",
+        "--workload ${args.workload}",
+        "--benchmark-config ${WORKSPACE}/benchmark.ini",
+        "--user-tag ${userTags}",
+        args.insecure?.toBoolean() ? "--without-security" : "",
+        isNullOrEmpty(args.username) ? "" : "--username ${args.username}",
+        isNullOrEmpty(args.password) ? "" : "--password ${args.password}",
+        args.singleNode?.toBoolean() ? "--single-node" : "",
+        args.minDistribution?.toBoolean() ? "--min-distribution" : "",
+        args.use50PercentHeap?.toBoolean() ? "--use-50-percent-heap" : "",
+        args.enableRemoteStore?.toBoolean() ? "--enable-remote-store" : "",
+        args.captureNodeStat?.toBoolean() ? "--capture-node-stat" : "",
+        args.captureSegmentReplicationStat?.toBoolean() ? "--capture-segment-replication-stat" : "",
+        isNullOrEmpty(args.suffix) ? "" : "--suffix ${args.suffix}",
+        isNullOrEmpty(args.managerNodeCount) ? "" : "--manager-node-count ${args.managerNodeCount}",
+        isNullOrEmpty(args.dataNodeCount) ? "" : "--data-node-count ${args.dataNodeCount}",
+        isNullOrEmpty(args.clientNodeCount) ? "" : "--client-node-count ${args.clientNodeCount}",
+        isNullOrEmpty(args.ingestNodeCount) ? "" : "--ingest-node-count ${args.ingestNodeCount}",
+        isNullOrEmpty(args.mlNodeCount) ? "" : "--ml-node-count ${args.mlNodeCount}",
+        isNullOrEmpty(args.dataInstanceType) ? "" : "--data-instance-type ${args.dataInstanceType}",
+        isNullOrEmpty(args.workloadParams) ? "" : "--workload-params '${args.workloadParams}'",
+        isNullOrEmpty(args.testProcedure) ? "" : "--test-procedure ${args.testProcedure}",
+        isNullOrEmpty(args.excludeTasks) ? "" : "--exclude-tasks ${args.excludeTasks}",
+        isNullOrEmpty(args.includeTasks) ? "" : "--include-tasks ${args.includeTasks}",
+        isNullOrEmpty(args.additionalConfig) ? "" : "--additional-config ${args.additionalConfig}",
+        isNullOrEmpty(args.dataStorageSize) ? "" : "--data-node-storage ${args.dataStorageSize}",
+        isNullOrEmpty(args.mlStorageSize) ? "" : "--ml-node-storage ${args.mlStorageSize}",
+        isNullOrEmpty(args.jvmSysProps) ? "" : "--jvm-sys-props ${args.jvmSysProps}",
+        isNullOrEmpty(args.telemetryParams) ? "" : "--telemetry-params '${args.telemetryParams}'"
+    ].join(' ').trim()
+
+    sh """set +x && ${command}"""
+
 }
 
 void editBenchmarkConfig(String config_file) {
