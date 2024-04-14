@@ -6,7 +6,7 @@
                PublishToRubyGemWithArgs_Jenkinsfile.publishToRubyGems({apiKeyCredentialId=ruby-api-key, gemsDir=test, publicCertPath=certificate/path, rubyVersion=jruby-9.3.0.0})
                   publishToRubyGems.sh(#!/bin/bash
         gem cert --add /tmp/workspace/certificate/path
-        source /usr/share/opensearch/.rvm/scripts/rvm && rvm use jruby-9.3.0.0 && ruby --version
+        source ~/.rvm/scripts/rvm && rvm use jruby-9.3.0.0 && ruby --version
         cd /tmp/workspace/test && gemNameWithVersion=$(ls *.gem)
         gem install $gemNameWithVersion
         gemName=$(echo $gemNameWithVersion | sed -E 's/(-[0-9.]+-*[a-z]*.gem$)//g')
