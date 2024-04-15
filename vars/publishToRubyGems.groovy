@@ -24,7 +24,7 @@ void call(Map args = [:]) {
 
     sh """#!/bin/bash
         gem cert --add ${certPath}
-        source /usr/share/opensearch/.rvm/scripts/rvm && rvm use ${rubyVersion} && ruby --version
+        source ~/.rvm/scripts/rvm && rvm use ${rubyVersion} && ruby --version
         cd ${releaseArtifactsDir} && gemNameWithVersion=\$(ls *.gem)
         gem install \$gemNameWithVersion
         gemName=\$(echo \$gemNameWithVersion | sed -E 's/(-[0-9.]+-*[a-z]*.gem\$)//g')
