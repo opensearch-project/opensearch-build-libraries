@@ -40,7 +40,7 @@
  * @param args.telemetryParams <optional> - Allows to set parameters for telemetry devices such as node-stat etc., e.g. {"node-stats-include-indices": "true"}
  */
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@6.4.3', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@6.4.4', retriever: legacySCM(scm))
     def buildManifest = null
 
     if (!isNullOrEmpty(args.bundleManifest as String)){
