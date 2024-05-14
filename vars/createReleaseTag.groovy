@@ -8,7 +8,7 @@
  */
 def call(Map args = [:]) {
 
-    def lib = library(identifier: 'jenkins@6.4.5', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@6.4.6', retriever: legacySCM(scm))
     def bundleManifestObj = lib.jenkins.BundleManifest.new(readYaml(file: args.distManifest))
 
     def componentsName = bundleManifestObj.getNames()
