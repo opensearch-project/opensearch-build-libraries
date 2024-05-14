@@ -7,7 +7,7 @@
  * compatible open source license.
  */
 void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@6.4.5', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@6.4.6', retriever: legacySCM(scm))
 
     def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.buildManifest))
     def minArtifactPath = buildManifest.getMinArtifact()
