@@ -167,11 +167,11 @@
                      rm -rf ~/.aptly
                      mkdir $ARTIFACT_PATH/base
                      find $ARTIFACT_PATH -type f -name "*.deb" | xargs -I {} mv -v {} $ARTIFACT_PATH/base
-                     aptly repo create -distribution=stable -component=main opensearch
+                     aptly repo create -comment="opensearch repository" -distribution=stable -component=main opensearch
                      aptly repo add opensearch $ARTIFACT_PATH/base
                      aptly repo show -with-packages opensearch
                      aptly snapshot create opensearch-1.x from repo opensearch
-                     aptly publish snapshot -batch=true -passphrase-file=passphrase opensearch-1.x
+                     aptly publish snapshot -label="opensearch" -origin="artifacts.opensearch.org" -batch=true -passphrase-file=passphrase opensearch-1.x
                      echo "------------------------------------------------------------------------"
                      echo "Clean up gpg"
                      gpg --batch --yes --delete-secret-keys RPM_SIGNING_KEY_ID
