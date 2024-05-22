@@ -27,15 +27,17 @@ void call(Map args = [:]) {
     def buildDuration = currentBuild.duration
     def buildResult = currentBuild.result
     def buildStartTime = currentBuild.startTimeInMillis
-    def prString = args.prNumber.toString()
+    def prNumber = args.prNumber.toString()
     def invokeType = args.invokeType.toString()
-    def prDescription = args.prDescription.toString()
+    def prOwner = args.prOwner.toString()
+    def prTitle = args.prTitle.toString()
+    def gitReference = args.gitReference.toString()
     def currentDate = new Date()
     def formattedDate = new SimpleDateFormat("MM-yyyy").format(currentDate)
 
     def indexName = "gradle-check-${formattedDate}"
 
-    def test_docs = getFailedTestRecords(buildNumber, prString, invokeType, prDescription, buildResult, buildDuration, buildStartTime)
+    def test_docs = getFailedTestRecords(buildNumber, prNumber, invokeType, prOwner, prTitle, gitReference, buildResult, buildDuration, buildStartTime)
 
     if (test_docs) {
         for (doc in test_docs) {
@@ -50,7 +52,7 @@ void call(Map args = [:]) {
     }
 }
 
-List<Map<String, String>> getFailedTestRecords(buildNumber, prString, invokeType, prDescription, buildResult, buildDuration, buildStartTime) {
+List<Map<String, String>> getFailedTestRecords(buildNumber, prNumber, invokeType, prOwner, prTitle, gitReference, buildResult, buildDuration, buildStartTime) {
     def testResults = []
     AbstractTestResultAction testResultAction = currentBuild.rawBuild.getAction(AbstractTestResultAction.class)
     if (testResultAction != null) {
@@ -62,7 +64,7 @@ List<Map<String, String>> getFailedTestRecords(buildNumber, prString, invokeType
 
         if (failedTests){
             for (test in failedTests) {
-                def failDocument = ['build_number': buildNumber, 'pull_request': prString, 'invoke_type': invokeType, 'pr_description': prDescription, 'test_class': test.getParent().getName(), 'test_name': test.fullName, 'test_status': 'FAILED', 'build_result': buildResult, 'test_fail_count': testsFailed, 'test_skipped_count': testsSkipped, 'test_passed_count': testsPassed, 'build_duration': buildDuration, 'build_start_time': buildStartTime]
+                def failDocument = ['build_number': buildNumber, 'pull_request': prNumber, 'pull_request_owner': prOwner , 'invoke_type': invokeType, 'pull_request_title': prTitle, 'git_reference': gitReference, 'test_class': test.getParent().getName(), 'test_name': test.fullName, 'test_status': 'FAILED', 'build_result': buildResult, 'test_fail_count': testsFailed, 'test_skipped_count': testsSkipped, 'test_passed_count': testsPassed, 'build_duration': buildDuration, 'build_start_time': buildStartTime]
                 testResults.add(failDocument)
             }
         } else {
@@ -94,8 +96,10 @@ void indexFailedTestData() {
                             "properties": {
                               "build_number": { "type": "integer" },
                               "pull_request": { "type": "keyword" },
+                              "pull_request_owner": { "type": "keyword" },
                               "invoke_type": { "type": "keyword" },
-                              "pr_description": { "type": "text" },
+                              "pull_request_title": { "type": "text" },
+                              "git_reference": { "type": "text" },
                               "test_class": { "type": "keyword" },
                               "test_name": { "type": "keyword" },
                               "test_status": { "type": "keyword" },
