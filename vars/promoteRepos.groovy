@@ -189,11 +189,11 @@ void call(Map args = [:]) {
                      rm -rf ~/.aptly
                      mkdir \$ARTIFACT_PATH/base
                      find \$ARTIFACT_PATH -type f -name "*.deb" | xargs -I {} mv -v {} \$ARTIFACT_PATH/base
-                     aptly repo create -distribution=stable -component=main ${jobname}
+                     aptly repo create -comment="${filename} repository" -distribution=stable -component=main ${jobname}
                      aptly repo add ${jobname} \$ARTIFACT_PATH/base
                      aptly repo show -with-packages ${jobname}
                      aptly snapshot create ${jobname}-${repoVersion} from repo ${jobname}
-                     aptly publish snapshot -batch=true -passphrase-file=passphrase ${jobname}-${repoVersion}
+                     aptly publish snapshot -label="${filename}" -origin="artifacts.opensearch.org" -batch=true -passphrase-file=passphrase ${jobname}-${repoVersion}
                      echo "------------------------------------------------------------------------"
                      echo "Clean up gpg"
                      gpg --batch --yes --delete-secret-keys ${RPM_SIGNING_KEY_ID}
