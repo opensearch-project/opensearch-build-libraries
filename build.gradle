@@ -121,7 +121,7 @@ jacocoTestReport {
     }
 }
 
-String version = '6.4.6'
+String version = '6.4.7'
 
 task updateVersion {
     doLast {
