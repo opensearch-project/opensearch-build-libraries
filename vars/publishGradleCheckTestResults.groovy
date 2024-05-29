@@ -99,7 +99,7 @@ void indexFailedTestData() {
                               "pull_request_owner": { "type": "keyword" },
                               "invoke_type": { "type": "keyword" },
                               "pull_request_title": { "type": "text" },
-                              "git_reference": { "type": "text" },
+                              "git_reference": { "type": "keyword" },
                               "test_class": { "type": "keyword" },
                               "test_name": { "type": "keyword" },
                               "test_status": { "type": "keyword" },
