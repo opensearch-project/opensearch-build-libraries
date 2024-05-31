@@ -17,7 +17,7 @@
 
 
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@6.4.7', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@6.4.8', retriever: legacySCM(scm))
     checkout([$class: 'GitSCM', branches: [[name: "${args.tag}" ]], userRemoteConfigs: [[url: "${args.repository}" ]]])
 
     sh """

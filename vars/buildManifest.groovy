@@ -21,7 +21,7 @@
 void call(Map args = [:]) {
     boolean incremental_enabled = args.incremental != null && args.incremental
 
-    def lib = library(identifier: 'jenkins@6.4.7', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@6.4.8', retriever: legacySCM(scm))
     def inputManifestObj = lib.jenkins.InputManifest.new(readYaml(file: args.inputManifest))
 
     def DISTRIBUTION_JOB_NAME = args.jobName ?: "${JOB_NAME}"

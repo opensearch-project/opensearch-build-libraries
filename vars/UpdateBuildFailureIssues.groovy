@@ -13,7 +13,7 @@
  @param args.inputManifestPath <required> - Path to input manifest.
  */
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@6.4.7', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@6.4.8', retriever: legacySCM(scm))
     def failureMessages = args.failureMessages
     def passMessages = args.passMessages
     def inputManifest = readYaml(file: args.inputManifestPath)
