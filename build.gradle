@@ -27,6 +27,7 @@ dependencies {
     testImplementation group: 'org.yaml', name: 'snakeyaml', version: '2.0'
     testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.24.2'
     testImplementation group: 'com.lesfurets', name:'jenkins-pipeline-unit', version: '1.13'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.12.0'
 }
 
 configurations.all {
@@ -40,13 +41,13 @@ configurations.all {
 sourceSets {
     main {
         groovy {
-            srcDirs = ['src/jenkins']
+            srcDirs = ['src/jenkins', 'src/gradlecheck']
         }
     }
 
     test {
         groovy {
-            srcDirs = ['tests/jenkins']
+            srcDirs = ['tests/jenkins', 'tests/gradlecheck']
         }
     }
 
@@ -80,8 +81,8 @@ sharedLibrary {
 
 test {
     testLogging {
-		events "failed"
-		exceptionFormat "full"
+        events "failed"
+        exceptionFormat "full"
     }
     if (project.hasProperty('pipeline.stack.write')) {
         systemProperty 'pipeline.stack.write', project.getProperty('pipeline.stack.write')
@@ -105,14 +106,15 @@ jacocoTestReport {
 
     afterEvaluate {
         classDirectories.from = fileTree(
-            dir: "$buildDir/jacoco/classpathdumps",
-            includes: [
-                '**/*_Jenkinsfile.*',
-                '**/jenkins/*'
-            ],
-            excludes: [
-                '**/*\$_get_closure*'
-            ]
+                dir: "$buildDir/jacoco/classpathdumps",
+                includes: [
+                        '**/*_Jenkinsfile.*',
+                        '**/jenkins/*',
+                        '**/gradlecheck/*'
+                ],
+                excludes: [
+                        '**/*\$_get_closure*'
+                ]
         )
     }
 
