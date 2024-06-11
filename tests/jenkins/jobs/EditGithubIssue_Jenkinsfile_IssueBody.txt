@@ -13,4 +13,3 @@ ccc" --label "label101" --json number --jq '.[0].number', returnStdout=true})
                      createGithubIssue.println(Issue already exists, editing the issue body)
                      createGithubIssue.sh({script=gh issue edit bbb
 ccc --repo https://github.com/opensearch-project/opensearch-build --body-file issueBody.md, returnStdout=true})
-

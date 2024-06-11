@@ -12,4 +12,3 @@
                      createGithubIssue.println(Issue already exists, adding a comment)
                      createGithubIssue.sh({script=gh issue comment bbb
 ccc --repo https://github.com/opensearch-project/opensearch-build --body "Test GH issue body", returnStdout=true})
-

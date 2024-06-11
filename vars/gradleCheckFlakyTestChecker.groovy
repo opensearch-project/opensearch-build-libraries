@@ -46,7 +46,7 @@ void call(Map args = [:]) {
                 def markdownTable = new CreateMarkDownTable(failedTest, testData, testNameAdditionalPullRequests).createMarkdownTable()
                 writeFile file: "${failedTest}.md", text: markdownTable
                 createGithubIssue(
-                        repoUrl: "https://github.com/prudhvigodithi/OpenSearch",
+                        repoUrl: "https://github.com/opensearch-project/OpenSearch",
                         issueTitle: "[AUTOCUT] Gradle Check Flaky Test Report for ${failedTest}",
                         issueBodyFile: "${failedTest}.md",
                         label: 'autocut,>test-failure',

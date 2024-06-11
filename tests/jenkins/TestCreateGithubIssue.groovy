@@ -45,7 +45,7 @@ class TestCreateGithubIssue extends BuildPipelineTest {
         }
         super.testPipeline('tests/jenkins/jobs/CreateGithubIssue_Jenkinsfile')
         assertThat(getCommands('println', ''), hasItem("Issue already exists, adding a comment"))
-        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue comment bbb\nccc --repo https://github.com/opensearch-project/opensearch-build --body \"Test GH issue body\", returnStdout=true}"))
+        assertThat(getCommands('sh', 'script'), hasItem("""{script=gh issue comment bbb\nccc --repo https://github.com/opensearch-project/opensearch-build --body \"Test GH issue body\", returnStdout=true}"""))
     }
 
     void testCreateGithubIssueCreate() {
@@ -116,9 +116,8 @@ class TestCreateGithubIssue extends BuildPipelineTest {
         }
         super.testPipeline('tests/jenkins/jobs/EditGithubIssue_Jenkinsfile', 'tests/jenkins/jobs/EditGithubIssue_Jenkinsfile_IssueBody')
         assertThat(getCommands('println', ''), hasItem("Issue already exists, editing the issue body"))
-        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue edit bbb\nccc --repo https://github.com/opensearch-project/opensearch-build --body-file issueBody.md, returnStdout=true}"))
+        assertThat(getCommands('sh', 'script'), hasItem("""{script=gh issue edit bbb\nccc --repo https://github.com/opensearch-project/opensearch-build --body-file issueBody.md, returnStdout=true}"""))
     }
-
 
     def getCommands(method, text) {
         def shCommands = helper.callStack.findAll { call ->

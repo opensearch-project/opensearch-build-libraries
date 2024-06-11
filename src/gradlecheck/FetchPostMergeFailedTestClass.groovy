@@ -63,7 +63,7 @@ class FetchPostMergeFailedTestClass {
                         test_class_keyword_agg: [
                                 terms: [
                                         field: "test_class",
-                                        size: 2
+                                        size: 500
                                 ]
                         ]
                 ]
