@@ -35,9 +35,7 @@ class CloseBuildSuccessGithubIssueLibTester extends LibFunctionTester{
 
     @Override
     boolean expectedParametersMatcher(Object call) {
-        return call.args.message.first().equals(this.message)
-        return call.args.search.first().equals(this.search)
-        return call.args.inputManifestPath.first().equals(this.inputManifestPath)
+        return call.args.message.first().equals(this.message) && call.args.search.first().equals(this.search) && call.args.inputManifestPath.first().equals(this.inputManifestPath)
     }
 
     @Override

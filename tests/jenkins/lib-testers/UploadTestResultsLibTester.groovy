@@ -13,7 +13,6 @@ class UploadTestResultsLibTester extends LibFunctionTester {
 
     private String buildManifestFileName
     private String jobName
-    private Integer buildNumber
 
     public UploadTestResultsLibTester(buildManifestFileName, jobName) {
         this.buildManifestFileName = buildManifestFileName
