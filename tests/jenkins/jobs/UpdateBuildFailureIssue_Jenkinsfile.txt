@@ -14,9 +14,9 @@
                     The failed build stage will be marked as unstable(!). Please see ./build.sh step for more details, label=autocut,v2.2.0})
                      createGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
                      createGithubIssue.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
-                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/common-utils.git -S "[AUTOCUT] Distribution Build Failed for common-utils-2.2.0 in:title" --label autocut,v2.2.0 --json number --jq '.[0].number', returnStdout=true})
+                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/common-utils.git -S "[AUTOCUT] Distribution Build Failed for common-utils-2.2.0 in:title" --label "autocut,v2.2.0" --json number --jq '.[0].number', returnStdout=true})
                         createGithubIssue.sh({script=date -d "3 days ago" +'%Y-%m-%d', returnStdout=true})
-                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/common-utils.git -S "[AUTOCUT] Distribution Build Failed for common-utils-2.2.0 in:title is:closed closed:>=2023-10-24" --label autocut,v2.2.0 --json number --jq '.[0].number', returnStdout=true})
+                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/common-utils.git -S "[AUTOCUT] Distribution Build Failed for common-utils-2.2.0 in:title is:closed closed:>=2023-10-24" --label "autocut,v2.2.0" --json number --jq '.[0].number', returnStdout=true})
                         createGithubIssue.println(Issue already exists, adding a comment)
                         createGithubIssue.sh({script=gh issue comment bbb
 ccc --repo https://github.com/opensearch-project/common-utils.git --body "***Received Error***: **Error building common-utils, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component common-utils**.
@@ -32,9 +32,9 @@ ccc --repo https://github.com/opensearch-project/common-utils.git --body "***Rec
                     The failed build stage will be marked as unstable(!). Please see ./build.sh step for more details, label=autocut,v2.2.0})
                      createGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
                      createGithubIssue.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
-                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/performance-analyzer.git -S "[AUTOCUT] Distribution Build Failed for performance-analyzer-2.2.0 in:title" --label autocut,v2.2.0 --json number --jq '.[0].number', returnStdout=true})
+                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/performance-analyzer.git -S "[AUTOCUT] Distribution Build Failed for performance-analyzer-2.2.0 in:title" --label "autocut,v2.2.0" --json number --jq '.[0].number', returnStdout=true})
                         createGithubIssue.sh({script=date -d "3 days ago" +'%Y-%m-%d', returnStdout=true})
-                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/performance-analyzer.git -S "[AUTOCUT] Distribution Build Failed for performance-analyzer-2.2.0 in:title is:closed closed:>=2023-10-24" --label autocut,v2.2.0 --json number --jq '.[0].number', returnStdout=true})
+                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/performance-analyzer.git -S "[AUTOCUT] Distribution Build Failed for performance-analyzer-2.2.0 in:title is:closed closed:>=2023-10-24" --label "autocut,v2.2.0" --json number --jq '.[0].number', returnStdout=true})
                         createGithubIssue.println(Issue already exists, adding a comment)
                         createGithubIssue.sh({script=gh issue comment bbb
 ccc --repo https://github.com/opensearch-project/performance-analyzer.git --body "***Received Error***: **Error building performance-analyzer, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0ed in the next build. This might have performance impact if it keeps failing. Run the javaToolchains task for more det.yml --component performance-analyzer**.
@@ -53,9 +53,9 @@ ccc --repo https://github.com/opensearch-project/performance-analyzer.git --body
                     The failed build stage will be marked as unstable(!). Please see ./build.sh step for more details, label=autocut,v2.2.0})
                      createGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
                      createGithubIssue.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
-                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/notifications.git -S "[AUTOCUT] Distribution Build Failed for notifications-2.2.0 in:title" --label autocut,v2.2.0 --json number --jq '.[0].number', returnStdout=true})
+                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/notifications.git -S "[AUTOCUT] Distribution Build Failed for notifications-2.2.0 in:title" --label "autocut,v2.2.0" --json number --jq '.[0].number', returnStdout=true})
                         createGithubIssue.sh({script=date -d "3 days ago" +'%Y-%m-%d', returnStdout=true})
-                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/notifications.git -S "[AUTOCUT] Distribution Build Failed for notifications-2.2.0 in:title is:closed closed:>=2023-10-24" --label autocut,v2.2.0 --json number --jq '.[0].number', returnStdout=true})
+                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/notifications.git -S "[AUTOCUT] Distribution Build Failed for notifications-2.2.0 in:title is:closed closed:>=2023-10-24" --label "autocut,v2.2.0" --json number --jq '.[0].number', returnStdout=true})
                         createGithubIssue.println(Issue already exists, adding a comment)
                         createGithubIssue.sh({script=gh issue comment bbb
 ccc --repo https://github.com/opensearch-project/notifications.git --body "***Received Error***: **Error building notifications, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component notifications**.
@@ -69,9 +69,9 @@ ccc --repo https://github.com/opensearch-project/notifications.git --body "***Re
                     The failed build stage will be marked as unstable(!). Please see ./build.sh step for more details, label=autocut,v2.2.0})
                      createGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
                      createGithubIssue.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
-                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/anomaly-detection.git -S "[AUTOCUT] Distribution Build Failed for anomaly-detection-2.2.0 in:title" --label autocut,v2.2.0 --json number --jq '.[0].number', returnStdout=true})
+                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/anomaly-detection.git -S "[AUTOCUT] Distribution Build Failed for anomaly-detection-2.2.0 in:title" --label "autocut,v2.2.0" --json number --jq '.[0].number', returnStdout=true})
                         createGithubIssue.sh({script=date -d "3 days ago" +'%Y-%m-%d', returnStdout=true})
-                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/anomaly-detection.git -S "[AUTOCUT] Distribution Build Failed for anomaly-detection-2.2.0 in:title is:closed closed:>=2023-10-24" --label autocut,v2.2.0 --json number --jq '.[0].number', returnStdout=true})
+                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/anomaly-detection.git -S "[AUTOCUT] Distribution Build Failed for anomaly-detection-2.2.0 in:title is:closed closed:>=2023-10-24" --label "autocut,v2.2.0" --json number --jq '.[0].number', returnStdout=true})
                         createGithubIssue.println(Issue already exists, adding a comment)
                         createGithubIssue.sh({script=gh issue comment bbb
 ccc --repo https://github.com/opensearch-project/anomaly-detection.git --body "***Received Error***: **Error building anomaly-detection, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component anomaly-detection**.
@@ -85,14 +85,15 @@ ccc --repo https://github.com/opensearch-project/anomaly-detection.git --body "*
                     The failed build stage will be marked as unstable(!). Please see ./build.sh step for more details, label=autocut,v2.2.0})
                      createGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
                      createGithubIssue.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
-                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/asynchronous-search.git -S "[AUTOCUT] Distribution Build Failed for asynchronous-search-2.2.0 in:title" --label autocut,v2.2.0 --json number --jq '.[0].number', returnStdout=true})
+                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/asynchronous-search.git -S "[AUTOCUT] Distribution Build Failed for asynchronous-search-2.2.0 in:title" --label "autocut,v2.2.0" --json number --jq '.[0].number', returnStdout=true})
                         createGithubIssue.sh({script=date -d "3 days ago" +'%Y-%m-%d', returnStdout=true})
-                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/asynchronous-search.git -S "[AUTOCUT] Distribution Build Failed for asynchronous-search-2.2.0 in:title is:closed closed:>=2023-10-24" --label autocut,v2.2.0 --json number --jq '.[0].number', returnStdout=true})
-                        createGithubIssue.println(Creating new issue)
-                        createGithubIssue.sh({script=gh issue create --title "[AUTOCUT] Distribution Build Failed for asynchronous-search-2.2.0" --body "***Received Error***: **Error building asynchronous-search, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component asynchronous-search**.
+                        createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/asynchronous-search.git -S "[AUTOCUT] Distribution Build Failed for asynchronous-search-2.2.0 in:title is:closed closed:>=2023-10-24" --label "autocut,v2.2.0" --json number --jq '.[0].number', returnStdout=true})
+                        createGithubIssue.println(Issue already exists, adding a comment)
+                        createGithubIssue.sh({script=gh issue comment bbb
+ccc --repo https://github.com/opensearch-project/asynchronous-search.git --body "***Received Error***: **Error building asynchronous-search, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component asynchronous-search**.
                     asynchronous-search failed during the distribution build for version: 2.2.0.
                     Please see build log at www.example.com/job/build_url/32/display/redirect.
-                    The failed build stage will be marked as unstable(!). Please see ./build.sh step for more details" --label autocut,v2.2.0 --label "untriaged" --repo https://github.com/opensearch-project/asynchronous-search.git, returnStdout=true})
+                    The failed build stage will be marked as unstable(!). Please see ./build.sh step for more details", returnStdout=true})
                   UpdateBuildFailureIssues.sleep({time=3, unit=SECONDS})
                   UpdateBuildFailureIssues.sleep({time=3, unit=SECONDS})
                   UpdateBuildFailureIssues.closeGithubIssue({repoUrl=https://github.com/opensearch-project/index-management.git, issueTitle=[AUTOCUT] Distribution Build Failed for index-management-2.2.0, closeComment=Closing the issue as the distribution build for index-management has passed for version: **2.2.0**.
@@ -115,3 +116,4 @@ ccc -R opensearch-project/sql --comment "Closing the issue as the distribution b
                   UpdateBuildFailureIssues.sleep({time=3, unit=SECONDS})
                   UpdateBuildFailureIssues.sleep({time=3, unit=SECONDS})
                   UpdateBuildFailureIssues.sleep({time=3, unit=SECONDS})
+

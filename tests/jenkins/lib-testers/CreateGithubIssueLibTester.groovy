@@ -53,19 +53,19 @@ class CreateGithubIssueLibTester extends LibFunctionTester {
 
     @Override
     boolean expectedParametersMatcher(Object call) {
-        if (call.args.label.isEmpty()) { 
+        if (call.args.label.isEmpty()) {
             return call.args.label.first().equals('autocut')
-            && call.args.repoUrl.first().equals(this.repoUrl)
-            && call.args.issueTitle.first().equals(this.issueTitle)
-            && call.args.issueBody.first().equals(this.issueBody)}
-       if (call.args.daysToReOpen.isEmpty()) { 
+                    && call.args.repoUrl.first().equals(this.repoUrl)
+                    && call.args.issueTitle.first().equals(this.issueTitle)
+                    && call.args.issueBody.first().equals(this.issueBody)}
+        if (call.args.daysToReOpen.isEmpty()) {
             return call.args.daysToReOpen.first().equals('3')
-            && call.args.repoUrl.first().equals(this.repoUrl)
-            && call.args.issueTitle.first().equals(this.issueTitle)
-            && call.args.issueBody.first().equals(this.issueBody)}
+                    && call.args.repoUrl.first().equals(this.repoUrl)
+                    && call.args.issueTitle.first().equals(this.issueTitle)
+                    && call.args.issueBody.first().equals(this.issueBody)}
         return call.args.repoUrl.first().equals(this.repoUrl)
-            && call.args.issueTitle.first().equals(this.issueTitle)
-            && call.args.issueBody.first().equals(this.issueBody)
+                && call.args.issueTitle.first().equals(this.issueTitle)
+                && call.args.issueBody.first().equals(this.issueBody)
     }
 
     @Override
