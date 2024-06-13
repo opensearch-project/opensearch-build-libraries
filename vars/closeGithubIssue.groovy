@@ -19,7 +19,7 @@ void call(Map args = [:]) {
     try {
         withCredentials([usernamePassword(credentialsId: 'jenkins-github-bot-token', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'GITHUB_USER')]) {
             def issuesNumber = sh(
-                    script: "gh issue list --repo ${args.repoUrl} -S \"${args.issueTitle} in:title\" --label ${label} --json number --jq '.[0].number'",
+                    script: "gh issue list --repo ${args.repoUrl} -S \"${args.issueTitle} in:title\" --json number --jq '.[0].number'",
                     returnStdout: true
             ).trim()
             if (!issuesNumber.isEmpty()) {
