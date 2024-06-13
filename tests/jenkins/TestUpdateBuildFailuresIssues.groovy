@@ -50,8 +50,8 @@ class TestUpdateBuildFailuresIssues extends BuildPipelineTest {
             return [stdout: "30", exitValue: 0]
         }
         runScript('tests/jenkins/jobs/UpdateBuildFailureIssue_Jenkinsfile')
-        assertThat(getCommands('sh', 'sql'), hasItem("{script=gh issue list --repo https://github.com/opensearch-project/sql.git -S \"[AUTOCUT] Distribution Build Failed for sql-2.2.0 in:title\" --label autocut,v2.2.0 --json number --jq '.[0].number', returnStdout=true}"))
-        assertThat(getCommands('sh', 'sql'), hasItem("{script=gh issue close 30 -R opensearch-project/sql --comment \"Closing the issue as the distribution build for sql has passed for version: **2.2.0**.\n                    Please see build log at www.example.com/job/build_url/32/display/redirect\", returnStdout=true}"))
+        assertThat(getCommands('sh', 'sql'), hasItem("{script=gh issue list --repo https://github.com/opensearch-project/sql.git -S \"[AUTOCUT] Distribution Build Failed for sql-2.2.0 in:title\" --json number --jq '.[0].number', returnStdout=true}"))
+        assertThat(getCommands('sh', 'sql'), hasItem("{script=gh issue close bbb\nccc -R opensearch-project/sql --comment \"Closing the issue as the distribution build for sql has passed for version: **2.2.0**.\n                    Please see build log at www.example.com/job/build_url/32/display/redirect\", returnStdout=true}"))
     }
 
     @Test
