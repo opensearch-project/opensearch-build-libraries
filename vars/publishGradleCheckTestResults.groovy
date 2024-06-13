@@ -92,25 +92,79 @@ void indexFailedTestData() {
                 MONTH_YEAR=\$(date +"%m-%Y")
                 INDEX_NAME="gradle-check-\$MONTH_YEAR"
                 INDEX_MAPPING='{
-                        "mappings": {
-                            "properties": {
-                              "build_number": { "type": "integer" },
-                              "pull_request": { "type": "keyword" },
-                              "pull_request_owner": { "type": "keyword" },
-                              "invoke_type": { "type": "keyword" },
-                              "pull_request_title": { "type": "text" },
-                              "git_reference": { "type": "keyword" },
-                              "test_class": { "type": "keyword" },
-                              "test_name": { "type": "keyword" },
-                              "test_status": { "type": "keyword" },
-                              "build_result": { "type": "keyword" },
-                              "test_fail_count": { "type": "integer" },
-                              "test_skipped_count": { "type": "integer" },
-                              "test_passed_count": { "type": "integer" },
-                              "build_duration": { "type": "float" },
-                              "build_start_time": { "type": "date" }
+                    "mappings": {
+                        "properties": {
+                            "build_duration": {
+                                "type": "float"
+                            },
+                            "build_number": {
+                                "type": "integer"
+                            },
+                            "build_result": {
+                                "type": "keyword"
+                            },
+                            "build_start_time": {
+                                "type": "date"
+                            },
+                            "git_reference": {
+                                "type": "text",
+                                "fields": {
+                                    "keyword": {
+                                        "type": "keyword",
+                                        "ignore_above": 256
+                                    }
+                                }
+                            },
+                            "invoke_type": {
+                                "type": "text",
+                                "fields": {
+                                    "keyword": {
+                                        "type": "keyword",
+                                        "ignore_above": 256
+                                    }
+                                }
+                            },
+                            "pull_request": {
+                                "type": "keyword"
+                            },
+                            "pull_request_owner": {
+                                "type": "text",
+                                "fields": {
+                                    "keyword": {
+                                        "type": "keyword",
+                                        "ignore_above": 256
+                                    }
+                                }
+                            },
+                            "pull_request_title": {
+                                "type": "text",
+                                "fields": {
+                                    "keyword": {
+                                        "type": "keyword",
+                                        "ignore_above": 256
+                                    }
+                                }
+                            },
+                            "test_class": {
+                                "type": "keyword"
+                            },
+                            "test_fail_count": {
+                                "type": "integer"
+                            },
+                            "test_name": {
+                                "type": "keyword"
+                            },
+                            "test_passed_count": {
+                                "type": "integer"
+                            },
+                            "test_skipped_count": {
+                                "type": "integer"
+                            },
+                            "test_status": {
+                                "type": "keyword"
                             }
                         }
+                    }
                 }'
                 echo "INDEX NAME IS \$INDEX_NAME"
                 curl -I "${METRICS_HOST_URL}/\$INDEX_NAME" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" | grep -E "HTTP\\/[0-9]+(\\.[0-9]+)? 200"
