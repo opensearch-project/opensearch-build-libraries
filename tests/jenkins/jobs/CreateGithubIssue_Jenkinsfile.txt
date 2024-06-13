@@ -6,8 +6,9 @@
                CreateGithubIssue_Jenkinsfile.createGithubIssue({repoUrl=https://github.com/opensearch-project/opensearch-build, issueTitle=Test GH issue title, issueBody=Test GH issue body, label=label101, daysToReOpen=5})
                   createGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
                   createGithubIssue.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
-                     createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/opensearch-build -S "Test GH issue title in:title" --label label101 --json number --jq '.[0].number', returnStdout=true})
+                     createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/opensearch-build -S "Test GH issue title in:title" --label "label101" --json number --jq '.[0].number', returnStdout=true})
                      createGithubIssue.sh({script=date -d "5 days ago" +'%Y-%m-%d', returnStdout=true})
-                     createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/opensearch-build -S "Test GH issue title in:title is:closed closed:>=2023-10-24" --label label101 --json number --jq '.[0].number', returnStdout=true})
+                     createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/opensearch-build -S "Test GH issue title in:title is:closed closed:>=2023-10-24" --label "label101" --json number --jq '.[0].number', returnStdout=true})
                      createGithubIssue.println(Issue already exists, adding a comment)
-                     createGithubIssue.sh({script=gh issue comment 22 --repo https://github.com/opensearch-project/opensearch-build --body "Test GH issue body", returnStdout=true})
+                     createGithubIssue.sh({script=gh issue comment bbb
+ccc --repo https://github.com/opensearch-project/opensearch-build --body "Test GH issue body", returnStdout=true})

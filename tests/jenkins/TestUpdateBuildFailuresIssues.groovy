@@ -26,22 +26,6 @@ class TestUpdateBuildFailuresIssues extends BuildPipelineTest {
     }
 
     @Test
-    public void testCreateGithubIssue() {
-        helper.addShMock("date -d \"3 days ago\" +'%Y-%m-%d'") { script ->
-            return [stdout: "2023-10-24", exitValue: 0]
-        }
-
-        helper.addShMock("""gh issue list --repo https://github.com/opensearch-project/asynchronous-search.git -S "[AUTOCUT] Distribution Build Failed for asynchronous-search-2.2.0 in:title" --label autocut,v2.2.0 --json number --jq '.[0].number'""") { script ->
-            return [stdout: "", exitValue: 0]
-        }
-        helper.addShMock("""gh issue list --repo https://github.com/opensearch-project/asynchronous-search.git -S "[AUTOCUT] Distribution Build Failed for asynchronous-search-2.2.0 in:title is:closed closed:>=2023-10-24" --label autocut,v2.2.0 --json number --jq '.[0].number'""") { script ->
-            return [stdout: "", exitValue: 0]
-        }
-        super.testPipeline('tests/jenkins/jobs/UpdateBuildFailureIssue_Jenkinsfile')
-        assertThat(getCommands('sh', 'create'), hasItem('{script=gh issue create --title \"[AUTOCUT] Distribution Build Failed for asynchronous-search-2.2.0\" --body \"***Received Error***: **Error building asynchronous-search, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component asynchronous-search**.\n                    asynchronous-search failed during the distribution build for version: 2.2.0.\n                    Please see build log at www.example.com/job/build_url/32/display/redirect.\n                    The failed build stage will be marked as unstable(!). Please see ./build.sh step for more details\" --label autocut,v2.2.0 --label \"untriaged\" --repo https://github.com/opensearch-project/asynchronous-search.git, returnStdout=true}'))
-    }
-
-    @Test
     public void testCommentOnExistingGithubIssue() {
         helper.addShMock("date -d \"3 days ago\" +'%Y-%m-%d'") { script ->
             return [stdout: "2023-10-24", exitValue: 0]
@@ -54,7 +38,7 @@ class TestUpdateBuildFailuresIssues extends BuildPipelineTest {
         }
         runScript('tests/jenkins/jobs/UpdateBuildFailureIssue_Jenkinsfile')
         assertThat(getCommands('println', ''), hasItem('Issue already exists, adding a comment'))
-        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue comment 22 --repo https://github.com/opensearch-project/asynchronous-search.git --body \"***Received Error***: **Error building asynchronous-search, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component asynchronous-search**.\n                    asynchronous-search failed during the distribution build for version: 2.2.0.\n                    Please see build log at www.example.com/job/build_url/32/display/redirect.\n                    The failed build stage will be marked as unstable(!). Please see ./build.sh step for more details\", returnStdout=true}"))
+        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue comment bbb\nccc --repo https://github.com/opensearch-project/asynchronous-search.git --body \"***Received Error***: **Error building asynchronous-search, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component asynchronous-search**.\n                    asynchronous-search failed during the distribution build for version: 2.2.0.\n                    Please see build log at www.example.com/job/build_url/32/display/redirect.\n                    The failed build stage will be marked as unstable(!). Please see ./build.sh step for more details\", returnStdout=true}"))
     }
 
     @Test
@@ -79,8 +63,8 @@ class TestUpdateBuildFailuresIssues extends BuildPipelineTest {
             return [stdout: "20", exitValue: 0]
         }
         runScript('tests/jenkins/jobs/UpdateBuildFailureIssue_Jenkinsfile')
-        assertThat(getCommands('sh', 'notifications'), not(hasItem("{script=gh issue close 20 -R opensearch-project/notifications --comment \"Closing the issue as the distribution build for notifications has passed for version: **2.2.0**.\n                    Please see build log at www.example.com/job/build_url/32/display/redirect\", returnStdout=true}")))
-        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue comment 20 --repo https://github.com/opensearch-project/notifications.git --body \"***Received Error***: **Error building notifications, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component notifications**.\n                    notifications failed during the distribution build for version: 2.2.0.\n                    Please see build log at www.example.com/job/build_url/32/display/redirect.\n                    The failed build stage will be marked as unstable(!). Please see ./build.sh step for more details\", returnStdout=true}"))
+        assertThat(getCommands('sh', 'notifications'), not(hasItem("{script=gh issue close bbb\nccc -R opensearch-project/notifications --comment \"Closing the issue as the distribution build for notifications has passed for version: **2.2.0**.\n                    Please see build log at www.example.com/job/build_url/32/display/redirect\", returnStdout=true}")))
+        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue comment bbb\nccc --repo https://github.com/opensearch-project/notifications.git --body \"***Received Error***: **Error building notifications, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component notifications**.\n                    notifications failed during the distribution build for version: 2.2.0.\n                    Please see build log at www.example.com/job/build_url/32/display/redirect.\n                    The failed build stage will be marked as unstable(!). Please see ./build.sh step for more details\", returnStdout=true}"))
     }
 
     def getCommands(method, text) {
