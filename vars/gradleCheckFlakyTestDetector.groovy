@@ -7,6 +7,11 @@
  * compatible open source license.
  */
 
+/** Library to detect Gradle Check flaky tests and create GitHub issue in OpenSearch repository.
+ @param Map args = [:] args A map of the following parameters
+ @param args.issueLabels <required> - GitHub labels that will be added to the issue created in OpenSearch repository.
+ */
+
 import gradlecheck.FetchPostMergeFailedTestClass
 import gradlecheck.FetchPostMergeTestGitReference
 import gradlecheck.FetchPostMergeFailedTestName
@@ -49,7 +54,7 @@ void call(Map args = [:]) {
                         repoUrl: "https://github.com/opensearch-project/OpenSearch",
                         issueTitle: "[AUTOCUT] Gradle Check Flaky Test Report for ${failedTest}",
                         issueBodyFile: "${failedTest}.md",
-                        label: 'autocut,>test-failure',
+                        label: args.issueLabels,
                         issueEdit: true
                 )
             }
