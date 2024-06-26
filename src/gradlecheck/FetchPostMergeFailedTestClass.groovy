@@ -27,7 +27,7 @@ class FetchPostMergeFailedTestClass {
         this.script = script
     }
 
-    def getQuery() {
+    def getQuery(timeFrame) {
         def queryMap = [
                 size: 200,
                 query: [
@@ -52,11 +52,33 @@ class FetchPostMergeFailedTestClass {
                                                 match: [
                                                         test_status: [
                                                                 query: "FAILED",
-                                                                operator: "OR"
+                                                                operator: "OR",
+                                                                prefix_length: 0,
+                                                                max_expansions: 50,
+                                                                fuzzy_transpositions: true,
+                                                                lenient: false,
+                                                                zero_terms_query: "NONE",
+                                                                auto_generate_synonyms_phrase_query: true,
+                                                                boost: 1
                                                         ]
                                                 ]
                                         ]
-                                ]
+                                ],
+                                filter: [
+                                        [
+                                                range: [
+                                                        build_start_time: [
+                                                                from: "now-${timeFrame}",
+                                                                to: "now",
+                                                                include_lower: true,
+                                                                include_upper: true,
+                                                                boost: 1
+                                                        ]
+                                                ]
+                                        ]
+                                ],
+                                adjust_pure_negative: true,
+                                boost: 1
                         ]
                 ],
                 aggregations: [
@@ -68,13 +90,12 @@ class FetchPostMergeFailedTestClass {
                         ]
                 ]
         ]
-
         def query = JsonOutput.toJson(queryMap)
         return query.replace('"', '\\"')
     }
 
-    def getPostMergeFailedTestClass() {
-         def jsonResponse = new OpenSearchMetricsQuery(metricsUrl,awsAccessKey, awsSecretKey, awsSessionToken, script).fetchMetrics(getQuery())
+    def getPostMergeFailedTestClass(timeFrame) {
+         def jsonResponse = new OpenSearchMetricsQuery(metricsUrl,awsAccessKey, awsSecretKey, awsSessionToken, script).fetchMetrics(getQuery(timeFrame))
          def keys = jsonResponse.aggregations.test_class_keyword_agg.buckets.collect { it.key }
          return keys
     }

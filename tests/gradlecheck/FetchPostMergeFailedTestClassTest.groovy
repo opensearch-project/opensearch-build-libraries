@@ -71,11 +71,33 @@ class FetchPostMergeFailedTestClassTest {
                                                 match: [
                                                         test_status: [
                                                                 query: "FAILED",
-                                                                operator: "OR"
+                                                                operator: "OR",
+                                                                prefix_length: 0,
+                                                                max_expansions: 50,
+                                                                fuzzy_transpositions: true,
+                                                                lenient: false,
+                                                                zero_terms_query: "NONE",
+                                                                auto_generate_synonyms_phrase_query: true,
+                                                                boost: 1
                                                         ]
                                                 ]
                                         ]
-                                ]
+                                ],
+                                filter: [
+                                        [
+                                                range: [
+                                                        build_start_time: [
+                                                                from: "now-15d",
+                                                                to: "now",
+                                                                include_lower: true,
+                                                                include_upper: true,
+                                                                boost: 1
+                                                        ]
+                                                ]
+                                        ]
+                                ],
+                                adjust_pure_negative: true,
+                                boost: 1
                         ]
                 ],
                 aggregations: [
@@ -88,7 +110,7 @@ class FetchPostMergeFailedTestClassTest {
                 ]
         ]).replace('"', '\\"')
 
-        def result = fetchPostMergeFailedTestClass.getQuery()
+        def result = fetchPostMergeFailedTestClass.getQuery("15d")
 
         assert result == expectedOutput
     }
@@ -96,8 +118,8 @@ class FetchPostMergeFailedTestClassTest {
     @Test
     void testGetPostMergeFailedTestClassReturnsKeys() {
         def expectedOutput = ["testClass1", "testClass2"]
-
-        def result = fetchPostMergeFailedTestClass.getPostMergeFailedTestClass()
+        def timeFrame = "15d"
+        def result = fetchPostMergeFailedTestClass.getPostMergeFailedTestClass(timeFrame)
 
         assert result == expectedOutput
     }
