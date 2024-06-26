@@ -10,6 +10,7 @@
 /** Library to detect Gradle Check flaky tests and create GitHub issue in OpenSearch repository.
  @param Map args = [:] args A map of the following parameters
  @param args.issueLabels <required> - GitHub labels that will be added to the issue created in OpenSearch repository.
+ @param args.timeFrame <optional> - The time frame for the query range, specified in OpenSearch date math syntax (e.g., "15d" for 15 days).
  */
 
 import gradlecheck.FetchPostMergeFailedTestClass
@@ -28,7 +29,8 @@ void call(Map args = [:]) {
             def awsAccessKey = env.AWS_ACCESS_KEY_ID
             def awsSecretKey = env.AWS_SECRET_ACCESS_KEY
             def awsSessionToken = env.AWS_SESSION_TOKEN
-            def postMergeFailedTests = new FetchPostMergeFailedTestClass(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, this).getPostMergeFailedTestClass()
+            def timeFrame = args.timeFrame ?: '30d'
+            def postMergeFailedTests = new FetchPostMergeFailedTestClass(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, this).getPostMergeFailedTestClass(timeFrame)
             postMergeFailedTests.each { failedTest ->
                 def testData = []
                 def allPullRequests = []
@@ -50,7 +52,7 @@ void call(Map args = [:]) {
                 def testNameAdditionalPullRequests = new FetchTestPullRequests(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, this).getTestPullRequests(failedTest).findAll { !allPullRequests.contains(it) }
                 def markdownTable = new CreateMarkDownTable(failedTest, testData, testNameAdditionalPullRequests).createMarkdownTable()
                 writeFile file: "${failedTest}.md", text: markdownTable
-                createGithubIssue(
+                gradleCheckFlakyTestGitHubIssue(
                         repoUrl: "https://github.com/opensearch-project/OpenSearch",
                         issueTitle: "[AUTOCUT] Gradle Check Flaky Test Report for ${failedTest}",
                         issueBodyFile: "${failedTest}.md",
