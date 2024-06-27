@@ -5,7 +5,7 @@
             PromoteArtifactsQualifier_Jenkinsfile.script(groovy.lang.Closure)
                PromoteArtifactsQualifier_Jenkinsfile.promoteArtifacts({manifest=tests/data/opensearch-2.0.0-rc1.yml})
                   promoteArtifacts.legacySCM(groovy.lang.Closure)
-                  promoteArtifacts.library({identifier=jenkins@6.5.1, retriever=null})
+                  promoteArtifacts.library({identifier=jenkins@6.5.2, retriever=null})
                   promoteArtifacts.readYaml({file=tests/data/opensearch-2.0.0-rc1.yml})
                   InputManifest.asBoolean()
                   promoteArtifacts.string({credentialsId=jenkins-aws-account-public, variable=AWS_ACCOUNT_PUBLIC})
