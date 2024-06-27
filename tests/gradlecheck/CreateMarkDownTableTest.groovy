@@ -22,11 +22,8 @@ class CreateMarkDownTableTest  {
                 [gitReference: "def456", pullRequestLink: "https://github.com/opensearch-project/OpenSearch/pull/2", buildDetailLink: "https://ci.opensearch.org/2", testNames: ["test3"]]
         ]
         def additionalPullRequests = ["3", "4"]
-
         def createMarkDownTable = new CreateMarkDownTable(failedTest, tableData, additionalPullRequests)
-
         def result = createMarkDownTable.createMarkdownTable()
-
         def expectedOutput = """
 ## Flaky Test Report for `ExampleTest`
 

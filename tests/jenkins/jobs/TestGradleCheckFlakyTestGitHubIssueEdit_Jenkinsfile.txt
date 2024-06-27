@@ -1,0 +1,13 @@
+   TestGradleCheckFlakyTestGitHubIssue_Jenkinsfile.run()
+      TestGradleCheckFlakyTestGitHubIssue_Jenkinsfile.pipeline(groovy.lang.Closure)
+         TestGradleCheckFlakyTestGitHubIssue_Jenkinsfile.echo(Executing on agent [label:none])
+         TestGradleCheckFlakyTestGitHubIssue_Jenkinsfile.stage(Detect Gradle Check Flaky Tests, groovy.lang.Closure)
+            TestGradleCheckFlakyTestGitHubIssue_Jenkinsfile.script(groovy.lang.Closure)
+               TestGradleCheckFlakyTestGitHubIssue_Jenkinsfile.gradleCheckFlakyTestGitHubIssue({repoUrl=https://github.com/prudhvigodithi/OpenSearch, issueTitle=[AUTOCUT] Gradle Check Flaky Test Report for SampleTest, issueBodyFile=SampleTest.md, label=autocut,>test-failure,flaky-test, issueEdit=true})
+                  gradleCheckFlakyTestGitHubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
+                  gradleCheckFlakyTestGitHubIssue.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+                     gradleCheckFlakyTestGitHubIssue.sh({script=gh issue list --repo https://github.com/prudhvigodithi/OpenSearch -S "[AUTOCUT] Gradle Check Flaky Test Report for SampleTest in:title" --json number --jq '.[0].number', returnStdout=true})
+                     gradleCheckFlakyTestGitHubIssue.sh({script=gh issue list --repo https://github.com/prudhvigodithi/OpenSearch -S "[AUTOCUT] Gradle Check Flaky Test Report for SampleTest in:title is:closed" --json number --jq '.[0].number', returnStdout=true})
+                     gradleCheckFlakyTestGitHubIssue.println(Issue already exists, editing the issue body)
+                     gradleCheckFlakyTestGitHubIssue.sh({script=gh issue edit bbb
+ccc --repo https://github.com/prudhvigodithi/OpenSearch --body-file "SampleTest.md", returnStdout=true})
