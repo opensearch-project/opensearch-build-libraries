@@ -10,9 +10,16 @@ void call(Map args = [:]) {
     def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     def git_repo_url = args.gitRepoUrl ?: 'null'
     def git_reference = args.gitReference ?: 'null'
+    def bwc_checkout_align = args.bwcCheckoutAlign ?: 'false'
+    def bwc_checkout_align_param = ''
 
     println("Git Repo: ${git_repo_url}")
     println("Git Reference: ${git_reference}")
+    println("Bwc Checkout Align: ${bwc_checkout_align}")
+
+    if (Boolean.parseBoolean(bwc_checkout_align)) {
+        bwc_checkout_align_param = '-Dbwc.checkout.align=true'
+    }
 
     if (git_repo_url.equals('null') || git_reference.equals('null')) {
         println("No git repo url or git reference to checkout the commit, exit 1")
@@ -71,7 +78,7 @@ void call(Map args = [:]) {
 
                 echo "Start gradlecheck"
                 GRADLE_CHECK_STATUS=0
-                ./gradlew clean && ./gradlew check -Dtests.coverage=true --no-daemon --no-scan || GRADLE_CHECK_STATUS=1
+                ./gradlew clean && ./gradlew check -Dtests.coverage=true ${bwc_checkout_align_param} --no-daemon --no-scan || GRADLE_CHECK_STATUS=1
 
                 if [ "\$GRADLE_CHECK_STATUS" != 0 ]; then
                     echo Gradle Check Failed!
