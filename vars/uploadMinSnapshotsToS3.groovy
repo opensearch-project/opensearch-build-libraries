@@ -52,11 +52,16 @@ void call(Map args = [:]) {
 
     echo("Start copying files: version-${version} architecture-${architecture} platform-${platform} buildid-${id} distribution-${distribution} extension-${extension}")
 
+    String sedCmd = "sed"
+    if (platform == "darwin") {
+        sedCmd = "gsed"
+    }
+
     sh """
         cp -v ${srcDir}/${baseName}.${extension} ${srcDir}/${baseName}-latest.${extension}
         cp -v ${srcDir}/${baseName}.${extension}.sha512 ${srcDir}/${baseName}-latest.${extension}.sha512
         cp -v ${srcDir}/../manifest.yml ${srcDir}/${baseName}-latest.${extension}.build-manifest.yml
-        sed -i "s/.${extension}/-latest.${extension}/g" ${srcDir}/${baseName}-latest.${extension}.sha512
+        ${sedCmd} -i "s/.${extension}/-latest.${extension}/g" ${srcDir}/${baseName}-latest.${extension}.sha512
     """
     withCredentials([
         string(credentialsId: 'jenkins-artifact-promotion-role', variable: 'ARTIFACT_PROMOTION_ROLE_NAME'),
