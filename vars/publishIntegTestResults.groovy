@@ -9,7 +9,6 @@
 
 /** Library to fetch the failing Integration test details at the end of Integration Test Jenkins build and index the results to OpenSearch Metrics cluster.
  *
-
  * @param Map args = [:] args A map of the following parameters.
  * @param args.version <required> - The version against which the integration test is executed.
  * @param args.distributionBuildNumber <required> - The jenkins distribution build number.
@@ -20,7 +19,6 @@
  * @param args.architecture <required> - The architecture of the integration test build.
  * @param args.distribution <required> - The distribution of the integration test build.
  * @param args.testReportManifestYml <required> - The generated test report YAML file using test report workflow.
-
  */
 
 import groovy.json.JsonOutput
@@ -28,6 +26,19 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 void call(Map args = [:]) {
+
+
+    // To ensure the test TestOpenSearchIntegTest from opensearch-build repo passes.
+    def isNullOrEmpty = { str -> 
+        str == null || (str instanceof String && str.trim().isEmpty())
+    }
+    if (isNullOrEmpty(args.version) || isNullOrEmpty(args.distributionBuildNumber) || isNullOrEmpty(args.distributionBuildUrl) || 
+        isNullOrEmpty(args.rcNumber) || isNullOrEmpty(args.rc) || isNullOrEmpty(args.platform) || 
+        isNullOrEmpty(args.architecture) || isNullOrEmpty(args.distribution) || isNullOrEmpty(args.testReportManifestYml)) {
+        return null
+    }
+
+
     def version = args.version.toString()
     def integTestBuildNumber = currentBuild.number
     def integTestBuildUrl = env.RUN_DISPLAY_URL
@@ -75,6 +86,8 @@ void call(Map args = [:]) {
     def fileContents = readFile(file: "test-records.json").trim()
     indexFailedTestData(indexName, "test-records.json")
 }
+
+boolean argCheck(String str) { return (str == null || str.allWhitespace || str.isEmpty()) }
 
 void indexFailedTestData(indexName, testRecordsFile) {
     withCredentials([
@@ -217,3 +230,4 @@ def generateJson(component, version, integTestBuildNumber, integTestBuildUrl, di
     ]
     return JsonOutput.toJson(json)
 }
+

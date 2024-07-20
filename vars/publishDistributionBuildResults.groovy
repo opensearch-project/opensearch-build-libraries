@@ -14,7 +14,6 @@
  * @param args.rcNumber <required> - The RC number against which the integration test is executed.
  * @param args.failureMessages <required> - Failure message retrieved from buildFailureMessage() method.
  * @param args.passMessages <required> - Passing message retrieved from buildFailureMessage() method. Used to get the passed components list.
- * @param args.distribution <required> - The distribution of the integration test build. Used to get the failed components list.
  * @param args.componentCategory <required> - The OpenSearch or OpenSearch Dashboards plugin
  * @param args.inputManifestPath <required> - Path to input manifest.
  */
