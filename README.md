@@ -45,6 +45,8 @@ lib = library(identifier: 'jenkins@<tag>', retriever: modernSCM([
 | [publishGradleCheckTestResults.groovy](./vars/publishGradleCheckTestResults.groovy)                                                       | This library runs part of Gradle Check and publishes the failed test data to the [OpenSearch Metrics Cluster](https://metrics.opensearch.org/_dashboards/app/dashboards#/view/e5e64d40-ed31-11ee-be99-69d1dbc75083).
 | [gradleCheckFlakyTestDetector.groovy](./vars/gradleCheckFlakyTestDetector.groovy)                                                       | This library detects the flaky tests from [OpenSearch Metrics Cluster](https://metrics.opensearch.org/_dashboards/app/dashboards#/view/e5e64d40-ed31-11ee-be99-69d1dbc75083) and generates a test report.
 | [gradleCheckFlakyTestGitHubIssue.groovy](./vars/gradleCheckFlakyTestGitHubIssue.groovy)                                                       | This library is used in [gradleCheckFlakyTestDetector.groovy](./vars/gradleCheckFlakyTestDetector.groovy) to create/edit the GitHub Issue using the generated test report.
+| [publishDistributionBuildResults.groovy](./vars/publishDistributionBuildResults.groovy)                                                       | This library is used for publishing the OpenSearch Project Distribution build results to the OpenSearch Metrics cluster.
+| [publishIntegTestResults.groovy](./vars/publishIntegTestResults.groovy)                                                       | This library is used for publishing the OpenSearch Project Integration Test results to the OpenSearch Metrics cluster.
 
 ## Contributing
 
