@@ -7,7 +7,7 @@
  * compatible open source license.
  */
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@6.6.1', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@6.7.0', retriever: legacySCM(scm))
 
     def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.buildManifest))
     echo "Create yum repo metadata and repo file ${args.buildManifest}"
