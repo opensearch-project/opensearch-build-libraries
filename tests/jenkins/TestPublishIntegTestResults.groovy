@@ -208,6 +208,48 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
         assert parsedResult == expectedJson
     }
 
+    @Test
+    void testCallWithMissingArgs() {
+        def script = loadScript('vars/publishIntegTestResults.groovy')
+        def args = [
+            version: "1.0",
+            distributionBuildNumber: null, // Missing required argument
+            distributionBuildUrl: "http://example.com/distribution/456",
+            rc: "rc1",
+            rcNumber: "1",
+            platform: "linux",
+            architecture: "x64",
+            distribution: "tar",
+            testReportManifestYml: "path/to/testReportManifest.yml",
+            jobName: "test-job"
+        ]
+
+        def result = script.call(args)
+        
+        assert result == null
+    }
+
+    @Test
+    void testCallWithEmptyArgs() {
+        def script = loadScript('vars/publishIntegTestResults.groovy')
+        def args = [
+            version: "1.0",
+            distributionBuildNumber: "", // Empty required argument
+            distributionBuildUrl: "http://example.com/distribution/456",
+            rc: "rc1",
+            rcNumber: "1",
+            platform: "linux",
+            architecture: "x64",
+            distribution: "tar",
+            testReportManifestYml: "path/to/testReportManifest.yml",
+            jobName: "test-job"
+        ]
+
+        def result = script.call(args)
+        
+        assert result == null
+    }
+
     def normalizeString(String str) {
         return str.replaceAll(/\s+/, " ").trim()
     }
