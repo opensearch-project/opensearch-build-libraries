@@ -37,18 +37,16 @@ void call(Map args = [:]) {
     def inputManifest = readYaml(file: args.inputManifestPath)
     def version = inputManifest.build.version
     def finalJsonDoc = ""
-    def failedComponents = extractUniqueComponents(failureMessages, /(?<=\bError building\s)\S+/)
-    def passedComponents = extractUniqueComponents(passMessages, /(?<=\bSuccessfully built\s)\S+/)
+    List<String> failedComponents = extractComponents(failureMessages, /(?<=\bError building\s).*/, 0)
+    List<String> passedComponents = extractComponents(passMessages, /(?<=\bSuccessfully built\s).*/, 0)
     inputManifest.components.each { component ->
         if (failedComponents.contains(component.name)) {
-            println("Component ${component.name} failed")
             def jsonData = generateAndAppendJson(indexName, component.name, component.repository, component.ref,
                                 version, distributionBuildNumber, distributionBuildUrl,
                                 buildStartTime, rc, rcNumber, componentCategory, "failed"
                                 )
             finalJsonDoc += "{\"index\": {\"_index\": \"${indexName}\"}}\n${jsonData}\n"
         } else if (passedComponents.contains(component.name)) {
-            println("Component ${component.name} passed")
             def jsonData = generateAndAppendJson(indexName, component.name, component.repository, component.ref,
                                 version, distributionBuildNumber, distributionBuildUrl,
                                 buildStartTime, rc, rcNumber, componentCategory, "passed"
@@ -156,10 +154,6 @@ def generateJson(component, componentRepo, componentRef, version, distributionBu
     return JsonOutput.toJson(json)
 }
 
-def extractUniqueComponents(messages, regex) {
-    messages.collect { it.find(regex) }.unique()
-}
-
 def generateAndAppendJson(indexName, component, componentRepo, componentRef, version, distributionBuildNumber, distributionBuildUrl, buildStartTime, rc, rcNumber, componentCategory, status) {
     def jsonData = generateJson(
         component, componentRepo, componentRef, version, 
@@ -167,4 +161,14 @@ def generateAndAppendJson(indexName, component, componentRepo, componentRef, ver
         rc, rcNumber, componentCategory, status
     )
     return jsonData
+}
+
+def extractComponents(List<String> messages, String regex, int splitIndex) {
+    List<String> components = []
+    for (message in messages) {
+        java.util.regex.Matcher match = (message =~ regex)
+        String matched = match[0]
+        components.add(matched.split(' ')[0].split(',')[splitIndex].trim())
+    }
+    return components.unique()
 }
