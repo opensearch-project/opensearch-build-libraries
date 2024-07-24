@@ -19,6 +19,7 @@
  * @param args.architecture <required> - The architecture of the integration test build.
  * @param args.distribution <required> - The distribution of the integration test build.
  * @param args.testReportManifestYml <required> - The generated test report YAML file using test report workflow.
+ * @param args.jobName <required> - The integ test job name, used in `testReportManifestYmlUrl`.
  */
 
 import groovy.json.JsonOutput
@@ -34,10 +35,9 @@ void call(Map args = [:]) {
     }
     if (isNullOrEmpty(args.version) || isNullOrEmpty(args.distributionBuildNumber) || isNullOrEmpty(args.distributionBuildUrl) || 
         isNullOrEmpty(args.rcNumber) || isNullOrEmpty(args.rc) || isNullOrEmpty(args.platform) || 
-        isNullOrEmpty(args.architecture) || isNullOrEmpty(args.distribution) || isNullOrEmpty(args.testReportManifestYml)) {
+        isNullOrEmpty(args.architecture) || isNullOrEmpty(args.distribution) || isNullOrEmpty(args.testReportManifestYml) || isNullOrEmpty(args.jobName)) {
         return null
     }
-
 
     def version = args.version.toString()
     def integTestBuildNumber = currentBuild.number
@@ -53,7 +53,8 @@ void call(Map args = [:]) {
     def architecture = args.architecture
     def distribution = args.distribution
     def testReportManifestYml = args.testReportManifestYml
-    def testReportManifestYmlUrl = "https://ci.opensearch.org/ci/dbc/integ-test/${version}/${distributionBuildNumber}/${platform}/${architecture}/${distribution}/test-results/${integTestBuildNumber}/integ-test/test-report.yml"
+    def jobName = args.jobName
+    def testReportManifestYmlUrl = "https://ci.opensearch.org/ci/dbc/${jobName}/${version}/${distributionBuildNumber}/${platform}/${architecture}/${distribution}/test-results/${integTestBuildNumber}/integ-test/test-report.yml"
     def manifestFile = readFile testReportManifestYml
     def manifest = readYaml text: manifestFile
     def indexName = "opensearch-integration-test-results-${formattedDate}"

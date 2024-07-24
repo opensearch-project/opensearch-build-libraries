@@ -209,4 +209,43 @@ class TestPublishDistributionBuildResults extends BuildPipelineTest {
         ])
         assert result == expectedJson
     }
+
+    @Test
+    void testExtractComponentsForFailureMessages() {
+        List<String> failureMessages = [
+            "Error building componentA, caused by ...",
+            "Error building componentB due to ...",
+            "Error building componentA because ..."
+        ]
+        List<String> expectedComponents = ["componentA", "componentB"]
+        def script = loadScript('vars/publishDistributionBuildResults.groovy')
+        List<String> result = script.extractComponents(failureMessages, /(?<=\bError building\s).*/, 0)
+        assert result == expectedComponents
+    }
+
+    @Test
+    void testExtractComponentsForPassMessages() {
+        List<String> passMessages = [
+            "Successfully built componentA",
+            "Successfully built componentB",
+            "Successfully built componentC"
+        ]
+        List<String> expectedComponents = ["componentA", "componentB", "componentC"]
+        def script = loadScript('vars/publishDistributionBuildResults.groovy')
+        List<String> result = script.extractComponents(passMessages, /(?<=\bSuccessfully built\s).*/, 0)
+        assert result == expectedComponents
+    }
+
+    @Test
+    void testExtractComponentsWithDuplicates() {
+        List<String> messages = [
+            "Successfully built componentA",
+            "Successfully built componentA",
+            "Successfully built componentB"
+        ]
+        List<String> expectedComponents = ["componentA", "componentB"]
+        def script = loadScript('vars/publishDistributionBuildResults.groovy')
+        List<String> result = script.extractComponents(messages, /(?<=\bSuccessfully built\s).*/, 0)
+        assert result == expectedComponents
+    }
 }
