@@ -64,7 +64,7 @@ void call(Map args = [:]) {
         def componentCategory = manifest.name
         def withSecurity = component.configs.find { it.name == 'with-security' }?.status?.toLowerCase() ?: 'unknown'
         def withoutSecurity = component.configs.find { it.name == 'without-security' }?.status?.toLowerCase() ?: 'unknown'
-        def componentResult = (withSecurity == 'fail' || withoutSecurity == 'fail') ? 'failed' : 'passed'
+        def componentResult = (withSecurity == 'fail' || withoutSecurity == 'fail' || withSecurity == 'Not Available' || withoutSecurity == 'Not Available') ? 'failed' : 'passed'
         def withSecurityYml = component.configs.find { it.name == 'with-security' }?.yml ?: ''
         def withSecurityStdout = component.configs.find { it.name == 'with-security' }?.cluster_stdout ?: []
         def withSecurityStderr = component.configs.find { it.name == 'with-security' }?.cluster_stderr ?: []
