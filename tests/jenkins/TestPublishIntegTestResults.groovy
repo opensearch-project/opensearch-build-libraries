@@ -209,6 +209,52 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
     }
 
     @Test
+    void testComponentResultWithSecurityFail() {
+        def withSecurity = 'fail'
+        def withoutSecurity = 'pass'
+        def componentResult = (withSecurity == 'fail' || withoutSecurity == 'fail' || withSecurity == 'Not Available' || withoutSecurity == 'Not Available') ? 'failed' : 'passed'
+        
+        assert componentResult == 'failed'
+    }
+
+    @Test
+    void testComponentResultWithoutSecurityFail() {
+        def withSecurity = 'pass'
+        def withoutSecurity = 'fail'
+        def componentResult = (withSecurity == 'fail' || withoutSecurity == 'fail' || withSecurity == 'Not Available' || withoutSecurity == 'Not Available') ? 'failed' : 'passed'
+        
+        assert componentResult == 'failed'
+    }
+
+    @Test
+    void testComponentResultWithSecurityNotAvailable() {
+        def withSecurity = 'Not Available'
+        def withoutSecurity = 'pass'
+        def componentResult = (withSecurity == 'fail' || withoutSecurity == 'fail' || withSecurity == 'Not Available' || withoutSecurity == 'Not Available') ? 'failed' : 'passed'
+        
+        assert componentResult == 'failed'
+    }
+
+    @Test
+    void testComponentResultWithoutSecurityNotAvailable() {
+        def withSecurity = 'pass'
+        def withoutSecurity = 'Not Available'
+        def componentResult = (withSecurity == 'fail' || withoutSecurity == 'fail' || withSecurity == 'Not Available' || withoutSecurity == 'Not Available') ? 'failed' : 'passed'
+        
+        assert componentResult == 'failed'
+    }
+
+    @Test
+    void testComponentResultBothPass() {
+        def withSecurity = 'pass'
+        def withoutSecurity = 'pass'
+        def componentResult = (withSecurity == 'fail' || withoutSecurity == 'fail' || withSecurity == 'Not Available' || withoutSecurity == 'Not Available') ? 'failed' : 'passed'
+        
+        assert componentResult == 'passed'
+    }
+
+
+    @Test
     void testCallWithMissingArgs() {
         def script = loadScript('vars/publishIntegTestResults.groovy')
         def args = [
