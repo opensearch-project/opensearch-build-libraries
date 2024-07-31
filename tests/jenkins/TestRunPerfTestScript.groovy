@@ -47,7 +47,7 @@ class TestRunPerfTestScript extends BuildPipelineTest {
 
         assertThat(curlCommands.size(), equalTo(2))
         assertThat(curlCommands, hasItem(
-            "curl -sSL test://artifact.url --output tests/data/opensearch-1.3.0-bundle.yml".toString()
+            "curl -sSL --retry 5 test://artifact.url --output tests/data/opensearch-1.3.0-bundle.yml".toString()
         ))
 
         def s3DownloadCommands = getCommandExecutions('s3Download', 'bucket').findAll {
