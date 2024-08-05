@@ -52,8 +52,8 @@ def call(Map args = [:]) {
                     "--test-run-id ${testRunID}",
                     "--test-type ${testType}",
                     "--base-path ${basePath}",
-                    isNullOrEmpty(rcNumber)? "" : "--release-candidate ${rcNumber}",
-                    isNullOrEmpty(component)? "" : "--component ${component}",
+                    isNullOrEmpty(rcNumber) ? "" : "--release-candidate ${rcNumber}",
+                    isNullOrEmpty(component) ? "" : "--component ${component}",
             ].join(' ')
 
     echo "Run command: " + reportCommand
