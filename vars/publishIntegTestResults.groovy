@@ -10,14 +10,7 @@
 /** Library to fetch the failing Integration test details at the end of Integration Test Jenkins build and index the results to OpenSearch Metrics cluster.
  *
  * @param Map args = [:] args A map of the following parameters.
- * @param args.version <required> - The version against which the integration test is executed.
- * @param args.distributionBuildNumber <required> - The jenkins distribution build number.
  * @param args.distributionBuildUrl <required> - The jenkins distribution build number.
- * @param args.rc <required> - If the integration tests are running on an RC. 
- * @param args.rcNumber <required> - The RC number against which the integration test is executed.
- * @param args.platform <required> - The platform of the integration test build.
- * @param args.architecture <required> - The architecture of the integration test build.
- * @param args.distribution <required> - The distribution of the integration test build.
  * @param args.testReportManifestYml <required> - The generated test report YAML file using test report workflow.
  * @param args.jobName <required> - The integ test job name, used in `testReportManifestYmlUrl`.
  */
@@ -39,19 +32,12 @@ void call(Map args = [:]) {
         return null
     }
 
-    def version = args.version.toString()
     def integTestBuildNumber = currentBuild.number
     def integTestBuildUrl = env.RUN_DISPLAY_URL
-    def distributionBuildNumber = args.distributionBuildNumber
     def distributionBuildUrl = args.distributionBuildUrl
     def buildStartTime = currentBuild.startTimeInMillis
     def currentDate = new Date()
     def formattedDate = new SimpleDateFormat("MM-yyyy").format(currentDate)
-    def rc = args.rc
-    def rcNumber = args.rcNumber.toInteger()
-    def platform = args.platform
-    def architecture = args.architecture
-    def distribution = args.distribution
     def testReportManifestYml = args.testReportManifestYml
     def jobName = args.jobName
     def testReportManifestYmlUrl = "https://ci.opensearch.org/ci/dbc/${jobName}/${version}/${distributionBuildNumber}/${platform}/${architecture}/${distribution}/test-results/${integTestBuildNumber}/integ-test/test-report.yml"
@@ -59,6 +45,14 @@ void call(Map args = [:]) {
     def manifest = readYaml text: manifestFile
     def indexName = "opensearch-integration-test-results-${formattedDate}"
     def finalJsonDoc = ""
+    def version = manifest.version.toString()
+    def distributionBuildNumber = manifest.id
+    def rcNumber = manifest.rc.toInteger()
+    def rc = (rcNumber > 0)
+    def platform = manifest.platform
+    def architecture = manifest.architecture
+    def distribution = manifest.distribution
+
     manifest.components.each { component ->
         def componentName = component.name
         def componentCategory = manifest.name

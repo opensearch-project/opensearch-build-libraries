@@ -258,16 +258,9 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
     void testCallWithMissingArgs() {
         def script = loadScript('vars/publishIntegTestResults.groovy')
         def args = [
-            version: "1.0",
-            distributionBuildNumber: null, // Missing required argument
             distributionBuildUrl: "http://example.com/distribution/456",
-            rc: "rc1",
-            rcNumber: "1",
-            platform: "linux",
-            architecture: "x64",
-            distribution: "tar",
             testReportManifestYml: "path/to/testReportManifest.yml",
-            jobName: "test-job"
+            //jobName: "test-job" // Missing required argument
         ]
 
         def result = script.call(args)
@@ -279,16 +272,9 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
     void testCallWithEmptyArgs() {
         def script = loadScript('vars/publishIntegTestResults.groovy')
         def args = [
-            version: "1.0",
-            distributionBuildNumber: "", // Empty required argument
             distributionBuildUrl: "http://example.com/distribution/456",
-            rc: "rc1",
-            rcNumber: "1",
-            platform: "linux",
-            architecture: "x64",
-            distribution: "tar",
             testReportManifestYml: "path/to/testReportManifest.yml",
-            jobName: "test-job"
+            jobName: "" // Empty required argument
         ]
 
         def result = script.call(args)
