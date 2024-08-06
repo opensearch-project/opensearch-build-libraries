@@ -21,6 +21,7 @@ class TestRunBenchmarkTestScriptNoManifest extends BuildPipelineTest {
     @Before
     void setUp() {
         this.registerLibTester(new RunBenchmarkTestScriptLibTester(
+                'execute-test',
                 '',
                 'https://www.example.com/example.tar.gz',
                 '3.0.0',

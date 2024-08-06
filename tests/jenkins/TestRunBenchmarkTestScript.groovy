@@ -21,6 +21,7 @@ class TestRunBenchmarkTestScript extends BuildPipelineTest {
     @Before
     void setUp() {
         this.registerLibTester(new RunBenchmarkTestScriptLibTester(
+                'execute-test',
                 'tests/data/opensearch-1.3.0-bundle.yml',
                 '',
                 '',

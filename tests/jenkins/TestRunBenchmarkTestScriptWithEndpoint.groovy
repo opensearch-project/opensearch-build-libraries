@@ -22,6 +22,7 @@ class TestRunBenchmarkTestScriptWithEndpoint extends BuildPipelineTest {
     @Before
     void setUp() {
         this.registerLibTester(new RunBenchmarkTestEndpointLibTester(
+                'execute-test',
                 'opensearch-ABCxdfdfhyfk.com',
                 'false',
                 'nyc_taxis',
