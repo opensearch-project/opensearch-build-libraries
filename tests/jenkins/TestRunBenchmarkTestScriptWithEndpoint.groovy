@@ -22,6 +22,7 @@ class TestRunBenchmarkTestScriptWithEndpoint extends BuildPipelineTest {
     @Before
     void setUp() {
         this.registerLibTester(new RunBenchmarkTestEndpointLibTester(
+                'execute-test',
                 'opensearch-ABCxdfdfhyfk.com',
                 'false',
                 'nyc_taxis',
@@ -51,7 +52,7 @@ class TestRunBenchmarkTestScriptWithEndpoint extends BuildPipelineTest {
 
         assertThat(testScriptCommands.size(), equalTo(1))
         assertThat(testScriptCommands, hasItem(
-                "set +x && ./test.sh benchmark-test    --cluster-endpoint opensearch-ABCxdfdfhyfk.com  --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag true,security-enabled:true"
+                "set +x && ./test.sh benchmark-test execute-test    --cluster-endpoint opensearch-ABCxdfdfhyfk.com  --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag true,security-enabled:true"
         ))
     }
 
