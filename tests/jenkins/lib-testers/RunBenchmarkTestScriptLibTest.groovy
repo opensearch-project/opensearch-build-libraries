@@ -11,6 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat
 
 class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
 
+    private String command
     private String bundleManifest
     private String distributionUrl
     private String distributionVersion
@@ -40,10 +41,11 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
     private String captureSegmentReplicationStat
     private String telemetryParams
 
-    public RunBenchmarkTestScriptLibTester(bundleManifest, distributionUrl, distributionVersion, insecure, workload, singleNode, minDistribution, use50PercentHeap,
+    public RunBenchmarkTestScriptLibTester(command, bundleManifest, distributionUrl, distributionVersion, insecure, workload, singleNode, minDistribution, use50PercentHeap,
                                            enableRemoteStore, managerNodeCount, dataNodeCount, dataInstanceType, userTag, workloadParams,
                                            testProcedure, excludeTasks, includeTasks,
                                            additionalConfig, captureNodeStat, captureSegmentReplicationStat, telemetryParams){
+        this.command = command
         this.bundleManifest = bundleManifest
         this.distributionUrl = distributionUrl
         this.distributionVersion = distributionVersion
@@ -124,6 +126,7 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
         binding.setVariable('env', ['BUILD_NUMBER': '307'])
         binding.setVariable('BUILD_NUMBER', '307')
         binding.setVariable('BUILD_URL', 'test://artifact.url')
+        binding.setVariable('COMMAND', command)
         binding.setVariable('BUNDLE_MANIFEST', bundleManifest)
         binding.setVariable('DISTRIBUTION_URL', distributionUrl)
         binding.setVariable('DISTRIBUTION_VERSION', distributionVersion)

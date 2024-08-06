@@ -14,6 +14,7 @@ pipeline {
                     steps {
                         script {
                             runBenchmarkTestScript(
+                            command: COMMAND,
                             endpoint: CLUSTER_ENDPOINT,
                             insecure: "false",
                             workload: TEST_WORKLOAD,
