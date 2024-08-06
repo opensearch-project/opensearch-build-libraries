@@ -74,6 +74,7 @@ void call(Map args = [:]) {
     def command = [
         './test.sh',
         'benchmark-test',
+        args.command,
         isNullOrEmpty(args.bundleManifest) ? "" : "--bundle-manifest ${args.bundleManifest}",
         isNullOrEmpty(args.distributionUrl) ? "" : "--distribution-url ${args.distributionUrl}",
         isNullOrEmpty(args.distributionVersion) ? "" : "--distribution-version ${args.distributionVersion}",

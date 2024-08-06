@@ -18,7 +18,8 @@ pipeline {
                                 url: BUNDLE_MANIFEST_URL,
                                 path: BUNDLE_MANIFEST
                             )
-                            runBenchmarkTestScript(bundleManifest: BUNDLE_MANIFEST,
+                            runBenchmarkTestScript(command: COMMAND,
+                            bundleManifest: BUNDLE_MANIFEST,
                             distributionUrl: DISTRIBUTION_URL,
                             distributionVersion: DISTRIBUTION_VERSION,
                             workload: TEST_WORKLOAD,
@@ -57,7 +58,8 @@ pipeline {
                                 url: BUNDLE_MANIFEST_URL,
                                 path: BUNDLE_MANIFEST
                             )
-                            runBenchmarkTestScript(bundleManifest: BUNDLE_MANIFEST,
+                            runBenchmarkTestScript(command: COMMAND,
+                            bundleManifest: BUNDLE_MANIFEST,
                             distributionUrl: DISTRIBUTION_URL,
                             distributionVersion: DISTRIBUTION_VERSION,
                             workload: TEST_WORKLOAD,
