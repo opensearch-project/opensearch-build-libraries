@@ -9,6 +9,7 @@
 /** Library to execute benchmark-test using opensearch-benchmark and opensearch-cluster-cdk
  *
  * @param Map args = [:] args A map of the following parameters
+ * @param args.command <required> - Name of the command that opensearch-benchmark should run, e.g., execute-test, or compare.
  * @param args.bundleManifest <optional> - OpenSearch bundle manifest url.
  * @param args.distributionUrl <optional> - Download link for the OpenSearch bundle tarball.
  * @param args.distributionVersion <optional> - Provide OpenSearch version if using distributionUrl param
