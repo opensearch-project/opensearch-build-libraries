@@ -1,0 +1,82 @@
+   CompareBenchmarkRun_Jenkinsfile.run()
+      CompareBenchmarkRun_Jenkinsfile.pipeline(groovy.lang.Closure)
+         CompareBenchmarkRun_Jenkinsfile.echo(Executing on agent [label:none])
+         CompareBenchmarkRun_Jenkinsfile.stage(compare-benchmark-test, groovy.lang.Closure)
+            CompareBenchmarkRun_Jenkinsfile.script(groovy.lang.Closure)
+               CompareBenchmarkRun_Jenkinsfile.getCompareBenchmarkIds({baselineClusterConfig=test-baseline-config, distributionVersion=3.0.0, workload=big5, pullRequestNumber=12345})
+                  getCompareBenchmarkIds.string({credentialsId=benchmark-metrics-datastore-user, variable=DATASTORE_USER})
+                  getCompareBenchmarkIds.string({credentialsId=benchmark-metrics-datastore-password, variable=DATASTORE_PASSWORD})
+                  getCompareBenchmarkIds.string({credentialsId=benchmark-metrics-datastore-endpoint, variable=DATASTORE_ENDPOINT})
+                  getCompareBenchmarkIds.withCredentials([DATASTORE_USER, DATASTORE_PASSWORD, DATASTORE_ENDPOINT], groovy.lang.Closure)
+                     getCompareBenchmarkIds.sh({script=
+              curl -X POST "https://DATASTORE_ENDPOINT/benchmark-results-*/_search" -ku DATASTORE_USER:DATASTORE_PASSWORD -H 'Content-Type: application/json' -d '{
+              "size": 1,
+              "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "term": {
+                        "user-tags.cluster-config": "test-baseline-config"
+                      }
+                    },
+                    {
+                      "term": {
+                        "workload": "big5"
+                      }
+                    },
+                    {
+                      "term": {
+                        "distribution-version": "3.0.0"
+                      }
+                    },
+                    {
+                      "range": {
+                        "test-execution-timestamp": {
+                          "gte": "now-5d/d",
+                          "lte": "now/d"
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "sort": [
+                {
+                  "test-execution-timestamp": {
+                    "order": "desc"
+                  }
+                }
+              ],
+              "_source": ["test-execution-id"]
+            }'
+        , returnStdout=true})
+                     getCompareBenchmarkIds.echo(Latest test-execution-id: test-id)
+                  getCompareBenchmarkIds.string({credentialsId=benchmark-metrics-datastore-user, variable=DATASTORE_USER})
+                  getCompareBenchmarkIds.string({credentialsId=benchmark-metrics-datastore-password, variable=DATASTORE_PASSWORD})
+                  getCompareBenchmarkIds.string({credentialsId=benchmark-metrics-datastore-endpoint, variable=DATASTORE_ENDPOINT})
+                  getCompareBenchmarkIds.withCredentials([DATASTORE_USER, DATASTORE_PASSWORD, DATASTORE_ENDPOINT], groovy.lang.Closure)
+                     getCompareBenchmarkIds.sh({script=
+              curl -X POST "https://DATASTORE_ENDPOINT/benchmark-results-*/_search" -ku DATASTORE_USER:DATASTORE_PASSWORD -H 'Content-Type: application/json' -d '{
+              "size": 1,
+              "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "term": {
+                        "user-tags.pull_request_number": "12345"
+                      }
+                    }
+                  ]
+                }
+              },
+              "sort": [
+                {
+                  "test-execution-timestamp": {
+                    "order": "desc"
+                  }
+                }
+              ],
+              "_source": ["test-execution-id"]
+            }'
+        , returnStdout=true})
+                     getCompareBenchmarkIds.echo(Latest test-execution-id: test-id)
