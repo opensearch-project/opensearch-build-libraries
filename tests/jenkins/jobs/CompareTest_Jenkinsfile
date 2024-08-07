@@ -9,15 +9,11 @@
 pipeline {
     agent none
     stages {
-        stage('benchmark-test') {
+        stage('compare-test') {
             parallel {
-                stage('test-with-security') {
+                stage('test-with-all-args') {
                     steps {
                         script {
-                            def bundleManifestObj = downloadBuildManifest(
-                                url: BUNDLE_MANIFEST_URL,
-                                path: BUNDLE_MANIFEST
-                            )
                             runBenchmarkTestScript(command: COMMAND,
                             bundleManifest: BUNDLE_MANIFEST,
                             distributionUrl: DISTRIBUTION_URL,
@@ -57,31 +53,27 @@ pipeline {
                         }
                     }
                 }
-                stage('test-without-security') {
+                stage('test-with-base-args') {
                     steps {
                         script {
-                            def bundleManifestObj = downloadBuildManifest(
-                                url: BUNDLE_MANIFEST_URL,
-                                path: BUNDLE_MANIFEST
-                            )
                             runBenchmarkTestScript(command: COMMAND,
                             bundleManifest: BUNDLE_MANIFEST,
                             distributionUrl: DISTRIBUTION_URL,
                             distributionVersion: DISTRIBUTION_VERSION,
                             workload: TEST_WORKLOAD,
-                            insecure: "true",
+                            insecure: "false",
                             singleNode: SINGLE_NODE_CLUSTER,
                             minDistribution: MIN_DISTRIBUTION,
                             use50PercentHeap: USE_50_PERCENT_HEAP,
                             enableRemoteStore: ENABLE_REMOTE_STORE,
-                            suffix: "${env.BUILD_NUMBER}",
+                            suffix: "${env.BUILD_NUMBER}-secure",
                             managerNodeCount: MANAGER_NODE_COUNT,
                             dataNodeCount: DATA_NODE_COUNT,
                             clientNodeCount: CLIENT_NODE_COUNT,
                             ingestNodeCount: INGEST_NODE_COUNT,
                             mlNodeCount: ML_NODE_COUNT,
                             dataInstanceType: DATA_INSTANCE_TYPE,
-                            userTag: USER_TAGS.isEmpty() ? "security-enabled:false" : "${USER_TAGS},security-enabled:false",
+                            userTag: USER_TAGS.isEmpty() ? "security-enabled:true" : "${USER_TAGS},security-enabled:true",
                             workloadParams: WORKLOAD_PARAMS,
                             testProcedure: TEST_PROCEDURE,
                             excludeTasks: EXCLUDE_TASKS,
@@ -92,7 +84,9 @@ pipeline {
                             jvmSysProps: JVM_SYS_PROPS,
                             captureNodeStat: CAPTURE_NODE_STAT,
                             captureSegmentReplicationStat: CAPTURE_SEGMENT_REPLICATION_STAT,
-                            telemetryParams: TELEMETRY_PARAMS
+                            telemetryParams: TELEMETRY_PARAMS,
+                            baseline: BASELINE,
+                            contender: CONTENDER
                             )
                         }
                     }

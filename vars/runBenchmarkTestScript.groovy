@@ -9,6 +9,7 @@
 /** Library to execute benchmark-test using opensearch-benchmark and opensearch-cluster-cdk
  *
  * @param Map args = [:] args A map of the following parameters
+ * @param args.command <required> - Name of command to run. 'execute-test' or 'compare'.
  * @param args.bundleManifest <optional> - OpenSearch bundle manifest url.
  * @param args.distributionUrl <optional> - Download link for the OpenSearch bundle tarball.
  * @param args.distributionVersion <optional> - Provide OpenSearch version if using distributionUrl param
@@ -38,6 +39,12 @@
  * @param args.userTag <optional> - Additional metadata tags to be added to benchmark run metrics, e.g., run-type:adhoc,arch:x64
  * @param args.configName <optional> - Name of the config file that needs to be downloaded from S3 bucket, default is config.yml.
  * @param args.telemetryParams <optional> - Allows to set parameters for telemetry devices such as node-stat etc., e.g. {"node-stats-include-indices": "true"}
+ * @param args.baseline <required> - The baseline TestExecution ID used to compare the contender TestExecution.
+ * @param args.contender <required> - The TestExecution ID for the contender being compared to the baseline.
+ * @param args.results_format <optional> - Defines the output format for the command line results, either markdown or csv. Default is markdown.
+ * @param args.results_numbers_align <optional> - Defines the column number alignment for when the compare command outputs results. Default is right.
+ * @param args.results_file <optional> - When provided a file path, writes the compare results to the file indicated in the path.
+ * @param args.show_in_results <optional> - Determines whether or not to include the comparison in the results file.
  */
 void call(Map args = [:]) {
     lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
@@ -71,44 +78,60 @@ void call(Map args = [:]) {
     editBenchmarkConfig("${WORKSPACE}/benchmark.ini")
     String userTags = getMetadataTags(args.userTag.toString(), buildManifest)
 
-    def command = [
-        './test.sh',
-        'benchmark-test',
-        args.command,
-        isNullOrEmpty(args.bundleManifest) ? "" : "--bundle-manifest ${args.bundleManifest}",
-        isNullOrEmpty(args.distributionUrl) ? "" : "--distribution-url ${args.distributionUrl}",
-        isNullOrEmpty(args.distributionVersion) ? "" : "--distribution-version ${args.distributionVersion}",
-        isNullOrEmpty(args.endpoint) ? "" : "--cluster-endpoint ${args.endpoint}",
-        isNullOrEmpty(args.endpoint) ? "--config ${WORKSPACE}/config.yml" : "",
-        "--workload ${args.workload}",
-        "--benchmark-config ${WORKSPACE}/benchmark.ini",
-        "--user-tag ${userTags}",
-        args.insecure?.toBoolean() ? "--without-security" : "",
-        isNullOrEmpty(args.username) ? "" : "--username ${args.username}",
-        isNullOrEmpty(args.password) ? "" : "--password ${args.password}",
-        args.singleNode?.toBoolean() ? "--single-node" : "",
-        args.minDistribution?.toBoolean() ? "--min-distribution" : "",
-        args.use50PercentHeap?.toBoolean() ? "--use-50-percent-heap" : "",
-        args.enableRemoteStore?.toBoolean() ? "--enable-remote-store" : "",
-        args.captureNodeStat?.toBoolean() ? "--capture-node-stat" : "",
-        args.captureSegmentReplicationStat?.toBoolean() ? "--capture-segment-replication-stat" : "",
-        isNullOrEmpty(args.suffix) ? "" : "--suffix ${args.suffix}",
-        isNullOrEmpty(args.managerNodeCount) ? "" : "--manager-node-count ${args.managerNodeCount}",
-        isNullOrEmpty(args.dataNodeCount) ? "" : "--data-node-count ${args.dataNodeCount}",
-        isNullOrEmpty(args.clientNodeCount) ? "" : "--client-node-count ${args.clientNodeCount}",
-        isNullOrEmpty(args.ingestNodeCount) ? "" : "--ingest-node-count ${args.ingestNodeCount}",
-        isNullOrEmpty(args.mlNodeCount) ? "" : "--ml-node-count ${args.mlNodeCount}",
-        isNullOrEmpty(args.dataInstanceType) ? "" : "--data-instance-type ${args.dataInstanceType}",
-        isNullOrEmpty(args.workloadParams) ? "" : "--workload-params '${args.workloadParams}'",
-        isNullOrEmpty(args.testProcedure) ? "" : "--test-procedure ${args.testProcedure}",
-        isNullOrEmpty(args.excludeTasks) ? "" : "--exclude-tasks ${args.excludeTasks}",
-        isNullOrEmpty(args.includeTasks) ? "" : "--include-tasks ${args.includeTasks}",
-        isNullOrEmpty(args.additionalConfig) ? "" : "--additional-config ${args.additionalConfig}",
-        isNullOrEmpty(args.dataStorageSize) ? "" : "--data-node-storage ${args.dataStorageSize}",
-        isNullOrEmpty(args.mlStorageSize) ? "" : "--ml-node-storage ${args.mlStorageSize}",
-        isNullOrEmpty(args.jvmSysProps) ? "" : "--jvm-sys-props ${args.jvmSysProps}",
-        isNullOrEmpty(args.telemetryParams) ? "" : "--telemetry-params '${args.telemetryParams}'"
-    ].join(' ').trim()
+    def command
+
+    if(args.command == 'execute-test') {
+        command = [
+            './test.sh',
+            'benchmark-test',
+            args.command,
+            isNullOrEmpty(args.bundleManifest) ? "" : "--bundle-manifest ${args.bundleManifest}",
+            isNullOrEmpty(args.distributionUrl) ? "" : "--distribution-url ${args.distributionUrl}",
+            isNullOrEmpty(args.distributionVersion) ? "" : "--distribution-version ${args.distributionVersion}",
+            isNullOrEmpty(args.endpoint) ? "" : "--cluster-endpoint ${args.endpoint}",
+            isNullOrEmpty(args.endpoint) ? "--config ${WORKSPACE}/config.yml" : "",
+            "--workload ${args.workload}",
+            "--benchmark-config ${WORKSPACE}/benchmark.ini",
+            "--user-tag ${userTags}",
+            args.insecure?.toBoolean() ? "--without-security" : "",
+            isNullOrEmpty(args.username) ? "" : "--username ${args.username}",
+            isNullOrEmpty(args.password) ? "" : "--password ${args.password}",
+            args.singleNode?.toBoolean() ? "--single-node" : "",
+            args.minDistribution?.toBoolean() ? "--min-distribution" : "",
+            args.use50PercentHeap?.toBoolean() ? "--use-50-percent-heap" : "",
+            args.enableRemoteStore?.toBoolean() ? "--enable-remote-store" : "",
+            args.captureNodeStat?.toBoolean() ? "--capture-node-stat" : "",
+            args.captureSegmentReplicationStat?.toBoolean() ? "--capture-segment-replication-stat" : "",
+            isNullOrEmpty(args.suffix) ? "" : "--suffix ${args.suffix}",
+            isNullOrEmpty(args.managerNodeCount) ? "" : "--manager-node-count ${args.managerNodeCount}",
+            isNullOrEmpty(args.dataNodeCount) ? "" : "--data-node-count ${args.dataNodeCount}",
+            isNullOrEmpty(args.clientNodeCount) ? "" : "--client-node-count ${args.clientNodeCount}",
+            isNullOrEmpty(args.ingestNodeCount) ? "" : "--ingest-node-count ${args.ingestNodeCount}",
+            isNullOrEmpty(args.mlNodeCount) ? "" : "--ml-node-count ${args.mlNodeCount}",
+            isNullOrEmpty(args.dataInstanceType) ? "" : "--data-instance-type ${args.dataInstanceType}",
+            isNullOrEmpty(args.workloadParams) ? "" : "--workload-params '${args.workloadParams}'",
+            isNullOrEmpty(args.testProcedure) ? "" : "--test-procedure ${args.testProcedure}",
+            isNullOrEmpty(args.excludeTasks) ? "" : "--exclude-tasks ${args.excludeTasks}",
+            isNullOrEmpty(args.includeTasks) ? "" : "--include-tasks ${args.includeTasks}",
+            isNullOrEmpty(args.additionalConfig) ? "" : "--additional-config ${args.additionalConfig}",
+            isNullOrEmpty(args.dataStorageSize) ? "" : "--data-node-storage ${args.dataStorageSize}",
+            isNullOrEmpty(args.mlStorageSize) ? "" : "--ml-node-storage ${args.mlStorageSize}",
+            isNullOrEmpty(args.jvmSysProps) ? "" : "--jvm-sys-props ${args.jvmSysProps}",
+            isNullOrEmpty(args.telemetryParams) ? "" : "--telemetry-params '${args.telemetryParams}'"
+        ].join(' ').trim()
+    } else if(args.command == 'compare') {
+        command = [
+            './test.sh',
+            'benchmark-test',
+            args.command,
+            args.baseline,
+            args.contender,
+            isNullOrEmpty(args.results_format) ? "" : "--results-format=${args.results_format}",
+            isNullOrEmpty(args.results_numbers_align) ? "" : "--results-numbers-align=${args.results_numbers_align}",
+            isNullOrEmpty(args.results_file) ? "" : "--results-file=${args.results_file}",
+            isNullOrEmpty(args.show_in_results) ? "" : "--show-in-results=${args.show_in_results}"
+        ].join(' ').trim()
+    }
 
     sh """set +x && ${command}"""
 

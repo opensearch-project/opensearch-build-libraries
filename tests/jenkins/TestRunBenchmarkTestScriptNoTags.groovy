@@ -42,6 +42,12 @@ class TestRunBenchmarkTestScriptNoManifest extends BuildPipelineTest {
                 'cluster.indices.replication.strategy:SEGMENT',
                 'false',
                 'true',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
                 ''
         ))
         super.setUp()

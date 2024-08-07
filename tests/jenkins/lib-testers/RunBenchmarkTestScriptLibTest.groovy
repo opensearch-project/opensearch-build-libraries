@@ -40,11 +40,18 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
     private String captureNodeStat
     private String captureSegmentReplicationStat
     private String telemetryParams
+    private String baseline
+    private String contender
+    private String results_format
+    private String results_numbers_align
+    private String results_file
+    private String show_in_results
 
-    public RunBenchmarkTestScriptLibTester(command, bundleManifest, distributionUrl, distributionVersion, insecure, workload, singleNode, minDistribution, use50PercentHeap,
-                                           enableRemoteStore, managerNodeCount, dataNodeCount, dataInstanceType, userTag, workloadParams,
-                                           testProcedure, excludeTasks, includeTasks,
-                                           additionalConfig, captureNodeStat, captureSegmentReplicationStat, telemetryParams){
+    public RunBenchmarkTestScriptLibTester(command, bundleManifest, distributionUrl, distributionVersion, insecure, workload, 
+                                           singleNode, minDistribution, use50PercentHeap, enableRemoteStore, managerNodeCount, 
+                                           dataNodeCount, dataInstanceType, userTag, workloadParams, testProcedure, excludeTasks, 
+                                           includeTasks, additionalConfig, captureNodeStat, captureSegmentReplicationStat, telemetryParams,
+                                           baseline, contender, results_format, results_numbers_align, results_file, show_in_results){
         this.command = command
         this.bundleManifest = bundleManifest
         this.distributionUrl = distributionUrl
@@ -67,6 +74,12 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
         this.captureNodeStat = captureNodeStat
         this.captureSegmentReplicationStat = captureSegmentReplicationStat
         this.telemetryParams = telemetryParams
+        this.baseline = baseline
+        this.contender = contender
+        this.results_format = results_format
+        this.results_numbers_align = results_numbers_align
+        this.results_file = results_file
+        this.show_in_results = show_in_results
     }
 
 
@@ -164,5 +177,11 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
         binding.setVariable('TEST_WORKLOAD', workload)
         binding.setVariable('WEBHOOK_URL', 'test://artifact.url')
         binding.setVariable('TELEMETRY_PARAMS', telemetryParams)
+        binding.setVariable('BASELINE', baseline)
+        binding.setVariable('CONTENDER', contender)
+        binding.setVariable('RESULTS_FORMAT', results_format)
+        binding.setVariable('RESULTS_NUMBERS_ALIGN', results_numbers_align)
+        binding.setVariable('RESULTS_FILE', results_file)
+        binding.setVariable('SHOW_IN_RESULTS', show_in_results)
     }
 }

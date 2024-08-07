@@ -42,7 +42,13 @@ class TestRunBenchmarkTestScriptMultiNode extends BuildPipelineTest {
                 'cluster.indices.replication.strategy:SEGMENT',
                 'true',
                 'false',
-                '{"telemetry_setting":"value"}'
+                '{"telemetry_setting":"value"}',
+                '',
+                '',
+                '',
+                '',
+                '',
+                ''
         ))
         super.setUp()
     }
