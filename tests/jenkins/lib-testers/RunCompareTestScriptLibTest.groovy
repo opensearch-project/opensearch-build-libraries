@@ -21,7 +21,7 @@ class RunCompareTestScriptLibTester extends LibFunctionTester{
     private String suffix
     private String bundleManifest
 
-    public RunCompareTestScriptLibTester(command, baseline, contender, results_format, 
+    public RunCompareTestScriptLibTester(command, baseline, contender, results_format,
                                         results_numbers_align, results_file, show_in_results,
                                         suffix, bundleManifest){
         this.command = command
@@ -64,5 +64,19 @@ class RunCompareTestScriptLibTester extends LibFunctionTester{
         binding.setVariable('RESULTS_FILE', results_file)
         binding.setVariable('SHOW_IN_RESULTS', show_in_results)
         binding.setVariable('BUNDLE_MANIFEST', bundleManifest)
+        helper.registerAllowedMethod("withAWS", [Map, Closure], {
+            args,
+            closure ->
+                closure.delegate = delegate
+                return helper.callClosure(closure)
+        })
+        helper.registerAllowedMethod("s3Download", [Map])
+        helper.registerAllowedMethod("withAWS", [Map, Closure], {
+            args,
+            closure ->
+                closure.delegate = delegate
+                return helper.callClosure(closure)
+        })
+        helper.registerAllowedMethod("withCredentials", [Map])
     }
 }

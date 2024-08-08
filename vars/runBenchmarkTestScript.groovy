@@ -72,7 +72,9 @@ void call(Map args = [:]) {
         }
     }
 
-    def command
+    editBenchmarkConfig("${WORKSPACE}/benchmark.ini")
+
+    String command = ''
 
     if(args.command == 'execute-test') {
 
@@ -82,7 +84,6 @@ void call(Map args = [:]) {
             sleep(120)
         }
 
-        editBenchmarkConfig("${WORKSPACE}/benchmark.ini")
         String userTags = getMetadataTags(args.userTag.toString(), buildManifest)
 
         command = [
