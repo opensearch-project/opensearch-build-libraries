@@ -1,0 +1,45 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * The OpenSearch Contributors require contributions made to
+ * this file be licensed under the Apache-2.0 license or a
+ * compatible open source license.
+ */
+
+pipeline {
+    agent none
+    stages {
+        stage('compare-test') {
+            parallel {
+                stage('test-with-all-args') {
+                    steps {
+                        script {
+                            runBenchmarkTestScript(command: COMMAND,
+                            baseline: BASELINE,
+                            contender: CONTENDER,
+                            results_format: RESULTS_FORMAT,
+                            results_numbers_align: RESULTS_NUMBERS_ALIGN,
+                            results_file: RESULTS_FILE,
+                            show_in_results: SHOW_IN_RESULTS,
+                            suffix: SUFFIX,
+                            bundleManifest: BUNDLE_MANIFEST
+                            )
+                        }
+                    }
+                }
+                stage('test-with-base-args') {
+                    steps {
+                        script {
+                            runBenchmarkTestScript(command: COMMAND,
+                            baseline: BASELINE,
+                            contender: CONTENDER,
+                            suffix: SUFFIX,
+                            bundleManifest: BUNDLE_MANIFEST
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
