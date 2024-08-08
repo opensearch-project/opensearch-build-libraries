@@ -46,13 +46,7 @@ pipeline {
                             jvmSysProps: JVM_SYS_PROPS,
                             captureNodeStat: CAPTURE_NODE_STAT,
                             captureSegmentReplicationStat: CAPTURE_SEGMENT_REPLICATION_STAT,
-                            telemetryParams: TELEMETRY_PARAMS,
-                            baseline: BASELINE,
-                            contender: CONTENDER,
-                            results_format: RESULTS_FORMAT,
-                            results_numbers_align: RESULTS_NUMBERS_ALIGN,
-                            results_file: RESULTS_FILE,
-                            show_in_results: SHOW_IN_RESULTS
+                            telemetryParams: TELEMETRY_PARAMS
                             )
                         }
                     }
@@ -92,12 +86,7 @@ pipeline {
                             jvmSysProps: JVM_SYS_PROPS,
                             captureNodeStat: CAPTURE_NODE_STAT,
                             captureSegmentReplicationStat: CAPTURE_SEGMENT_REPLICATION_STAT,
-                            telemetryParams: TELEMETRY_PARAMS,
-                            baseline: BASELINE,
-                            contender: CONTENDER,
-                            results_format: RESULTS_FORMAT,
-                            results_numbers_align: RESULTS_NUMBERS_ALIGN,
-                            show_in_results: SHOW_IN_RESULTS
+                            telemetryParams: TELEMETRY_PARAMS
                             )
                         }
                     }

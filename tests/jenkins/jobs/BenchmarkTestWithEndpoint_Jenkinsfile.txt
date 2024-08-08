@@ -10,6 +10,7 @@
                   runBenchmarkTestScript.string({credentialsId=jenkins-artifact-bucket-name, variable=ARTIFACT_BUCKET_NAME})
                   runBenchmarkTestScript.withCredentials([AWS_ACCOUNT_PUBLIC, ARTIFACT_BUCKET_NAME], groovy.lang.Closure)
                      runBenchmarkTestScript.withAWS({role=opensearch-test, roleAccount=AWS_ACCOUNT_PUBLIC, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
+                        runBenchmarkTestScript.s3Download({file=config.yml, bucket=ARTIFACT_BUCKET_NAME, path=test_config/config.yml, force=true})
                         runBenchmarkTestScript.s3Download({file=benchmark.ini, bucket=ARTIFACT_BUCKET_NAME, path=test_config/benchmark.ini, force=true})
                   runBenchmarkTestScript.string({credentialsId=benchmark-metrics-datastore-user, variable=DATASTORE_USER})
                   runBenchmarkTestScript.string({credentialsId=benchmark-metrics-datastore-password, variable=DATASTORE_PASSWORD})

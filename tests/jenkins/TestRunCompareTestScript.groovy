@@ -19,35 +19,16 @@ import static org.hamcrest.MatcherAssert.assertThat
 class TestRunCompareTestScript extends BuildPipelineTest {
     @Before
     void setUp() {
-        this.registerLibTester(new RunBenchmarkTestScriptLibTester(
+        this.registerLibTester(new RunCompareTestScriptLibTester(
                 'compare',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
                 '12345',
                 '54321',
                 'csv',
                 'left',
                 '/results/final_results',
-                'true'
+                'true',
+                'compare-tester',
+                'tests/data/opensearch-1.3.0-bundle.yml'
         ))
         super.setUp()
     }
@@ -67,10 +48,10 @@ class TestRunCompareTestScript extends BuildPipelineTest {
 
         assertThat(testScriptCommands.size(), equalTo(2))
         assertThat(testScriptCommands, hasItem(
-                "set +x && ./test.sh benchmark-test compare 12345 54321"
+                "set +x && ./test.sh benchmark-test compare 12345 54321 --benchmark-config /tmp/workspace/benchmark.ini --suffix compare-tester"
         ))
         assertThat(testScriptCommands, hasItem(
-                "set +x && ./test.sh benchmark-test compare 12345 54321 --results-format=csv --results-numbers-align=left --results-file=/results/final_results --show-in-results=true"
+                "set +x && ./test.sh benchmark-test compare 12345 54321 --benchmark-config /tmp/workspace/benchmark.ini --suffix compare-tester --results-format=csv --results-numbers-align=left --results-file=/results/final_results --show-in-results=true"
         ))
     }
 
