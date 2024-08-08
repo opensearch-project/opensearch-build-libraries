@@ -48,33 +48,33 @@
  */
 void call(Map args = [:]) {
 
+    lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
+    def buildManifest = null
+
+    if (!isNullOrEmpty(args.bundleManifest as String)){
+        buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.bundleManifest))
+    }
+
+    config_name = isNullOrEmpty(args.config) ? 'config.yml' : args.config
+    benchmark_config = 'benchmark.ini'
+    withCredentials([string(credentialsId: 'jenkins-aws-account-public', variable: 'AWS_ACCOUNT_PUBLIC'),
+                    string(credentialsId: 'jenkins-artifact-bucket-name', variable: 'ARTIFACT_BUCKET_NAME')]) {
+        withAWS(role: 'opensearch-test', roleAccount: "${AWS_ACCOUNT_PUBLIC}", duration: 900, roleSessionName: 'jenkins-session') {
+            if(isNullOrEmpty(args.endpoint) && args.command == 'execute-test') {
+                s3Download(file: 'config.yml', bucket: "${ARTIFACT_BUCKET_NAME}", path: "${BENCHMARK_TEST_CONFIG_LOCATION}/${config_name}", force: true)
+            }
+            s3Download(file: 'benchmark.ini', bucket: "${ARTIFACT_BUCKET_NAME}", path: "${BENCHMARK_TEST_CONFIG_LOCATION}/${benchmark_config}", force: true)
+
+            /*Added sleep to let the file get downloaded first before write happens. Without the sleep the write is
+            happening in parallel to download resulting in file not found error. To avoid pip install conflict errors
+            when runnin with and without security run in parallel add enough gap between execution.
+            */
+        }
+    }
+
     def command
 
     if(args.command == 'execute-test') {
-
-        lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
-        def buildManifest = null
-
-        if (!isNullOrEmpty(args.bundleManifest as String)){
-            buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.bundleManifest))
-        }
-
-        config_name = isNullOrEmpty(args.config) ? 'config.yml' : args.config
-        benchmark_config = 'benchmark.ini'
-        withCredentials([string(credentialsId: 'jenkins-aws-account-public', variable: 'AWS_ACCOUNT_PUBLIC'),
-                        string(credentialsId: 'jenkins-artifact-bucket-name', variable: 'ARTIFACT_BUCKET_NAME')]) {
-            withAWS(role: 'opensearch-test', roleAccount: "${AWS_ACCOUNT_PUBLIC}", duration: 900, roleSessionName: 'jenkins-session') {
-                if(isNullOrEmpty(args.endpoint) || args.command == 'execute-test') {
-                    s3Download(file: 'config.yml', bucket: "${ARTIFACT_BUCKET_NAME}", path: "${BENCHMARK_TEST_CONFIG_LOCATION}/${config_name}", force: true)
-                }
-                s3Download(file: 'benchmark.ini', bucket: "${ARTIFACT_BUCKET_NAME}", path: "${BENCHMARK_TEST_CONFIG_LOCATION}/${benchmark_config}", force: true)
-
-                /*Added sleep to let the file get downloaded first before write happens. Without the sleep the write is
-                happening in parallel to download resulting in file not found error. To avoid pip install conflict errors
-                when runnin with and without security run in parallel add enough gap between execution.
-                */
-            }
-        }
 
         if (args.insecure.toBoolean()) {
             sleep(5)
