@@ -53,7 +53,7 @@
                      getCompareBenchmarkIds.echo(Latest test-execution-id: test-id)
                   getCompareBenchmarkIds.string({credentialsId=benchmark-metrics-datastore-user, variable=DATASTORE_USER})
                   getCompareBenchmarkIds.string({credentialsId=benchmark-metrics-datastore-password, variable=DATASTORE_PASSWORD})
-                  getCompareBenchmarkIds.string({credentialsId=benchmark-metrics-datastore-endpoint, variable=DATASTORE_ENDPOINT})
+                  getCompareBenchmarkIds.string({credentialsId=benchmark-metrics-datastore-nlb-endpoint, variable=DATASTORE_ENDPOINT})
                   getCompareBenchmarkIds.withCredentials([DATASTORE_USER, DATASTORE_PASSWORD, DATASTORE_ENDPOINT], groovy.lang.Closure)
                      getCompareBenchmarkIds.sh({script=
               curl -X POST "https://DATASTORE_ENDPOINT/benchmark-results-*/_search" -ku DATASTORE_USER:DATASTORE_PASSWORD -H 'Content-Type: application/json' -d '{
