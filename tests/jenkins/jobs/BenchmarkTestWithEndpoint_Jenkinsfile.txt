@@ -5,7 +5,7 @@
             BenchmarkTestWithEndpoint_Jenkinsfile.script(groovy.lang.Closure)
                BenchmarkTestWithEndpoint_Jenkinsfile.runBenchmarkTestScript({command=execute-test, endpoint=opensearch-ABCxdfdfhyfk.com, insecure=false, workload=nyc_taxis, userTag=true,security-enabled:true, workloadParams=, testProcedure=, excludeTasks=, includeTasks=, additionalConfig=, telemetryParams=})
                   runBenchmarkTestScript.legacySCM(groovy.lang.Closure)
-                  runBenchmarkTestScript.library({identifier=jenkins@6.8.1, retriever=null})
+                  runBenchmarkTestScript.library({identifier=jenkins@6.8.2, retriever=null})
                   runBenchmarkTestScript.string({credentialsId=jenkins-aws-account-public, variable=AWS_ACCOUNT_PUBLIC})
                   runBenchmarkTestScript.string({credentialsId=jenkins-artifact-bucket-name, variable=ARTIFACT_BUCKET_NAME})
                   runBenchmarkTestScript.withCredentials([AWS_ACCOUNT_PUBLIC, ARTIFACT_BUCKET_NAME], groovy.lang.Closure)
