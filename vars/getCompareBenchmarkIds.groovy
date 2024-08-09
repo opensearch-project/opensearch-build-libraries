@@ -84,7 +84,7 @@ String getBaselineTestExecutionId(baselineClusterConfig, distributionVersion, wo
 String getContenderTestExecutionId(pullRequestNumber) {
     withCredentials([string(credentialsId: 'benchmark-metrics-datastore-user', variable: 'DATASTORE_USER'),
                      string(credentialsId: 'benchmark-metrics-datastore-password', variable: 'DATASTORE_PASSWORD'),
-                     string(credentialsId: 'benchmark-metrics-datastore-endpoint', variable: 'DATASTORE_ENDPOINT')]) {
+                     string(credentialsId: 'benchmark-metrics-datastore-nlb-endpoint', variable: 'DATASTORE_ENDPOINT')]) {
         def curlCommand = """
               curl -X POST "https://${DATASTORE_ENDPOINT}/benchmark-results-*/_search" -ku ${DATASTORE_USER}:${DATASTORE_PASSWORD} -H 'Content-Type: application/json' -d '{
               "size": 1,
