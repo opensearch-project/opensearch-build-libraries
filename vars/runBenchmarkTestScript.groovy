@@ -47,7 +47,8 @@
  * @param args.show_in_results <optional> - Determines whether or not to include the comparison in the results file.
  */
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@6.8.1', retriever: legacySCM(scm))
+
+    lib = library(identifier: 'jenkins@6.8.2', retriever: legacySCM(scm))
     def buildManifest = null
 
     if (!isNullOrEmpty(args.bundleManifest as String)){
