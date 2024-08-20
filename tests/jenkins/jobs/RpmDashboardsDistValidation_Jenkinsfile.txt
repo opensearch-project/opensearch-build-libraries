@@ -5,7 +5,7 @@
             RpmDashboardsDistValidation_Jenkinsfile.script(groovy.lang.Closure)
                RpmDashboardsDistValidation_Jenkinsfile.rpmDashboardsDistValidation({bundleManifest=tests/data/opensearch-dashboards-1.3.0-x64-rpm.yml, rpmDistribution=/tmp/workspace/opensearch-dashboards-1.3.0-linux-x64.rpm})
                   rpmDashboardsDistValidation.legacySCM(groovy.lang.Closure)
-                  rpmDashboardsDistValidation.library({identifier=jenkins@6.8.2, retriever=null})
+                  rpmDashboardsDistValidation.library({identifier=jenkins@6.8.3, retriever=null})
                   rpmDashboardsDistValidation.readYaml({file=tests/data/opensearch-dashboards-1.3.0-x64-rpm.yml})
                   BundleManifest.asBoolean()
                   BundleManifest.getNames()
