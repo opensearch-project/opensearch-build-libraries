@@ -14,6 +14,7 @@
  @param args.dashboardsBuildManifest <optional> - The path of the build manifest of OpenSearch Dashboards
  @param args.testRunID <required> - Test run id of the test workflow being reported.
  @param args.testType <required> - Type of the test workflow being reported.
+ @param args.rcNumber <Optional> - The RC Number of the distribution in test workflow being reported.
  @param args.componentName <Optional> - Components that workflow runs on.
  */
 
@@ -24,6 +25,7 @@ def call(Map args = [:]) {
 
     def testRunID = args.testRunID;
     def testType = args.testType;
+    def rcNumber = args.rcNumber
 
     def testManifest = lib.jenkins.TestManifest.new(readYaml(file: args.testManifest))
     def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.buildManifest))
@@ -50,6 +52,7 @@ def call(Map args = [:]) {
                     "--test-run-id ${testRunID}",
                     "--test-type ${testType}",
                     "--base-path ${basePath}",
+                    isNullOrEmpty(rcNumber) ? "" : "--release-candidate ${rcNumber}",
                     isNullOrEmpty(component) ? "" : "--component ${component}",
             ].join(' ')
 
