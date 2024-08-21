@@ -26,9 +26,8 @@ void call(Map args = [:]) {
     def isNullOrEmpty = { str -> 
         str == null || (str instanceof String && str.trim().isEmpty())
     }
-    if (isNullOrEmpty(args.version) || isNullOrEmpty(args.distributionBuildNumber) || isNullOrEmpty(args.distributionBuildUrl) || 
-        isNullOrEmpty(args.rcNumber) || isNullOrEmpty(args.rc) || isNullOrEmpty(args.platform) || 
-        isNullOrEmpty(args.architecture) || isNullOrEmpty(args.distribution) || isNullOrEmpty(args.testReportManifestYml) || isNullOrEmpty(args.jobName)) {
+    // Check if any args is equals to null or it is a test run
+    if (isNullOrEmpty(args.distributionBuildUrl) || isNullOrEmpty(args.testReportManifestYml) || isNullOrEmpty(args.jobName) || args.jobName.equals('dummy_job')) {
         return null
     }
 
@@ -40,7 +39,6 @@ void call(Map args = [:]) {
     def formattedDate = new SimpleDateFormat("MM-yyyy").format(currentDate)
     def testReportManifestYml = args.testReportManifestYml
     def jobName = args.jobName
-    def testReportManifestYmlUrl = "https://ci.opensearch.org/ci/dbc/${jobName}/${version}/${distributionBuildNumber}/${platform}/${architecture}/${distribution}/test-results/${integTestBuildNumber}/integ-test/test-report.yml"
     def manifestFile = readFile testReportManifestYml
     def manifest = readYaml text: manifestFile
     def indexName = "opensearch-integration-test-results-${formattedDate}"
@@ -52,6 +50,7 @@ void call(Map args = [:]) {
     def platform = manifest.platform
     def architecture = manifest.architecture
     def distribution = manifest.distribution
+    def testReportManifestYmlUrl = "https://ci.opensearch.org/ci/dbc/${jobName}/${version}/${distributionBuildNumber}/${platform}/${architecture}/${distribution}/test-results/${integTestBuildNumber}/integ-test/test-report.yml"
 
     manifest.components.each { component ->
         def componentName = component.name
