@@ -19,7 +19,6 @@ pipeline {
                 script {
                     publishToNpm(
                         publicationType: 'github',
-                        tag: 'beta'
                     )
                 }
             }

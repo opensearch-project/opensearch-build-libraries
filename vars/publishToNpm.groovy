@@ -14,25 +14,25 @@
 @ param args.tag <optional> - Tag to publish the package with. Defaults to latest. See https://docs.npmjs.com/cli/v9/commands/npm-publish#tag for more details.
 */
 void call(Map args = [:]) {
-    parameterCheck(args.publicationType, args.artifactPath, args.tag)
+    parameterCheck(args.publicationType, args.artifactPath)
     artifactPath = args.artifactPath ?: ''
-    tag = args.tag ?: 'latest'
     if (args.publicationType == 'github') {
         checkout([$class: 'GitSCM', branches: [[name: "${env.tag}" ]], userRemoteConfigs: [[url: "${env.repository}" ]]])
     }
+    def npmTag = getNpmTag("${env.tag}")
 
     withCredentials([string(credentialsId: 'jenkins-opensearch-publish-to-npm-token', variable: 'NPM_TOKEN')]) {
         sh """
             npm set registry "https://registry.npmjs.org"
             npm set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
-            npm publish ${artifactPath} --dry-run && npm publish ${artifactPath} --access public --tag ${tag}
+            npm publish ${artifactPath} --dry-run && npm publish ${artifactPath} --access public --tag ${npmTag}
         """
     }
     println('Cleaning up')
     sh """rm -rf ${WORKSPACE}/.nvmrc && rm -rf ~/.nvmrc"""
 }
 
-void parameterCheck(String publicationType, String artifactPath, String tag) {
+void parameterCheck(String publicationType, String artifactPath) {
     allowedPublicationType = ['github', 'artifact']
     if (!allowedPublicationType.contains(publicationType)) {
         currentBuild.result = 'ABORTED'
@@ -46,7 +46,12 @@ void parameterCheck(String publicationType, String artifactPath, String tag) {
         currentBuild.result = 'ABORTED'
         error('publicationType: github does take any argument with it.')
     }
-    if (!tag) {
-        println('Tag argument not provided. Default tag of latest will be used')
-    }
+}
+
+String getNpmTag(String githubTag) {
+    println(githubTag)
+    def matcher = githubTag =~ /-(\w+)\./
+    def npmTag = matcher ? matcher[0][1] : 'latest'
+    println(npmTag)
+    return npmTag
 }
