@@ -18,7 +18,8 @@ pipeline {
             steps {
                 script {
                     publishToNpm(
-                        publicationType: 'github'
+                        publicationType: 'github',
+                        tag: 'beta'
                     )
                 }
             }

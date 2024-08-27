@@ -3,13 +3,13 @@
          PublishToNpm_Jenkinsfile.echo(Executing on agent [label:none])
          PublishToNpm_Jenkinsfile.stage(publishToNpm, groovy.lang.Closure)
             PublishToNpm_Jenkinsfile.script(groovy.lang.Closure)
-               PublishToNpm_Jenkinsfile.publishToNpm({publicationType=github})
+               PublishToNpm_Jenkinsfile.publishToNpm({publicationType=github, tag=beta})
                   publishToNpm.checkout({$class=GitSCM, branches=[{name=2.0.0}], userRemoteConfigs=[{url=https://github.com/opensearch-project/opensearch-ci}]})
                   publishToNpm.string({credentialsId=jenkins-opensearch-publish-to-npm-token, variable=NPM_TOKEN})
                   publishToNpm.withCredentials([NPM_TOKEN], groovy.lang.Closure)
                      publishToNpm.sh(
             npm set registry "https://registry.npmjs.org"
             npm set //registry.npmjs.org/:_authToken NPM_TOKEN
-            npm publish  --dry-run && npm publish  --access public
+            npm publish  --dry-run && npm publish  --access public --tag beta
         )
                   publishToNpm.sh(rm -rf /tmp/workspace/.nvmrc && rm -rf ~/.nvmrc)

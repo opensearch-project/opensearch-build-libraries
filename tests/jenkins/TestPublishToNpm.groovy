@@ -29,7 +29,7 @@ class TestPublishToNpm extends BuildPipelineTest {
         this.registerLibTester(new PublishToNpmLibTester('artifact', '/tmp/workspace/example.tgz'))
         super.testPipeline('tests/jenkins/jobs/PublishToNpmUsingTarball_JenkinsFile')
         assertThat(getShellCommands('npm'), hasItem(
-            '\n            npm set registry \"https://registry.npmjs.org\"\n            npm set //registry.npmjs.org/:_authToken NPM_TOKEN\n            npm publish /tmp/workspace/example.tgz --dry-run && npm publish /tmp/workspace/example.tgz --access public\n        '
+            '\n            npm set registry \"https://registry.npmjs.org\"\n            npm set //registry.npmjs.org/:_authToken NPM_TOKEN\n            npm publish /tmp/workspace/example.tgz --dry-run && npm publish /tmp/workspace/example.tgz --access public --tag latest\n        '
         ))
         assertThat(getShellCommands('nvmrc'), hasItem('rm -rf /tmp/workspace/.nvmrc && rm -rf ~/.nvmrc'))
     }
@@ -39,7 +39,7 @@ class TestPublishToNpm extends BuildPipelineTest {
         this.registerLibTester(new PublishToNpmLibTester('github'))
         super.testPipeline('tests/jenkins/jobs/PublishToNpm_Jenkinsfile')
         assertThat(getShellCommands('npm'), hasItem(
-            '\n            npm set registry \"https://registry.npmjs.org\"\n            npm set //registry.npmjs.org/:_authToken NPM_TOKEN\n            npm publish  --dry-run && npm publish  --access public\n        '
+            '\n            npm set registry \"https://registry.npmjs.org\"\n            npm set //registry.npmjs.org/:_authToken NPM_TOKEN\n            npm publish  --dry-run && npm publish  --access public --tag beta\n        '
         ))
         assertThat(getShellCommands('nvmrc'), hasItem('rm -rf /tmp/workspace/.nvmrc && rm -rf ~/.nvmrc'))
     }

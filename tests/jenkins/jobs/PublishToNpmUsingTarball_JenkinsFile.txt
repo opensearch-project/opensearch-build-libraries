@@ -9,6 +9,6 @@
                      publishToNpm.sh(
             npm set registry "https://registry.npmjs.org"
             npm set //registry.npmjs.org/:_authToken NPM_TOKEN
-            npm publish /tmp/workspace/example.tgz --dry-run && npm publish /tmp/workspace/example.tgz --access public
+            npm publish /tmp/workspace/example.tgz --dry-run && npm publish /tmp/workspace/example.tgz --access public --tag latest
         )
                   publishToNpm.sh(rm -rf /tmp/workspace/.nvmrc && rm -rf ~/.nvmrc)
