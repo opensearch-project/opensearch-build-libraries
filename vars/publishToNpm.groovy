@@ -11,7 +11,6 @@
 @param Map args = [:] args A map of the following parameters
 @param args.publicationType <required> - github (will clone the repository at triggered tag and url and publish), artifact (Needs artifactPath arg to the URL or local artifact that needs to be published)
 @param args.artifactPath <required with publicationType: artifact > - URL or local Path to the artifact that needs to be publish to NPM.See supported artifacts https://docs.npmjs.com/cli/v9/commands/npm-publish?v=true#description for more details.
-@ param args.tag <optional> - Tag to publish the package with. Defaults to latest. See https://docs.npmjs.com/cli/v9/commands/npm-publish#tag for more details.
 */
 void call(Map args = [:]) {
     parameterCheck(args.publicationType, args.artifactPath)
@@ -49,9 +48,8 @@ void parameterCheck(String publicationType, String artifactPath) {
 }
 
 String getNpmTag(String githubTag) {
-    println(githubTag)
     def matcher = githubTag =~ /-(\w+)\./
     def npmTag = matcher ? matcher[0][1] : 'latest'
-    println(npmTag)
+    println("Tagging the release as '${npmTag}'")
     return npmTag
 }
