@@ -18,12 +18,13 @@ void call(Map args = [:]) {
     if (args.publicationType == 'github') {
         checkout([$class: 'GitSCM', branches: [[name: "${env.tag}" ]], userRemoteConfigs: [[url: "${env.repository}" ]]])
     }
+    def npmTag = getNpmTag("${env.tag}")
 
     withCredentials([string(credentialsId: 'jenkins-opensearch-publish-to-npm-token', variable: 'NPM_TOKEN')]) {
         sh """
             npm set registry "https://registry.npmjs.org"
             npm set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
-            npm publish ${artifactPath} --dry-run && npm publish ${artifactPath} --access public
+            npm publish ${artifactPath} --dry-run && npm publish ${artifactPath} --access public --tag ${npmTag}
         """
     }
     println('Cleaning up')
@@ -44,4 +45,11 @@ void parameterCheck(String publicationType, String artifactPath) {
         currentBuild.result = 'ABORTED'
         error('publicationType: github does take any argument with it.')
     }
+}
+
+String getNpmTag(String githubTag) {
+    def matcher = githubTag =~ /-(\w+)\./
+    def npmTag = matcher ? matcher[0][1] : 'latest'
+    println("Tagging the release as '${npmTag}'")
+    return npmTag
 }
