@@ -9,7 +9,7 @@
 
 pipeline {
     environment {
-        tag = '2.0.0'
+        tag = '2.0.0-beta.1'
         repository = 'https://github.com/opensearch-project/opensearch-ci'
     }
     agent none
