@@ -49,7 +49,7 @@ void call(Map args = [:]) {
             }
             catch (Exception e) {
                 if (build.result == Result.ABORTED) {
-                    println "Build #${build.number} was already aborted, possibly by someone else"
+                    println "Build #${build.number} is already aborted!"
                 }
                 else {
                     println "Failed to abort build #${build.number}: ${e.message}"
