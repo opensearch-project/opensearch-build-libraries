@@ -76,8 +76,9 @@ void call(Map args = [:]) {
             }
             else {
                 println("Creating new issue")
+                def untriagedLabel = label != "autocut" ? "--label \"untriaged\"" : ""
                 sh(
-                    script: "gh issue create --title \"${args.issueTitle}\" ${bodyOption} --label \"${label}\" --label \"untriaged\" --repo ${args.repoUrl}",
+                    script: "gh issue create --title \"${args.issueTitle}\" ${bodyOption} --label \"${label}\" ${untriagedLabel} --repo ${args.repoUrl}",
                     returnStdout: true
                 )
             }
