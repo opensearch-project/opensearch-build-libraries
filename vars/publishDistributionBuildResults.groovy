@@ -41,13 +41,13 @@ void call(Map args = [:]) {
     List<String> passedComponents = extractComponents(passMessages, /(?<=\bSuccessfully built\s).*/, 0)
     inputManifest.components.each { component ->
         if (failedComponents.contains(component.name)) {
-            def jsonData = generateAndAppendJson(indexName, component.name, component.repository, component.ref,
+            def jsonData = generateAndAppendJson(component.name, component.repository.split('/')[-1].replace('.git', ''), component.repository.substring(component.repository.indexOf("github.com")).replace(".git", ""), component.ref,
                                 version, distributionBuildNumber, distributionBuildUrl,
                                 buildStartTime, rc, rcNumber, componentCategory, "failed"
                                 )
             finalJsonDoc += "{\"index\": {\"_index\": \"${indexName}\"}}\n${jsonData}\n"
         } else if (passedComponents.contains(component.name)) {
-            def jsonData = generateAndAppendJson(indexName, component.name, component.repository, component.ref,
+            def jsonData = generateAndAppendJson(component.name, component.repository.split('/')[-1].replace('.git', ''), component.repository.substring(component.repository.indexOf("github.com")).replace(".git", ""), component.ref,
                                 version, distributionBuildNumber, distributionBuildUrl,
                                 buildStartTime, rc, rcNumber, componentCategory, "passed"
                                 )
@@ -80,6 +80,9 @@ void indexFailedTestData(indexName, testRecordsFile) {
                                 "type": "keyword"
                             },
                             "component_repo": {
+                                "type": "keyword"
+                            },
+                           "component_repo_url": {
                                 "type": "keyword"
                             },
                             "component_ref": {
@@ -137,10 +140,11 @@ void indexFailedTestData(indexName, testRecordsFile) {
     }
 }
 
-def generateJson(component, componentRepo, componentRef, version, distributionBuildNumber, distributionBuildUrl, buildStartTime, rc, rcNumber, componentCategory, componentResult) {
+def generateJson(component, componentRepo, componentRepoUrl, componentRef, version, distributionBuildNumber, distributionBuildUrl, buildStartTime, rc, rcNumber, componentCategory, componentResult) {
     def json = [
         component: component,
         component_repo: componentRepo,
+        component_repo_url: componentRepoUrl,
         component_ref: componentRef,
         version: version,
         distribution_build_number: distributionBuildNumber,
@@ -154,9 +158,9 @@ def generateJson(component, componentRepo, componentRef, version, distributionBu
     return JsonOutput.toJson(json)
 }
 
-def generateAndAppendJson(indexName, component, componentRepo, componentRef, version, distributionBuildNumber, distributionBuildUrl, buildStartTime, rc, rcNumber, componentCategory, status) {
+def generateAndAppendJson(component, componentRepo, componentRepoUrl, componentRef, version, distributionBuildNumber, distributionBuildUrl, buildStartTime, rc, rcNumber, componentCategory, status) {
     def jsonData = generateJson(
-        component, componentRepo, componentRef, version, 
+        component, componentRepo, componentRepoUrl, componentRef, version, 
         distributionBuildNumber, distributionBuildUrl, buildStartTime, 
         rc, rcNumber, componentCategory, status
     )

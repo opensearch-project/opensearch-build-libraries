@@ -71,6 +71,12 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
                     "component": {
                         "type": "keyword"
                     },
+                    "component_repo": {
+                        "type": "keyword"
+                    },
+                    "component_repo_url": {
+                        "type": "keyword"
+                    },
                     "version": {
                         "type": "keyword"
                     },
@@ -123,7 +129,13 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
                     "with_security_cluster_stdout": {
                         "type": "keyword"
                     },
+                    "with_security_test_stdout": {
+                        "type": "keyword"
+                    },
                     "with_security_cluster_stderr": {
+                        "type": "keyword"
+                    },
+                    "with_security_test_stderr": {
                         "type": "keyword"
                     },
                     "without_security": {
@@ -135,7 +147,13 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
                     "without_security_cluster_stdout": {
                         "type": "keyword"
                     },
+                    "without_security_test_stdout": {
+                        "type": "keyword"
+                    },
                     "without_security_cluster_stderr": {
+                        "type": "keyword"
+                    },
+                    "without_security_test_stderr": {
                         "type": "keyword"
                     }
                 }
@@ -169,16 +187,18 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
     void testGenerateJson() {
         def script = loadScript('vars/publishIntegTestResults.groovy')
         def result = script.generateJson(
-            'component1', '1.0', 123,
+            'component1', 'componentRepo', 'https://componentRepoUrl', '1.0', 123,
             'http://example.com/build/123', 456, 'http://example.com/distribution/456',
             System.currentTimeMillis(), 'rc1', 1, 'linux', 'x64', 'tar', 'test-category',
-            'failed', 'http://example.com/test-report.yml', 'pass', 'yml1', ['stdout1'], ['stderr1'],
-            'fail', 'yml2', ['stdout2'], ['stderr2']
+            'failed', 'http://example.com/test-report.yml', 'pass', 'yml1', ['cluster_stdout1'], ['cluster_stderr1'], ['test_stdout1'], ['test_stderr1'],
+            'fail', 'yml2', ['cluster_stdout2'], ['cluster_stderr2'], ['test_stdout2'], ['test_stderr2']
         )
 
         def parsedResult = new JsonSlurper().parseText(result)
         def expectedJson = [
             component: 'component1',
+            component_repo: 'componentRepo',
+            component_repo_url: 'https://componentRepoUrl',
             version: '1.0',
             integ_test_build_number: 123,
             integ_test_build_url: 'http://example.com/build/123',
@@ -195,12 +215,16 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
             test_report_manifest_yml: 'http://example.com/test-report.yml',
             with_security: 'pass',
             with_security_build_yml: 'yml1',
-            with_security_cluster_stdout: ['stdout1'],
-            with_security_cluster_stderr: ['stderr1'],
+            with_security_cluster_stdout: ['cluster_stdout1'],
+            with_security_cluster_stderr: ['cluster_stderr1'],
+            with_security_test_stdout: ['test_stdout1'],
+            with_security_test_stderr: ['test_stderr1'],
             without_security: 'fail',
             without_security_build_yml: 'yml2',
-            without_security_cluster_stdout: ['stdout2'],
-            without_security_cluster_stderr: ['stderr2']
+            without_security_cluster_stdout: ['cluster_stdout2'],
+            without_security_cluster_stderr: ['cluster_stderr2'],
+            without_security_test_stdout: ['test_stdout2'],
+            without_security_test_stderr: ['test_stderr2']
         ]
 
         // Remove the dynamic field for comparison
