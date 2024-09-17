@@ -54,25 +54,32 @@ void call(Map args = [:]) {
 
     manifest.components.each { component ->
         def componentName = component.name
+        def componentRepo = component.repository.split('/')[-1].replace('.git', '')
+        def componentRepoUrl = component.repository.substring(component.repository.indexOf("github.com")).replace(".git", "")
         def componentCategory = manifest.name
         def withSecurity = component.configs.find { it.name == 'with-security' }?.status?.toLowerCase() ?: 'unknown'
         def withoutSecurity = component.configs.find { it.name == 'without-security' }?.status?.toLowerCase() ?: 'unknown'
         def componentResult = (withSecurity == 'fail' || withoutSecurity == 'fail' || withSecurity == 'Not Available' || withoutSecurity == 'Not Available') ? 'failed' : 'passed'
         def withSecurityYml = component.configs.find { it.name == 'with-security' }?.yml ?: ''
-        def withSecurityStdout = component.configs.find { it.name == 'with-security' }?.cluster_stdout ?: []
-        def withSecurityStderr = component.configs.find { it.name == 'with-security' }?.cluster_stderr ?: []
+        def withSecurityClusterStdout = component.configs.find { it.name == 'with-security' }?.cluster_stdout ?: []
+        def withSecurityClusterStderr = component.configs.find { it.name == 'with-security' }?.cluster_stderr ?: []
+        def withSecurityTestStdout = component.configs.find { it.name == 'with-security' }?.test_stdout ?: ''
+        def withSecurityTestStderr = component.configs.find { it.name == 'with-security' }?.test_stderr ?: ''
         def withoutSecurityYml = component.configs.find { it.name == 'without-security' }?.yml ?: ''
-        def withoutSecurityStdout = component.configs.find { it.name == 'without-security' }?.cluster_stdout ?: []
-        def withoutSecurityStderr = component.configs.find { it.name == 'without-security' }?.cluster_stderr ?: []
+        def withoutSecurityClusterStdout = component.configs.find { it.name == 'without-security' }?.cluster_stdout ?: []
+        def withoutSecurityClusterStderr = component.configs.find { it.name == 'without-security' }?.cluster_stderr ?: []
+        def withoutSecurityTestStdout = component.configs.find { it.name == 'without-security' }?.test_stdout ?: ''
+        def withoutSecurityTestStderr = component.configs.find { it.name == 'without-security' }?.test_stderr ?: ''
         def jsonContent = generateJson(
-                                        componentName, version, integTestBuildNumber, 
+                                        componentName, componentRepo, componentRepoUrl, version, integTestBuildNumber, 
                                         integTestBuildUrl, distributionBuildNumber, distributionBuildUrl, 
                                         buildStartTime, rc, rcNumber, 
                                         platform, architecture, distribution, 
                                         componentCategory, componentResult, testReportManifestYmlUrl, 
-                                        withSecurity, withSecurityYml, withSecurityStdout, 
-                                        withSecurityStderr, withoutSecurity, withoutSecurityYml, 
-                                        withoutSecurityStdout, withoutSecurityStderr
+                                        withSecurity, withSecurityYml, withSecurityClusterStdout, 
+                                        withSecurityClusterStderr, withSecurityTestStdout, withSecurityTestStderr, 
+                                        withoutSecurity, withoutSecurityYml, withoutSecurityClusterStdout, withoutSecurityClusterStderr,
+                                        withoutSecurityTestStdout, withoutSecurityTestStderr
                                     )
         finalJsonDoc += "{\"index\": {\"_index\": \"${indexName}\"}}\n" + "${jsonContent}\n"
     }
@@ -100,6 +107,12 @@ void indexFailedTestData(indexName, testRecordsFile) {
                     "mappings": {
                         "properties": {
                             "component": {
+                                "type": "keyword"
+                            },
+                            "component_repo": {
+                                "type": "keyword"
+                            },
+                            "component_repo_url": {
                                 "type": "keyword"
                             },
                             "version": {
@@ -154,7 +167,13 @@ void indexFailedTestData(indexName, testRecordsFile) {
                             "with_security_cluster_stdout": {
                                 "type": "keyword"
                             },
+                            "with_security_test_stdout": {
+                                "type": "keyword"
+                            },
                             "with_security_cluster_stderr": {
+                                "type": "keyword"
+                            },
+                            "with_security_test_stderr": {
                                 "type": "keyword"
                             },
                             "without_security": {
@@ -166,7 +185,13 @@ void indexFailedTestData(indexName, testRecordsFile) {
                             "without_security_cluster_stdout": {
                                 "type": "keyword"
                             },
+                            "without_security_test_stdout": {
+                                "type": "keyword"
+                            },
                             "without_security_cluster_stderr": {
+                                "type": "keyword"
+                            },
+                            "without_security_test_stderr": {
                                 "type": "keyword"
                             }
                         }
@@ -196,9 +221,17 @@ void indexFailedTestData(indexName, testRecordsFile) {
     }
 }
 
-def generateJson(component, version, integTestBuildNumber, integTestBuildUrl, distributionBuildNumber, distributionBuildUrl, buildStartTime, rc, rcNumber, platform, architecture, distribution, componentCategory, componentResult, testReportManifestYmlUrl, withSecurity, withSecurityYml, withSecurityStdout, withSecurityStderr, withoutSecurity, withoutSecurityYml, withoutSecurityStdout, withoutSecurityStderr) {
+def generateJson(componentName, componentRepo, componentRepoUrl, version, 
+                integTestBuildNumber, integTestBuildUrl, distributionBuildNumber, distributionBuildUrl, 
+                buildStartTime, rc, rcNumber, platform, architecture, distribution, componentCategory, 
+                componentResult, testReportManifestYmlUrl, withSecurity, withSecurityYml, withSecurityClusterStdout, 
+                withSecurityClusterStderr, withSecurityTestStdout,withSecurityTestStderr, withoutSecurity, 
+                withoutSecurityYml, withoutSecurityClusterStdout, withoutSecurityClusterStderr, withoutSecurityTestStdout, 
+                withoutSecurityTestStderr) {
     def json = [
-        component: component,
+        component: componentName,
+        component_repo: componentRepo,
+        component_repo_url: componentRepoUrl,
         version: version,
         integ_test_build_number: integTestBuildNumber,
         integ_test_build_url: integTestBuildUrl,
@@ -215,13 +248,16 @@ def generateJson(component, version, integTestBuildNumber, integTestBuildUrl, di
         test_report_manifest_yml: testReportManifestYmlUrl,
         with_security: withSecurity,
         with_security_build_yml: withSecurityYml,
-        with_security_cluster_stdout: withSecurityStdout,
-        with_security_cluster_stderr: withSecurityStderr,
+        with_security_cluster_stdout: withSecurityClusterStdout,
+        with_security_cluster_stderr: withSecurityClusterStderr,
+        with_security_test_stdout: withSecurityTestStdout,
+        with_security_test_stderr: withSecurityTestStderr,
         without_security: withoutSecurity,
         without_security_build_yml: withoutSecurityYml,
-        without_security_cluster_stdout: withoutSecurityStdout,
-        without_security_cluster_stderr: withoutSecurityStderr
+        without_security_cluster_stdout: withoutSecurityClusterStdout,
+        without_security_cluster_stderr: withoutSecurityClusterStderr,
+        without_security_test_stdout: withoutSecurityTestStdout,
+        without_security_test_stderr: withoutSecurityTestStderr
     ]
     return JsonOutput.toJson(json)
 }
-
