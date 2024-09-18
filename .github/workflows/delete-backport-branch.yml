@@ -8,14 +8,6 @@ on:
 jobs:
   delete-branch:
     runs-on: ubuntu-latest
-<<<<<<< Updated upstream
-    if: startsWith(github.event.pull_request.head.ref,'backport/')
-    steps:
-      - name: Delete merged branch
-        uses: SvanBoxel/delete-merged-branch@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-=======
     permissions:
       contents: write
     if: startsWith(github.event.pull_request.head.ref,'backport/')
@@ -29,4 +21,3 @@ jobs:
               repo: context.repo.repo,
               ref: `heads/${context.payload.pull_request.head.ref}`,
             })
->>>>>>> Stashed changes
