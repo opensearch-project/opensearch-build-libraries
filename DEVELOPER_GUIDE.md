@@ -22,6 +22,11 @@ This project contains [Jenkins pipelines](jenkins) and [Jenkins shared libraries
 
 Use Java 11 for Jenkins jobs CI. This means you must have a JDK 11 installed with the environment variable `JAVA_HOME` referencing the path to Java home for your JDK installation, e.g. `JAVA_HOME=/usr/lib/jvm/jdk-11`. Download Java 11 from [here](https://adoptium.net/releases.html?variant=openjdk11).
 
+#### NVM and Node
+Use node to run Groovy and Jenskinsfiles Lint. Install [nvm](https://github.com/nvm-sh/nvm/blob/master/README.md) to use the Node version defined in [OpenSearch-Dashboards](https://github.com/opensearch-project/OpenSearch-Dashboards) repository `.nvmrc` file as it is required.
+
+Use the official [nvm guide](https://github.com/nvm-sh/nvm#installing-and-updating) to install nvm and corresponding Node version.
+
 ### Run Tests
 
 This project uses [JenkinsPipelineUnit](https://github.com/jenkinsci/JenkinsPipelineUnit) to unit test Jenkins pipelines and shared libraries. See [tests/jenkins](tests/jenkins).
@@ -62,3 +67,21 @@ Each jenkins library should have a test case associated with it. Eg: [TestSignAr
 - Jenkins' library test should extend [BuildPipelineTest.groovy](tests/jenkins/BuildPipelineTest.groovy)
 - Create a dummy job such as [Hello_Jenkinsfile](tests/jenkins/jobs/Hello_Jenkinsfile) to call and test the function
   and output [Hello_Jenkinsfile.txt](tests/jenkins/jobs/Hello_Jenkinsfile.txt)
+
+### Code Linting
+
+This project uses a [pre-commit hook](https://pre-commit.com/) for linting Groovy and Jenkinsfiles code.
+
+Install this pre-commit hook using pip.
+
+```
+pip install pre-commit
+pre-commit install
+```
+
+To run the linter outside of the pre-commit hook
+:
+```
+npm-groovy-lint <files or directories>
+```
+
