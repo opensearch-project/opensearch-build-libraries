@@ -14,7 +14,7 @@ pipeline {
             steps {
                 script {
                     gradleCheckFlakyTestGitHubIssue(
-                            repoUrl: "https://github.com/prudhvigodithi/OpenSearch",
+                            repoUrl: "https://github.com/opensearch-project/OpenSearch",
                             issueTitle: "[AUTOCUT] Gradle Check Flaky Test Report for SampleTest",
                             issueBodyFile: "SampleTest.md",
                             label: 'autocut,>test-failure,flaky-test',

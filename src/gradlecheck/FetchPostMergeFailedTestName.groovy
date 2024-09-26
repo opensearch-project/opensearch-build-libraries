@@ -10,20 +10,22 @@
 package gradlecheck
 
 import groovy.json.JsonOutput
-import gradlecheck.OpenSearchMetricsQuery
+import utils.OpenSearchMetricsQuery
 
 class FetchPostMergeFailedTestName  {
     String metricsUrl
     String awsAccessKey
     String awsSecretKey
     String awsSessionToken
+    String indexName
     def script
 
-    FetchPostMergeFailedTestName(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, def script) {
+    FetchPostMergeFailedTestName(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, String indexName, def script) {
         this.metricsUrl = metricsUrl
         this.awsAccessKey = awsAccessKey
         this.awsSecretKey = awsSecretKey
         this.awsSessionToken = awsSessionToken
+        this.indexName = indexName
         this.script = script
     }
 
@@ -125,6 +127,6 @@ class FetchPostMergeFailedTestName  {
 
     }
     def getPostMergeFailedTestName(testName, gitReference) {
-        return new OpenSearchMetricsQuery(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, script).fetchMetrics(getQuery(testName, gitReference))
+        return new OpenSearchMetricsQuery(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, script).fetchMetrics(getQuery(testName, gitReference))
     }
 }

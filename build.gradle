@@ -45,13 +45,13 @@ configurations.all {
 sourceSets {
     main {
         groovy {
-            srcDirs = ['src/jenkins', 'src/gradlecheck']
+            srcDirs = ['src/jenkins', 'src/gradlecheck', 'src/utils']
         }
     }
 
     test {
         groovy {
-            srcDirs = ['tests/jenkins', 'tests/gradlecheck']
+            srcDirs = ['tests/jenkins', 'tests/gradlecheck', 'tests/utils']
         }
     }
 
@@ -114,7 +114,8 @@ jacocoTestReport {
                 includes: [
                         '**/*_Jenkinsfile.*',
                         '**/jenkins/*',
-                        '**/gradlecheck/*'
+                        '**/gradlecheck/*',
+                        '**/utils/*'
                 ],
                 excludes: [
                         '**/*\$_get_closure*'

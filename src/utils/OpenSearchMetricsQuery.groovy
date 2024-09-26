@@ -7,7 +7,7 @@
  * compatible open source license.
  */
 
-package gradlecheck
+package utils
 
 import groovy.json.JsonSlurper
 
@@ -16,13 +16,15 @@ class OpenSearchMetricsQuery {
     String awsAccessKey
     String awsSecretKey
     String awsSessionToken
+    String indexName
     def script
 
-    OpenSearchMetricsQuery(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, def script) {
+    OpenSearchMetricsQuery(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, String indexName, def script) {
         this.metricsUrl = metricsUrl
         this.awsAccessKey = awsAccessKey
         this.awsSecretKey = awsSecretKey
         this.awsSessionToken = awsSessionToken
+        this.indexName = indexName
         this.script = script
     }
 
@@ -32,8 +34,7 @@ class OpenSearchMetricsQuery {
             script: """
             set -e
             set +x
-            MONTH_YEAR=\$(date +"%m-%Y")
-            curl -s -XGET "${metricsUrl}/gradle-check/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "${awsAccessKey}:${awsSecretKey}" -H "x-amz-security-token:${awsSessionToken}" -H 'Content-Type: application/json' -d "${query}" | jq '.'
+            curl -s -XGET "${metricsUrl}/${indexName}/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "${awsAccessKey}:${awsSecretKey}" -H "x-amz-security-token:${awsSessionToken}" -H 'Content-Type: application/json' -d "${query}" | jq '.'
         """,
                 returnStdout: true
         ).trim()
