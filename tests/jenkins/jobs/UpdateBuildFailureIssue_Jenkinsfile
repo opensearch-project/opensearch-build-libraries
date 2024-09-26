@@ -13,10 +13,9 @@ pipeline {
         stage('updateBuildFailureIssue') {
             steps {
                 script {
-                    UpdateBuildFailureIssues(
-                        failureMessages: ["Error building common-utils, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component common-utils", "Error building performance-analyzer, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0ed in the next build. This might have performance impact if it keeps failing. Run the javaToolchains task for more det.yml --component performance-analyzer", "Error building asynchronous-search, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component asynchronous-search", "Error building asynchronous-search, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component asynchronous-search", "Error building anomaly-detection, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component anomaly-detection", "Error building performance-analyzer, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component performance-analyzer", "Error building notifications, retry with: ./build.sh manifests/2.2.0/opensearch-2.2.0.yml --component notifications"],
-                        passMessages: ["Successfully built sql", "Successfully built notifications", "Successfully built notifications", "Successfully built sql", "Successfully built anomaly-detection", "Successfully built index-management", "Successfully built sql", "Successfully built anomaly-detection"],
-                        inputManifestPath: 'tests/data/opensearch-2.2.0.yml'
+                    updateBuildFailureIssues(
+                        inputManifestPath: 'tests/data/opensearch-2.2.0.yml',
+                        distributionBuildNumber: '32'
                     )
                 }
             }
