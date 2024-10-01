@@ -164,6 +164,9 @@ void indexFailedTestData() {
                                 "type": "keyword"
                             }
                         }
+                    },
+                    "aliases": {
+                        "gradle-check": {}
                     }
                 }'
                 echo "INDEX NAME IS \$INDEX_NAME"
