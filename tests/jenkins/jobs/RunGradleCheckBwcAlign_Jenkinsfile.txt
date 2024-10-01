@@ -5,7 +5,7 @@
             RunGradleCheckBwcAlign_Jenkinsfile.script(groovy.lang.Closure)
                RunGradleCheckBwcAlign_Jenkinsfile.runGradleCheck({gitRepoUrl=https://github.com/opensearch-project/OpenSearch, gitReference=main, bwcCheckoutAlign=true})
                   runGradleCheck.legacySCM(groovy.lang.Closure)
-                  runGradleCheck.library({identifier=jenkins@6.9.1, retriever=null})
+                  runGradleCheck.library({identifier=jenkins@6.9.2, retriever=null})
                   runGradleCheck.usernamePassword({credentialsId=jenkins-gradle-check-s3-aws-credentials, usernameVariable=amazon_s3_access_key, passwordVariable=amazon_s3_secret_key})
                   runGradleCheck.usernamePassword({credentialsId=jenkins-gradle-check-s3-aws-resources, usernameVariable=amazon_s3_base_path, passwordVariable=amazon_s3_bucket})
                   runGradleCheck.withCredentials([[amazon_s3_access_key, amazon_s3_secret_key], [amazon_s3_base_path, amazon_s3_bucket]], groovy.lang.Closure)
