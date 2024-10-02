@@ -30,13 +30,14 @@ void call(Map args = [:]) {
             def awsSecretKey = env.AWS_SECRET_ACCESS_KEY
             def awsSessionToken = env.AWS_SESSION_TOKEN
             def timeFrame = args.timeFrame ?: '30d'
-            def postMergeFailedTests = new FetchPostMergeFailedTestClass(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, this).getPostMergeFailedTestClass(timeFrame)
+            def indexName = 'gradle-check-*'
+            def postMergeFailedTests = new FetchPostMergeFailedTestClass(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, this).getPostMergeFailedTestClass(timeFrame)
             postMergeFailedTests.each { failedTest ->
                 def testData = []
                 def allPullRequests = []
-                def postMergeTestGitReference = new FetchPostMergeTestGitReference(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, this).getPostMergeTestGitReference(failedTest)
+                def postMergeTestGitReference = new FetchPostMergeTestGitReference(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, this).getPostMergeTestGitReference(failedTest)
                 postMergeTestGitReference.each { gitReference ->
-                    def failedTestNames = new FetchPostMergeFailedTestName(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, this).getPostMergeFailedTestName(failedTest, gitReference)
+                    def failedTestNames = new FetchPostMergeFailedTestName(metricsUrl, awsAccessKey, awsSecretKey, indexName, awsSessionToken, this).getPostMergeFailedTestName(failedTest, gitReference)
                     def testNames = failedTestNames.aggregations.test_name_keyword_agg.buckets.collect { it.key }
                     def buildNumber = failedTestNames.aggregations.build_number_agg.buckets.collect { it.key }
                     def pullRequests = failedTestNames.aggregations.pull_request_agg.buckets.collect { it.key }
@@ -49,7 +50,7 @@ void call(Map args = [:]) {
                     ]
                     testData << rowData
                 }
-                def testNameAdditionalPullRequests = new FetchTestPullRequests(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, this).getTestPullRequests(failedTest).findAll { !allPullRequests.contains(it) }
+                def testNameAdditionalPullRequests = new FetchTestPullRequests(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, this).getTestPullRequests(failedTest).findAll { !allPullRequests.contains(it) }
                 def markdownTable = new CreateMarkDownTable(failedTest, testData, testNameAdditionalPullRequests).createMarkdownTable()
                 writeFile file: "${failedTest}.md", text: markdownTable
                 gradleCheckFlakyTestGitHubIssue(

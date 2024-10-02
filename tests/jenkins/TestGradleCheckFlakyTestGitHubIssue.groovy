@@ -29,19 +29,19 @@ class TestGradleCheckFlakyTestGitHubIssue extends BuildPipelineTest {
     @Test
     public void testDefaultIssueEdit() {
         super.testPipeline("tests/jenkins/jobs/TestGradleCheckFlakyTestGitHubIssue_Jenkinsfile", "tests/jenkins/jobs/TestGradleCheckFlakyTestGitHubIssueEdit_Jenkinsfile")
-        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue edit bbb\nccc --repo https://github.com/prudhvigodithi/OpenSearch --body-file \"SampleTest.md\", returnStdout=true}"))
+        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue edit bbb\nccc --repo https://github.com/opensearch-project/OpenSearch --body-file \"SampleTest.md\", returnStdout=true}"))
     }
 
     @Test
     public void testIssueCreate() {
-        helper.addShMock("""gh issue list --repo https://github.com/prudhvigodithi/OpenSearch -S "[AUTOCUT] Gradle Check Flaky Test Report for SampleTest in:title" --json number --jq '.[0].number'""") { script ->
+        helper.addShMock("""gh issue list --repo https://github.com/opensearch-project/OpenSearch -S "[AUTOCUT] Gradle Check Flaky Test Report for SampleTest in:title" --json number --jq '.[0].number'""") { script ->
             return [stdout: "", exitValue: 0]
         }
-        helper.addShMock("""gh issue list --repo https://github.com/prudhvigodithi/OpenSearch -S "[AUTOCUT] Gradle Check Flaky Test Report for SampleTest in:title is:closed" --json number --jq '.[0].number'""") { script ->
+        helper.addShMock("""gh issue list --repo https://github.com/opensearch-project/OpenSearch -S "[AUTOCUT] Gradle Check Flaky Test Report for SampleTest in:title is:closed" --json number --jq '.[0].number'""") { script ->
             return [stdout: "", exitValue: 0]
         }
         super.testPipeline("tests/jenkins/jobs/TestGradleCheckFlakyTestGitHubIssue_Jenkinsfile", "tests/jenkins/jobs/TestGradleCheckFlakyTestGitHubIssueCreate_Jenkinsfile")
-        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue create --title \"[AUTOCUT] Gradle Check Flaky Test Report for SampleTest\" --body-file \"SampleTest.md\" --label \"autocut,>test-failure,flaky-test\" --label \"untriaged\" --repo https://github.com/prudhvigodithi/OpenSearch, returnStdout=true}"))
+        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue create --title \"[AUTOCUT] Gradle Check Flaky Test Report for SampleTest\" --body-file \"SampleTest.md\" --label \"autocut,>test-failure,flaky-test\" --label \"untriaged\" --repo https://github.com/opensearch-project/OpenSearch, returnStdout=true}"))
     }
 
     def getCommands(method, text) {

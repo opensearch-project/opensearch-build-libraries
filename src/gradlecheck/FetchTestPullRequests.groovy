@@ -10,20 +10,22 @@
 package gradlecheck
 
 import groovy.json.JsonOutput
-import gradlecheck.OpenSearchMetricsQuery
+import utils.OpenSearchMetricsQuery
 
 class FetchTestPullRequests  {
     String metricsUrl
     String awsAccessKey
     String awsSecretKey
     String awsSessionToken
+    String indexName
     def script
 
-    FetchTestPullRequests(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, def script) {
+    FetchTestPullRequests(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, String indexName, def script) {
         this.metricsUrl = metricsUrl
         this.awsAccessKey = awsAccessKey
         this.awsSecretKey = awsSecretKey
         this.awsSessionToken = awsSessionToken
+        this.indexName = indexName
         this.script = script
     }
 
@@ -97,7 +99,7 @@ class FetchTestPullRequests  {
         return query.replace('"', '\\"')
     }
     List<String> getTestPullRequests(testName) {
-        def jsonResponse = new OpenSearchMetricsQuery(metricsUrl,awsAccessKey, awsSecretKey, awsSessionToken, script).fetchMetrics(getQuery(testName))
+        def jsonResponse = new OpenSearchMetricsQuery(metricsUrl,awsAccessKey, awsSecretKey, awsSessionToken, indexName, script).fetchMetrics(getQuery(testName))
         def keys = jsonResponse.aggregations.pull_request_keyword_agg.buckets.collect { it.key }
         return keys
     }

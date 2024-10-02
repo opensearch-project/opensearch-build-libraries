@@ -20,6 +20,7 @@ class FetchTestPullRequestsTest {
     private final String awsAccessKey = "testAccessKey"
     private final String awsSecretKey = "testSecretKey"
     private final String awsSessionToken = "testSessionToken"
+    private final String indexName = "gradle-check-*"
     private def script
 
     @Before
@@ -42,7 +43,7 @@ class FetchTestPullRequestsTest {
             }
             return ""
         }
-        fetchTestPullRequests = new FetchTestPullRequests(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, script)
+        fetchTestPullRequests = new FetchTestPullRequests(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, script)
     }
 
     @Test

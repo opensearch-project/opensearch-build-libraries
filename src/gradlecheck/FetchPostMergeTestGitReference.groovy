@@ -10,20 +10,22 @@
 package gradlecheck
 
 import groovy.json.JsonOutput
-import gradlecheck.OpenSearchMetricsQuery
+import utils.OpenSearchMetricsQuery
 
 class FetchPostMergeTestGitReference  {
     String metricsUrl
     String awsAccessKey
     String awsSecretKey
     String awsSessionToken
+    String indexName
     def script
 
-    FetchPostMergeTestGitReference(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, def script) {
+    FetchPostMergeTestGitReference(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, String indexName, def script) {
         this.metricsUrl = metricsUrl
         this.awsAccessKey = awsAccessKey
         this.awsSecretKey = awsSecretKey
         this.awsSessionToken = awsSessionToken
+        this.indexName = indexName
         this.script = script
     }
 
@@ -98,7 +100,7 @@ class FetchPostMergeTestGitReference  {
     }
 
     def getPostMergeTestGitReference(testName) {
-        def jsonResponse = new OpenSearchMetricsQuery(metricsUrl,awsAccessKey, awsSecretKey, awsSessionToken, script).fetchMetrics(getQuery(testName))
+        def jsonResponse = new OpenSearchMetricsQuery(metricsUrl,awsAccessKey, awsSecretKey, awsSessionToken, indexName, script).fetchMetrics(getQuery(testName))
         def keys = jsonResponse.aggregations.git_reference_keyword_agg.buckets.collect { it.key }
         return keys
     }

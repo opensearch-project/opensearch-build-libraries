@@ -20,6 +20,7 @@ class FetchPostMergeFailedTestNameTest {
     private final String awsAccessKey = "testAccessKey"
     private final String awsSecretKey = "testSecretKey"
     private final String awsSessionToken = "testSessionToken"
+    private final String indexName = "gradle-check-*"
     private def script
 
     @Before
@@ -54,7 +55,7 @@ class FetchPostMergeFailedTestNameTest {
             }
             return ""
         }
-        fetchPostMergeFailedTestName = new FetchPostMergeFailedTestName(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, script)
+        fetchPostMergeFailedTestName = new FetchPostMergeFailedTestName(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, script)
     }
 
     @Test
