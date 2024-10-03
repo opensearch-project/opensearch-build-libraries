@@ -15,7 +15,6 @@
  */
 
 import jenkins.ComponentBuildStatus
-import jenkins.InputManifest
 
 void call(Map args = [:]) {
     def inputManifest = readYaml(file: args.inputManifestPath)
