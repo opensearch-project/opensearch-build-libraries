@@ -65,100 +65,103 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
         def expectedCommandBlock = '''set +e
         set +x
         echo "INDEX NAME IS test-index"
-        INDEX_MAPPING='{
-            "mappings": {
-                "properties": {
-                    "component": {
-                        "type": "keyword"
-                    },
-                    "component_repo": {
-                        "type": "keyword"
-                    },
-                    "component_repo_url": {
-                        "type": "keyword"
-                    },
-                    "version": {
-                        "type": "keyword"
-                    },
-                    "integ_test_build_number": {
-                        "type": "integer"
-                    },
-                    "integ_test_build_url": {
-                        "type": "keyword"
-                    },
-                    "distribution_build_number": {
-                        "type": "integer"
-                    },
-                    "distribution_build_url": {
-                        "type": "keyword"
-                    },
-                    "build_start_time": {
-                        "type": "date",
-                        "format": "epoch_millis"
-                    },
-                    "rc": {
-                        "type": "keyword"
-                    },
-                    "rc_number": {
-                        "type": "integer"
-                    },
-                    "platform": {
-                        "type": "keyword"
-                    },
-                    "architecture": {
-                        "type": "keyword"
-                    },
-                    "distribution": {
-                        "type": "keyword"
-                    },
-                    "component_category": {
-                        "type": "keyword"
-                    },
-                    "component_build_result": {
-                        "type": "keyword"
-                    },
-                    "test_report_manifest_yml": {
-                        "type": "keyword"
-                    },
-                    "with_security": {
-                        "type": "keyword"
-                    },
-                    "with_security_build_yml": {
-                        "type": "keyword"
-                    },
-                    "with_security_cluster_stdout": {
-                        "type": "keyword"
-                    },
-                    "with_security_test_stdout": {
-                        "type": "keyword"
-                    },
-                    "with_security_cluster_stderr": {
-                        "type": "keyword"
-                    },
-                    "with_security_test_stderr": {
-                        "type": "keyword"
-                    },
-                    "without_security": {
-                        "type": "keyword"
-                    },
-                    "without_security_build_yml": {
-                        "type": "keyword"
-                    },
-                    "without_security_cluster_stdout": {
-                        "type": "keyword"
-                    },
-                    "without_security_test_stdout": {
-                        "type": "keyword"
-                    },
-                    "without_security_cluster_stderr": {
-                        "type": "keyword"
-                    },
-                    "without_security_test_stderr": {
-                        "type": "keyword"
+                INDEX_MAPPING='{
+                    "mappings": {
+                        "properties": {
+                            "component": {
+                                "type": "keyword"
+                            },
+                            "component_repo": {
+                                "type": "keyword"
+                            },
+                            "component_repo_url": {
+                                "type": "keyword"
+                            },
+                            "version": {
+                                "type": "keyword"
+                            },
+                            "integ_test_build_number": {
+                                "type": "integer"
+                            },
+                            "integ_test_build_url": {
+                                "type": "keyword"
+                            },
+                            "distribution_build_number": {
+                                "type": "integer"
+                            },
+                            "distribution_build_url": {
+                                "type": "keyword"
+                            },
+                            "build_start_time": {
+                                "type": "date",
+                                "format": "epoch_millis"
+                            },
+                            "rc": {
+                                "type": "keyword"
+                            },
+                            "rc_number": {
+                                "type": "integer"
+                            },
+                            "platform": {
+                                "type": "keyword"
+                            },
+                            "architecture": {
+                                "type": "keyword"
+                            },
+                            "distribution": {
+                                "type": "keyword"
+                            },
+                            "component_category": {
+                                "type": "keyword"
+                            },
+                            "component_build_result": {
+                                "type": "keyword"
+                            },
+                            "test_report_manifest_yml": {
+                                "type": "keyword"
+                            },
+                            "with_security": {
+                                "type": "keyword"
+                            },
+                            "with_security_build_yml": {
+                                "type": "keyword"
+                            },
+                            "with_security_cluster_stdout": {
+                                "type": "keyword"
+                            },
+                            "with_security_test_stdout": {
+                                "type": "keyword"
+                            },
+                            "with_security_cluster_stderr": {
+                                "type": "keyword"
+                            },
+                            "with_security_test_stderr": {
+                                "type": "keyword"
+                            },
+                            "without_security": {
+                                "type": "keyword"
+                            },
+                            "without_security_build_yml": {
+                                "type": "keyword"
+                            },
+                            "without_security_cluster_stdout": {
+                                "type": "keyword"
+                            },
+                            "without_security_test_stdout": {
+                                "type": "keyword"
+                            },
+                            "without_security_cluster_stderr": {
+                                "type": "keyword"
+                            },
+                            "without_security_test_stderr": {
+                                "type": "keyword"
+                            }
+                        },
+                    "aliases": {
+                        "opensearch-integration-test-results": {}
+                        }
                     }
-                }
-            }
-        }'
+                }'
         curl -I "METRICS_HOST_URL/test-index" --aws-sigv4 "aws:amz:us-east-1:es" --user "null:null" -H "x-amz-security-token:null" | grep -E "HTTP\\/[0-9]+(\\.[0-9]+)? 200"
         if [ $? -eq 0 ]; then
             echo "Index already exists. Indexing Results"

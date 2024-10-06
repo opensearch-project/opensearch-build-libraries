@@ -128,6 +128,7 @@ class ComponentBuildStatus {
                 ]
         ]
         def query = JsonOutput.toJson(queryMap)
+        this.script.println(query.replace('"', '\\"'))
         return query.replace('"', '\\"')
     }
 
@@ -137,8 +138,8 @@ class ComponentBuildStatus {
          return components
     }
 
-    def getLatestDistributionBuildNumber(String version) {
-         def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(getQuery(getLatestDistributionBuildNumberQuery))
+    def getLatestDistributionBuildNumber() {
+         def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(getLatestDistributionBuildNumberQuery())
          def latestDistributionBuildNumber = jsonResponse.hits.hits[0]._source.distribution_build_number
          return latestDistributionBuildNumber
     }

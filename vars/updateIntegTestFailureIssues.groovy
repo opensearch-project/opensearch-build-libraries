@@ -34,8 +34,7 @@ void call(Map args = [:]) {
                     def awsSessionToken = env.AWS_SESSION_TOKEN
                     def integTestIndexName = 'opensearch-integration-test-results'
                     def buildIndexName = 'opensearch-distribution-build-results'
-                    
-                    def distributionBuildNumber = args.distributionBuildNumber ?: new ComponentBuildStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, buildIndexName, product, version, this).getLatestDistributionBuildNumber()
+                    def distributionBuildNumber = args.distributionBuildNumber ?: new ComponentBuildStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, buildIndexName, product, version, this).getLatestDistributionBuildNumber().toString()
                     ComponentIntegTestStatus componentIntegTestStatus = new ComponentIntegTestStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, integTestIndexName, product, version, distributionBuildNumber, this)
 
                     passedComponents = componentIntegTestStatus.getComponents('passed')
