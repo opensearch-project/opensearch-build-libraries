@@ -106,6 +106,9 @@ class TestPublishDistributionBuildResults extends BuildPipelineTest {
                         "type": "keyword"
                     }
                 }
+            },
+            "aliases": {
+                "opensearch-distribution-build-results": {}
             }
         }'
         curl -I "METRICS_HOST_URL/test-index" --aws-sigv4 "aws:amz:us-east-1:es" --user "null:null" -H "x-amz-security-token:null" | grep -E "HTTP\\/[0-9]+(\\.[0-9]+)? 200"

@@ -51,7 +51,7 @@ sourceSets {
 
     test {
         groovy {
-            srcDirs = ['tests/jenkins', 'tests/gradlecheck', 'tests/utils']
+            srcDirs = ['tests/jenkins', 'tests/gradlecheck']
         }
     }
 
@@ -128,7 +128,7 @@ jacocoTestReport {
     }
 }
 
-String version = '6.9.2'
+String version = '7.0.0'
 
 task updateVersion {
     doLast {

@@ -11,32 +11,28 @@ import static org.hamcrest.CoreMatchers.nullValue
 import static org.hamcrest.MatcherAssert.assertThat
 
 class UpdateBuildFailureIssuesLibTester extends LibFunctionTester{
-    private List<String> failureMessages
-    private List<String> passMessages
     private String inputManifestPath
+    private String distributionBuildNumber
 
-    public UpdateBuildFailureIssuesLibTester(failureMessages, passMessages, inputManifestPath){
-        this.failureMessages = failureMessages
-        this.passMessages = passMessages
+    public UpdateBuildFailureIssuesLibTester(inputManifestPath, distributionBuildNumber){
         this.inputManifestPath = inputManifestPath
+        this.distributionBuildNumber = distributionBuildNumber
     }
 
     @Override
     String libFunctionName() {
-        return 'UpdateBuildFailureIssues'
+        return 'updateBuildFailureIssues'
     }
 
     @Override
     void parameterInvariantsAssertions(Object call) {
-        assertThat(call.args.failureMessages.first(), notNullValue())
-        assertThat(call.args.passMessages.first(), notNullValue())
         assertThat(call.args.inputManifestPath.first(), notNullValue())
+        assertThat(call.args.distributionBuildNumber.first(), notNullValue())
     }
 
     @Override
     boolean expectedParametersMatcher(Object call) {
-        return call.args.failureMessages.first().equals(this.failureMessages)
-        && call.args.passMessages.first().equals(this.passMessages)
+        return call.args.distributionBuildNumber.first().equals(this.distributionBuildNumber)
         && call.args.inputManifestPath.first().equals(this.inputManifestPath)
     }
 
@@ -44,6 +40,20 @@ class UpdateBuildFailureIssuesLibTester extends LibFunctionTester{
     void configure(Object helper, Object binding) {
         helper.registerAllowedMethod('withCredentials', [Map])
         helper.registerAllowedMethod('sleep', [Map])
-        binding.setVariable('env', ['RUN_DISPLAY_URL': 'www.example.com/job/build_url/32/display/redirect'])
+        binding.setVariable('env', [
+            'RUN_DISPLAY_URL': 'www.example.com/job/build_url/32/display/redirect',
+            'METRICS_HOST_URL': 'sample.url',
+            'AWS_ACCESS_KEY_ID': 'abc',
+            'AWS_SECRET_ACCESS_KEY':'xyz',
+            'AWS_SESSION_TOKEN': 'sampleToken'
+            ])
+        helper.registerAllowedMethod('withCredentials', [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        helper.registerAllowedMethod('withAWS', [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
     }
 }

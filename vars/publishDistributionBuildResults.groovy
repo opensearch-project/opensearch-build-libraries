@@ -114,6 +114,9 @@ void indexFailedTestData(indexName, testRecordsFile) {
                                 "type": "keyword"
                             }
                         }
+                    },
+                    "aliases": {
+                        "opensearch-distribution-build-results": {}
                     }
                 }'
                 curl -I "${METRICS_HOST_URL}/${indexName}" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" | grep -E "HTTP\\/[0-9]+(\\.[0-9]+)? 200"
