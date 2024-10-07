@@ -18,7 +18,7 @@ class ComponentIntegTestStatus {
     String awsSecretKey
     String awsSessionToken
     String indexName
-    String product 
+    String product
     String version
     String distributionBuildNumber
     def script
@@ -34,41 +34,41 @@ class ComponentIntegTestStatus {
         this.version = version
         this.distributionBuildNumber = distributionBuildNumber
         this.script = script
-        this.openSearchMetricsQuery = new OpenSearchMetricsQuery(metricsUrl,awsAccessKey, awsSecretKey, awsSessionToken, indexName, script)
+        this.openSearchMetricsQuery = new OpenSearchMetricsQuery(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, script)
     }
 
     def getQuery(String componentIntegTestResult) {
         def queryMap = [
-            size: 50,
-            _source: [
-                "component"
-            ],
-            query: [
-                bool: [
-                    filter: [
-                        [
-                            match_phrase: [
-                                version : "${this.version}"
-                            ]
-                        ],
-                        [
-                            match_phrase: [
-                                component_category: "${this.product}"
-                            ]
-                        ],
-                        [
-                            match_phrase: [
-                                distribution_build_number : "${this.distributionBuildNumber}"
-                            ]
-                        ],
-                        [
-                            match_phrase: [
-                                component_build_result: "${componentIntegTestResult}"
-                            ]
+                size   : 50,
+                _source: [
+                        "component"
+                ],
+                query  : [
+                        bool: [
+                                filter: [
+                                        [
+                                                match_phrase: [
+                                                        version: "${this.version}"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        component_category: "${this.product}"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        distribution_build_number: "${this.distributionBuildNumber}"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        component_build_result: "${componentIntegTestResult}"
+                                                ]
+                                        ]
+                                ]
                         ]
-                    ]
                 ]
-            ]
         ]
         def query = JsonOutput.toJson(queryMap)
         return query.replace('"', '\\"')
@@ -76,43 +76,43 @@ class ComponentIntegTestStatus {
 
     def componentIntegTestFailedDataQuery(String component) {
         def queryMap = [
-            _source : [
-                "platform",
-                "architecture",
-                "distribution",
-                "test_report_manifest_yml",
-                "integ_test_build_url"
-            ],
-            query: [
-                bool: [
-                    filter: [
-                        [
-                            match_phrase: [
-                                component: "${component}"
-                            ]
-                        ],
-                        [
-                            match_phrase: [
-                                version: "${this.version}"
-                            ]
-                        ],
-                        [
-                            match_phrase: [
-                                distribution_build_number: "${this.distributionBuildNumber}"
-                            ]
+                _source: [
+                        "platform",
+                        "architecture",
+                        "distribution",
+                        "test_report_manifest_yml",
+                        "integ_test_build_url"
+                ],
+                query  : [
+                        bool: [
+                                filter: [
+                                        [
+                                                match_phrase: [
+                                                        component: "${component}"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        version: "${this.version}"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        distribution_build_number: "${this.distributionBuildNumber}"
+                                                ]
+                                        ]
+                                ]
                         ]
-                    ]
                 ]
-            ]
         ]
         def query = JsonOutput.toJson(queryMap)
         return query.replace('"', '\\"')
     }
 
     def getComponents(String componentBuildResult) {
-         def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(getQuery(componentBuildResult))
-         def components = jsonResponse.hits.hits.collect { it._source.component }
-         return components
+        def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(getQuery(componentBuildResult))
+        def components = jsonResponse.hits.hits.collect { it._source.component }
+        return components
     }
 
     def getComponentIntegTestFailedData(String component) {
