@@ -10,7 +10,6 @@
                   updateIntegTestFailureIssues.withCredentials([METRICS_HOST_ACCOUNT, METRICS_HOST_URL], groovy.lang.Closure)
                      updateIntegTestFailureIssues.withAWS({role=OpenSearchJenkinsAccessRole, roleAccount=METRICS_HOST_ACCOUNT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
                         ComponentBuildStatus.getLatestDistributionBuildNumber()
-                           updateIntegTestFailureIssues.println({\"size\":1,\"_source\":[\"distribution_build_number\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component_category\":\"OpenSearch\"}},{\"match_phrase\":{\"version\":\"2.2.0\"}}]}},\"sort\":[{\"build_start_time\":{\"order\":\"desc\"}}]})
                            OpenSearchMetricsQuery.fetchMetrics({\"size\":1,\"_source\":[\"distribution_build_number\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component_category\":\"OpenSearch\"}},{\"match_phrase\":{\"version\":\"2.2.0\"}}]}},\"sort\":[{\"build_start_time\":{\"order\":\"desc\"}}]})
                               updateIntegTestFailureIssues.sh({script=
             set -e
