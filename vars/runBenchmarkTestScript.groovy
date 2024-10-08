@@ -106,6 +106,7 @@ void call(Map args = [:]) {
             args.use50PercentHeap?.toBoolean() ? "--use-50-percent-heap" : "",
             args.enableRemoteStore?.toBoolean() ? "--enable-remote-store" : "",
             args.captureNodeStat?.toBoolean() ? "--capture-node-stat" : "",
+            args.enableInstanceStorage?.toBoolean() ? "--enable-instance-storage" : "",
             args.captureSegmentReplicationStat?.toBoolean() ? "--capture-segment-replication-stat" : "",
             isNullOrEmpty(args.suffix) ? "" : "--suffix ${args.suffix}",
             isNullOrEmpty(args.managerNodeCount) ? "" : "--manager-node-count ${args.managerNodeCount}",
