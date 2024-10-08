@@ -1,0 +1,146 @@
+   UpdateBuildFailureIssue_without_distributionID_Jenkinsfile.run()
+      UpdateBuildFailureIssue_without_distributionID_Jenkinsfile.pipeline(groovy.lang.Closure)
+         UpdateBuildFailureIssue_without_distributionID_Jenkinsfile.echo(Executing on agent [label:none])
+         UpdateBuildFailureIssue_without_distributionID_Jenkinsfile.stage(updateIntegTestFailureIssuesWithoutDistId, groovy.lang.Closure)
+            UpdateBuildFailureIssue_without_distributionID_Jenkinsfile.script(groovy.lang.Closure)
+               UpdateBuildFailureIssue_without_distributionID_Jenkinsfile.updateIntegTestFailureIssues({inputManifestPath=tests/data/opensearch-2.2.0.yml})
+                  updateIntegTestFailureIssues.readYaml({file=tests/data/opensearch-2.2.0.yml})
+                  updateIntegTestFailureIssues.string({credentialsId=jenkins-health-metrics-account-number, variable=METRICS_HOST_ACCOUNT})
+                  updateIntegTestFailureIssues.string({credentialsId=jenkins-health-metrics-cluster-endpoint, variable=METRICS_HOST_URL})
+                  updateIntegTestFailureIssues.withCredentials([METRICS_HOST_ACCOUNT, METRICS_HOST_URL], groovy.lang.Closure)
+                     updateIntegTestFailureIssues.withAWS({role=OpenSearchJenkinsAccessRole, roleAccount=METRICS_HOST_ACCOUNT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
+                        ComponentBuildStatus.getLatestDistributionBuildNumber()
+                           OpenSearchMetricsQuery.fetchMetrics({\"size\":1,\"_source\":[\"distribution_build_number\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component_category\":\"OpenSearch\"}},{\"match_phrase\":{\"version\":\"2.2.0\"}}]}},\"sort\":[{\"build_start_time\":{\"order\":\"desc\"}}]})
+                              updateIntegTestFailureIssues.sh({script=
+            set -e
+            set +x
+            curl -s -XGET "sample.url/opensearch-distribution-build-results/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"size\":1,\"_source\":[\"distribution_build_number\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component_category\":\"OpenSearch\"}},{\"match_phrase\":{\"version\":\"2.2.0\"}}]}},\"sort\":[{\"build_start_time\":{\"order\":\"desc\"}}]}" | jq '.'
+        , returnStdout=true})
+                        ComponentIntegTestStatus.getComponents(passed)
+                           OpenSearchMetricsQuery.fetchMetrics({\"size\":50,\"_source\":[\"component\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"2.2.0\"}},{\"match_phrase\":{\"component_category\":\"OpenSearch\"}},{\"match_phrase\":{\"distribution_build_number\":\"4891\"}},{\"match_phrase\":{\"component_build_result\":\"passed\"}}]}}})
+                              updateIntegTestFailureIssues.sh({script=
+            set -e
+            set +x
+            curl -s -XGET "sample.url/opensearch-integration-test-results/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"size\":50,\"_source\":[\"component\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"2.2.0\"}},{\"match_phrase\":{\"component_category\":\"OpenSearch\"}},{\"match_phrase\":{\"distribution_build_number\":\"4891\"}},{\"match_phrase\":{\"component_build_result\":\"passed\"}}]}}}" | jq '.'
+        , returnStdout=true})
+                        ComponentIntegTestStatus.getComponents(failed)
+                           OpenSearchMetricsQuery.fetchMetrics({\"size\":50,\"_source\":[\"component\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"2.2.0\"}},{\"match_phrase\":{\"component_category\":\"OpenSearch\"}},{\"match_phrase\":{\"distribution_build_number\":\"4891\"}},{\"match_phrase\":{\"component_build_result\":\"failed\"}}]}}})
+                              updateIntegTestFailureIssues.sh({script=
+            set -e
+            set +x
+            curl -s -XGET "sample.url/opensearch-integration-test-results/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"size\":50,\"_source\":[\"component\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"2.2.0\"}},{\"match_phrase\":{\"component_category\":\"OpenSearch\"}},{\"match_phrase\":{\"distribution_build_number\":\"4891\"}},{\"match_phrase\":{\"component_build_result\":\"failed\"}}]}}}" | jq '.'
+        , returnStdout=true})
+                        updateIntegTestFailureIssues.sleep({time=3, unit=SECONDS})
+                        updateIntegTestFailureIssues.sleep({time=3, unit=SECONDS})
+                        updateIntegTestFailureIssues.sleep({time=3, unit=SECONDS})
+                        updateIntegTestFailureIssues.sleep({time=3, unit=SECONDS})
+                        updateIntegTestFailureIssues.sleep({time=3, unit=SECONDS})
+                        updateIntegTestFailureIssues.sleep({time=3, unit=SECONDS})
+                        updateIntegTestFailureIssues.println(Integration test failed for geospatial, creating github issue)
+                        ComponentIntegTestStatus.getComponentIntegTestFailedData(geospatial)
+                           OpenSearchMetricsQuery.fetchMetrics({\"_source\":[\"platform\",\"architecture\",\"distribution\",\"test_report_manifest_yml\",\"integ_test_build_url\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component\":\"geospatial\"}},{\"match_phrase\":{\"version\":\"2.2.0\"}},{\"match_phrase\":{\"distribution_build_number\":\"4891\"}}]}}})
+                              updateIntegTestFailureIssues.sh({script=
+            set -e
+            set +x
+            curl -s -XGET "sample.url/opensearch-integration-test-results/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"_source\":[\"platform\",\"architecture\",\"distribution\",\"test_report_manifest_yml\",\"integ_test_build_url\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component\":\"geospatial\"}},{\"match_phrase\":{\"version\":\"2.2.0\"}},{\"match_phrase\":{\"distribution_build_number\":\"4891\"}}]}}}" | jq '.'
+        , returnStdout=true})
+                        CreateIntegTestMarkDownTable.create()
+                        updateIntegTestFailureIssues.createGithubIssue({repoUrl=https://github.com/opensearch-project/geospatial.git, issueTitle=[AUTOCUT] Integration Test Failed for geospatial-2.2.0, issueBody=
+### Integration Test Failed for version 2.2.0. See the specifications below:
+
+#### Details
+
+| Platform | Distribution | Architecture | Test Report Manifest | Workflow Run |
+|----------|--------------|--------------|----------------------|--------------|
+| linux | tar | x64 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/x64/tar/test-results/6561/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6561/display/redirect
+| linux | tar | arm64 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/arm64/tar/test-results/6560/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6560/display/redirect
+
+Check out test report manifest linked above for steps to reproduce, cluster and integration test failure logs. For additional information checkout the [wiki](https://github.com/opensearch-project/opensearch-build/wiki/Testing-the-Distribution) and [OpenSearch Metrics Dashboard](https://metrics.opensearch.org/_dashboards/app/dashboards#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa).
+, label=autocut,v2.2.0, issueEdit=true})
+                           createGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
+                           createGithubIssue.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+                              createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/geospatial.git -S "[AUTOCUT] Integration Test Failed for geospatial-2.2.0 in:title" --json number --jq '.[0].number', returnStdout=true})
+                              createGithubIssue.sh({script=date -d "3 days ago" +'%Y-%m-%d', returnStdout=true})
+                              createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/geospatial.git -S "[AUTOCUT] Integration Test Failed for geospatial-2.2.0 in:title is:closed closed:>=bbb
+ccc" --json number --jq '.[0].number', returnStdout=true})
+                              createGithubIssue.println(Issue already exists, editing the issue body)
+                              createGithubIssue.sh({script=gh issue edit bbb
+ccc --repo https://github.com/opensearch-project/geospatial.git --body "
+### Integration Test Failed for version 2.2.0. See the specifications below:
+
+#### Details
+
+| Platform | Distribution | Architecture | Test Report Manifest | Workflow Run |
+|----------|--------------|--------------|----------------------|--------------|
+| linux | tar | x64 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/x64/tar/test-results/6561/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6561/display/redirect
+| linux | tar | arm64 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/arm64/tar/test-results/6560/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6560/display/redirect
+
+Check out test report manifest linked above for steps to reproduce, cluster and integration test failure logs. For additional information checkout the [wiki](https://github.com/opensearch-project/opensearch-build/wiki/Testing-the-Distribution) and [OpenSearch Metrics Dashboard](https://metrics.opensearch.org/_dashboards/app/dashboards#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa).
+", returnStdout=true})
+                        updateIntegTestFailureIssues.sleep({time=3, unit=SECONDS})
+                        updateIntegTestFailureIssues.println(Integration test failed for k-NN, creating github issue)
+                        ComponentIntegTestStatus.getComponentIntegTestFailedData(k-NN)
+                           OpenSearchMetricsQuery.fetchMetrics({\"_source\":[\"platform\",\"architecture\",\"distribution\",\"test_report_manifest_yml\",\"integ_test_build_url\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component\":\"k-NN\"}},{\"match_phrase\":{\"version\":\"2.2.0\"}},{\"match_phrase\":{\"distribution_build_number\":\"4891\"}}]}}})
+                              updateIntegTestFailureIssues.sh({script=
+            set -e
+            set +x
+            curl -s -XGET "sample.url/opensearch-integration-test-results/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"_source\":[\"platform\",\"architecture\",\"distribution\",\"test_report_manifest_yml\",\"integ_test_build_url\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component\":\"k-NN\"}},{\"match_phrase\":{\"version\":\"2.2.0\"}},{\"match_phrase\":{\"distribution_build_number\":\"4891\"}}]}}}" | jq '.'
+        , returnStdout=true})
+                        CreateIntegTestMarkDownTable.create()
+                        updateIntegTestFailureIssues.createGithubIssue({repoUrl=https://github.com/opensearch-project/k-NN.git, issueTitle=[AUTOCUT] Integration Test Failed for k-NN-2.2.0, issueBody=
+### Integration Test Failed for version 2.2.0. See the specifications below:
+
+#### Details
+
+| Platform | Distribution | Architecture | Test Report Manifest | Workflow Run |
+|----------|--------------|--------------|----------------------|--------------|
+| linux | tar | x64 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/x64/tar/test-results/6561/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6561/display/redirect
+| linux | tar | arm64 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/arm64/tar/test-results/6560/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6560/display/redirect
+
+Check out test report manifest linked above for steps to reproduce, cluster and integration test failure logs. For additional information checkout the [wiki](https://github.com/opensearch-project/opensearch-build/wiki/Testing-the-Distribution) and [OpenSearch Metrics Dashboard](https://metrics.opensearch.org/_dashboards/app/dashboards#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa).
+, label=autocut,v2.2.0, issueEdit=true})
+                           createGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
+                           createGithubIssue.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+                              createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/k-NN.git -S "[AUTOCUT] Integration Test Failed for k-NN-2.2.0 in:title" --json number --jq '.[0].number', returnStdout=true})
+                              createGithubIssue.sh({script=date -d "3 days ago" +'%Y-%m-%d', returnStdout=true})
+                              createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/k-NN.git -S "[AUTOCUT] Integration Test Failed for k-NN-2.2.0 in:title is:closed closed:>=bbb
+ccc" --json number --jq '.[0].number', returnStdout=true})
+                              createGithubIssue.println(Issue already exists, editing the issue body)
+                              createGithubIssue.sh({script=gh issue edit bbb
+ccc --repo https://github.com/opensearch-project/k-NN.git --body "
+### Integration Test Failed for version 2.2.0. See the specifications below:
+
+#### Details
+
+| Platform | Distribution | Architecture | Test Report Manifest | Workflow Run |
+|----------|--------------|--------------|----------------------|--------------|
+| linux | tar | x64 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/x64/tar/test-results/6561/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6561/display/redirect
+| linux | tar | arm64 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/arm64/tar/test-results/6560/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6560/display/redirect
+
+Check out test report manifest linked above for steps to reproduce, cluster and integration test failure logs. For additional information checkout the [wiki](https://github.com/opensearch-project/opensearch-build/wiki/Testing-the-Distribution) and [OpenSearch Metrics Dashboard](https://metrics.opensearch.org/_dashboards/app/dashboards#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa).
+", returnStdout=true})
+                        updateIntegTestFailureIssues.sleep({time=3, unit=SECONDS})
+                        updateIntegTestFailureIssues.println(Integration tests passed for cross-cluster-replication, closing github issue)
+                        updateIntegTestFailureIssues.closeGithubIssue({repoUrl=https://github.com/opensearch-project/cross-cluster-replication.git, issueTitle=[AUTOCUT] Integration Test Failed for cross-cluster-replication-2.2.0, closeComment=Closing the issue as the integration tests for cross-cluster-replication passed for version: **2.2.0**.})
+                           closeGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
+                           closeGithubIssue.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+                              closeGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/cross-cluster-replication.git -S "[AUTOCUT] Integration Test Failed for cross-cluster-replication-2.2.0 in:title" --json number --jq '.[0].number', returnStdout=true})
+                              closeGithubIssue.sh({script=gh issue close bbb
+ccc -R opensearch-project/cross-cluster-replication --comment "Closing the issue as the integration tests for cross-cluster-replication passed for version: **2.2.0**.", returnStdout=true})
+                        updateIntegTestFailureIssues.sleep({time=3, unit=SECONDS})
+                        updateIntegTestFailureIssues.sleep({time=3, unit=SECONDS})
+                        updateIntegTestFailureIssues.sleep({time=3, unit=SECONDS})
+                        updateIntegTestFailureIssues.sleep({time=3, unit=SECONDS})
+                        updateIntegTestFailureIssues.sleep({time=3, unit=SECONDS})
+                        updateIntegTestFailureIssues.sleep({time=3, unit=SECONDS})
+                        updateIntegTestFailureIssues.println(Integration tests passed for index-management, closing github issue)
+                        updateIntegTestFailureIssues.closeGithubIssue({repoUrl=https://github.com/opensearch-project/index-management.git, issueTitle=[AUTOCUT] Integration Test Failed for index-management-2.2.0, closeComment=Closing the issue as the integration tests for index-management passed for version: **2.2.0**.})
+                           closeGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
+                           closeGithubIssue.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+                              closeGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/index-management.git -S "[AUTOCUT] Integration Test Failed for index-management-2.2.0 in:title" --json number --jq '.[0].number', returnStdout=true})
+                              closeGithubIssue.sh({script=gh issue close bbb
+ccc -R opensearch-project/index-management --comment "Closing the issue as the integration tests for index-management passed for version: **2.2.0**.", returnStdout=true})
+                        updateIntegTestFailureIssues.sleep({time=3, unit=SECONDS})
+                        updateIntegTestFailureIssues.sleep({time=3, unit=SECONDS})
+                        updateIntegTestFailureIssues.sleep({time=3, unit=SECONDS})
+                        updateIntegTestFailureIssues.sleep({time=3, unit=SECONDS})

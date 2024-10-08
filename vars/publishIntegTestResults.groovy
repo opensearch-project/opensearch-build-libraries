@@ -194,6 +194,9 @@ void indexFailedTestData(indexName, testRecordsFile) {
                             "without_security_test_stderr": {
                                 "type": "keyword"
                             }
+                        },
+                    "aliases": {
+                        "opensearch-integration-test-results": {}
                         }
                     }
                 }'
