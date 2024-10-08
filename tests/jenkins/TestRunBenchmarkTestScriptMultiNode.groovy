@@ -42,7 +42,8 @@ class TestRunBenchmarkTestScriptMultiNode extends BuildPipelineTest {
                 'cluster.indices.replication.strategy:SEGMENT',
                 'true',
                 'false',
-                '{"telemetry_setting":"value"}'
+                '{"telemetry_setting":"value"}',
+                'false'
         ))
         super.setUp()
     }
@@ -63,10 +64,10 @@ class TestRunBenchmarkTestScriptMultiNode extends BuildPipelineTest {
 
         assertThat(testScriptCommands.size(), equalTo(2))
         assertThat(testScriptCommands, hasItem(
-                "set +x && ./test.sh benchmark-test execute-test --bundle-manifest tests/data/opensearch-1.3.0-bundle.yml    --config /tmp/workspace/config.yml --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag distribution-build-id:1236,arch:x64,os-commit-id:22408088f002a4fc8cdd3b2ed7438866c14c5069,key1:value1,security-enabled:true      --use-50-percent-heap --enable-remote-store --capture-node-stat  --suffix 307-secure --manager-node-count 3 --data-node-count 3     --workload-params '{\"key2\":\"value2\"}' --test-procedure custom-test-procedure --exclude-tasks index-append,default --include-tasks type:search,index --additional-config cluster.indices.replication.strategy:SEGMENT --data-node-storage 200 --ml-node-storage 200  --telemetry-params '{\"telemetry_setting\":\"value\"}'".toString()
+                "set +x && ./test.sh benchmark-test execute-test --bundle-manifest tests/data/opensearch-1.3.0-bundle.yml    --config /tmp/workspace/config.yml --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag distribution-build-id:1236,arch:x64,os-commit-id:22408088f002a4fc8cdd3b2ed7438866c14c5069,key1:value1,security-enabled:true      --use-50-percent-heap --enable-remote-store --capture-node-stat   --suffix 307-secure --manager-node-count 3 --data-node-count 3     --workload-params '{\"key2\":\"value2\"}' --test-procedure custom-test-procedure --exclude-tasks index-append,default --include-tasks type:search,index --additional-config cluster.indices.replication.strategy:SEGMENT --data-node-storage 200 --ml-node-storage 200  --telemetry-params '{\"telemetry_setting\":\"value\"}'".toString()
         ))
         assertThat(testScriptCommands, hasItem(
-                "set +x && ./test.sh benchmark-test execute-test --bundle-manifest tests/data/opensearch-1.3.0-bundle.yml    --config /tmp/workspace/config.yml --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag distribution-build-id:1236,arch:x64,os-commit-id:22408088f002a4fc8cdd3b2ed7438866c14c5069,key1:value1,security-enabled:false --without-security     --use-50-percent-heap --enable-remote-store --capture-node-stat  --suffix 307 --manager-node-count 3 --data-node-count 3     --workload-params '{\"key2\":\"value2\"}' --test-procedure custom-test-procedure --exclude-tasks index-append,default --include-tasks type:search,index --additional-config cluster.indices.replication.strategy:SEGMENT --data-node-storage 200 --ml-node-storage 200  --telemetry-params '{\"telemetry_setting\":\"value\"}'".toString()
+                "set +x && ./test.sh benchmark-test execute-test --bundle-manifest tests/data/opensearch-1.3.0-bundle.yml    --config /tmp/workspace/config.yml --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag distribution-build-id:1236,arch:x64,os-commit-id:22408088f002a4fc8cdd3b2ed7438866c14c5069,key1:value1,security-enabled:false --without-security     --use-50-percent-heap --enable-remote-store --capture-node-stat   --suffix 307 --manager-node-count 3 --data-node-count 3     --workload-params '{\"key2\":\"value2\"}' --test-procedure custom-test-procedure --exclude-tasks index-append,default --include-tasks type:search,index --additional-config cluster.indices.replication.strategy:SEGMENT --data-node-storage 200 --ml-node-storage 200  --telemetry-params '{\"telemetry_setting\":\"value\"}'".toString()
         ))
     }
 
