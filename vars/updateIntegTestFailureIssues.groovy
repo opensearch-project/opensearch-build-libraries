@@ -36,15 +36,17 @@ void call(Map args = [:]) {
             def buildIndexName = 'opensearch-distribution-build-results'
             def distributionBuildNumber = args.distributionBuildNumber ?: new ComponentBuildStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, buildIndexName, product, version, this).getLatestDistributionBuildNumber().toString()
             ComponentIntegTestStatus componentIntegTestStatus = new ComponentIntegTestStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, integTestIndexName, product, version, distributionBuildNumber, this)
-
+            println('Distribution Build Number: '+ distributionBuildNumber)
             passedComponents = componentIntegTestStatus.getComponents('passed')
             failedComponents = componentIntegTestStatus.getComponents('failed')
 
             failedComponents = failedComponents.unique()
             passedComponents = passedComponents.unique()
+            println('Failed Components: '+ failedComponents)
+            println('Passed Components: '+ passedComponents)
 
             for (component in inputManifest.components) {
-                if (failedComponents.contains(component.name)) {
+                if (!failedComponents.isEmpty() && failedComponents.contains(component.name)) {
                     println("Integration test failed for ${component.name}, creating github issue")
                     def testData = []
                     def queryData = componentIntegTestStatus.getComponentIntegTestFailedData(component.name)
@@ -67,8 +69,9 @@ void call(Map args = [:]) {
                             label: "autocut,v${version}",
                             issueEdit: true
                     )
+                    sleep(time: 3, unit: 'SECONDS')
                 }
-                if (passedComponents.contains(component.name) && !failedComponents.contains(component.name)) {
+                if (!passedComponents.isEmpty() && passedComponents.contains(component.name) && !failedComponents.contains(component.name)) {
                     println("Integration tests passed for ${component.name}, closing github issue")
                     ghIssueBody = """Closing the issue as the integration tests for ${component.name} passed for version: **${version}**.""".stripIndent()
                     closeGithubIssue(
@@ -76,8 +79,8 @@ void call(Map args = [:]) {
                             issueTitle: "[AUTOCUT] Integration Test Failed for ${component.name}-${version}",
                             closeComment: ghIssueBody
                     )
+                    sleep(time: 3, unit: 'SECONDS')
                 }
-                sleep(time: 3, unit: 'SECONDS')
             }
         }
     }

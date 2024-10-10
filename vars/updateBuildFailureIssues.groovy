@@ -39,6 +39,8 @@ void call(Map args = [:]) {
             
                     passedComponents = componentBuildStatus.getComponents('passed')
                     failedComponents = componentBuildStatus.getComponents('failed')
+                    println('Failed Components: '+ failedComponents)
+                    println('Passed Components: '+ passedComponents)
             }
         }
 
@@ -46,7 +48,7 @@ void call(Map args = [:]) {
     passedComponents = passedComponents.unique()
 
     for (component in inputManifest.components) {
-        if (failedComponents.contains(component.name)) {
+        if (!failedComponents.isEmpty() && failedComponents.contains(component.name)) {
             println("Component ${component.name} failed, creating github issue")
             ghIssueBody = """***Build Failed Error***: **${component.name} failed during the distribution build for version: ${currentVersion}.**
                     Please see build log at ${env.RUN_DISPLAY_URL}.
@@ -59,8 +61,9 @@ void call(Map args = [:]) {
                 label: "autocut,v${currentVersion}",
                 issueEdit: true
             )
+            sleep(time:3, unit:'SECONDS')
         }
-        if (passedComponents.contains(component.name) && !failedComponents.contains(component.name)) {
+        if (!passedComponents.isEmpty() && passedComponents.contains(component.name) && !failedComponents.contains(component.name)) {
             println("Component ${component.name} passed, closing github issue")
             ghIssueBody = """Closing the issue as the distribution build for ${component.name} has passed for version: **${currentVersion}**.
                     Please see build log at ${env.RUN_DISPLAY_URL}""".stripIndent()
@@ -70,7 +73,7 @@ void call(Map args = [:]) {
                 closeComment: ghIssueBody,
                 label: "autocut,v${currentVersion}"
             )
+            sleep(time:3, unit:'SECONDS')
         }
-        sleep(time:3, unit:'SECONDS')
     }
 }
