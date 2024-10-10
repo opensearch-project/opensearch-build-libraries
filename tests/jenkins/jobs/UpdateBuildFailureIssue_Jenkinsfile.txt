@@ -23,16 +23,8 @@
             set +x
             curl -s -XGET "sample.url/opensearch-distribution-build-results/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"_source\":[\"component\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component_category\":\"OpenSearch\"}},{\"match_phrase\":{\"component_build_result\":\"failed\"}},{\"match_phrase\":{\"version\":\"2.2.0\"}},{\"match_phrase\":{\"distribution_build_number\":\"32\"}},{\"range\":{\"build_start_time\":{\"from\":\"now-6h\",\"to\":\"now\"}}}]}}}" | jq '.'
         , returnStdout=true})
-                  updateBuildFailureIssues.sleep({time=3, unit=SECONDS})
-                  updateBuildFailureIssues.sleep({time=3, unit=SECONDS})
-                  updateBuildFailureIssues.sleep({time=3, unit=SECONDS})
-                  updateBuildFailureIssues.sleep({time=3, unit=SECONDS})
-                  updateBuildFailureIssues.sleep({time=3, unit=SECONDS})
-                  updateBuildFailureIssues.sleep({time=3, unit=SECONDS})
-                  updateBuildFailureIssues.sleep({time=3, unit=SECONDS})
-                  updateBuildFailureIssues.sleep({time=3, unit=SECONDS})
-                  updateBuildFailureIssues.sleep({time=3, unit=SECONDS})
-                  updateBuildFailureIssues.sleep({time=3, unit=SECONDS})
+                        updateBuildFailureIssues.println(Failed Components: [asynchronous-search, notifications])
+                        updateBuildFailureIssues.println(Passed Components: [sql, notifications])
                   updateBuildFailureIssues.createGithubIssue({repoUrl=https://github.com/opensearch-project/notifications.git, issueTitle=[AUTOCUT] Distribution Build Failed for notifications-2.2.0, issueBody=***Build Failed Error***: **notifications failed during the distribution build for version: 2.2.0.**
                     Please see build log at www.example.com/job/build_url/32/display/redirect.
                     The failed build stage will be marked as unstable :warning: . Please see ./build.sh step for more details.
@@ -49,7 +41,6 @@ ccc --repo https://github.com/opensearch-project/notifications.git --body "***Bu
                     Please see build log at www.example.com/job/build_url/32/display/redirect.
                     The failed build stage will be marked as unstable :warning: . Please see ./build.sh step for more details.
                     Checkout the [wiki](https://github.com/opensearch-project/opensearch-build/wiki/Building-an-OpenSearch-and-OpenSearch-Dashboards-Distribution) to reproduce the failure locally.", returnStdout=true})
-                  updateBuildFailureIssues.sleep({time=3, unit=SECONDS})
                   updateBuildFailureIssues.sleep({time=3, unit=SECONDS})
                   updateBuildFailureIssues.createGithubIssue({repoUrl=https://github.com/opensearch-project/asynchronous-search.git, issueTitle=[AUTOCUT] Distribution Build Failed for asynchronous-search-2.2.0, issueBody=***Build Failed Error***: **asynchronous-search failed during the distribution build for version: 2.2.0.**
                     Please see build log at www.example.com/job/build_url/32/display/redirect.
@@ -68,8 +59,6 @@ ccc --repo https://github.com/opensearch-project/asynchronous-search.git --body 
                     The failed build stage will be marked as unstable :warning: . Please see ./build.sh step for more details.
                     Checkout the [wiki](https://github.com/opensearch-project/opensearch-build/wiki/Building-an-OpenSearch-and-OpenSearch-Dashboards-Distribution) to reproduce the failure locally.", returnStdout=true})
                   updateBuildFailureIssues.sleep({time=3, unit=SECONDS})
-                  updateBuildFailureIssues.sleep({time=3, unit=SECONDS})
-                  updateBuildFailureIssues.sleep({time=3, unit=SECONDS})
                   updateBuildFailureIssues.closeGithubIssue({repoUrl=https://github.com/opensearch-project/sql.git, issueTitle=[AUTOCUT] Distribution Build Failed for sql-2.2.0, closeComment=Closing the issue as the distribution build for sql has passed for version: **2.2.0**.
                     Please see build log at www.example.com/job/build_url/32/display/redirect, label=autocut,v2.2.0})
                      closeGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
@@ -78,6 +67,4 @@ ccc --repo https://github.com/opensearch-project/asynchronous-search.git --body 
                         closeGithubIssue.sh({script=gh issue close bbb
 ccc -R opensearch-project/sql --comment "Closing the issue as the distribution build for sql has passed for version: **2.2.0**.
                     Please see build log at www.example.com/job/build_url/32/display/redirect", returnStdout=true})
-                  updateBuildFailureIssues.sleep({time=3, unit=SECONDS})
-                  updateBuildFailureIssues.sleep({time=3, unit=SECONDS})
                   updateBuildFailureIssues.sleep({time=3, unit=SECONDS})
