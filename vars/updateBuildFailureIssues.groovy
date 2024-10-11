@@ -70,8 +70,7 @@ void call(Map args = [:]) {
             closeGithubIssue(
                 repoUrl: component.repository,
                 issueTitle: "[AUTOCUT] Distribution Build Failed for ${component.name}-${currentVersion}",
-                closeComment: ghIssueBody,
-                label: "autocut,v${currentVersion}"
+                closeComment: ghIssueBody
             )
             sleep(time:3, unit:'SECONDS')
         }
