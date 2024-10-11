@@ -12,10 +12,8 @@
  @param args.repoUrl <required> - GitHub repository URL to create issue
  @param args.issueTitle <required> - GitHub issue title
  @param args.closeComment <required> - GitHub issue leave a closing comment
- @param args.label <optional> - GitHub issue label to be attached along with 'untriaged'. Defaults to autocut.
  */
 void call(Map args = [:]) {
-    label = args.label ?: 'autocut'
     try {
         withCredentials([usernamePassword(credentialsId: 'jenkins-github-bot-token', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'GITHUB_USER')]) {
             def issuesNumber = sh(

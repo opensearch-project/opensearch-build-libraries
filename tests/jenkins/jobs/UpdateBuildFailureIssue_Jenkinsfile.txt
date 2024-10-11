@@ -60,7 +60,7 @@ ccc --repo https://github.com/opensearch-project/asynchronous-search.git --body 
                     Checkout the [wiki](https://github.com/opensearch-project/opensearch-build/wiki/Building-an-OpenSearch-and-OpenSearch-Dashboards-Distribution) to reproduce the failure locally.", returnStdout=true})
                   updateBuildFailureIssues.sleep({time=3, unit=SECONDS})
                   updateBuildFailureIssues.closeGithubIssue({repoUrl=https://github.com/opensearch-project/sql.git, issueTitle=[AUTOCUT] Distribution Build Failed for sql-2.2.0, closeComment=Closing the issue as the distribution build for sql has passed for version: **2.2.0**.
-                    Please see build log at www.example.com/job/build_url/32/display/redirect, label=autocut,v2.2.0})
+                    Please see build log at www.example.com/job/build_url/32/display/redirect})
                      closeGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
                      closeGithubIssue.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
                         closeGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/sql.git -S "[AUTOCUT] Distribution Build Failed for sql-2.2.0 in:title" --json number --jq '.[0].number', returnStdout=true})
