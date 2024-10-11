@@ -29,8 +29,7 @@ class TestCloseGithubIssue extends BuildPipelineTest {
         this.registerLibTester(new CloseGithubIssueLibTester(
             'https://github.com/opensearch-project/opensearch-build',
             'Test GH issue title',
-            'Test GH issue close comment',
-            'label101',
+            'Test GH issue close comment'
             ))
         super.testPipeline("tests/jenkins/jobs/CloseGithubIssue_JenkinsFile")
         assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue list --repo https://github.com/opensearch-project/opensearch-build -S \"Test GH issue title in:title\" --json number --jq '.[0].number', returnStdout=true}"))

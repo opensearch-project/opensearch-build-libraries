@@ -16,8 +16,7 @@ pipeline {
                     closeGithubIssue(
                         repoUrl: 'https://github.com/opensearch-project/opensearch-build',
                         issueTitle: 'Test GH issue title',
-                        closeComment: 'Test GH issue close comment',
-                        label: 'label101'
+                        closeComment: 'Test GH issue close comment'
                         )
                 }
             }
