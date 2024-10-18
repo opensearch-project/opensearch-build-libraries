@@ -106,9 +106,6 @@ class TestPublishDistributionBuildResults extends BuildPipelineTest {
                         "type": "keyword"
                     }
                 }
-            },
-            "aliases": {
-                "opensearch-distribution-build-results": {}
             }
         }'
         curl -I "METRICS_HOST_URL/test-index" --aws-sigv4 "aws:amz:us-east-1:es" --user "null:null" -H "x-amz-security-token:null" | grep -E "HTTP\\/[0-9]+(\\.[0-9]+)? 200"
@@ -119,6 +116,22 @@ class TestPublishDistributionBuildResults extends BuildPipelineTest {
             create_index_response=$(curl -s -XPUT "METRICS_HOST_URL/test-index" --aws-sigv4 "aws:amz:us-east-1:es" --user "null:null" -H "x-amz-security-token:null" -H 'Content-Type: application/json' -d "${INDEX_MAPPING}")
             if [[ $create_index_response == *'"acknowledged":true'* ]]; then
                 echo "Index created successfully."
+                echo "Updating alias..."
+                update_alias_response=\$(curl -s -XPOST "METRICS_HOST_URL/_aliases" --aws-sigv4 "aws:amz:us-east-1:es" --user "null:null" -H "x-amz-security-token:null" -H "Content-Type: application/json" -d '{
+                    "actions": [
+                        {
+                            "add": {
+                            "index": "test-index",
+                            "alias": "opensearch-distribution-build-results"
+                            }
+                        }
+                    ]
+                }')
+                if [[ \$update_alias_response == *'"acknowledged":true'* ]]; then
+                    echo "Alias updated successfully."
+                else
+                    echo "Failed to update alias. Error message: \$update_alias_response"
+                fi
             else
                 echo "Failed to create index. Error message: $create_index_response"
                 exit 1
