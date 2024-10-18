@@ -7,7 +7,7 @@
  * compatible open source license.
  */
 def call(Map args = [:]) {
-    def lib = library(identifier: "jenkins@7.1.0", retriever: legacySCM(scm))
+    def lib = library(identifier: "jenkins@7.2.0", retriever: legacySCM(scm))
     sh "mkdir -p \$(dirname \"${args.path}\")"
     sh "touch ${args.path}"
     sh "curl -sSL --retry 5 ${args.url} --output ${args.path}"
