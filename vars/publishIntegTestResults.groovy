@@ -42,6 +42,7 @@ void call(Map args = [:]) {
     def manifestFile = readFile testReportManifestYml
     def manifest = readYaml text: manifestFile
     def indexName = "opensearch-integration-test-results-${formattedDate}"
+    def testFailuresindexName = "opensearch-integration-test-failures-${formattedDate}"
     def finalJsonDoc = ""
     def version = manifest.version.toString()
     def distributionBuildNumber = manifest.id
@@ -70,6 +71,14 @@ void call(Map args = [:]) {
         def withoutSecurityClusterStderr = component.configs.find { it.name == 'without-security' }?.cluster_stderr ?: []
         def withoutSecurityTestStdout = component.configs.find { it.name == 'without-security' }?.test_stdout ?: ''
         def withoutSecurityTestStderr = component.configs.find { it.name == 'without-security' }?.test_stderr ?: ''
+        def withSecurityFailedTests = component.configs.find { it.name == 'with-security' }?.failed_test ?: []
+        processFailedTests(withSecurityFailedTests, componentName, componentRepo, componentRepoUrl, version, integTestBuildNumber, 
+                   integTestBuildUrl, distributionBuildNumber, distributionBuildUrl, buildStartTime, rc, rcNumber, 
+                   platform, architecture, distribution, componentCategory, "with-security", testFailuresindexName)
+        def withoutSecurityFailedTests = component.configs.find { it.name == 'without-security' }?.failed_test ?: []
+        processFailedTests(withoutSecurityFailedTests, componentName, componentRepo, componentRepoUrl, version, integTestBuildNumber, 
+                   integTestBuildUrl, distributionBuildNumber, distributionBuildUrl, buildStartTime, rc, rcNumber, 
+                   platform, architecture, distribution, componentCategory, "without-security", testFailuresindexName)
         def jsonContent = generateJson(
                                         componentName, componentRepo, componentRepoUrl, version, integTestBuildNumber, 
                                         integTestBuildUrl, distributionBuildNumber, distributionBuildUrl, 
@@ -88,7 +97,158 @@ void call(Map args = [:]) {
     indexFailedTestData(indexName, "test-records.json")
 }
 
+def processFailedTests(failedTests, componentName, componentRepo, componentRepoUrl, version, integTestBuildNumber, 
+                       integTestBuildUrl, distributionBuildNumber, distributionBuildUrl, buildStartTime, 
+                       rc, rcNumber, platform, architecture, distribution, componentCategory, securityType, testFailuresindexName) {
+
+    def finalFailedTestsJsonDoc = ""
+    switch (true) {
+        case failedTests.isEmpty():
+            break
+        case failedTests.contains("Test Result Not Available"):
+            def testResultJsonContent = generateFailedTestJson(componentName, componentRepo, componentRepoUrl, version, integTestBuildNumber, 
+                integTestBuildUrl, distributionBuildNumber, distributionBuildUrl, buildStartTime, rc, rcNumber, 
+                platform, architecture, distribution, componentCategory, securityType, "Not Available", "Not Available")
+            finalFailedTestsJsonDoc += "{\"index\": {\"_index\": \"${testFailuresindexName}\"}}\n${testResultJsonContent}\n"
+            break
+        case failedTests.contains("No Failed Test"):
+            break
+        default:
+            failedTests.collect { failedTest ->
+                def match = failedTest.split("#")
+                if (match) {
+                    def testResultJsonContent = generateFailedTestJson(componentName, componentRepo, componentRepoUrl, version, integTestBuildNumber, 
+                        integTestBuildUrl, distributionBuildNumber, distributionBuildUrl, buildStartTime, rc, rcNumber, 
+                        platform, architecture, distribution, componentCategory, securityType, match[0].trim(), match[1].trim())
+                    finalFailedTestsJsonDoc += "{\"index\": {\"_index\": \"${testFailuresindexName}\"}}\n${testResultJsonContent}\n"
+                }
+            }
+            break
+    }
+    if (!finalFailedTestsJsonDoc.isEmpty()) {
+        writeFile file: "test-failures.json", text: finalFailedTestsJsonDoc
+        def fileContents = readFile(file: "test-failures.json").trim()
+        indexTestFailuresData(testFailuresindexName, "test-failures.json")
+    }
+    return finalFailedTestsJsonDoc
+}
+
+
 boolean argCheck(String str) { return (str == null || str.allWhitespace || str.isEmpty()) }
+
+void indexTestFailuresData(testFailuresindexName, testFailuresFile) {
+    withCredentials([
+                string(credentialsId: 'jenkins-health-metrics-account-number', variable: 'METRICS_HOST_ACCOUNT'),
+                string(credentialsId: 'jenkins-health-metrics-cluster-endpoint', variable: 'METRICS_HOST_URL')
+        ]) {
+            withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
+                def awsAccessKey = env.AWS_ACCESS_KEY_ID
+                def awsSecretKey = env.AWS_SECRET_ACCESS_KEY
+                def awsSessionToken = env.AWS_SESSION_TOKEN
+                sh """
+                    set +e
+                    set +x
+                    echo "INDEX NAME IS ${testFailuresindexName}"
+                    INDEX_MAPPING='{
+                        "mappings": {
+                            "properties": {
+                                "component": {
+                                    "type": "keyword"
+                                },
+                                "component_repo": {
+                                    "type": "keyword"
+                                },
+                                "component_repo_url": {
+                                    "type": "keyword"
+                                },
+                                "version": {
+                                    "type": "keyword"
+                                },
+                                "integ_test_build_number": {
+                                    "type": "integer"
+                                },
+                                "integ_test_build_url": {
+                                    "type": "keyword"
+                                },
+                                "distribution_build_number": {
+                                    "type": "integer"
+                                },
+                                "distribution_build_url": {
+                                    "type": "keyword"
+                                },
+                                "build_start_time": {
+                                    "type": "date",
+                                    "format": "epoch_millis"
+                                },
+                                "rc": {
+                                    "type": "keyword"
+                                },
+                                "rc_number": {
+                                    "type": "integer"
+                                },
+                                "platform": {
+                                    "type": "keyword"
+                                },
+                                "architecture": {
+                                    "type": "keyword"
+                                },
+                                "distribution": {
+                                    "type": "keyword"
+                                },
+                                "component_category": {
+                                    "type": "keyword"
+                                },
+                                "test_type": {
+                                    "type": "keyword"
+                                },
+                                "test_class": {
+                                    "type": "keyword"
+                                },
+                                "test_name": {
+                                    "type": "keyword"
+                                }
+                            }
+                        }
+                    }'
+                    curl -I "${METRICS_HOST_URL}/${testFailuresindexName}" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" | grep -E "HTTP\\/[0-9]+(\\.[0-9]+)? 200"
+                    if [ \$? -eq 0 ]; then
+                        echo "Index already exists. Indexing Results"
+                    else
+                        echo "Index does not exist. Creating..."
+                        create_index_response=\$(curl -s -XPUT "${METRICS_HOST_URL}/${testFailuresindexName}" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" -H 'Content-Type: application/json' -d "\${INDEX_MAPPING}")
+                        if [[ \$create_index_response == *'"acknowledged":true'* ]]; then
+                            echo "Index created successfully."
+                            echo "Updating alias..."
+                            update_alias_response=\$(curl -s -XPOST "${METRICS_HOST_URL}/_aliases" --aws-sigv4 "aws:amz:us-east-1:es" --user "${awsAccessKey}:${awsSecretKey}" -H "x-amz-security-token:${awsSessionToken}" -H "Content-Type: application/json" -d '{
+                                "actions": [
+                                    {
+                                        "add": {
+                                        "index": "${testFailuresindexName}",
+                                        "alias": "opensearch-integration-test-failures"
+                                        }
+                                    }
+                                ]
+                            }')
+                            if [[ \$update_alias_response == *'"acknowledged":true'* ]]; then
+                                echo "Alias updated successfully."
+                            else
+                                echo "Failed to update alias. Error message: \$update_alias_response"
+                            fi
+                        else
+                            echo "Failed to create index. Error message: \$create_index_response"
+                            exit 1
+                        fi
+                    fi
+                    if [ -s ${testFailuresFile} ]; then
+                        echo "File Exists, indexing failed tests."
+                        curl -XPOST "${METRICS_HOST_URL}/$testFailuresindexName/_bulk" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" -H "Content-Type: application/x-ndjson" --data-binary "@${testFailuresFile}"
+                    else
+                        echo "File Does not exist. No tests records to process."
+                    fi
+            """
+            }
+        }
+    }
 
 void indexFailedTestData(indexName, testRecordsFile) {
     withCredentials([
@@ -194,9 +354,6 @@ void indexFailedTestData(indexName, testRecordsFile) {
                             "without_security_test_stderr": {
                                 "type": "keyword"
                             }
-                        },
-                    "aliases": {
-                        "opensearch-integration-test-results": {}
                         }
                     }
                 }'
@@ -208,6 +365,22 @@ void indexFailedTestData(indexName, testRecordsFile) {
                     create_index_response=\$(curl -s -XPUT "${METRICS_HOST_URL}/${indexName}" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" -H 'Content-Type: application/json' -d "\${INDEX_MAPPING}")
                     if [[ \$create_index_response == *'"acknowledged":true'* ]]; then
                         echo "Index created successfully."
+                        echo "Updating alias..."
+                        update_alias_response=\$(curl -s -XPOST "${METRICS_HOST_URL}/_aliases" --aws-sigv4 "aws:amz:us-east-1:es" --user "${awsAccessKey}:${awsSecretKey}" -H "x-amz-security-token:${awsSessionToken}" -H "Content-Type: application/json" -d '{
+                            "actions": [
+                                {
+                                    "add": {
+                                    "index": "${indexName}",
+                                    "alias": "opensearch-integration-test-results"
+                                    }
+                                }
+                            ]
+                        }')
+                        if [[ \$update_alias_response == *'"acknowledged":true'* ]]; then
+                            echo "Alias updated successfully."
+                        else
+                            echo "Failed to update alias. Error message: \$update_alias_response"
+                        fi
                     else
                         echo "Failed to create index. Error message: \$create_index_response"
                         exit 1
@@ -223,6 +396,34 @@ void indexFailedTestData(indexName, testRecordsFile) {
         }
     }
 }
+
+def generateFailedTestJson(componentName, componentRepo, componentRepoUrl, version, 
+                integTestBuildNumber, integTestBuildUrl, distributionBuildNumber, distributionBuildUrl, 
+                buildStartTime, rc, rcNumber, platform, architecture, distribution, componentCategory,
+                testType, testClass, testName) {
+    def json = [
+        component: componentName,
+        component_repo: componentRepo,
+        component_repo_url: componentRepoUrl,
+        version: version,
+        integ_test_build_number: integTestBuildNumber,
+        integ_test_build_url: integTestBuildUrl,
+        distribution_build_number: distributionBuildNumber,
+        distribution_build_url: distributionBuildUrl,
+        build_start_time: buildStartTime,
+        rc: rc,
+        rc_number: rcNumber,
+        platform: platform,
+        architecture: architecture,
+        distribution: distribution,
+        component_category: componentCategory,
+        test_type: testType,
+        test_class: testClass,
+        test_name: testName 
+    ]
+    return JsonOutput.toJson(json)
+}
+
 
 def generateJson(componentName, componentRepo, componentRepoUrl, version, 
                 integTestBuildNumber, integTestBuildUrl, distributionBuildNumber, distributionBuildUrl, 
