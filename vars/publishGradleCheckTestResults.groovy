@@ -164,9 +164,6 @@ void indexFailedTestData() {
                                 "type": "keyword"
                             }
                         }
-                    },
-                    "aliases": {
-                        "gradle-check": {}
                     }
                 }'
                 echo "INDEX NAME IS \$INDEX_NAME"
@@ -178,6 +175,22 @@ void indexFailedTestData() {
                     create_index_response=\$(curl -s -XPUT "${METRICS_HOST_URL}/\${INDEX_NAME}" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" -H 'Content-Type: application/json' -d "\${INDEX_MAPPING}")
                     if [[ \$create_index_response == *'"acknowledged":true'* ]]; then
                         echo "Index created successfully."
+                        echo "Updating alias..."
+                        update_alias_response=\$(curl -s -XPOST "${METRICS_HOST_URL}/_aliases" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" -H "Content-Type: application/json" -d '{
+                            "actions": [
+                                {
+                                    "add": {
+                                    "index": "\${INDEX_NAME}",
+                                    "alias": "gradle-check"
+                                    }
+                                }
+                            ]
+                        }')
+                        if [[ \$update_alias_response == *'"acknowledged":true'* ]]; then
+                            echo "Alias updated successfully."
+                        else
+                            echo "Failed to update alias. Error message: \$update_alias_response"
+                        fi
                     else
                         echo "Failed to create index. Error message: \$create_index_response"
                         exit 1
