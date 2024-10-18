@@ -114,9 +114,6 @@ void indexFailedTestData(indexName, testRecordsFile) {
                                 "type": "keyword"
                             }
                         }
-                    },
-                    "aliases": {
-                        "opensearch-distribution-build-results": {}
                     }
                 }'
                 curl -I "${METRICS_HOST_URL}/${indexName}" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" | grep -E "HTTP\\/[0-9]+(\\.[0-9]+)? 200"
@@ -127,6 +124,22 @@ void indexFailedTestData(indexName, testRecordsFile) {
                     create_index_response=\$(curl -s -XPUT "${METRICS_HOST_URL}/${indexName}" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" -H 'Content-Type: application/json' -d "\${INDEX_MAPPING}")
                     if [[ \$create_index_response == *'"acknowledged":true'* ]]; then
                         echo "Index created successfully."
+                        echo "Updating alias..."
+                        update_alias_response=\$(curl -s -XPOST "${METRICS_HOST_URL}/_aliases" --aws-sigv4 "aws:amz:us-east-1:es" --user "${awsAccessKey}:${awsSecretKey}" -H "x-amz-security-token:${awsSessionToken}" -H "Content-Type: application/json" -d '{
+                            "actions": [
+                                {
+                                    "add": {
+                                    "index": "${indexName}",
+                                    "alias": "opensearch-distribution-build-results"
+                                    }
+                                }
+                            ]
+                        }')
+                        if [[ \$update_alias_response == *'"acknowledged":true'* ]]; then
+                            echo "Alias updated successfully."
+                        else
+                            echo "Failed to update alias. Error message: \$update_alias_response"
+                        fi
                     else
                         echo "Failed to create index. Error message: \$create_index_response"
                         exit 1
