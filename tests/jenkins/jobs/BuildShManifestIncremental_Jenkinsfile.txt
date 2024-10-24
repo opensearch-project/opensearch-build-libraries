@@ -31,5 +31,5 @@ ccc/linux/x64/tar/, force=true})
                      retrievePreviousBuild.sh(rm -rf tar && mkdir -p tar && mv -v /tmp/workspace/download/dummy-build-job/2.12.0/bbb
 ccc/linux/x64/tar/* /tmp/workspace/tar)
                      retrievePreviousBuild.echo(Setting up Maven Local for OpenSearch build.)
-                     retrievePreviousBuild.sh(mkdir -p ~/.m2/repository/org/ && cp -r tar/builds/opensearch/maven/org/opensearch/ ~/.m2/repository/org/)
+                     retrievePreviousBuild.sh(mkdir -p $HOME/.m2/repository/org/ && cp -r tar/builds/opensearch/maven/org/opensearch/ $HOME/.m2/repository/org/)
                   buildManifest.sh(./build.sh tests/data/opensearch-input-2.12.0.yml -d tar -p linux -a x64 --incremental)

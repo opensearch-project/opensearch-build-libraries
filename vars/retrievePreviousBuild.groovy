@@ -43,7 +43,7 @@ void call(Map args = [:]) {
     sh("rm -rf ${distribution} && mkdir -p ${distribution} && mv -v ${prefixPath}/${artifactPath}/* ${WORKSPACE}/${distribution}")
     if (inputManifestObj.build.getFilename().equals("opensearch")) {
         echo("Setting up Maven Local for OpenSearch build.")
-        sh("mkdir -p ~/.m2/repository/org/ && cp -r ${distribution}/builds/opensearch/maven/org/opensearch/ ~/.m2/repository/org/")
+        sh("mkdir -p \$HOME/.m2/repository/org/ && cp -r ${distribution}/builds/opensearch/maven/org/opensearch/ \$HOME/.m2/repository/org/")
     }
 
 }
