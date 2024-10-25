@@ -407,6 +407,10 @@ class TestUpdateIntegTestFailureIssues extends BuildPipelineTest {
 
     def windows_x64 = script.getMetricsVisualizationUrl('windows', 'x64', version, component)
     assert windows_x64 == "https://metrics.opensearch.org/_dashboards/app/dashboards?security_tenant=global#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-30d,to:now))&_a=(description:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',expandedPanelId:a57afb35-8d97-4641-9b07-64ff614dab00,filters:!(('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:version,negate:!f,params:(query:'2.18.0'),type:phrase),query:(match_phrase:(version:'2.18.0'))),('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:component,negate:!f,params:(query:security),type:phrase),query:(match_phrase:(component:security)))),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),query:(language:kuery,query:''),timeRestore:!t,title:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',viewMode:view)"
+
+    def unknown_dist = script.getMetricsVisualizationUrl('de', 'x64', version, component)
+    assert unknown_dist == "null"
+
    }
 
     def getCommands(method, text) {
