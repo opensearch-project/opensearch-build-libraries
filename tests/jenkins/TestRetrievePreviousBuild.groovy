@@ -34,7 +34,7 @@ class TestRetrievePreviousBuild extends BuildPipelineTest {
         super.testPipeline('tests/jenkins/jobs/RetrievePreviousBuild_Jenkinsfile')
         def shCommands = getCommands('sh', 'mkdir')
         assertThat(shCommands, hasItems('rm -rf tar && mkdir -p tar && mv -v /tmp/workspace/download/dummy_job/2.12.0/123/linux/x64/tar/* /tmp/workspace/tar'))
-        assertThat(shCommands, hasItems('mkdir -p ~/.m2/repository/org/ && cp -r tar/builds/opensearch/maven/org/opensearch/ ~/.m2/repository/org/'))
+        assertThat(shCommands, hasItems('mkdir -p $HOME/.m2/repository/org/ && cp -r tar/builds/opensearch/maven/org/opensearch/ $HOME/.m2/repository/org/'))
 
         assertThat(shCommands, hasItems('rm -rf zip && mkdir -p zip && mv -v /tmp/workspace/download/dummy_job/2.12.0/1234/windows/x64/zip/* /tmp/workspace/zip'))
         assertThat(shCommands, not(hasItems('mkdir -p ~/.m2/repository/org/ && cp -r zip/builds/opensearch/maven/org/opensearch/ ~/.m2/repository/org/')))

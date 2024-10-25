@@ -17,7 +17,7 @@
                               downloadFromS3.s3Download({file=/tmp/workspace/download, bucket=ARTIFACT_BUCKET_NAME, path=dummy_job/2.12.0/123/linux/x64/tar/, force=true})
                   retrievePreviousBuild.sh(rm -rf tar && mkdir -p tar && mv -v /tmp/workspace/download/dummy_job/2.12.0/123/linux/x64/tar/* /tmp/workspace/tar)
                   retrievePreviousBuild.echo(Setting up Maven Local for OpenSearch build.)
-                  retrievePreviousBuild.sh(mkdir -p ~/.m2/repository/org/ && cp -r tar/builds/opensearch/maven/org/opensearch/ ~/.m2/repository/org/)
+                  retrievePreviousBuild.sh(mkdir -p $HOME/.m2/repository/org/ && cp -r tar/builds/opensearch/maven/org/opensearch/ $HOME/.m2/repository/org/)
                RetrievePreviousBuild_Jenkinsfile.retrievePreviousBuild({inputManifest=tests/data/opensearch-dashboards-input-2.12.0.yml, distribution=zip, architecture=x64, platform=windows, distributionBuildNumber=1234})
                   retrievePreviousBuild.legacySCM(groovy.lang.Closure)
                   retrievePreviousBuild.library({identifier=jenkins@7.2.0, retriever=null})
