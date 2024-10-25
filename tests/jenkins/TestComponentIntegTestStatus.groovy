@@ -12,7 +12,6 @@ package jenkins
 import org.junit.*
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
-import groovy.mock.interceptor.MockFor
 
 class TestComponentIntegTestStatus {
 
@@ -146,7 +145,8 @@ class TestComponentIntegTestStatus {
                 "architecture",
                 "distribution",
                 "test_report_manifest_yml",
-                "integ_test_build_url"
+                "integ_test_build_url",
+                "rc_number"
             ],
             query: [
                 bool: [
