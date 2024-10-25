@@ -69,6 +69,31 @@ class TestCreateGithubIssue extends BuildPipelineTest {
         assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue create --title \"Test GH issue title\" --body \"Test GH issue body\" --label \"label101\" --label \"untriaged\" --repo https://github.com/opensearch-project/opensearch-build, returnStdout=true}"))
     }
 
+    void testCreateGithubIssueCreateWithMissingLabel() {
+        this.registerLibTester(new CreateGithubIssueLibTester(
+                "https://github.com/opensearch-project/opensearch-build",
+                "Test GH issue title",
+                "Test GH issue body",
+                "label101,missedOne"
+        ))
+        helper.addShMock("date -d \"5 days ago\" +'%Y-%m-%d'") { script ->
+            return [stdout: "2023-10-24", exitValue: 0]
+        }
+        helper.addShMock("""gh issue list --repo https://github.com/opensearch-project/opensearch-build -S "Test GH issue title in:title" --label label101 --json number --jq '.[0].number'""") { script ->
+            return [stdout: "", exitValue: 0]
+        }
+        helper.addShMock("""gh issue list --repo https://github.com/opensearch-project/opensearch-build -S "Test GH issue title in:title is:closed closed:>=2023-10-24" --label label101 --json number --jq '.[0].number'""") { script ->
+            return [stdout: "", exitValue: 0]
+        }
+        helper.addShMock("""gh label list --repo https://github.com/opensearch-project/opensearch-build -S "missedOne" --json name --jq '.[0].name'""") { script ->
+            return [stdout: "no labels in opensearch-project/opensearch-build matched your search", exitValue: 0]
+        }
+        super.testPipeline('tests/jenkins/jobs/CreateGithubIssue_Jenkinsfile')
+        assertThat(getCommands('println', ''), hasItem("Creating new issue"))
+        assertThat(getCommands('sh', 'script'), hasItem("{script=gh label create missedOne --repo https://github.com/opensearch-project/opensearch-build, returnStdout=true}"))
+        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue create --title \"Test GH issue title\" --body \"Test GH issue body\" --label \"label101\" --label \"untriaged\" --repo https://github.com/opensearch-project/opensearch-build, returnStdout=true}"))
+    }
+
     void testCreateGithubIssueReOpen() {
         this.registerLibTester(new CreateGithubIssueLibTester(
                 "https://github.com/opensearch-project/opensearch-build",

@@ -76,6 +76,19 @@ void call(Map args = [:]) {
             }
             else {
                 println("Creating new issue")
+                def labelName = sh(
+                        script: "gh label list --repo ${args.repoUrl} -S ${i} --json name --jq '.[0].name'",
+                        returnStdout: true
+                    ).trim()
+                if (labelName.equals(i.trim())) {
+                    println("Label ${i} already exists. Skipping label creation")
+                } else {
+                    println("${i} label is missing. Creating the missing label")
+                    sh(
+                        script: "gh label create ${i} --repo ${args.repoUrl}",
+                        returnStdout: true
+                    )
+                }
                 sh(
                     script: "gh issue create --title \"${args.issueTitle}\" ${bodyOption} --label \"${label}\" --label \"untriaged\" --repo ${args.repoUrl}",
                     returnStdout: true
