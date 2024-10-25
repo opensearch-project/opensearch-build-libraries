@@ -11,30 +11,31 @@ package jenkins
 
 class CreateIntegTestMarkDownTable {
     String version
-    ArrayList<String> tableData
 
-    CreateIntegTestMarkDownTable(String version, List<Map<String, Object>> tableData) {
+    CreateIntegTestMarkDownTable(String version) {
         this.version = version
-        this.tableData = tableData
     }
 
-    def create() {
+    def create(List<Map<String, Object>> tableData, List releaseOwner) {
 
         def tableHeader = """
 ### Integration Test Failed for version ${version}. See the specifications below:
 
 #### Details
 
-| Platform | Distribution | Architecture | Test Report Manifest | Workflow Run |
-|----------|--------------|--------------|----------------------|--------------|
+| Platform | Dist | Arch | Dist Build No. | RC | Test Report | Workflow Run | Failing tests |
+|----------|------|------|----------------|----|-------------|--------------|---------------|
 """
-        def tableRows = this.tableData.collect { row ->
-            "| ${row.platform} | ${row.distribution} | ${row.architecture} | ${row.test_report_manifest_yml} | ${row.integ_test_build_url}"
-        }.join("\n")
+        def tableRows = tableData.collect { row ->
+            "| ${row.platform} | ${row.distribution} | ${row.architecture} | ${row.distribution_build_number} | ${row.rc_number} | ${row.test_report_manifest_yml} | ${row.integ_test_build_url} | [Check metrics](${row.metrics_visualization_url}) |"}.join("\n")
 
         def additionalInformation = """
 \nCheck out test report manifest linked above for steps to reproduce, cluster and integration test failure logs. For additional information checkout the [wiki](https://github.com/opensearch-project/opensearch-build/wiki/Testing-the-Distribution) and [OpenSearch Metrics Dashboard](https://metrics.opensearch.org/_dashboards/app/dashboards#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa).
 """
+        if(!releaseOwner.isEmpty()) {
+            def tagReleaseOwner = releaseOwner.collect{ "@${it}"}.join(' ')
+            additionalInformation = additionalInformation + "\nTagging the release owners to take a look ${tagReleaseOwner}"
+        }
         return tableHeader + tableRows + additionalInformation
     }
 
