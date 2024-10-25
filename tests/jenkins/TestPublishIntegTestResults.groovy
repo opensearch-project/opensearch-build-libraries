@@ -475,8 +475,8 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
                 distribution: 'tar',
                 component_category: 'test_category',
                 test_type: 'test_type',
-                test_class: 'Not Available',
-                test_name: 'Not Available'
+                test_class: 'Result Not Available',
+                test_name: 'Result Not Available'
             ]
         ]
         def parsedResult = result.trim().split('\n').collect { new JsonSlurper().parseText(it) }
@@ -486,6 +486,45 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
         assert parsedResult == expectedJson
     }
 
+    @Test
+    void testProcessFailedTestsWithTestResultFilesListNotAvailable() {
+        def script = loadScript('vars/publishIntegTestResults.groovy')
+        def result = script.processFailedTests(['Test Result Files List Not Available'], 'component1', 'componentRepo', 
+            'https://componentRepoUrl', '1.0', 123, 'http://example.com/build/123', 456, 
+            'http://example.com/distribution/456', System.currentTimeMillis(), 'rc1', 1, 
+            'linux', 'x64', 'tar', 'test_category', 'test_type', 'test_failures_index')
+        def expectedJson = [
+            [
+                index: [
+                    _index: 'test_failures_index'
+                ]
+            ],
+            [
+                component: 'component1',
+                component_repo: 'componentRepo',
+                component_repo_url: 'https://componentRepoUrl',
+                version: '1.0',
+                integ_test_build_number: 123,
+                integ_test_build_url: 'http://example.com/build/123',
+                distribution_build_number: 456,
+                distribution_build_url: 'http://example.com/distribution/456',
+                rc: 'rc1',
+                rc_number: 1,
+                platform: 'linux',
+                architecture: 'x64',
+                distribution: 'tar',
+                component_category: 'test_category',
+                test_type: 'test_type',
+                test_class: 'Report Not Available',
+                test_name: 'Report Not Available'
+            ]
+        ]
+        def parsedResult = result.trim().split('\n').collect { new JsonSlurper().parseText(it) }
+        parsedResult.each { json ->
+            json.remove('build_start_time')
+        }
+        assert parsedResult == expectedJson
+    }
 
 
     @Test

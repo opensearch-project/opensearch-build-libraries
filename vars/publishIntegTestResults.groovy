@@ -108,7 +108,13 @@ def processFailedTests(failedTests, componentName, componentRepo, componentRepoU
         case failedTests.contains("Test Result Not Available"):
             def testResultJsonContent = generateFailedTestJson(componentName, componentRepo, componentRepoUrl, version, integTestBuildNumber, 
                 integTestBuildUrl, distributionBuildNumber, distributionBuildUrl, buildStartTime, rc, rcNumber, 
-                platform, architecture, distribution, componentCategory, securityType, "Not Available", "Not Available")
+                platform, architecture, distribution, componentCategory, securityType, "Result Not Available", "Result Not Available")
+            finalFailedTestsJsonDoc += "{\"index\": {\"_index\": \"${testFailuresindexName}\"}}\n${testResultJsonContent}\n"
+            break
+        case failedTests.contains("Test Result Files List Not Available"):
+            def testResultJsonContent = generateFailedTestJson(componentName, componentRepo, componentRepoUrl, version, integTestBuildNumber, 
+                integTestBuildUrl, distributionBuildNumber, distributionBuildUrl, buildStartTime, rc, rcNumber, 
+                platform, architecture, distribution, componentCategory, securityType, "Report Not Available", "Report Not Available")
             finalFailedTestsJsonDoc += "{\"index\": {\"_index\": \"${testFailuresindexName}\"}}\n${testResultJsonContent}\n"
             break
         case failedTests.contains("No Failed Test"):
