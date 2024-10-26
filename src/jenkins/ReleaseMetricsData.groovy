@@ -10,7 +10,6 @@
 package jenkins
 
 import groovy.json.JsonOutput
-import groovyjarjarantlr.collections.List
 import utils.OpenSearchMetricsQuery
 
 class ReleaseMetricsData {
@@ -43,21 +42,21 @@ class ReleaseMetricsData {
                                 filter: [
                                         [
                                                 match_phrase: [
-                                                        component: "${component}"
+                                                        version: "${this.version}"
                                                 ]
                                         ],
                                         [
                                                 match_phrase: [
-                                                        version: "${this.version}"
+                                                        "component": "${component}"
                                                 ]
                                         ]
                                 ]
-                        ],
-                        sort: [
-                                [
-                                        current_date: [
-                                                order: "desc"
-                                        ]
+                        ]
+                ],
+                sort : [
+                        [
+                                current_date: [
+                                        order: "desc"
                                 ]
                         ]
                 ]
