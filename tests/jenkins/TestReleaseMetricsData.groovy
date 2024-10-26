@@ -78,21 +78,21 @@ class TestReleaseMetricsData {
                                 filter: [
                                         [
                                                 match_phrase: [
-                                                        component: "sql"
+                                                        version: "2.18.0"
                                                 ]
                                         ],
                                         [
                                                 match_phrase: [
-                                                        version: "2.18.0"
+                                                        "component": "sql"
                                                 ]
                                         ]
                                 ]
-                        ],
-                        sort: [
-                                [
-                                        current_date: [
-                                                order: "desc"
-                                        ]
+                        ]
+                ],
+                sort : [
+                        [
+                                current_date: [
+                                        order: "desc"
                                 ]
                         ]
                 ]
