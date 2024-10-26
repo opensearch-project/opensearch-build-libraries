@@ -69,6 +69,7 @@ void call(Map args = [:]) {
                             ]
                         testData << rowData
                     }
+                    println('Retrieving release owner(s) for '+ component.name)
                     List releaseOwners = releaseMetricsData.getReleaseOwners(component.name)
                     def markdownContent = new CreateIntegTestMarkDownTable(version).create(testData, releaseOwners)
                     createGithubIssue(
