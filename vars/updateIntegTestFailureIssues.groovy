@@ -52,6 +52,7 @@ void call(Map args = [:]) {
                 if (!failedComponents.isEmpty() && failedComponents.contains(component.name)) {
                     println("Integration test failed for ${component.name}, creating github issue")
                     def testData = []
+                    println('Retrieving failed component data for '+ component.name)
                     def queryData = componentIntegTestStatus.getComponentIntegTestFailedData(component.name)
                     def totalHits = queryData.hits.hits.collect { it._source }
                     totalHits.each { hit ->
