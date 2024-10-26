@@ -29,6 +29,7 @@ class OpenSearchMetricsQuery {
     }
 
     def fetchMetrics(String query) {
+        this.script.println('Running query: '+ query)
         def response = script.sh(
             script: """
             set -e
