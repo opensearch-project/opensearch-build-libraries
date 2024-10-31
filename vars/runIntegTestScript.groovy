@@ -62,6 +62,7 @@ void call(Map args = [:]) {
         'integ-test',
         "${args.testManifest}",
         "--component ${component}",
+        "--ci-group ${args.ciGroup}",
         "--test-run-id ${env.BUILD_NUMBER}",
         "--paths ${paths}",
         "--base-path ${basePath}",
