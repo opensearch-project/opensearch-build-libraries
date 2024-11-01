@@ -173,7 +173,7 @@ void indexFailedTestData() {
                 else
                     echo "Index does not exist. Creating..."
                     create_index_response=\$(curl -s -XPUT "${METRICS_HOST_URL}/\${INDEX_NAME}" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" -H 'Content-Type: application/json' -d "\${INDEX_MAPPING}")
-                    if [[ \$create_index_response == *'"acknowledged":true'* ]]; then
+                    if echo "\$create_index_response" | grep -q '"acknowledged":true'; then
                         echo "Index created successfully."
                         echo "Updating alias..."
                         update_alias_response=\$(curl -s -XPOST "${METRICS_HOST_URL}/_aliases" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" -H "Content-Type: application/json" -d '{
@@ -186,7 +186,7 @@ void indexFailedTestData() {
                                 }
                             ]
                         }')
-                        if [[ \$update_alias_response == *'"acknowledged":true'* ]]; then
+                        if echo "\$update_alias_response" | grep -q '"acknowledged":true'; then
                             echo "Alias updated successfully."
                         else
                             echo "Failed to update alias. Error message: \$update_alias_response"
