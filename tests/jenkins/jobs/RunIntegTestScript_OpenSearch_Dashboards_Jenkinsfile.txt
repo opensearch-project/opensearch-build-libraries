@@ -5,7 +5,7 @@
             RunIntegTestScript_OpenSearch_Dashboards_Jenkinsfile.script(groovy.lang.Closure)
                RunIntegTestScript_OpenSearch_Dashboards_Jenkinsfile.runIntegTestScript({jobName=dummy_job, componentName=functionalTestDashboards, buildManifest=tests/data/opensearch-dashboards-1.2.0-build.yml, testManifest=tests/data/opensearch-dashboards-1.2.0-test.yml})
                   runIntegTestScript.legacySCM(groovy.lang.Closure)
-                  runIntegTestScript.library({identifier=jenkins@7.3.1, retriever=null})
+                  runIntegTestScript.library({identifier=jenkins@7.3.2, retriever=null})
                   runIntegTestScript.readYaml({file=tests/data/opensearch-dashboards-1.2.0-build.yml})
                   BuildManifest.asBoolean()
                   BuildManifest.getArtifactArchitecture()
