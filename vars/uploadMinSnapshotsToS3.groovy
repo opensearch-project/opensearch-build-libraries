@@ -104,7 +104,7 @@ void call(Map args = [:]) {
                         String pluginFullPath = ['plugins', pluginName, revision].join('/')
                         s3Upload(
                             bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}",
-                            path: "test/snapshots2/${pluginFullPath}/",
+                            path: "snapshots/${pluginFullPath}/",
                             workingDir: "${corePluginDir}/",
                             includePathPattern: "**/${pluginName}*"
                         )
