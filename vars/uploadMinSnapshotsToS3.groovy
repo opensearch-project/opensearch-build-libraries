@@ -59,7 +59,7 @@ void call(Map args = [:]) {
             if (architecture == "x64" && platform == "linux" && distribution == "tar" && corePluginDirExists) {
                 echo("Create .sha512 for Core Plugins Snapshots")
                 argsMap['artifactPath'] = corePluginDir
-                for (Closure action : fileActions) { // running createSha512Checksums()
+                for (Closure action : fileActions) {
                     action(argsMap)
                 }
             }
@@ -67,7 +67,7 @@ void call(Map args = [:]) {
             // Setup min snapshots with .sha512 and .sig (All distributions)
             echo('Create .sha512 for Min Snapshots Artifacts')
             argsMap['artifactPath'] = srcDir
-            for (Closure action : fileActions) { // running createSha512Checksums()
+            for (Closure action : fileActions) {
                 action(argsMap)
             }
 
