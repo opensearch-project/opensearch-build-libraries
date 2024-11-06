@@ -46,47 +46,51 @@ void call(Map args = [:]) {
     String dstDir = "snapshots/core/${productName}/${version}"
     String baseName = "${productName}-min-${version}-${platform}-${architecture}"
     argsMap = [:]
+    argsMap['sigtype'] = '.sig'
 
-    // Setup core plugins (Tar x64 only)
-    String corePluginDir = "${WORKSPACE}/${distribution}/builds/${productName}/core-plugins".replace("\\", "/")
-    boolean corePluginDirExists = fileExists(corePluginDir)
-    if (architecture == "x64" && platform == "linux" && distribution == "tar" && corePluginDirExists) {
-        echo("Create .sha512 for Core Plugins Snapshots")
-        argsMap['artifactPath'] = corePluginDir
-        for (Closure action : fileActions) { // running createSha512Checksums()
-            action(argsMap)
-        }
-    }
-
-    // Create checksums
-    echo('Create .sha512 for Min Snapshots Artifacts')
-    argsMap['artifactPath'] = srcDir
-    for (Closure action : fileActions) { // running createSha512Checksums()
-        action(argsMap)
-    }
-
-    echo("Start copying files: version-${version} revision-${revision} architecture-${architecture} platform-${platform} buildid-${id} distribution-${distribution} extension-${extension}")
-
-    String sedCmd = "sed"
-    if (platform == "darwin") {
-        sedCmd = "gsed"
-    }
-
-    sh """
-        cp -v ${srcDir}/${baseName}.${extension} ${srcDir}/${baseName}-latest.${extension}
-        cp -v ${srcDir}/${baseName}.${extension}.sha512 ${srcDir}/${baseName}-latest.${extension}.sha512
-        cp -v ${srcDir}/../manifest.yml ${srcDir}/${baseName}-latest.${extension}.build-manifest.yml
-        ${sedCmd} -i "s/.${extension}/-latest.${extension}/g" ${srcDir}/${baseName}-latest.${extension}.sha512
-    """
     withCredentials([
         string(credentialsId: 'jenkins-artifact-promotion-role', variable: 'ARTIFACT_PROMOTION_ROLE_NAME'),
         string(credentialsId: 'jenkins-aws-production-account', variable: 'AWS_ACCOUNT_ARTIFACT'),
         string(credentialsId: 'jenkins-artifact-production-bucket-name', variable: 'ARTIFACT_PRODUCTION_BUCKET_NAME')]) {
+
+            // Setup core plugins snapshots with .sha512 and .sig (Tar x64 only)
+            String corePluginDir = "${WORKSPACE}/${distribution}/builds/${productName}/core-plugins".replace("\\", "/")
+            boolean corePluginDirExists = fileExists(corePluginDir)
+            if (architecture == "x64" && platform == "linux" && distribution == "tar" && corePluginDirExists) {
+                echo("Create .sha512 for Core Plugins Snapshots")
+                argsMap['artifactPath'] = corePluginDir
+                for (Closure action : fileActions) { // running createSha512Checksums()
+                    action(argsMap)
+                }
+            }
+
+            // Setup min snapshots with .sha512 and .sig (All distributions)
+            echo('Create .sha512 for Min Snapshots Artifacts')
+            argsMap['artifactPath'] = srcDir
+            for (Closure action : fileActions) { // running createSha512Checksums()
+                action(argsMap)
+            }
+
+            echo("Start copying files: version-${version} revision-${revision} architecture-${architecture} platform-${platform} buildid-${id} distribution-${distribution} extension-${extension}")
+
+            String sedCmd = "sed"
+            if (platform == "darwin") {
+                sedCmd = "gsed"
+            }
+
+            sh """
+                cp -v ${srcDir}/${baseName}.${extension} ${srcDir}/${baseName}-latest.${extension}
+                cp -v ${srcDir}/${baseName}.${extension}.sha512 ${srcDir}/${baseName}-latest.${extension}.sha512
+                cp -v ${srcDir}/${baseName}.${extension}.sig ${srcDir}/${baseName}-latest.${extension}.sig
+                cp -v ${srcDir}/../manifest.yml ${srcDir}/${baseName}-latest.${extension}.build-manifest.yml
+                ${sedCmd} -i "s/.${extension}/-latest.${extension}/g" ${srcDir}/${baseName}-latest.${extension}.sha512
+            """
             withAWS(role: "${ARTIFACT_PROMOTION_ROLE_NAME}", roleAccount: "${AWS_ACCOUNT_ARTIFACT}", duration: 900, roleSessionName: 'jenkins-session') {
                 // min artifacts
                 echo("Upload min snapshots")
                 s3Upload(file: "${srcDir}/${baseName}-latest.${extension}", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "${dstDir}/${baseName}-latest.${extension}")
                 s3Upload(file: "${srcDir}/${baseName}-latest.${extension}.sha512", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "${dstDir}/${baseName}-latest.${extension}.sha512")
+                s3Upload(file: "${srcDir}/${baseName}-latest.${extension}.sig", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "${dstDir}/${baseName}-latest.${extension}.sig")
                 s3Upload(file: "${srcDir}/${baseName}-latest.${extension}.build-manifest.yml", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "${dstDir}/${baseName}-latest.${extension}.build-manifest.yml")
                 // core plugins
                 if (architecture == "x64" && platform == "linux" && distribution == "tar" && corePluginDirExists) {
@@ -100,7 +104,7 @@ void call(Map args = [:]) {
                         String pluginFullPath = ['plugins', pluginName, revision].join('/')
                         s3Upload(
                             bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}",
-                            path: "snapshots/${pluginFullPath}/",
+                            path: "test/snapshots2/${pluginFullPath}/",
                             workingDir: "${corePluginDir}/",
                             includePathPattern: "**/${pluginName}*"
                         )
