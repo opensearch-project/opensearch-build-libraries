@@ -84,7 +84,6 @@ void call(Map args = [:]) {
             sh """
                 cp -v ${srcDir}/${baseName}.${extension} ${srcDir}/${baseName}-latest.${extension}
                 cp -v ${srcDir}/${baseName}.${extension}.sha512 ${srcDir}/${baseName}-latest.${extension}.sha512
-                cp -v ${srcDir}/${baseName}.${extension}.sig ${srcDir}/${baseName}-latest.${extension}.sig
                 cp -v ${srcDir}/../manifest.yml ${srcDir}/${baseName}-latest.${extension}.build-manifest.yml
                 ${sedCmd} -i "s/.${extension}/-latest.${extension}/g" ${srcDir}/${baseName}-latest.${extension}.sha512
             """
@@ -93,7 +92,6 @@ void call(Map args = [:]) {
                 echo("Upload min snapshots")
                 s3Upload(file: "${srcDir}/${baseName}-latest.${extension}", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "${dstDir}/${baseName}-latest.${extension}")
                 s3Upload(file: "${srcDir}/${baseName}-latest.${extension}.sha512", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "${dstDir}/${baseName}-latest.${extension}.sha512")
-                s3Upload(file: "${srcDir}/${baseName}-latest.${extension}.sig", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "${dstDir}/${baseName}-latest.${extension}.sig")
                 s3Upload(file: "${srcDir}/${baseName}-latest.${extension}.build-manifest.yml", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "${dstDir}/${baseName}-latest.${extension}.build-manifest.yml")
                 // core plugins
                 if (architecture == "x64" && platform == "linux" && distribution == "tar" && corePluginDirExists) {
