@@ -48,7 +48,7 @@
  */
 void call(Map args = [:]) {
 
-    lib = library(identifier: 'jenkins@7.3.3', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@7.3.4', retriever: legacySCM(scm))
     def buildManifest = null
 
     if (!isNullOrEmpty(args.bundleManifest as String)){
