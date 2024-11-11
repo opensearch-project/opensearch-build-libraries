@@ -17,7 +17,8 @@ pipeline {
                         jobName: 'dummy_job',
                         componentName: 'functionalTestDashboards',
                         buildManifest: 'tests/data/opensearch-dashboards-1.2.0-build.yml',
-                        testManifest: 'tests/data/opensearch-dashboards-1.2.0-test.yml'
+                        testManifest: 'tests/data/opensearch-dashboards-1.2.0-test.yml',
+                        ciGroup: '1'
                     )
                 }
             }
