@@ -45,8 +45,6 @@ void call(Map args = [:]) {
     String srcDir = "${WORKSPACE}/${distribution}/builds/${productName}/dist".replace("\\", "/")
     String dstDir = "snapshots/core/${productName}/${version}"
     String baseName = "${productName}-min-${version}-${platform}-${architecture}"
-    argsMap = [:]
-    argsMap['sigtype'] = '.sig'
 
     withCredentials([
         string(credentialsId: 'jenkins-artifact-promotion-role', variable: 'ARTIFACT_PROMOTION_ROLE_NAME'),
@@ -57,18 +55,23 @@ void call(Map args = [:]) {
             String corePluginDir = "${WORKSPACE}/${distribution}/builds/${productName}/core-plugins".replace("\\", "/")
             boolean corePluginDirExists = fileExists(corePluginDir)
             if (architecture == "x64" && platform == "linux" && distribution == "tar" && corePluginDirExists) {
-                echo("Create .sha512 for Core Plugins Snapshots")
-                argsMap['artifactPath'] = corePluginDir
+                echo("Create .sha512 and .sig for Core Plugins Snapshots")
+                fileActions = [createSha512Checksums(), createSignatureFiles()]
+                argsMapPlugins = [:]
+                argsMapPlugins['sigtype'] = '.sig'
+                argsMapPlugins['artifactPath'] = "${WORKSPACE}/${distribution}/builds/${productName}/core-plugins"
                 for (Closure action : fileActions) {
-                    action(argsMap)
+                    action(argsMapPlugins)
                 }
             }
 
-            // Setup min snapshots with .sha512 and .sig (All distributions)
+            // Setup min snapshots with .sha512 (All distributions)
             echo('Create .sha512 for Min Snapshots Artifacts')
-            argsMap['artifactPath'] = srcDir
+            fileActions = [createSha512Checksums()]
+            argsMapMin = [:]
+            argsMapMin['artifactPath'] = srcDir
             for (Closure action : fileActions) {
-                action(argsMap)
+                action(argsMapMin)
             }
 
             echo("Start copying files: version-${version} revision-${revision} architecture-${architecture} platform-${platform} buildid-${id} distribution-${distribution} extension-${extension}")
@@ -81,7 +84,6 @@ void call(Map args = [:]) {
             sh """
                 cp -v ${srcDir}/${baseName}.${extension} ${srcDir}/${baseName}-latest.${extension}
                 cp -v ${srcDir}/${baseName}.${extension}.sha512 ${srcDir}/${baseName}-latest.${extension}.sha512
-                cp -v ${srcDir}/${baseName}.${extension}.sig ${srcDir}/${baseName}-latest.${extension}.sig
                 cp -v ${srcDir}/../manifest.yml ${srcDir}/${baseName}-latest.${extension}.build-manifest.yml
                 ${sedCmd} -i "s/.${extension}/-latest.${extension}/g" ${srcDir}/${baseName}-latest.${extension}.sha512
             """
@@ -90,7 +92,6 @@ void call(Map args = [:]) {
                 echo("Upload min snapshots")
                 s3Upload(file: "${srcDir}/${baseName}-latest.${extension}", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "${dstDir}/${baseName}-latest.${extension}")
                 s3Upload(file: "${srcDir}/${baseName}-latest.${extension}.sha512", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "${dstDir}/${baseName}-latest.${extension}.sha512")
-                s3Upload(file: "${srcDir}/${baseName}-latest.${extension}.sig", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "${dstDir}/${baseName}-latest.${extension}.sig")
                 s3Upload(file: "${srcDir}/${baseName}-latest.${extension}.build-manifest.yml", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "${dstDir}/${baseName}-latest.${extension}.build-manifest.yml")
                 // core plugins
                 if (architecture == "x64" && platform == "linux" && distribution == "tar" && corePluginDirExists) {
