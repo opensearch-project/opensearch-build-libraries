@@ -18,6 +18,7 @@ pipeline {
                         componentName: 'OpenSearch',
                         buildManifest: 'tests/data/opensearch-2.8.0-build-windows.yml',
                         testManifest: 'tests/data/opensearch-2.8.0-test.yml',
+                        ciGroup: ""
                     )
                 }
             }
