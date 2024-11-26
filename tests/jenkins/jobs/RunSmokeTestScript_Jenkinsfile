@@ -1,0 +1,26 @@
+/*
+ * Copyright OpenSearch Contributors
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * The OpenSearch Contributors require contributions made to
+ * this file be licensed under the Apache-2.0 license or a
+ * compatible open source license.
+ */
+
+pipeline {
+    agent none
+    stages {
+        stage('smoke-test') {
+            steps {
+                script {
+                    runSmokeTestScript(
+                        jobName: 'dummy_job',
+                        buildManifest: 'tests/data/opensearch-2.18.0-build.yml',
+                        testManifest: 'tests/data/opensearch-2.18.0-test.yml',
+                        buildId: '1234'
+                    )
+                }
+            }
+        }
+    }
+}
