@@ -6,6 +6,15 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
+/**@
+ * Contains logic to execute the smoke test workflow
+ *
+ * @param args A map of the following parameters
+ * @param args.testManifest <required> Test manifest file location
+ * @param args.buildManifest <required> Build manifest file location
+ * @param args.jobName <optional> Job name that triggered the workflow. 'distribution-build-opensearh' by default.
+ * @param args.buildId <required> Build ID of the distribution artifacts
+*/
 void call(Map args = [:]) {
     String jobName = args.jobName ?: 'distribution-build-opensearch'
     lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
