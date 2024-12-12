@@ -6,6 +6,17 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
+/**@
+ * Contains logic to execute the integration test workflow
+ *
+ * @param args A map of the following parameters
+ * @param args.componentName <required> The plugin/component name
+ * @param args.switchUserNonRoot <required> Run as root user
+ * @param args.testManifest <required> Test manifest file location
+ * @param args.jobName <optional> Job name that triggered the workflow.
+ * @param args.localPath <optional> Local path for downloaded build artifacts
+ * @param args.ciGroup <optional> The particular ci-group number to run the integration tests for
+ */
 void call(Map args = [:]) {
     lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
 
@@ -55,13 +66,16 @@ void call(Map args = [:]) {
     String switchCommandStart = switchUser.equals('true') ? "su `id -un 1000` -c \"env PATH=\$PATH $javaHomeCommand" : "env PATH=\$PATH $javaHomeCommand"
     String switchCommandEnd = switchUser.equals('true') ? '"' : ''
 
+    String testManifest = "manifests/${args.testManifest}"
+
     String testCommand =
     [
         switchCommandStart,
         './test.sh',
         'integ-test',
-        "${args.testManifest}",
+        "${testManifest}",
         "--component ${component}",
+        isNullOrEmpty(args.ciGroup.toString()) ? "" : "--ci-group ${args.ciGroup}",
         "--test-run-id ${env.BUILD_NUMBER}",
         "--paths ${paths}",
         "--base-path ${basePath}",
@@ -97,3 +111,5 @@ String generatePaths(buildManifest, artifactRootUrl, localPath) {
 String generateBasePaths(buildManifest) {
     return ["${env.PUBLIC_ARTIFACT_URL}", "${env.JOB_NAME}", buildManifest.build.version, buildManifest.build.id, buildManifest.build.platform, buildManifest.build.architecture, buildManifest.build.distribution].join("/")
 }
+
+boolean isNullOrEmpty(String str) { return (str == null || str.allWhitespace || str.isEmpty()) }
