@@ -12,8 +12,8 @@
  * @param args A map of the following parameters
  * @param args.testManifest <required> Test manifest file location
  * @param args.buildManifest <required> Build manifest file location
- * @param args.jobName <optional> Job name that triggered the workflow. 'distribution-build-opensearh' by default.
  * @param args.buildId <required> Build ID of the distribution artifacts
+ * @param args.jobName <optional> Job name that triggered the workflow. 'distribution-build-opensearh' by default.
 */
 void call(Map args = [:]) {
     String jobName = args.jobName ?: 'distribution-build-opensearch'
