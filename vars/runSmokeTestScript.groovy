@@ -13,21 +13,15 @@
  * @param args.testManifest <required> Test manifest file location
  * @param args.buildManifest <required> Build manifest file location
  * @param args.buildId <required> Build ID of the distribution artifacts
+ * @param args.switchUserNonRoot <Required> Switch to non root user if true.
  * @param args.jobName <optional> Job name that triggered the workflow. 'distribution-build-opensearh' by default.
- * @param args.switchUserNonRoot <optional> Switch to non root user if true.
 */
 void call(Map args = [:]) {
     String jobName = args.jobName ?: 'distribution-build-opensearch'
     lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.buildManifest))
     String artifactRootUrl = buildManifest.getArtifactRootUrl(jobName, args.buildId)
-//    String filename = buildManifest.build.getFilename()
     echo "Artifact root URL: ${artifactRootUrl}"
-
-//    def javaVersion = (filename == 'opensearch') ? detectTestDockerAgent(testManifest: args.testManifest).javaVersion : ''
-//    String javaHomeCommand = (javaVersion != '' && platform != 'windows') ? "JAVA_HOME=/opt/java/${javaVersion}" : ''
-//
-//    echo "Possible Java Home: ${javaHomeCommand}"
 
     String switchUser = args.switchUserNonRoot ?: 'false'
     if (! (switchUser == 'true' || switchUser == 'false')) {
@@ -36,7 +30,6 @@ void call(Map args = [:]) {
     }
     echo "Switch User to Non-Root (uid=1000): ${switchUser}"
 
-//    String switchCommandStart = switchUser == 'true' ? "su `id -un 1000` -c \"env PATH=\$PATH $javaHomeCommand" : "env PATH=\$PATH $javaHomeCommand"
     String switchCommandStart = switchUser == 'true' ? "su `id -un 1000` -c \"" : ""
     String switchCommandEnd = switchUser == 'true' ? '"' : ''
 
