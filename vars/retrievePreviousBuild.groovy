@@ -16,7 +16,7 @@
  @param args.previousBuildId <optional> - Build id of previous build for incremental build. Defaults to latest.
  */
 void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@8.1.0', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@8.1.1', retriever: legacySCM(scm))
     def inputManifestObj = lib.jenkins.InputManifest.new(readYaml(file: args.inputManifest))
 
     def DISTRIBUTION_JOB_NAME = args.jobName ?: "${JOB_NAME}"
