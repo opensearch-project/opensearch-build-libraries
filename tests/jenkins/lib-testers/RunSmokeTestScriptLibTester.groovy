@@ -16,12 +16,14 @@ class RunSmokeTestScriptLibTester extends LibFunctionTester {
     private String buildManifest
     private String testManifest
     private String buildId
+    private String switchUserNonRoot
 
-    public RunSmokeTestScriptLibTester(jobName, buildManifest, testManifest, buildId){
+    public RunSmokeTestScriptLibTester(jobName, buildManifest, testManifest, buildId, switchUserNonRoot){
         this.jobName = jobName
         this.buildManifest = buildManifest
         this.testManifest = testManifest
         this.buildId = buildId
+        this.switchUserNonRoot = switchUserNonRoot
     }
 
     void configure(helper, binding) {
@@ -39,6 +41,7 @@ class RunSmokeTestScriptLibTester extends LibFunctionTester {
                 && call.args.buildManifest.first().toString().equals(this.buildManifest)
                 && call.args.testManifest.first().toString().equals(this.testManifest)
                 && call.args.buildId.first().toString().equals(this.buildId)
+                && call.args.switchUserNonRoot.first().toString().equals(this.switchUserNonRoot)
     }
 
     String libFunctionName() {
