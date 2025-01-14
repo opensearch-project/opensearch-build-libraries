@@ -17,8 +17,8 @@ pipeline {
                         jobName: 'dummy_job',
                         buildManifest: 'tests/data/opensearch-2.18.0-build.yml',
                         testManifest: 'tests/data/opensearch-2.18.0-test.yml',
-                        buildId: '1234',
-                        switchUserNonRoot: 'false'
+                        buildId: '2345',
+                        switchUserNonRoot: 'true'
                     )
                 }
             }
