@@ -11,6 +11,7 @@ package jenkins
 
 import org.junit.*
 import groovy.json.JsonOutput
+import jenkins.ReleaseMetricsData
 import groovy.json.JsonSlurper
 
 class TestReleaseMetricsData {
@@ -65,7 +66,7 @@ class TestReleaseMetricsData {
             }
             return ""
         }
-        releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, 'opensearch_release_metrics', version, script)
+        releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, script)
     }
 
     @Test
@@ -107,5 +108,84 @@ class TestReleaseMetricsData {
         def expectedOutput = ['foo', 'bar']
         def result = releaseMetricsData.getReleaseOwners('sql')
         assert  result == expectedOutput
+    }
+
+    @Test
+    void testGetReleaseIssueQuery(){
+        String expectedOutput = JsonOutput.toJson([
+                size   : 1,
+                _source: "release_issue",
+                query  : [
+                        bool: [
+                                filter: [
+                                        [
+                                                match_phrase: [
+                                                        version: "2.18.0"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        repository: "opensearch-build"
+                                                ]
+                                        ]
+                                ]
+                        ]
+                ],
+                sort   : [
+                        [
+                                current_date: [
+                                        order: "desc"
+                                ]
+                        ]
+                ]
+        ]).replace('"', '\\"')
+        def result = releaseMetricsData.getReleaseIssueQuery('opensearch-build')
+        assert result == expectedOutput
+    }
+
+    @Test
+    void testGetReleaseIssue() {
+        def responseText = """
+                    {
+                      "took": 5,
+                      "timed_out": false,
+                      "_shards": {
+                        "total": 5,
+                        "successful": 5,
+                        "skipped": 0,
+                        "failed": 0
+                      },
+                      "hits": {
+                        "total": {
+                          "value": 10,
+                          "relation": "eq"
+                        },
+                        "max_score": null,
+                        "hits": [
+                          {
+                            "_index": "opensearch_release_metrics",
+                            "_id": "fec68961-abdb-3e49-b97f-b656b0a9a510",
+                            "_score": null,
+                            "_source": {
+                              "release_issue": "https://github.com/opensearch-project/opensearch-build/issues/5152"
+                            },
+                            "sort": [
+                              1738866320789
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                """
+        script = new Expando()
+        script.sh = { Map args ->
+            if (args.containsKey("script")) {
+                return responseText
+            }
+        }
+        releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, script)
+        def expectedOutput = "https://github.com/opensearch-project/opensearch-build/issues/5152"
+        def result = releaseMetricsData.getReleaseIssue('opensearch-build')
+        assert result == expectedOutput
     }
 }
