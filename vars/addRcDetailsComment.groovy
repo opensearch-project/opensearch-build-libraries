@@ -54,8 +54,18 @@ void call(Map args = [:]) {
             OPENSEARCH_RC_BUILD_NUMBER: opensearchRcBuildNumber,
             OPENSEARCH_DASHBOARDS_RC_BUILD_NUMBER: opensearchDashboardsRcBuildNumber
     ]
+    println('Retrieved values: '+ rcValues)
 
     try {
+        // Check for null or empty values
+        def nullOrEmptyKeys = rcValues.findAll { k, v ->
+            v == null || (v instanceof String && v.trim().isEmpty())
+        }.keySet()
+
+        if (nullOrEmptyKeys) {
+            error "Following required values are null or empty: ${nullOrEmptyKeys.join(', ')}"
+        }
+
         // Load RC details template content
         def templateContent = libraryResource "release/rc-details-template.md"
 
