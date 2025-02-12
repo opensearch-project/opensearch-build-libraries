@@ -48,6 +48,17 @@
             set +x
             curl -s -XGET "sample.url/opensearch-distribution-build-results/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"_source\":\"distribution_build_number\",\"sort\":[{\"distribution_build_number\":{\"order\":\"desc\"}}],\"size\":1,\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component\":\"OpenSearch-Dashboards\"}},{\"match_phrase\":{\"rc\":\"true\"}},{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"rc_number\":\"5\"}}]}}}" | jq '.'
         , returnStdout=true})
+                  addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/distribution-build-opensearch/runs/10787/nodes/" | jq '.[] | select(.actions[].description? | contains("docker-scan")) | .actions[] | select(.description | contains("docker-scan")) | ._links.self.href', returnStdout=true})
+                  addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/docker-scan/runs/4439/" | jq -r '._links.artifacts.href', returnStdout=true})
+                  addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/docker-scan/runs/4439/artifacts/" | jq -r '.[] | select(.name | endswith(".txt")) | .url', returnStdout=true})
+                  addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.org/job/docker-scan/4439/artifact/scan_docker_image.txt", returnStdout=true})
+                  addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/distribution-build-opensearch-dashboards/runs/8260/nodes/" | jq '.[] | select(.actions[].description? | contains("docker-scan")) | .actions[] | select(.description | contains("docker-scan")) | ._links.self.href', returnStdout=true})
+                  addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.orgbbb
+ccc" | jq -r '._links.artifacts.href', returnStdout=true})
+                  addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.orgbbb
+ccc" | jq -r '.[] | select(.name | endswith(".txt")) | .url', returnStdout=true})
+                  addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.orgbbb
+ccc", returnStdout=true})
                   addRcDetailsComment.libraryResource(release/rc-details-template.md)
                   addRcDetailsComment.writeFile({file=rc-details-comment-body.md, text=## See OpenSearch RC 5 and OpenSearch-Dashboards RC 5 details
 <details><summary>OpenSearch 5 and OpenSearch-Dashboards 5 details</summary>
@@ -177,6 +188,39 @@ _Check how to install [opensearch](https://opensearch.org/docs/latest/install-an
 - Find the list of the created **AUTOCUT** issues here https://github.com/issues?page=1&q=is%3Aopen+is%3Aissue+user%3Aopensearch-project+label%3Av2.19.0+label%3Aautocut+%5BAUTOCUT%5D+in%3Atitle.
 
 Thank you
+</p>
+</details>
+
+
+<details><summary>OpenSearch Docker-Scan Results</summary>
+<p>
+
+[Workflow run](https://build.ci.opensearch.org/job/docker-scan/4439/artifact/scan_docker_image.txt)
+<pre>
+<code>
+
+Total: 0 (UNKNOWN: 0, LOW: 0, MEDIUM: 0, HIGH: 0, CRITICAL: 0))
+
+</code>
+</pre>
+</p>
+</details>
+
+<details><summary>OpenSearch-Dashboards Docker-Scan Results</summary>
+<p>
+
+[Workflow run](https://build.ci.opensearch.orgbbb
+ccc)
+<pre>
+<code>
+
+
+bbb
+ccc
+
+
+</code>
+</pre>
 </p>
 </details>
 })

@@ -22,7 +22,7 @@ void call(Map args = [:]) {
     def opensearchDashboardsRcNumber
     def opensearchRcBuildNumber
     def opensearchDashboardsRcBuildNumber
-    def releaseIssueUrl
+    String releaseIssueUrl
 
     if (version.isEmpty()){
         error('version is required to get RC details.')
@@ -47,14 +47,20 @@ void call(Map args = [:]) {
         }
     }
 
+    def opensearchScanResults = getDockerScanResult('OpenSearch', opensearchRcBuildNumber)
+    def opensearchDashboardsScanResults = getDockerScanResult('OpenSearch-Dashboards', opensearchDashboardsRcBuildNumber)
+
     def rcValues = [
             VERSION: version,
             OPENSEARCH_RC_NUMBER: opensearchRcNumber,
             OPENSEARCH_DASHBOARDS_RC_NUMBER: opensearchDashboardsRcNumber,
             OPENSEARCH_RC_BUILD_NUMBER: opensearchRcBuildNumber,
-            OPENSEARCH_DASHBOARDS_RC_BUILD_NUMBER: opensearchDashboardsRcBuildNumber
+            OPENSEARCH_DASHBOARDS_RC_BUILD_NUMBER: opensearchDashboardsRcBuildNumber,
+            OPENSEARCH_DOCKER_SCAN_RESULTS: opensearchScanResults.dockerScanResult,
+            OPENSEARCH_DASHBOARDS_DOCKER_SCAN_RESULTS: opensearchDashboardsScanResults.dockerScanResult,
+            OPENSEARCH_DOCKER_SCAN_URL: opensearchScanResults.dockerScanUrl,
+            OPENSEARCH_DASHBOARDS_DOCKER_SCAN_URL: opensearchDashboardsScanResults.dockerScanUrl
     ]
-    println('Retrieved values: '+ rcValues)
 
     try {
         // Check for null or empty values
@@ -91,4 +97,37 @@ void call(Map args = [:]) {
                 returnStdout: true
         )
     }
+}
+
+def getDockerScanResult(String component, def distributionRcBuildNumber) {
+    println('Getting docker scan results')
+    String buildJobName = ''
+    String JENKINS_BASE_URL = 'https://build.ci.opensearch.org'
+    String BLUE_OCEAN_URL = 'blue/rest/organizations/jenkins/pipelines'
+    if(component == 'OpenSearch') {
+        buildJobName = 'distribution-build-opensearch'
+    } else if(component == 'OpenSearch-Dashboards') {
+        buildJobName = 'distribution-build-opensearch-dashboards'
+    } else {
+        error('Invalid component name. Valid values: OpenSearch, OpenSearch-Dashboards')
+    }
+    String dockerScanUrl = sh (
+            script: "curl -s -XGET \"${JENKINS_BASE_URL}/${BLUE_OCEAN_URL}/${buildJobName}/runs/${distributionRcBuildNumber}/nodes/\" | jq '.[] | select(.actions[].description? | contains(\"docker-scan\")) | .actions[] | select(.description | contains(\"docker-scan\")) | ._links.self.href'",
+            returnStdout: true
+    ).trim()
+    String artifactsUrl = sh(
+            script: "curl -s -XGET \"${JENKINS_BASE_URL}${dockerScanUrl}\" | jq -r '._links.artifacts.href'",
+            returnStdout: true
+    ).trim()
+    String dockerTxtScanUrl = sh(
+            script: "curl -s -XGET \"${JENKINS_BASE_URL}${artifactsUrl}\" | jq -r '.[] | select(.name | endswith(\".txt\")) | .url'",
+            returnStdout: true
+    ).trim()
+    String fullDockerTxtScanUrl = "${JENKINS_BASE_URL}${dockerTxtScanUrl}"
+    // Do not trim as it messes the text table.
+    String dockerScanResult = sh(
+            script: "curl -s -XGET \"${fullDockerTxtScanUrl}\"",
+            returnStdout: true
+    )
+    return [dockerScanUrl: fullDockerTxtScanUrl, dockerScanResult: dockerScanResult]
 }
