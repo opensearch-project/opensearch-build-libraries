@@ -13,22 +13,33 @@ import groovy.json.JsonOutput
 import utils.OpenSearchMetricsQuery
 
 class ReleaseMetricsData {
+    public static final String INDEX_NAME = 'opensearch_release_metrics'
     String metricsUrl
     String awsAccessKey
     String awsSecretKey
     String awsSessionToken
-    String indexName
     String version
+    String indexName
     def script
     OpenSearchMetricsQuery openSearchMetricsQuery
 
-    ReleaseMetricsData(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, String indexName, String version, def script) {
+    ReleaseMetricsData(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, String version, def script) {
         this.metricsUrl = metricsUrl
         this.awsAccessKey = awsAccessKey
         this.awsSecretKey = awsSecretKey
         this.awsSessionToken = awsSessionToken
-        this.indexName = indexName
         this.version = version
+        this.script = script
+        this.openSearchMetricsQuery = new OpenSearchMetricsQuery(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, INDEX_NAME, script)
+    }
+
+    ReleaseMetricsData(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, String version, String indexName, def script) {
+        this.metricsUrl = metricsUrl
+        this.awsAccessKey = awsAccessKey
+        this.awsSecretKey = awsSecretKey
+        this.awsSessionToken = awsSessionToken
+        this.version = version
+        this.indexName = indexName
         this.script = script
         this.openSearchMetricsQuery = new OpenSearchMetricsQuery(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, script)
     }
@@ -53,7 +64,39 @@ class ReleaseMetricsData {
                                 ]
                         ]
                 ],
-                sort : [
+                sort   : [
+                        [
+                                current_date: [
+                                        order: "desc"
+                                ]
+                        ]
+                ]
+        ]
+        String query = JsonOutput.toJson(queryMap)
+        return query.replace('"', '\\"')
+    }
+
+    String getReleaseIssueQuery(String repository) {
+        def queryMap = [
+                size   : 1,
+                _source: "release_issue",
+                query  : [
+                        bool: [
+                                filter: [
+                                        [
+                                                match_phrase: [
+                                                        version: "${this.version}"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        repository: "${repository}"
+                                                ]
+                                        ]
+                                ]
+                        ]
+                ],
+                sort   : [
                         [
                                 current_date: [
                                         order: "desc"
@@ -69,5 +112,11 @@ class ReleaseMetricsData {
         def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(getReleaseOwnerQuery(component))
         def releaseOwners = jsonResponse.hits.hits._source.release_owners.flatten()
         return releaseOwners
+    }
+
+    String getReleaseIssue(String repository) {
+        def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(getReleaseIssueQuery(repository))
+        def releaseIssue = jsonResponse.hits.hits._source.release_issue[0]
+        return releaseIssue.toString()
     }
 }
