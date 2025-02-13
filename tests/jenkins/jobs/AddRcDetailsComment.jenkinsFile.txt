@@ -1,0 +1,186 @@
+   AddRcDetailsComment.run()
+      AddRcDetailsComment.pipeline(groovy.lang.Closure)
+         AddRcDetailsComment.echo(Executing on agent [label:none])
+         AddRcDetailsComment.stage(addRCcommentToGHIssue, groovy.lang.Closure)
+            AddRcDetailsComment.script(groovy.lang.Closure)
+               AddRcDetailsComment.addRcDetailsComment({version=2.19.0})
+                  addRcDetailsComment.string({credentialsId=jenkins-health-metrics-account-number, variable=METRICS_HOST_ACCOUNT})
+                  addRcDetailsComment.string({credentialsId=jenkins-health-metrics-cluster-endpoint, variable=METRICS_HOST_URL})
+                  addRcDetailsComment.withCredentials([METRICS_HOST_ACCOUNT, METRICS_HOST_URL], groovy.lang.Closure)
+                     addRcDetailsComment.withAWS({role=OpenSearchJenkinsAccessRole, roleAccount=METRICS_HOST_ACCOUNT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
+                        ReleaseMetricsData.getReleaseIssue(opensearch-build)
+                           OpenSearchMetricsQuery.fetchMetrics({\"size\":1,\"_source\":\"release_issue\",\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"repository\":\"opensearch-build\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]})
+                              addRcDetailsComment.println(Running query: {\"size\":1,\"_source\":\"release_issue\",\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"repository\":\"opensearch-build\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]})
+                              addRcDetailsComment.sh({script=
+            set -e
+            set +x
+            curl -s -XGET "sample.url/opensearch_release_metrics/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"size\":1,\"_source\":\"release_issue\",\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"repository\":\"opensearch-build\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]}" | jq '.'
+        , returnStdout=true})
+                        ReleaseCandidateStatus.getLatestRcNumber(OpenSearch)
+                           OpenSearchMetricsQuery.fetchMetrics({\"_source\":\"rc_number\",\"sort\":[{\"distribution_build_number\":{\"order\":\"desc\"},\"rc_number\":{\"order\":\"desc\"}}],\"size\":1,\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component\":\"OpenSearch\"}},{\"match_phrase\":{\"rc\":\"true\"}},{\"match_phrase\":{\"version\":\"2.19.0\"}}]}}})
+                              addRcDetailsComment.println(Running query: {\"_source\":\"rc_number\",\"sort\":[{\"distribution_build_number\":{\"order\":\"desc\"},\"rc_number\":{\"order\":\"desc\"}}],\"size\":1,\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component\":\"OpenSearch\"}},{\"match_phrase\":{\"rc\":\"true\"}},{\"match_phrase\":{\"version\":\"2.19.0\"}}]}}})
+                              addRcDetailsComment.sh({script=
+            set -e
+            set +x
+            curl -s -XGET "sample.url/opensearch-distribution-build-results/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"_source\":\"rc_number\",\"sort\":[{\"distribution_build_number\":{\"order\":\"desc\"},\"rc_number\":{\"order\":\"desc\"}}],\"size\":1,\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component\":\"OpenSearch\"}},{\"match_phrase\":{\"rc\":\"true\"}},{\"match_phrase\":{\"version\":\"2.19.0\"}}]}}}" | jq '.'
+        , returnStdout=true})
+                        ReleaseCandidateStatus.getLatestRcNumber(OpenSearch-Dashboards)
+                           OpenSearchMetricsQuery.fetchMetrics({\"_source\":\"rc_number\",\"sort\":[{\"distribution_build_number\":{\"order\":\"desc\"},\"rc_number\":{\"order\":\"desc\"}}],\"size\":1,\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component\":\"OpenSearch-Dashboards\"}},{\"match_phrase\":{\"rc\":\"true\"}},{\"match_phrase\":{\"version\":\"2.19.0\"}}]}}})
+                              addRcDetailsComment.println(Running query: {\"_source\":\"rc_number\",\"sort\":[{\"distribution_build_number\":{\"order\":\"desc\"},\"rc_number\":{\"order\":\"desc\"}}],\"size\":1,\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component\":\"OpenSearch-Dashboards\"}},{\"match_phrase\":{\"rc\":\"true\"}},{\"match_phrase\":{\"version\":\"2.19.0\"}}]}}})
+                              addRcDetailsComment.sh({script=
+            set -e
+            set +x
+            curl -s -XGET "sample.url/opensearch-distribution-build-results/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"_source\":\"rc_number\",\"sort\":[{\"distribution_build_number\":{\"order\":\"desc\"},\"rc_number\":{\"order\":\"desc\"}}],\"size\":1,\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component\":\"OpenSearch-Dashboards\"}},{\"match_phrase\":{\"rc\":\"true\"}},{\"match_phrase\":{\"version\":\"2.19.0\"}}]}}}" | jq '.'
+        , returnStdout=true})
+                        ReleaseCandidateStatus.getRcDistributionNumber(5, OpenSearch)
+                           OpenSearchMetricsQuery.fetchMetrics({\"_source\":\"distribution_build_number\",\"sort\":[{\"distribution_build_number\":{\"order\":\"desc\"}}],\"size\":1,\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component\":\"OpenSearch\"}},{\"match_phrase\":{\"rc\":\"true\"}},{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"rc_number\":\"5\"}}]}}})
+                              addRcDetailsComment.println(Running query: {\"_source\":\"distribution_build_number\",\"sort\":[{\"distribution_build_number\":{\"order\":\"desc\"}}],\"size\":1,\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component\":\"OpenSearch\"}},{\"match_phrase\":{\"rc\":\"true\"}},{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"rc_number\":\"5\"}}]}}})
+                              addRcDetailsComment.sh({script=
+            set -e
+            set +x
+            curl -s -XGET "sample.url/opensearch-distribution-build-results/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"_source\":\"distribution_build_number\",\"sort\":[{\"distribution_build_number\":{\"order\":\"desc\"}}],\"size\":1,\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component\":\"OpenSearch\"}},{\"match_phrase\":{\"rc\":\"true\"}},{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"rc_number\":\"5\"}}]}}}" | jq '.'
+        , returnStdout=true})
+                        ReleaseCandidateStatus.getRcDistributionNumber(5, OpenSearch-Dashboards)
+                           OpenSearchMetricsQuery.fetchMetrics({\"_source\":\"distribution_build_number\",\"sort\":[{\"distribution_build_number\":{\"order\":\"desc\"}}],\"size\":1,\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component\":\"OpenSearch-Dashboards\"}},{\"match_phrase\":{\"rc\":\"true\"}},{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"rc_number\":\"5\"}}]}}})
+                              addRcDetailsComment.println(Running query: {\"_source\":\"distribution_build_number\",\"sort\":[{\"distribution_build_number\":{\"order\":\"desc\"}}],\"size\":1,\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component\":\"OpenSearch-Dashboards\"}},{\"match_phrase\":{\"rc\":\"true\"}},{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"rc_number\":\"5\"}}]}}})
+                              addRcDetailsComment.sh({script=
+            set -e
+            set +x
+            curl -s -XGET "sample.url/opensearch-distribution-build-results/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"_source\":\"distribution_build_number\",\"sort\":[{\"distribution_build_number\":{\"order\":\"desc\"}}],\"size\":1,\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component\":\"OpenSearch-Dashboards\"}},{\"match_phrase\":{\"rc\":\"true\"}},{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"rc_number\":\"5\"}}]}}}" | jq '.'
+        , returnStdout=true})
+                  addRcDetailsComment.libraryResource(release/rc-details-template.md)
+                  addRcDetailsComment.writeFile({file=rc-details-comment-body.md, text=## See OpenSearch RC 5 and OpenSearch-Dashboards RC 5 details
+<details><summary>OpenSearch 5 and OpenSearch-Dashboards 5 details</summary>
+<p>
+ ## OpenSearch 10787 and OpenSearch-Dashboards 8260 is ready for your test.
+
+OpenSearch - [Build 10787](https://build.ci.opensearch.org/blue/organizations/jenkins/distribution-build-opensearch/detail/distribution-build-opensearch/10787/pipeline)
+OpenSearch Dashboards - [Build 8260](https://build.ci.opensearch.org/blue/organizations/jenkins/distribution-build-opensearch-dashboards/detail/distribution-build-opensearch-dashboards/8260/pipeline)
+
+- Use the following Docker-Compose to setup a cluster
+  <details><summary>docker-compose.yml</summary>
+  <p>
+    <pre>
+    <code>
+  version: '3'
+  services:
+    opensearch-node1:
+      image: opensearchstaging/opensearch:2.19.0.10787
+      container_name: opensearch-node1
+      environment:
+        - cluster.name=opensearch-cluster
+        - node.name=opensearch-node1
+        - discovery.seed_hosts=opensearch-node1,opensearch-node2
+        - cluster.initial_cluster_manager_nodes=opensearch-node1,opensearch-node2
+        - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
+        - OPENSEARCH_INITIAL_ADMIN_PASSWORD=myStrongPassword123!
+      ulimits:
+        memlock:
+          soft: -1
+          hard: -1
+        nofile:
+          soft: 65536 # maximum number of open files for the OpenSearch user, set to at least 65536 on modern systems
+          hard: 65536
+      volumes:
+        - opensearch-data1:/usr/share/opensearch/data
+      ports:
+        - 9200:9200
+        - 9600:9600 # required for Performance Analyzer
+      networks:
+        - opensearch-net
+    opensearch-node2:
+      image: opensearchstaging/opensearch:2.19.0.10787
+      container_name: opensearch-node2
+      environment:
+        - cluster.name=opensearch-cluster
+        - node.name=opensearch-node2
+        - discovery.seed_hosts=opensearch-node1,opensearch-node2
+        - cluster.initial_cluster_manager_nodes=opensearch-node1,opensearch-node2
+        - bootstrap.memory_lock=true
+        - OPENSEARCH_INITIAL_ADMIN_PASSWORD=myStrongPassword123!
+      ulimits:
+        memlock:
+          soft: -1
+          hard: -1
+        nofile:
+          soft: 65536
+          hard: 65536
+      volumes:
+        - opensearch-data2:/usr/share/opensearch/data
+      networks:
+        - opensearch-net
+    opensearch-dashboards:
+      image: opensearchstaging/opensearch-dashboards:2.19.0.8260
+      container_name: opensearch-dashboards
+      ports:
+        - 5601:5601
+      expose:
+        - "5601"
+      environment:
+        OPENSEARCH_HOSTS: '["https://opensearch-node1:9200","https://opensearch-node2:9200"]'
+      networks:
+        - opensearch-net
+  volumes:
+    opensearch-data1:
+    opensearch-data2:
+
+  networks:
+  opensearch-net:
+  </code>
+  </pre>
+
+  </p>
+  </details>
+
+    + Download the above docker-compose.yml on your machine.
+    + Get latest image versions `docker-compose pull`.
+    + Start the cluster `docker-compose up`.
+
+- [OpenSearch docker 2.19.0.10787](https://hub.docker.com/r/opensearchstaging/opensearch/tags?page=1&name=2.19.0.10787)
+    + Start without security
+        - Docker command `docker pull opensearchstaging/opensearch:2.19.0.10787 && docker run -it -p 9200:9200 -e "discovery.type=single-node" -e "DISABLE_SECURITY_PLUGIN=true" opensearchstaging/opensearch:2.19.0.10787`
+        - Connect command `curl http://localhost:9200/`
+    + Start with security
+        - Docker command
+      ```
+      docker pull opensearchstaging/opensearch:2.19.0.10787 && docker run -it -p 9200:9200 -e "discovery.type=single-node" -e "OPENSEARCH_INITIAL_ADMIN_PASSWORD=myStrongPassword123!" opensearchstaging/opensearch:2.19.0.10787
+      ```
+        - Connect command `curl --insecure 'https://admin:myStrongPassword123!@localhost:9200/'`
+- [OpenSearch-Dashboards docker 2.19.0.8260](https://hub.docker.com/r/opensearchstaging/opensearch-dashboards/tags?page=1&name=2.19.0.8260)
+    + Start without security
+        - Docker command `docker pull opensearchstaging/opensearch-dashboards:2.19.0.8260 && docker run -it --network="host" -e "DISABLE_SECURITY_DASHBOARDS_PLUGIN=true" opensearchstaging/opensearch-dashboards:2.19.0.8260`
+        - URL `http://localhost:5601/`
+    + Start with security
+        - Docker command `docker pull opensearchstaging/opensearch-dashboards:2.19.0.8260 && docker run -it --network="host" opensearchstaging/opensearch-dashboards:2.19.0.8260`
+        - URL `http://localhost:5601/`
+
+- Use TARs to deploy OpenSearch Manually
+    + OpenSearch - Build 10787 (Note: Windows version does not have performance analyzer plugin)
+        * arm64 [[manifest](https://ci.opensearch.org/ci/dbc/distribution-build-opensearch/2.19.0/10787/linux/arm64/tar/dist/opensearch/manifest.yml)] [[tar](https://ci.opensearch.org/ci/dbc/distribution-build-opensearch/2.19.0/10787/linux/arm64/tar/dist/opensearch/opensearch-2.19.0-linux-arm64.tar.gz)] [[rpm](https://ci.opensearch.org/ci/dbc/distribution-build-opensearch/2.19.0/10787/linux/arm64/rpm/dist/opensearch/opensearch-2.19.0-linux-arm64.rpm)][[deb](https://ci.opensearch.org/ci/dbc/distribution-build-opensearch/2.19.0/10787/linux/arm64/deb/dist/opensearch/opensearch-2.19.0-linux-arm64.deb)]
+        * x64 [[manifest](https://ci.opensearch.org/ci/dbc/distribution-build-opensearch/2.19.0/10787/linux/x64/tar/dist/opensearch/manifest.yml)] [[tar](https://ci.opensearch.org/ci/dbc/distribution-build-opensearch/2.19.0/10787/linux/x64/tar/dist/opensearch/opensearch-2.19.0-linux-x64.tar.gz)] [[rpm](https://ci.opensearch.org/ci/dbc/distribution-build-opensearch/2.19.0/10787/linux/x64/rpm/dist/opensearch/opensearch-2.19.0-linux-x64.rpm)] [[deb](https://ci.opensearch.org/ci/dbc/distribution-build-opensearch/2.19.0/10787/linux/x64/deb/dist/opensearch/opensearch-2.19.0-linux-x64.deb)] [[windows](https://ci.opensearch.org/ci/dbc/distribution-build-opensearch/2.19.0/10787/windows/x64/zip/dist/opensearch/opensearch-2.19.0-windows-x64.zip)]
+
+
++ OpenSearch Dashboards - Build 8260
+    * arm64 [[manifest](https://ci.opensearch.org/ci/dbc/distribution-build-opensearch-dashboards/2.19.0/8260/linux/arm64/tar/dist/opensearch-dashboards/manifest.yml)] [[tar](https://ci.opensearch.org/ci/dbc/distribution-build-opensearch-dashboards/2.19.0/8260/linux/arm64/tar/dist/opensearch-dashboards/opensearch-dashboards-2.19.0-linux-arm64.tar.gz)][[rpm](https://ci.opensearch.org/ci/dbc/distribution-build-opensearch-dashboards/2.19.0/8260/linux/arm64/rpm/dist/opensearch-dashboards/opensearch-dashboards-2.19.0-linux-arm64.rpm)][[deb](https://ci.opensearch.org/ci/dbc/distribution-build-opensearch-dashboards/2.19.0/8260/linux/arm64/deb/dist/opensearch-dashboards/opensearch-dashboards-2.19.0-linux-arm64.deb)]
+    * x64 [[manifest](https://ci.opensearch.org/ci/dbc/distribution-build-opensearch-dashboards/2.19.0/8260/linux/x64/tar/dist/opensearch-dashboards/manifest.yml)] [[tar](https://ci.opensearch.org/ci/dbc/distribution-build-opensearch-dashboards/2.19.0/8260/linux/x64/tar/dist/opensearch-dashboards/opensearch-dashboards-2.19.0-linux-x64.tar.gz)][[rpm](https://ci.opensearch.org/ci/dbc/distribution-build-opensearch-dashboards/2.19.0/8260/linux/x64/rpm/dist/opensearch-dashboards/opensearch-dashboards-2.19.0-linux-x64.rpm)] [[deb](https://ci.opensearch.org/ci/dbc/distribution-build-opensearch-dashboards/2.19.0/8260/linux/x64/deb/dist/opensearch-dashboards/opensearch-dashboards-2.19.0-linux-x64.deb)] [[windows](https://ci.opensearch.org/ci/dbc/distribution-build-opensearch-dashboards/2.19.0/8260/windows/x64/zip/dist/opensearch-dashboards/opensearch-dashboards-2.19.0-windows-x64.zip)]
+
+
+_Check how to install [opensearch](https://opensearch.org/docs/latest/install-and-configure/install-opensearch/index/) and [dashboards](https://opensearch.org/docs/latest/install-and-configure/install-dashboards/index/) on different platforms_
+
+## Integration Test Results
+
+- Use the https://metrics.opensearch.org/_dashboards/goto/9ed74dd90eb31c7b83f3542e43328088?security_tenant=global.
+
+- Filter by the `distribution_build_number`. Use **10787** for OpenSearch and **8260** for OpenSearch Dashboards.
+  Example when filtered with **10787** we can see all the passed/failed OpenSearch components. Check the metrics [here](https://metrics.opensearch.org/_dashboards/app/dashboards#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now%2Fw,to:now%2Fw))&_a=(description:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',filters:!(('\$state':(store:appState),meta:(alias:!n,controlledBy:'1721852613904',disabled:!f,index:'16f55f10-4977-11ef-8565-15a1562cd0a0',key:version,negate:!f,params:(query:'2.19.0'),type:phrase),query:(match_phrase:(version:'2.19.0'))),('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:'23eb6520-4977-11ef-bbdd-39a9b324a5aa',key:distribution_build_number,negate:!f,params:!('10787','%208260'),type:phrases,value:'10787,%20%208260'),query:(bool:(minimum_should_match:1,should:!((match_phrase:(distribution_build_number:'10787')),(match_phrase:(distribution_build_number:'%208260')))))),('\$state':(store:appState),meta:(alias:!n,controlledBy:'1722482131538',disabled:!f,index:'16f55f10-4977-11ef-8565-15a1562cd0a0',key:rc_number,negate:!f,params:(query:4),type:phrase),query:(match_phrase:(rc_number:4)))),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),query:(language:kuery,query:''),timeRestore:!t,title:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',viewMode:view)).
+
+- Find the list of the created **AUTOCUT** issues here https://github.com/issues?page=1&q=is%3Aopen+is%3Aissue+user%3Aopensearch-project+label%3Av2.19.0+label%3Aautocut+%5BAUTOCUT%5D+in%3Atitle.
+
+Thank you
+</p>
+</details>
+})
+                  addRcDetailsComment.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
+                  addRcDetailsComment.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+                     addRcDetailsComment.println(Adding RC details to the release issue as a comment.)
+                     addRcDetailsComment.sh({script=gh issue comment https://github.com/opensearch-project/opensearch-build/issues/5152 --body-file 'rc-details-comment-body.md', returnStdout=true})

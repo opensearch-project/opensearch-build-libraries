@@ -38,7 +38,7 @@ void call(Map args = [:]) {
             def awsSessionToken = env.AWS_SESSION_TOKEN
             def distributionBuildNumber = args.distributionBuildNumber ?: new ComponentBuildStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, buildIndexName, product, version, this).getLatestDistributionBuildNumber().toString()
             ComponentIntegTestStatus componentIntegTestStatus = new ComponentIntegTestStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, integTestIndexName, product, version, distributionBuildNumber, this)
-            ReleaseMetricsData releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, releaseIndexName, version, this)
+            ReleaseMetricsData releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, releaseIndexName, this)
             println('Distribution Build Number: ' + distributionBuildNumber)
             passedComponents = componentIntegTestStatus.getComponents('passed')
             failedComponents = componentIntegTestStatus.getComponents('failed')
