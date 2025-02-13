@@ -109,7 +109,7 @@ def getDockerScanResult(String component, def distributionRcBuildNumber) {
     } else if(component == 'OpenSearch-Dashboards') {
         buildJobName = 'distribution-build-opensearch-dashboards'
     } else {
-        error('Invalid component name. Valid values: OpenSearch, OpenSearch-Dashboards')
+        error("Invalid component name: ${component}. Valid values: OpenSearch, OpenSearch-Dashboards")
     }
     String dockerScanUrl = sh (
             script: "curl -s -XGET \"${JENKINS_BASE_URL}/${BLUE_OCEAN_URL}/${buildJobName}/runs/${distributionRcBuildNumber}/nodes/\" | jq '.[] | select(.actions[].description? | contains(\"docker-scan\")) | .actions[] | select(.description | contains(\"docker-scan\")) | ._links.self.href'",
