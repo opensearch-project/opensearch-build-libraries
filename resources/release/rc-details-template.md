@@ -128,3 +128,32 @@ _Check how to install [opensearch](https://opensearch.org/docs/latest/install-an
 Thank you
 </p>
 </details>
+
+
+<details><summary>OpenSearch Docker-Scan Results</summary>
+<p>
+
+[Workflow run](${OPENSEARCH_DOCKER_SCAN_URL})
+<pre>
+<code>
+
+${OPENSEARCH_DOCKER_SCAN_RESULTS}
+
+</code>
+</pre>
+</p>
+</details>
+
+<details><summary>OpenSearch-Dashboards Docker-Scan Results</summary>
+<p>
+
+[Workflow run](${OPENSEARCH_DASHBOARDS_DOCKER_SCAN_URL})
+<pre>
+<code>
+
+${OPENSEARCH_DASHBOARDS_DOCKER_SCAN_RESULTS}
+
+</code>
+</pre>
+</p>
+</details>
