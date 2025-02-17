@@ -20,7 +20,7 @@ class ReleaseCandidateStatus {
     String indexName
     String version
     def script
-    OpenSearchMetricsQuery openSearchMetricsQuery
+    def openSearchMetricsQuery
 
     ReleaseCandidateStatus(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, String indexName, String version, def script) {
         this.metricsUrl = metricsUrl
