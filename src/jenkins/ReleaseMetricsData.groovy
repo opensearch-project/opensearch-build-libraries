@@ -21,7 +21,7 @@ class ReleaseMetricsData {
     String version
     String indexName
     def script
-    OpenSearchMetricsQuery openSearchMetricsQuery
+    def openSearchMetricsQuery
 
     ReleaseMetricsData(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, String version, def script) {
         this.metricsUrl = metricsUrl
