@@ -44,10 +44,13 @@ class ReleaseMetricsData {
         this.openSearchMetricsQuery = new OpenSearchMetricsQuery(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, script)
     }
 
-    String getReleaseOwnerQuery(String component) {
+    String getReleaseOwnerIssueRepoQuery(String component) {
         def queryMap = [
                 size   : 1,
-                _source: "release_owners",
+                _source: [
+                        "release_owners",
+                        "release_issue_exists"
+                ],
                 query  : [
                         bool: [
                                 filter: [
@@ -58,7 +61,7 @@ class ReleaseMetricsData {
                                         ],
                                         [
                                                 match_phrase: [
-                                                        "component": "${component}"
+                                                        "component.keyword": "${component}"
                                                 ]
                                         ]
                                 ]
@@ -108,15 +111,36 @@ class ReleaseMetricsData {
         return query.replace('"', '\\"')
     }
 
-    ArrayList getReleaseOwners(String component) {
-        def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(getReleaseOwnerQuery(component))
-        def releaseOwners = jsonResponse.hits.hits._source.release_owners.flatten()
-        return releaseOwners
-    }
+ArrayList getReleaseOwners(String component) {
+        try {
+                def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(getReleaseOwnerIssueRepoQuery(component))
+                def releaseOwners = jsonResponse.hits.hits._source.release_owners.flatten()
+                return releaseOwners
+        } catch (Exception e) {
+                this.script.println("Error fetching release owners: ${e.message}")
+                return null
+        }
+}
 
-    String getReleaseIssue(String repository) {
-        def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(getReleaseIssueQuery(repository))
-        def releaseIssue = jsonResponse.hits.hits._source.release_issue[0]
-        return releaseIssue.toString()
-    }
+String getReleaseIssue(String repository) {
+        try {
+                def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(getReleaseIssueQuery(repository))
+                def releaseIssue = jsonResponse.hits.hits._source.release_issue[0]
+                return releaseIssue.toString()
+        } catch (Exception e) {
+                this.script.println("Error fetching release issue: ${e.message}")
+                return null
+        }
+}
+
+def getReleaseIssueStatus(String component) {
+        try {
+                def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(getReleaseOwnerIssueRepoQuery(component))
+                def releaseIssueExists = jsonResponse.hits.hits[0]._source.release_issue_exists
+                return releaseIssueExists
+        } catch (Exception e) {
+                this.script.println("Error fetching release issue status: ${e.message}")
+                return null
+        }
+}
 }
