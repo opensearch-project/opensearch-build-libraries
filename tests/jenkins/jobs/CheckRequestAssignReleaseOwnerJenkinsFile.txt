@@ -1,0 +1,22 @@
+   CheckRequestAssignReleaseOwnerJenkinsFile.run()
+      CheckRequestAssignReleaseOwnerJenkinsFile.pipeline(groovy.lang.Closure)
+         CheckRequestAssignReleaseOwnerJenkinsFile.echo(Executing on agent [label:none])
+         CheckRequestAssignReleaseOwnerJenkinsFile.stage(release-owner-chore, groovy.lang.Closure)
+            CheckRequestAssignReleaseOwnerJenkinsFile.script(groovy.lang.Closure)
+               CheckRequestAssignReleaseOwnerJenkinsFile.checkRequestAssignReleaseOwners({inputManifest=[tests/data/opensearch-1.3.0.yml], action=check})
+                  checkRequestAssignReleaseOwners.readYaml({file=tests/data/opensearch-1.3.0.yml})
+                  checkRequestAssignReleaseOwners.fileExists(tests/data/opensearch-1.3.0.yml)
+                  checkRequestAssignReleaseOwners.readYaml({file=tests/data/opensearch-1.3.0.yml})
+                  checkRequestAssignReleaseOwners.string({credentialsId=jenkins-health-metrics-account-number, variable=METRICS_HOST_ACCOUNT})
+                  checkRequestAssignReleaseOwners.string({credentialsId=jenkins-health-metrics-cluster-endpoint, variable=METRICS_HOST_URL})
+                  checkRequestAssignReleaseOwners.withCredentials([METRICS_HOST_ACCOUNT, METRICS_HOST_URL], groovy.lang.Closure)
+                     checkRequestAssignReleaseOwners.withAWS({role=OpenSearchJenkinsAccessRole, roleAccount=METRICS_HOST_ACCOUNT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
+                        ReleaseMetricsData.getReleaseOwners(OpenSearch)
+                           OpenSearchMetricsQuery.fetchMetrics({\"size\":1,\"_source\":[\"release_owners\",\"release_issue_exists\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"1.3.0\"}},{\"match_phrase\":{\"component.keyword\":\"OpenSearch\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]})
+                              checkRequestAssignReleaseOwners.println(Running query: {\"size\":1,\"_source\":[\"release_owners\",\"release_issue_exists\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"1.3.0\"}},{\"match_phrase\":{\"component.keyword\":\"OpenSearch\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]})
+                              checkRequestAssignReleaseOwners.sh({script=
+            set -e
+            set +x
+            curl -s -XGET "sample.url/opensearch_release_metrics/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"size\":1,\"_source\":[\"release_owners\",\"release_issue_exists\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"1.3.0\"}},{\"match_phrase\":{\"component.keyword\":\"OpenSearch\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]}" | jq '.'
+        , returnStdout=true})
+                  checkRequestAssignReleaseOwners.echo(Components missing release owners: [OpenSearch])
