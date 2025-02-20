@@ -21,6 +21,8 @@ void call(Map args = [:]) {
 
     def DISTRIBUTION_JOB_NAME = args.jobName ?: "${JOB_NAME}"
     def version = inputManifestObj.build.version
+    def qualifier = inputManifestObj.build.qualifier ? '-' + inputManifestObj.build.qualifier : ''
+    def revision = version + qualifier
 
     def DISTRIBUTION_PLATFORM = args.platform
     def DISTRIBUTION_ARCHITECTURE = args.architecture
@@ -28,7 +30,7 @@ void call(Map args = [:]) {
     def prefixPath = "${WORKSPACE}/download"
     def DISTRIBUTION_BUILD_NUMBER = args.distributionBuildNumber
 
-    def artifactPath = "${DISTRIBUTION_JOB_NAME}/${version}/${DISTRIBUTION_BUILD_NUMBER}/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}"
+    def artifactPath = "${DISTRIBUTION_JOB_NAME}/${revision}/${DISTRIBUTION_BUILD_NUMBER}/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}"
 
     withCredentials([string(credentialsId: 'jenkins-artifact-bucket-name', variable: 'ARTIFACT_BUCKET_NAME')]) {
         downloadFromS3(

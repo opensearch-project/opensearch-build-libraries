@@ -26,6 +26,8 @@ void call(Map args = [:]) {
 
     def DISTRIBUTION_JOB_NAME = args.jobName ?: "${JOB_NAME}"
     def version = inputManifestObj.build.version
+    def qualifier = inputManifestObj.build.qualifier ? '-' + inputManifestObj.build.qualifier : ''
+    def revision = version + qualifier
 
     def DISTRIBUTION_PLATFORM = args.platform
     def DISTRIBUTION_ARCHITECTURE = args.architecture
@@ -35,27 +37,27 @@ void call(Map args = [:]) {
 
     if (incremental_enabled && previousBuildId.equalsIgnoreCase("latest")) {
         def latestIndexStatus = sh (
-                script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${version}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\" > /dev/null 2>&1",
+                script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\" > /dev/null 2>&1",
                 returnStatus: true
         )
         def latestIndexStatusOld = sh (
-                script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${version}/index.json | jq -r \".latest\" > /dev/null 2>&1",
+                script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index.json | jq -r \".latest\" > /dev/null 2>&1",
                 returnStatus: true
         )
         if (latestIndexStatus == 0) {
             echo("Use new URL path for the latest index.")
             DISTRIBUTION_BUILD_NUMBER = sh(
-                    script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${version}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\"",
+                    script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\"",
                     returnStdout: true
             ).trim()
         } else if (latestIndexStatusOld == 0) {
             echo("Use old URL path for the latest index.")
             DISTRIBUTION_BUILD_NUMBER = sh(
-                    script: "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${version}/index.json | jq -r \".latest\"",
+                    script: "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index.json | jq -r \".latest\"",
                     returnStdout: true
             ).trim()
         } else {
-            echo("No latest build for ${version} is available. Building all components from the manifest.")
+            echo("No latest build for ${revision} is available. Building all components from the manifest.")
             incremental_enabled = false
         }
     } else {
