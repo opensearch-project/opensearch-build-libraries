@@ -27,6 +27,13 @@ pipeline {
                         platform: "windows",
                         distributionBuildNumber: "1234"
                     )
+                    retrievePreviousBuild(
+                        inputManifest: "tests/data/opensearch-input-3.0.0-alpha1.yml",
+                        distribution: "tar",
+                        architecture: "x64",
+                        platform: "linux",
+                        distributionBuildNumber: "123123"
+                    )
                 }
             }
         }
