@@ -83,5 +83,3 @@ void call(Map args = [:]) {
         incremental_enabled ? '--incremental' : null
     ] - null).join(' '))
 }
-
-boolean isNullOrEmpty(String str) { return (str == null || str.allWhitespace || str.isEmpty()) }
