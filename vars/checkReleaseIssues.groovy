@@ -60,7 +60,7 @@ void call(Map args = [:]) {
                     returnStdout: true
                 )
             } catch (Exception ex) {
-                error("Error in triggering create-release-issue GitHub workflow ${ex.getMessage()}")
+                error("Error in triggering GitHub Actions workflows. ${ex.getMessage()}")
             }
         }
     }
