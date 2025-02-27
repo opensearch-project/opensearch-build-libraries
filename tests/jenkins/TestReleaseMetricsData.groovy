@@ -11,6 +11,7 @@ package jenkins
 
 import org.junit.*
 import groovy.json.JsonOutput
+import utils.OpenSearchMetricsQuery
 import jenkins.ReleaseMetricsData
 import groovy.json.JsonSlurper
 
@@ -268,5 +269,53 @@ class TestReleaseMetricsData {
         }
         releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, script)
         assert releaseMetricsData.getReleaseIssueStatus('sql') == null
+    }
+
+    @Test
+    void testGetReleaseIssueStatusException() {
+        script = new Expando()
+        script.println = { String message ->
+            assert message.startsWith("Error fetching release issue status:")
+        }
+        releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, script)
+        releaseMetricsData.openSearchMetricsQuery = [
+                fetchMetrics: { query ->
+                    throw new RuntimeException("Test exception")
+                }
+        ]
+        def result = releaseMetricsData.getReleaseIssueStatus('sql')
+        assert result == null
+    }
+
+    @Test
+    void testGetReleaseIssueException() {
+        script = new Expando()
+        script.println = { String message ->
+            assert message.startsWith("Error fetching release issue:")
+        }
+        releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, script)
+        releaseMetricsData.openSearchMetricsQuery = [
+                fetchMetrics: { query ->
+                    throw new RuntimeException("Test exception")
+                }
+        ]
+        def result = releaseMetricsData.getReleaseIssue('sql')
+        assert result == null
+    }
+
+    @Test
+    void testGetReleaseOwnersException() {
+        script = new Expando()
+        script.println = { String message ->
+            assert message.startsWith("Error fetching release owners:")
+        }
+        releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, script)
+        releaseMetricsData.openSearchMetricsQuery = [
+                fetchMetrics: { query ->
+                    throw new RuntimeException("Test exception")
+                }
+        ]
+        def result = releaseMetricsData.getReleaseOwners('sql')
+        assert result == null
     }
 }
