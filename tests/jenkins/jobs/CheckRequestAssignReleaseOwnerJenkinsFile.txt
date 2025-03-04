@@ -19,4 +19,4 @@
             set +x
             curl -s -XGET "sample.url/opensearch_release_metrics/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"size\":1,\"_source\":[\"release_owners\",\"release_issue_exists\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"1.3.0\"}},{\"match_phrase\":{\"component.keyword\":\"OpenSearch\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]}" | jq '.'
         , returnStdout=true})
-                  checkRequestAssignReleaseOwners.echo(Components missing release owners: [OpenSearch])
+                  checkRequestAssignReleaseOwners.echo(Components missing release owner: [OpenSearch])

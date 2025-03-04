@@ -54,7 +54,11 @@ void call(Map args = [:]) {
             }
         }
     }
-    echo("Components missing release owners: ${componentsMissingReleaseOwners}")
+    if (!componentsMissingReleaseOwners.isEmpty()) {
+        echo("Components missing release owner: ${componentsMissingReleaseOwners}")
+    } else {
+        echo('All components have release owner assigned.')
+    }
 }
 
 /**
@@ -96,7 +100,7 @@ private void handleMissingReleaseOwner(def component, ReleaseMetricsData release
     ArrayList<String> componentMaintainers = componentRepoData.getMaintainers(repoName)
 
     if (componentMaintainers == null || componentMaintainers.isEmpty()) {
-        echo("No maintainers found for component: ${component.name}")
+        echo("No maintainers found for component: ${component.name}. Skipping action.")
         return
     }
 
