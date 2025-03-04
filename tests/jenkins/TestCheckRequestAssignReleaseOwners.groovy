@@ -14,8 +14,8 @@ import org.junit.Test
 import static com.lesfurets.jenkins.unit.MethodCall.callArgsToString
 import static org.hamcrest.CoreMatchers.hasItems
 import static org.hamcrest.CoreMatchers.hasItem
+import static org.hamcrest.CoreMatchers.not
 import static org.hamcrest.MatcherAssert.assertThat
-import static org.junit.jupiter.api.Assertions.assertThrows
 
 class TestCheckRequestAssignReleaseOwners extends BuildPipelineTest {
 
@@ -178,7 +178,7 @@ class TestCheckRequestAssignReleaseOwners extends BuildPipelineTest {
         addParam('ACTION', 'check')
         this.registerLibTester(new CheckReleaseOwnersLibTester(['tests/data/opensearch-1.3.0.yml'], 'check'))
         super.testPipeline('tests/jenkins/jobs/CheckRequestAssignReleaseOwnerJenkinsFile')
-        assertThat(getCommands('echo', 'missing'), hasItem("Components missing release owners: [OpenSearch]"))
+        assertThat(getCommands('echo', 'missing'), hasItem("Components missing release owner: [OpenSearch]"))
     }
 
     @Test
@@ -228,6 +228,51 @@ class TestCheckRequestAssignReleaseOwners extends BuildPipelineTest {
         this.registerLibTester(new CheckReleaseOwnersLibTester(['tests/data/opensearch-1.3.0.yml'], 'request'))
         runScript('tests/jenkins/jobs/CheckRequestAssignReleaseOwnerJenkinsFile')
         assertThat(getCommands('error', ''), hasItem("Failed to request maintainers for OpenSearch: Script returned error code: 127"))
+    }
+
+    @Test
+    void testForAssignedReleaseOwners() {
+        addParam('ACTION', 'request')
+        def releaseOwnerResponseFoo = '''
+                        {
+                          "took": 4,
+                          "timed_out": false,
+                          "_shards": {
+                            "total": 5,
+                            "successful": 5,
+                            "skipped": 0,
+                            "failed": 0
+                          },
+                          "hits": {
+                            "total": {
+                              "value": 30,
+                              "relation": "eq"
+                            },
+                            "max_score": null,
+                            "hits": [
+                              {
+                                "_index": "opensearch_release_metrics",
+                                "_id": "76527151-e5e4-35bf-9763-3617d2898b82",
+                                "_score": null,
+                                "_source": {
+                                  "release_issue_exists": false,
+                                  "release_owners": ["foo"]
+                                },
+                                "sort": [
+                                  1740605121281
+                                ]
+                              }
+                            ]
+                          }
+                        }
+                    '''
+        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch_release_metrics/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"size\\":1,\\"_source\\":[\\"release_owners\\",\\"release_issue_exists\\"],\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"version\\":\\"1.3.0\\"}},{\\"match_phrase\\":{\\"component.keyword\\":\\"OpenSearch\\"}}]}},\\"sort\\":[{\\"current_date\\":{\\"order\\":\\"desc\\"}}]}\" | jq '.'\n        """) { script ->
+            return [stdout: releaseOwnerResponseFoo, exitValue: 0]
+        }
+        this.registerLibTester(new CheckReleaseOwnersLibTester(['tests/data/opensearch-1.3.0.yml'], 'request'))
+        runScript('tests/jenkins/jobs/CheckRequestAssignReleaseOwnerJenkinsFile')
+        assertThat(getCommands('echo', 'missing'), not(hasItem("Components missing release owner: [OpenSearch]")))
+        assertThat(getCommands('echo', 'components'), hasItem("All components have release owner assigned."))
     }
 
     def getCommands(method, text) {
