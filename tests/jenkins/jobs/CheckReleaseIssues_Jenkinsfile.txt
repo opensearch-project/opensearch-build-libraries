@@ -1,0 +1,25 @@
+   CheckReleaseIssues_Jenkinsfile.run()
+      CheckReleaseIssues_Jenkinsfile.pipeline(groovy.lang.Closure)
+         CheckReleaseIssues_Jenkinsfile.echo(Executing on agent [label:none])
+         CheckReleaseIssues_Jenkinsfile.stage(addRCcommentToGHIssue, groovy.lang.Closure)
+            CheckReleaseIssues_Jenkinsfile.script(groovy.lang.Closure)
+               CheckReleaseIssues_Jenkinsfile.checkReleaseIssues({version=2.19.0, inputManifest=[tests/data/opensearch-1.3.0.yml], action=create})
+                  checkReleaseIssues.readYaml({file=tests/data/opensearch-1.3.0.yml})
+                  checkReleaseIssues.readYaml({file=tests/data/opensearch-1.3.0.yml})
+                  checkReleaseIssues.string({credentialsId=jenkins-health-metrics-account-number, variable=METRICS_HOST_ACCOUNT})
+                  checkReleaseIssues.string({credentialsId=jenkins-health-metrics-cluster-endpoint, variable=METRICS_HOST_URL})
+                  checkReleaseIssues.withCredentials([METRICS_HOST_ACCOUNT, METRICS_HOST_URL], groovy.lang.Closure)
+                     checkReleaseIssues.withAWS({role=OpenSearchJenkinsAccessRole, roleAccount=METRICS_HOST_ACCOUNT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
+                        ReleaseMetricsData.getReleaseIssueStatus(OpenSearch)
+                           OpenSearchMetricsQuery.fetchMetrics({\"size\":1,\"_source\":[\"release_owners\",\"release_issue_exists\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"1.3.0\"}},{\"match_phrase\":{\"component.keyword\":\"OpenSearch\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]})
+                              checkReleaseIssues.println(Running query: {\"size\":1,\"_source\":[\"release_owners\",\"release_issue_exists\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"1.3.0\"}},{\"match_phrase\":{\"component.keyword\":\"OpenSearch\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]})
+                              checkReleaseIssues.sh({script=
+            set -e
+            set +x
+            curl -s -XGET "sample.url/opensearch_release_metrics/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"size\":1,\"_source\":[\"release_owners\",\"release_issue_exists\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"1.3.0\"}},{\"match_phrase\":{\"component.keyword\":\"OpenSearch\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]}" | jq '.'
+        , returnStdout=true})
+                  checkReleaseIssues.echo(Components missing release issues: [OpenSearch])
+                  checkReleaseIssues.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
+                  checkReleaseIssues.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+                     checkReleaseIssues.println(Triggering GitHub workflows for creating issues:)
+                     checkReleaseIssues.sh({script=gh workflow run os-release-issues.yml -R opensearch-project/opensearch-build && gh workflow run osd-release-issues.yml -R opensearch-project/opensearch-build, returnStdout=true})
