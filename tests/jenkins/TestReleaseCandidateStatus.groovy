@@ -7,12 +7,12 @@
  * compatible open source license.
  */
 
-package jenkins
+package jenkins.tests
 
-import org.junit.*
+import org.junit.Before
+import org.junit.Test
 import groovy.json.JsonOutput
 import jenkins.ReleaseCandidateStatus
-import groovy.json.JsonSlurper
 
 
 class TestReleaseCandidateStatus {

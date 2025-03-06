@@ -7,9 +7,11 @@
  * compatible open source license.
  */
 
-package jenkins
+package jenkins.tests
 
-import org.junit.*
+import jenkins.ComponentBuildStatus
+import org.junit.Before
+import org.junit.Test
 import groovy.json.JsonOutput
 import groovy.mock.interceptor.MockFor
 
@@ -73,7 +75,7 @@ class TestComponentBuildStatus {
         def expectedOutput = JsonOutput.toJson([
                 _source: [
                         "component",
-                        ], 
+                        ],
                 query: [
                         bool: [
                                 filter: [

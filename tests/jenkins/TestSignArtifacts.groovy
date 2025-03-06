@@ -7,6 +7,7 @@
  * compatible open source license.
  */
 
+package jenkins.tests
 
 import jenkins.tests.BuildPipelineTest
 import static com.lesfurets.jenkins.unit.MethodCall.callArgsToString

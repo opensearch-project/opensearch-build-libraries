@@ -10,7 +10,8 @@
 package jenkins.tests
 
 import jenkins.tests.BuildPipelineTest
-import org.junit.*
+import org.junit.Before
+import org.junit.Test
 
 class TestPublishNotification extends BuildPipelineTest {
     @Override
