@@ -10,7 +10,7 @@ void call(Map args = [:]) {
 
     sh """
         touch ${args.imageResultFile}.txt ${args.imageResultFile}.json
-        trivy image --clear-cache
+        trivy clean --all
         docker rmi `docker images -f "dangling=true" -q` || echo
         docker rmi ${args.imageFullName} || echo
         trivy image --format table --output ${args.imageResultFile}.txt ${args.imageFullName}
