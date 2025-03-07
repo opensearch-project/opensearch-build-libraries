@@ -23,8 +23,8 @@
                 git rev-parse HEAD
 
                 echo "Get Major Version"
-                OS_VERSION=`cat buildSrc/version.properties | grep opensearch | cut -d= -f2 | grep -oE '[0-9.]+'`
-                JDK_MAJOR_VERSION=`cat buildSrc/version.properties | grep "bundled_jdk" | cut -d= -f2 | grep -oE '[0-9]+'  | head -n 1`
+                OS_VERSION=`cat gradle/libs.versions.toml | grep opensearch | cut -d= -f2 | grep -oE '[0-9.]+'`
+                JDK_MAJOR_VERSION=`cat gradle/libs.versions.toml | grep "bundled_jdk" | cut -d= -f2 | grep -oE '[0-9]+'  | head -n 1`
                 OS_MAJOR_VERSION=`echo $OS_VERSION | grep -oE '[0-9]+' | head -n 1`
                 echo "Version: $OS_VERSION, Major Version: $OS_MAJOR_VERSION"
 
