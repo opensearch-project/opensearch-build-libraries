@@ -9,7 +9,7 @@
 
 package jenkins
 
-import org.junit.*
+import org.junit.Test
 
 class TestCreateIntegTestMarkDownTable  {
 
@@ -19,20 +19,20 @@ class TestCreateIntegTestMarkDownTable  {
         def releaseOwners = ['foo', 'bar']
         def tableData = [
                 [
-                    architecture:"x64", 
-                    distribution:"tar", 
-                    integ_test_build_url:"some_integ_test_url", 
-                    platform:"linux", 
+                    architecture:"x64",
+                    distribution:"tar",
+                    integ_test_build_url:"some_integ_test_url",
+                    platform:"linux",
                     test_report_manifest_yml:"test_report_dummy_url",
                     distribution_build_number: '1234',
                     rc_number: 1,
                     metrics_visualization_url: "some_url"
-                    ], 
+                    ],
                 [
-                    architecture:"arm64", 
-                    distribution:"tar", 
-                    integ_test_build_url:"integ_test_dummy_url", 
-                    platform:"linux", 
+                    architecture:"arm64",
+                    distribution:"tar",
+                    integ_test_build_url:"integ_test_dummy_url",
+                    platform:"linux",
                     test_report_manifest_yml:"test_report_2_dummy_url",
                     distribution_build_number: '1234',
                     rc_number: 1,

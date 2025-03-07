@@ -8,7 +8,8 @@
  */
 package jenkins.tests
 
-import org.junit.*
+import org.junit.Before
+import org.junit.Test
 import jenkins.tests.BuildPipelineTest
 import static com.lesfurets.jenkins.unit.MethodCall.callArgsToString
 import static org.hamcrest.CoreMatchers.hasItems
