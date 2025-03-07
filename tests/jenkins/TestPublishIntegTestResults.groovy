@@ -6,11 +6,10 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
- 
+
 package jenkins.tests
 
 import org.junit.Before
-import static org.mockito.Mockito.*
 import groovy.json.JsonSlurper
 import org.junit.Test
 
@@ -61,7 +60,7 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
         }
 
         script.indexFailedTestData(indexName, testRecordsFile)
-        
+
         def expectedCommandBlock = '''set +e
         set +x
         echo "INDEX NAME IS test-index"
@@ -194,7 +193,7 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
         else
             echo "File Does not exist. No tests records to process."
         fi'''
-        assert calledCommands.size() == 1 
+        assert calledCommands.size() == 1
         assert normalizeString(calledCommands[0]) == normalizeString(expectedCommandBlock)
     }
 
@@ -377,7 +376,7 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
     @Test
     void testGenerateFailedTestJson() {
         def script = loadScript('vars/publishIntegTestResults.groovy')
-        
+
         def result = script.generateFailedTestJson(
             'component1', 'componentRepo', 'https://componentRepoUrl', '1.0', 123,
             'http://example.com/build/123', 456, 'http://example.com/distribution/456',
@@ -439,9 +438,9 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
     @Test
     void testProcessFailedTestsWithEmptyList() {
         def script = loadScript('vars/publishIntegTestResults.groovy')
-        def result = script.processFailedTests([], 'component1', 'componentRepo', 'https://componentRepoUrl', '1.0', 
-            123, 'http://example.com/build/123', 456, 'http://example.com/distribution/456', 
-            System.currentTimeMillis(), 'rc1', 1, 'linux', 'x64', 'tar', 'test_category', 
+        def result = script.processFailedTests([], 'component1', 'componentRepo', 'https://componentRepoUrl', '1.0',
+            123, 'http://example.com/build/123', 456, 'http://example.com/distribution/456',
+            System.currentTimeMillis(), 'rc1', 1, 'linux', 'x64', 'tar', 'test_category',
             'test_type', 'test_failures_index')
         assert result == ""
     }
@@ -449,9 +448,9 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
     @Test
     void testProcessFailedTestsWithTestResultNotAvailable() {
         def script = loadScript('vars/publishIntegTestResults.groovy')
-        def result = script.processFailedTests(['Test Result Not Available'], 'component1', 'componentRepo', 
-            'https://componentRepoUrl', '1.0', 123, 'http://example.com/build/123', 456, 
-            'http://example.com/distribution/456', System.currentTimeMillis(), 'rc1', 1, 
+        def result = script.processFailedTests(['Test Result Not Available'], 'component1', 'componentRepo',
+            'https://componentRepoUrl', '1.0', 123, 'http://example.com/build/123', 456,
+            'http://example.com/distribution/456', System.currentTimeMillis(), 'rc1', 1,
             'linux', 'x64', 'tar', 'test_category', 'test_type', 'test_failures_index')
         def expectedJson = [
             [
@@ -489,9 +488,9 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
     @Test
     void testProcessFailedTestsWithTestResultFilesListNotAvailable() {
         def script = loadScript('vars/publishIntegTestResults.groovy')
-        def result = script.processFailedTests(['Test Result Files List Not Available'], 'component1', 'componentRepo', 
-            'https://componentRepoUrl', '1.0', 123, 'http://example.com/build/123', 456, 
-            'http://example.com/distribution/456', System.currentTimeMillis(), 'rc1', 1, 
+        def result = script.processFailedTests(['Test Result Files List Not Available'], 'component1', 'componentRepo',
+            'https://componentRepoUrl', '1.0', 123, 'http://example.com/build/123', 456,
+            'http://example.com/distribution/456', System.currentTimeMillis(), 'rc1', 1,
             'linux', 'x64', 'tar', 'test_category', 'test_type', 'test_failures_index')
         def expectedJson = [
             [
@@ -530,9 +529,9 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
     @Test
     void testProcessFailedTestsWithNoFailedTest() {
         def script = loadScript('vars/publishIntegTestResults.groovy')
-        def result = script.processFailedTests(['No Failed Test'], 'component1', 'componentRepo', 
-            'https://componentRepoUrl', '1.0', 123, 'http://example.com/build/123', 456, 
-            'http://example.com/distribution/456', System.currentTimeMillis(), 'rc1', 1, 
+        def result = script.processFailedTests(['No Failed Test'], 'component1', 'componentRepo',
+            'https://componentRepoUrl', '1.0', 123, 'http://example.com/build/123', 456,
+            'http://example.com/distribution/456', System.currentTimeMillis(), 'rc1', 1,
             'linux', 'x64', 'tar', 'test_category', 'test_type', 'test_failures_index')
 
        assert result == ""
@@ -541,9 +540,9 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
     @Test
     void testProcessFailedTestsSampleOpenSearchFailures() {
         def script = loadScript('vars/publishIntegTestResults.groovy')
-        def result = script.processFailedTests(['org.opensearch.indexmanagement.rollup.runner.RollupRunnerIT#test search max buckets breaker'], 'os_component', 
-            'os_componentRepo', 'https://os_componentRepoUrl', '1.0', 123, 'http://example.com/os-build/123', 456, 
-            'http://example.com/os-distribution/456', System.currentTimeMillis(), 'rc1', 1, 
+        def result = script.processFailedTests(['org.opensearch.indexmanagement.rollup.runner.RollupRunnerIT#test search max buckets breaker'], 'os_component',
+            'os_componentRepo', 'https://os_componentRepoUrl', '1.0', 123, 'http://example.com/os-build/123', 456,
+            'http://example.com/os-distribution/456', System.currentTimeMillis(), 'rc1', 1,
             'linux', 'x64', 'tar', 'OpenSearch', 'test_type', 'test_failures_index')
         def expectedJson = [
             [
@@ -582,9 +581,9 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
     @Test
     void testProcessFailedTestsSampleOpenSearchDashboardsFailures() {
         def script = loadScript('vars/publishIntegTestResults.groovy')
-        def result = script.processFailedTests(['integration/plugins/security-analytics-dashboards-plugin/4_findings.spec#Findings \"before all\" hook for \"displays findings based on recently ingested data\"'], 'osd_component', 
-            'osd_componentRepo', 'https://osd_componentRepoUrl', '1.0', 123, 'http://example.com/osd-build/123', 456, 
-            'http://example.com/osd-distribution/456', System.currentTimeMillis(), 'rc1', 1, 
+        def result = script.processFailedTests(['integration/plugins/security-analytics-dashboards-plugin/4_findings.spec#Findings \"before all\" hook for \"displays findings based on recently ingested data\"'], 'osd_component',
+            'osd_componentRepo', 'https://osd_componentRepoUrl', '1.0', 123, 'http://example.com/osd-build/123', 456,
+            'http://example.com/osd-distribution/456', System.currentTimeMillis(), 'rc1', 1,
             'linux', 'x64', 'tar', 'OpenSearch Dashboards', 'test_type', 'test_failures_index')
         def expectedJson = [
             [
@@ -634,7 +633,7 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
         def withSecurity = 'pass'
         def withoutSecurity = 'fail'
         def componentResult = (withSecurity == 'fail' || withoutSecurity == 'fail' || withSecurity == 'Not Available' || withoutSecurity == 'Not Available') ? 'failed' : 'passed'
-        
+
         assert componentResult == 'failed'
     }
 
@@ -643,7 +642,7 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
         def withSecurity = 'Not Available'
         def withoutSecurity = 'pass'
         def componentResult = (withSecurity == 'fail' || withoutSecurity == 'fail' || withSecurity == 'Not Available' || withoutSecurity == 'Not Available') ? 'failed' : 'passed'
-        
+
         assert componentResult == 'failed'
     }
 
@@ -652,7 +651,7 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
         def withSecurity = 'pass'
         def withoutSecurity = 'Not Available'
         def componentResult = (withSecurity == 'fail' || withoutSecurity == 'fail' || withSecurity == 'Not Available' || withoutSecurity == 'Not Available') ? 'failed' : 'passed'
-        
+
         assert componentResult == 'failed'
     }
 
@@ -661,7 +660,7 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
         def withSecurity = 'pass'
         def withoutSecurity = 'pass'
         def componentResult = (withSecurity == 'fail' || withoutSecurity == 'fail' || withSecurity == 'Not Available' || withoutSecurity == 'Not Available') ? 'failed' : 'passed'
-        
+
         assert componentResult == 'passed'
     }
 
@@ -675,7 +674,7 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
         ]
 
         def result = script.call(args)
-        
+
         assert result == null
     }
 
@@ -689,7 +688,7 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
         ]
 
         def result = script.call(args)
-        
+
         assert result == null
     }
 

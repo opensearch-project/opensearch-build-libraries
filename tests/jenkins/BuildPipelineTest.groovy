@@ -9,10 +9,11 @@
 
 package jenkins.tests
 
-import org.junit.*
+import org.junit.Before
+import org.junit.After
 import static com.lesfurets.jenkins.unit.global.lib.LibraryConfiguration.library
 import static com.lesfurets.jenkins.unit.global.lib.ProjectSource.projectSource
-import com.lesfurets.jenkins.unit.*
+import com.lesfurets.jenkins.unit.LibClassLoader
 import org.yaml.snakeyaml.Yaml
 
 /**

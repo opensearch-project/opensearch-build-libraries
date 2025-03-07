@@ -8,7 +8,8 @@
  */
 package jenkins.tests
 
-import org.junit.*
+import org.junit.Before
+import org.junit.Test
 
 class TestUploadIndexFile extends BuildPipelineTest {
 

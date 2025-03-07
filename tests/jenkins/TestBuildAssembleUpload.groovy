@@ -9,9 +9,11 @@
 
 package jenkins.tests
 
-import org.junit.*
-import java.util.*
-import java.nio.file.*
+import org.junit.Before
+import org.junit.Test
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 
 class TestBuildAssembleUpload extends BuildPipelineTest {
     @Before

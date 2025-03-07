@@ -9,9 +9,12 @@
 
 package jenkins.tests
 
-import org.junit.*
-import java.util.*
-import java.nio.file.*
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 
 class TestPromoteLinuxArtifacts extends BuildPipelineTest {
     private Path targetOpenSearchTar;
@@ -86,62 +89,62 @@ class TestPromoteLinuxArtifacts extends BuildPipelineTest {
         }
 
         targetOpenSearchTar = copy(
-            "tests/data/opensearch-build-1.3.0.yml", 
+            "tests/data/opensearch-build-1.3.0.yml",
             "tests/jenkins/artifacts/tar/vars-build/1.3.0/33/linux/x64/tar/builds/opensearch/manifest.yml"
         );
 
         targetOpenSearchDashboardsTar = copy(
-            "tests/data/opensearch-dashboards-build-1.3.0.yml", 
+            "tests/data/opensearch-dashboards-build-1.3.0.yml",
             "tests/jenkins/artifacts/tar/vars-build/1.3.0/33/linux/x64/tar/builds/opensearch-dashboards/manifest.yml"
         );
 
         targetOpenSearchTarQualifier = copy(
-            "tests/data/opensearch-build-2.0.0-rc1.yml", 
+            "tests/data/opensearch-build-2.0.0-rc1.yml",
             "tests/jenkins/artifacts/tar/vars-build/2.0.0-rc1/33/linux/x64/tar/builds/opensearch/manifest.yml"
         );
 
         targetOpenSearchDashboardsTarQualifier = copy(
-            "tests/data/opensearch-dashboards-build-2.0.0-rc1.yml", 
+            "tests/data/opensearch-dashboards-build-2.0.0-rc1.yml",
             "tests/jenkins/artifacts/tar/vars-build/2.0.0-rc1/33/linux/x64/tar/builds/opensearch-dashboards/manifest.yml"
         );
 
         targetOpenSearchRpm = copy(
-            "tests/data/opensearch-build-1.3.0-rpm.yml", 
+            "tests/data/opensearch-build-1.3.0-rpm.yml",
             "tests/jenkins/artifacts/rpm/vars-build/1.3.0/33/linux/x64/rpm/builds/opensearch/manifest.yml"
         );
 
         targetOpenSearchDashboardsRpm = copy(
-            "tests/data/opensearch-dashboards-build-1.3.0-rpm.yml", 
+            "tests/data/opensearch-dashboards-build-1.3.0-rpm.yml",
             "tests/jenkins/artifacts/rpm/vars-build/1.3.0/33/linux/x64/rpm/builds/opensearch-dashboards/manifest.yml"
         );
 
         targetOpenSearchRpmQualifier = copy(
-            "tests/data/opensearch-build-2.0.0-rc1-rpm.yml", 
+            "tests/data/opensearch-build-2.0.0-rc1-rpm.yml",
             "tests/jenkins/artifacts/rpm/vars-build/2.0.0-rc1/33/linux/x64/rpm/builds/opensearch/manifest.yml"
         );
 
         targetOpenSearchDashboardsRpmQualifier = copy(
-            "tests/data/opensearch-dashboards-build-2.0.0-rc1-rpm.yml", 
+            "tests/data/opensearch-dashboards-build-2.0.0-rc1-rpm.yml",
             "tests/jenkins/artifacts/rpm/vars-build/2.0.0-rc1/33/linux/x64/rpm/builds/opensearch-dashboards/manifest.yml"
         );
 
         targetOpenSearchDeb = copy(
-            "tests/data/opensearch-build-1.3.0-deb.yml", 
+            "tests/data/opensearch-build-1.3.0-deb.yml",
             "tests/jenkins/artifacts/deb/vars-build/1.3.0/33/linux/x64/deb/builds/opensearch/manifest.yml"
         );
 
         targetOpenSearchDashboardsDeb = copy(
-            "tests/data/opensearch-dashboards-build-1.3.0-deb.yml", 
+            "tests/data/opensearch-dashboards-build-1.3.0-deb.yml",
             "tests/jenkins/artifacts/deb/vars-build/1.3.0/33/linux/x64/deb/builds/opensearch-dashboards/manifest.yml"
         );
 
         targetOpenSearchDebQualifier = copy(
-            "tests/data/opensearch-build-2.0.0-rc1-deb.yml", 
+            "tests/data/opensearch-build-2.0.0-rc1-deb.yml",
             "tests/jenkins/artifacts/deb/vars-build/2.0.0-rc1/33/linux/x64/deb/builds/opensearch/manifest.yml"
         );
 
         targetOpenSearchDashboardsDebQualifier = copy(
-            "tests/data/opensearch-dashboards-build-2.0.0-rc1-deb.yml", 
+            "tests/data/opensearch-dashboards-build-2.0.0-rc1-deb.yml",
             "tests/jenkins/artifacts/deb/vars-build/2.0.0-rc1/33/linux/x64/deb/builds/opensearch-dashboards/manifest.yml"
         );
     }
