@@ -13,7 +13,6 @@ import jenkins.ComponentBuildStatus
 import org.junit.Before
 import org.junit.Test
 import groovy.json.JsonOutput
-import groovy.mock.interceptor.MockFor
 
 class TestComponentBuildStatus {
 
