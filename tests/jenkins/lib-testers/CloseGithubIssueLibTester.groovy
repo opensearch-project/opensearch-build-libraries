@@ -6,8 +6,9 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
+package jenkins.tests
+
 import static org.hamcrest.CoreMatchers.notNullValue
-import static org.hamcrest.CoreMatchers.nullValue
 import static org.hamcrest.MatcherAssert.assertThat
 
 class CloseGithubIssueLibTester extends LibFunctionTester {

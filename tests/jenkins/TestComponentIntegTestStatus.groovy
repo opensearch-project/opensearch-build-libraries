@@ -7,9 +7,11 @@
  * compatible open source license.
  */
 
-package jenkins
+package jenkins.tests
 
-import org.junit.*
+import jenkins.ComponentIntegTestStatus
+import org.junit.Before
+import org.junit.Test
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
@@ -104,7 +106,7 @@ class TestComponentIntegTestStatus {
                 size: 50,
                 _source: [
                         "component",
-                        ], 
+                        ],
                 query: [
                         bool: [
                                 filter: [

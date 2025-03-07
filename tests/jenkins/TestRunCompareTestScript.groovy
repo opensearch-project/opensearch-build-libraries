@@ -6,11 +6,11 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
+package jenkins.tests
 
 import jenkins.tests.BuildPipelineTest
 import org.junit.Before
 import org.junit.Test
-
 import static com.lesfurets.jenkins.unit.MethodCall.callArgsToString
 import static org.hamcrest.CoreMatchers.equalTo
 import static org.hamcrest.CoreMatchers.hasItem

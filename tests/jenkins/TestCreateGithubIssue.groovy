@@ -15,7 +15,6 @@ import org.junit.Test
 import static com.lesfurets.jenkins.unit.MethodCall.callArgsToString
 import static org.hamcrest.CoreMatchers.hasItem
 import static org.hamcrest.MatcherAssert.assertThat
-import com.lesfurets.jenkins.unit.*
 
 
 class TestCreateGithubIssue extends BuildPipelineTest {
@@ -47,7 +46,7 @@ class TestCreateGithubIssue extends BuildPipelineTest {
         assertThat(getCommands('println', ''), hasItem("Issue already exists, adding a comment"))
         assertThat(getCommands('sh', 'script'), hasItem("""{script=gh issue comment bbb\nccc --repo https://github.com/opensearch-project/opensearch-build --body \"Test GH issue body\", returnStdout=true}"""))
     }
-    
+
     @Test
     void testCreateGithubIssueCreate() {
         this.registerLibTester(new CreateGithubIssueLibTester(

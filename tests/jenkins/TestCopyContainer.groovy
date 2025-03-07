@@ -6,6 +6,8 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
+package jenkins.tests
+
 import jenkins.tests.BuildPipelineTest
 import org.junit.*
 import static org.hamcrest.CoreMatchers.equalTo

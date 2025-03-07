@@ -9,7 +9,7 @@
 
 package jenkins.tests
 
-import org.junit.*
+import org.junit.Test
 
 class TestHello extends BuildPipelineTest {
     @Test

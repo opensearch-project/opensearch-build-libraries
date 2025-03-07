@@ -7,11 +7,12 @@
  * compatible open source license.
  */
 
-package gradlecheck
+package gradlecheck.tests
 
-import org.junit.*
+import gradlecheck.FetchTestPullRequests
+import org.junit.Before
+import org.junit.Test
 import groovy.json.JsonOutput
-import groovy.json.JsonSlurper
 
 class FetchTestPullRequestsTest {
 

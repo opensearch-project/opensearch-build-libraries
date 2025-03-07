@@ -9,9 +9,12 @@
 
 package jenkins.tests
 
-import org.junit.*
-import java.util.*
-import java.nio.file.*
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 
 class TestPromoteWindowsArtifacts extends BuildPipelineTest {
     private Path targetOpenSearchWindowsZip;
@@ -72,19 +75,19 @@ class TestPromoteWindowsArtifacts extends BuildPipelineTest {
         }
 
         targetOpenSearchWindowsZip = copy(
-            "tests/data/opensearch-build-1.3.0-windows-zip.yml", 
+            "tests/data/opensearch-build-1.3.0-windows-zip.yml",
             "tests/jenkins/artifacts/zip/vars-build/1.3.0/33/windows/x64/zip/builds/opensearch/manifest.yml"
         );
         targetOpenSearchDashboardsWindowsZip = copy(
-            "tests/data/opensearch-dashboards-build-1.3.0-windows-zip.yml", 
+            "tests/data/opensearch-dashboards-build-1.3.0-windows-zip.yml",
             "tests/jenkins/artifacts/zip/vars-build/1.3.0/33/windows/x64/zip/builds/opensearch-dashboards/manifest.yml"
         );
         targetOpenSearchWindowsZipQualifier = copy(
-            "tests/data/opensearch-build-2.0.0-rc1-windows-zip.yml", 
+            "tests/data/opensearch-build-2.0.0-rc1-windows-zip.yml",
             "tests/jenkins/artifacts/zip/vars-build/2.0.0-rc1/33/windows/x64/zip/builds/opensearch/manifest.yml"
         );
         targetOpenSearchDashboardsWindowsZipQualifier = copy(
-            "tests/data/opensearch-dashboards-build-2.0.0-rc1-windows-zip.yml", 
+            "tests/data/opensearch-dashboards-build-2.0.0-rc1-windows-zip.yml",
             "tests/jenkins/artifacts/zip/vars-build/2.0.0-rc1/33/windows/x64/zip/builds/opensearch-dashboards/manifest.yml"
         );
     }

@@ -6,11 +6,10 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
- 
+
 package jenkins.tests
 
 import org.junit.Before
-import static org.mockito.Mockito.*
 import groovy.json.JsonSlurper
 import org.junit.Test
 import groovy.json.JsonOutput

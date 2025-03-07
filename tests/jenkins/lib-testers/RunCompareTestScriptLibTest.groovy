@@ -6,8 +6,7 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
-import static org.hamcrest.CoreMatchers.notNullValue
-import static org.hamcrest.MatcherAssert.assertThat
+package jenkins.tests
 
 class RunCompareTestScriptLibTester extends LibFunctionTester{
 

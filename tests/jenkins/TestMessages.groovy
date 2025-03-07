@@ -9,8 +9,9 @@
 
 package jenkins.tests
 
-import org.junit.*
-import java.util.*
+import org.junit.Before
+import org.junit.Test
+
 
 class TestMessages extends BuildPipelineTest {
     @Override

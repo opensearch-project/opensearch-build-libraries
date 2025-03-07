@@ -15,7 +15,6 @@ import org.junit.Test
 import static com.lesfurets.jenkins.unit.MethodCall.callArgsToString
 import static org.hamcrest.CoreMatchers.hasItem
 import static org.hamcrest.MatcherAssert.assertThat
-import com.lesfurets.jenkins.unit.*
 
 class TestGradleCheckFlakyTestGitHubIssue extends BuildPipelineTest {
 

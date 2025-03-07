@@ -7,9 +7,10 @@
  * compatible open source license.
  */
 
-package gradlecheck
+package gradlecheck.tests
 
-import org.junit.*
+import gradlecheck.CreateMarkDownTable
+import org.junit.Test
 
 
 class CreateMarkDownTableTest  {

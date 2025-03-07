@@ -9,8 +9,7 @@
 
 package jenkins.tests
 
-import org.junit.*
-import java.util.*
+import org.junit.Test
 
 class TestDetectDockerImage extends BuildPipelineTest {
     @Test
