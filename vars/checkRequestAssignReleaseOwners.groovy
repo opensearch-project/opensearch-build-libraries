@@ -12,19 +12,20 @@ import java.time.LocalDate
 /**
  * Library to check and assign release owners to the release issues.
  * @param Map args = [:] args A map of the following parameters
- * @param args.inputManifest <required> - Input manifest file(s) eg: [2.0.0/opensearch-2.0.0.yml, 2.0.0/opensearch-dashboards-2.0.0.yml] .
+ * @param args.inputManifest <required> - Input manifest file(s) eg: [manifests/2.0.0/opensearch-2.0.0.yml, manifests/2.0.0/opensearch-dashboards-2.0.0.yml] .
  * @param args.action <optional> - Action to be performed. Default is 'check'. Acceptable values are 'check', 'request' and 'assign'.
  */
 void call(Map args = [:]) {
     def inputManifest = args.inputManifest
     String action = args.action ?: 'check'
-    def version = extractVersionFromManifest(inputManifest[0])
     def now = LocalDate.now()
     def monthYear = String.format("%02d-%d", now.monthValue, now.year)
     def maintainersIndex = "maintainer-inactivity-${monthYear}"
 
     // Parameter validation
     validateParameters(args)
+    def manifestYaml = readYaml(file: inputManifest[0])
+    def version = manifestYaml.build.version
 
     List<String> componentsMissingReleaseOwners = []
 
@@ -81,14 +82,6 @@ private void validateParameters(Map args) {
     if (!validActions.contains(action)) {
         error "Invalid action '${action}'. Valid values: ${validActions.join(', ')}"
     }
-}
-
-/**
- * Extracts version from manifest file
- */
-private String extractVersionFromManifest(String manifestFile) {
-    def yaml = readYaml(file: manifestFile)
-    return yaml.build.version
 }
 
 /**

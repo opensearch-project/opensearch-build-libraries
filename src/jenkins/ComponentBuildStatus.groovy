@@ -18,15 +18,16 @@ class ComponentBuildStatus {
     String awsSecretKey
     String awsSessionToken
     String indexName
-    String product 
+    String product
     String version
+    String qualifier
     String distributionBuildNumber
     String buildStartTimeFrom
     String buildStartTimeTo
     def script
     OpenSearchMetricsQuery openSearchMetricsQuery
 
-    ComponentBuildStatus(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, String indexName, String product, String version, String distributionBuildNumber, String buildStartTimeFrom, String buildStartTimeTo, def script) {
+    ComponentBuildStatus(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, String indexName, String product, String version, String qualifier, String distributionBuildNumber, String buildStartTimeFrom, String buildStartTimeTo, def script) {
         this.metricsUrl = metricsUrl
         this.awsAccessKey = awsAccessKey
         this.awsSecretKey = awsSecretKey
@@ -34,6 +35,7 @@ class ComponentBuildStatus {
         this.indexName = indexName
         this.product = product
         this.version = version
+        this.qualifier = qualifier
         this.distributionBuildNumber = distributionBuildNumber
         this.buildStartTimeFrom = buildStartTimeFrom
         this.buildStartTimeTo = buildStartTimeTo
@@ -41,7 +43,7 @@ class ComponentBuildStatus {
         this.openSearchMetricsQuery = new OpenSearchMetricsQuery(metricsUrl,awsAccessKey, awsSecretKey, awsSessionToken, indexName, script)
     }
 
-     ComponentBuildStatus(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, String indexName, String product, String version, def script) {
+     ComponentBuildStatus(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, String indexName, String product, String version, String qualifier, def script) {
         this.metricsUrl = metricsUrl
         this.awsAccessKey = awsAccessKey
         this.awsSecretKey = awsSecretKey
@@ -49,6 +51,7 @@ class ComponentBuildStatus {
         this.indexName = indexName
         this.product = product
         this.version = version
+        this.qualifier = qualifier
         this.script = script
         this.openSearchMetricsQuery = new OpenSearchMetricsQuery(metricsUrl,awsAccessKey, awsSecretKey, awsSessionToken, indexName, script)
     }
@@ -57,7 +60,7 @@ class ComponentBuildStatus {
         def queryMap = [
                 _source: [
                         "component",
-                        ], 
+                        ],
                 query: [
                         bool: [
                                 filter: [
@@ -93,6 +96,13 @@ class ComponentBuildStatus {
                         ]
                 ]
         ]
+        if (!isNullOrEmpty(this.qualifier)) {
+            queryMap.query.bool.filter.add([
+                    match_phrase: [
+                            qualifier: "${this.qualifier}"
+                    ]
+            ])
+        }
         def query = JsonOutput.toJson(queryMap)
         return query.replace('"', '\\"')
     }
@@ -102,7 +112,7 @@ class ComponentBuildStatus {
                 size : 1,
                 _source: [
                         "distribution_build_number",
-                        ], 
+                        ],
                 query: [
                         bool: [
                                 filter: [
@@ -127,6 +137,14 @@ class ComponentBuildStatus {
                         ]
                 ]
         ]
+
+        if (!isNullOrEmpty(this.qualifier)) {
+            queryMap.query.bool.filter.add([
+                    match_phrase: [
+                            qualifier: "${this.qualifier}"
+                    ]
+            ])
+        }
         def query = JsonOutput.toJson(queryMap)
         return query.replace('"', '\\"')
     }
@@ -141,5 +159,9 @@ class ComponentBuildStatus {
          def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(getLatestDistributionBuildNumberQuery())
          def latestDistributionBuildNumber = jsonResponse.hits.hits[0]._source.distribution_build_number
          return latestDistributionBuildNumber
+    }
+
+    private boolean isNullOrEmpty(String str) {
+        return (str == 'Null' || str == null || str.allWhitespace || str.isEmpty()) || str == "None"
     }
 }

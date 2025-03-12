@@ -10,7 +10,7 @@
 /** Library to fetch the failing Integration test details at the end of Integration Test Jenkins build and index the results to OpenSearch Metrics cluster.
  *
  * @param Map args = [:] args A map of the following parameters.
- * @param args.rc <required> - If the integration tests are running on an RC. 
+ * @param args.rc <required> - If the integration tests are running on an RC.
  * @param args.rcNumber <required> - The RC number against which the integration test is executed.
  * @param args.failureMessages <required> - Failure message retrieved from buildFailureMessage() method.
  * @param args.passMessages <required> - Passing message retrieved from buildFailureMessage() method. Used to get the passed components list.
@@ -36,19 +36,23 @@ void call(Map args = [:]) {
     def componentCategory = args.componentCategory
     def inputManifest = readYaml(file: args.inputManifestPath)
     def version = inputManifest.build.version
+    def qualifier = "None"
+    if (inputManifest.build.qualifier) {
+        qualifier = inputManifest.build.qualifier
+    }
     def finalJsonDoc = ""
     List<String> failedComponents = extractComponents(failureMessages, /(?<=\bError building\s).*/, 0)
     List<String> passedComponents = extractComponents(passMessages, /(?<=\bSuccessfully built\s).*/, 0)
     inputManifest.components.each { component ->
         if (failedComponents.contains(component.name)) {
             def jsonData = generateAndAppendJson(component.name, component.repository.split('/')[-1].replace('.git', ''), component.repository.substring(component.repository.indexOf("github.com")).replace(".git", ""), component.ref,
-                                version, distributionBuildNumber, distributionBuildUrl,
+                                version, qualifier, distributionBuildNumber, distributionBuildUrl,
                                 buildStartTime, rc, rcNumber, componentCategory, "failed"
                                 )
             finalJsonDoc += "{\"index\": {\"_index\": \"${indexName}\"}}\n${jsonData}\n"
         } else if (passedComponents.contains(component.name)) {
             def jsonData = generateAndAppendJson(component.name, component.repository.split('/')[-1].replace('.git', ''), component.repository.substring(component.repository.indexOf("github.com")).replace(".git", ""), component.ref,
-                                version, distributionBuildNumber, distributionBuildUrl,
+                                version, qualifier, distributionBuildNumber, distributionBuildUrl,
                                 buildStartTime, rc, rcNumber, componentCategory, "passed"
                                 )
             finalJsonDoc += "{\"index\": {\"_index\": \"${indexName}\"}}\n${jsonData}\n"
@@ -89,6 +93,9 @@ void indexFailedTestData(indexName, testRecordsFile) {
                                 "type": "keyword"
                             },
                             "version": {
+                                "type": "keyword"
+                            },
+                            "qualifier": {
                                 "type": "keyword"
                             },
                             "distribution_build_number": {
@@ -156,13 +163,14 @@ void indexFailedTestData(indexName, testRecordsFile) {
     }
 }
 
-def generateJson(component, componentRepo, componentRepoUrl, componentRef, version, distributionBuildNumber, distributionBuildUrl, buildStartTime, rc, rcNumber, componentCategory, componentResult) {
+def generateJson(component, componentRepo, componentRepoUrl, componentRef, version, qualifier, distributionBuildNumber, distributionBuildUrl, buildStartTime, rc, rcNumber, componentCategory, componentResult) {
     def json = [
         component: component,
         component_repo: componentRepo,
         component_repo_url: componentRepoUrl,
         component_ref: componentRef,
         version: version,
+        qualifier: qualifier,
         distribution_build_number: distributionBuildNumber,
         distribution_build_url: distributionBuildUrl,
         build_start_time: buildStartTime,
@@ -174,10 +182,10 @@ def generateJson(component, componentRepo, componentRepoUrl, componentRef, versi
     return JsonOutput.toJson(json)
 }
 
-def generateAndAppendJson(component, componentRepo, componentRepoUrl, componentRef, version, distributionBuildNumber, distributionBuildUrl, buildStartTime, rc, rcNumber, componentCategory, status) {
+def generateAndAppendJson(component, componentRepo, componentRepoUrl, componentRef, version, qualifier, distributionBuildNumber, distributionBuildUrl, buildStartTime, rc, rcNumber, componentCategory, status) {
     def jsonData = generateJson(
-        component, componentRepo, componentRepoUrl, componentRef, version, 
-        distributionBuildNumber, distributionBuildUrl, buildStartTime, 
+        component, componentRepo, componentRepoUrl, componentRef, version, qualifier,
+        distributionBuildNumber, distributionBuildUrl, buildStartTime,
         rc, rcNumber, componentCategory, status
     )
     return jsonData
