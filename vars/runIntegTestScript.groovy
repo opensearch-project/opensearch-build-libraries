@@ -66,14 +66,12 @@ void call(Map args = [:]) {
     String switchCommandStart = switchUser.equals('true') ? "su `id -un 1000` -c \"env PATH=\$PATH $javaHomeCommand" : "env PATH=\$PATH $javaHomeCommand"
     String switchCommandEnd = switchUser.equals('true') ? '"' : ''
 
-    String testManifest = "manifests/${args.testManifest}"
-
     String testCommand =
     [
         switchCommandStart,
         './test.sh',
         'integ-test',
-        "${testManifest}",
+        "${args.testManifest}",
         "--component ${component}",
         isNullOrEmpty(args.ciGroup.toString()) ? "" : "--ci-group ${args.ciGroup}",
         "--test-run-id ${env.BUILD_NUMBER}",
