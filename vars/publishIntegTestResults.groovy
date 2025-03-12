@@ -45,13 +45,9 @@ void call(Map args = [:]) {
     def testFailuresindexName = "opensearch-integration-test-failures-${formattedDate}"
     def finalJsonDoc = ""
     // Qualifier is in-built in the version. Splitting it until https://github.com/opensearch-project/opensearch-build/issues/5386 is resolved
-    def version = manifest.version.toString()
-    def qualifier = "None"
-    def matcher = version =~ /^([\d.]+)(?:-(.+))?$/
-    if (matcher) {
-        version = matcher[0][1]  // Captures the numeric part (3.0.0)
-        qualifier = matcher[0][2] ?: "None" // Captures the qualifier (beta1) or None if no qualifier
-    }
+    def versionTokenize = manifest.version.tokenize('-')
+    def version = versionTokenize[0]
+    def qualifier = versionTokenize[1] ?: "None"
     def distributionBuildNumber = manifest.id
     def rcNumber = manifest.rc.toInteger()
     def rc = (rcNumber > 0)

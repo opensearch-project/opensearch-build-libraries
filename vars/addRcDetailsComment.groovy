@@ -17,22 +17,18 @@ import jenkins.ReleaseMetricsData
  * */
 void call(Map args = [:]) {
     def buildIndexName = 'opensearch-distribution-build-results'
-    def version = args.version
-    def qualifier = "None"
-    def matcher = version =~ /^([\d.]+)(?:-(.+))?$/
-    if (matcher) {
-        version = matcher[0][1]  // Captures the numeric part (3.0.0)
-        qualifier = matcher[0][2] ?: "None" // Captures the qualifier (beta1) or None if no qualifier
+    if (args.version.isEmpty()){
+        error('version is required to get RC details.')
     }
+    def versionTokenize = args.version.tokenize('-')
+    def version = versionTokenize[0]
+    def qualifier = versionTokenize[1] ?: "None"
     def opensearchRcNumber
     def opensearchDashboardsRcNumber
     def opensearchRcBuildNumber
     def opensearchDashboardsRcBuildNumber
     String releaseIssueUrl
 
-    if (version.isEmpty()){
-        error('version is required to get RC details.')
-    }
     withCredentials([
             string(credentialsId: 'jenkins-health-metrics-account-number', variable: 'METRICS_HOST_ACCOUNT'),
             string(credentialsId: 'jenkins-health-metrics-cluster-endpoint', variable: 'METRICS_HOST_URL')]) {
