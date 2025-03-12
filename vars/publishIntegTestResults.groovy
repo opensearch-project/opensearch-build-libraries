@@ -47,13 +47,13 @@ void call(Map args = [:]) {
     // Qualifier is in-built in the version. Splitting it until https://github.com/opensearch-project/opensearch-build/issues/5386 is resolved
     def version = manifest.version.toString()
     def qualifier = "None"
-    def matcher = version =~ /^([\d.]+)(?:-(.+))?$/
-    if (matcher) {
-        version = matcher[0][1]  // Captures the numeric part (3.0.0)
-        qualifier = matcher[0][2] ?: "None" // Captures the qualifier (beta1) or None if no qualifier
-        // Explicitly null out the matcher after using it to avoid serialization issues with jenkins
-        matcher = null
-    }
+    (version, qualifier) = { localVersion ->
+        def localMatcher = localVersion =~ /^([\d.]+)(?:-(.+))?$/
+        if (localMatcher) {
+            return [localMatcher[0][1], localMatcher[0][2] ?: "None"]
+        }
+        return [localVersion, "None"]
+    }(version)
     def distributionBuildNumber = manifest.id
     def rcNumber = manifest.rc.toInteger()
     def rc = (rcNumber > 0)
