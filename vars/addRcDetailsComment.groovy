@@ -20,13 +20,9 @@ void call(Map args = [:]) {
     if (args.version.isEmpty()){
         error('version is required to get RC details.')
     }
-    def (version, qualifier) = { localVersion ->
-        def localMatcher = localVersion =~ /^([\d.]+)(?:-(.+))?$/
-        if (localMatcher) {
-            return [localMatcher[0][1], localMatcher[0][2] ?: "None"]
-        }
-        return [localVersion, "None"]
-    }(args.version)
+    def versionTokenize = args.version.tokenize('-')
+    def version = versionTokenize[0]
+    def qualifier = versionTokenize[1] ?: "None"
     def opensearchRcNumber
     def opensearchDashboardsRcNumber
     def opensearchRcBuildNumber
