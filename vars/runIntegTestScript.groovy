@@ -110,4 +110,4 @@ String generateBasePaths(buildManifest) {
     return ["${env.PUBLIC_ARTIFACT_URL}", "${env.JOB_NAME}", buildManifest.build.version, buildManifest.build.id, buildManifest.build.platform, buildManifest.build.architecture, buildManifest.build.distribution].join("/")
 }
 
-boolean isNullOrEmpty(String str) { return (str == null || str.allWhitespace || str.isEmpty()) }
+boolean isNullOrEmpty(String str) { return (str == null || str.allWhitespace || str.isEmpty() || str == 'null') }

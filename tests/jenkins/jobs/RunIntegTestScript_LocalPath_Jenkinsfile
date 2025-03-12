@@ -18,8 +18,7 @@ pipeline {
                         componentName: 'OpenSearch-Dashboards',
                         buildManifest: 'tests/data/opensearch-dashboards-1.2.0-build.yml',
                         testManifest: 'tests/data/opensearch-dashboards-1.2.0-test.yml',
-                        localPath: 'tests/jenkins/artifacts/tar',
-                        ciGroup: ""
+                        localPath: 'tests/jenkins/artifacts/tar'
                     )
                 }
             }
