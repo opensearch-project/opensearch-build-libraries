@@ -20,6 +20,10 @@ import jenkins.ReleaseMetricsData
 void call(Map args = [:]) {
     def inputManifest = readYaml(file: args.inputManifestPath)
     def version = inputManifest.build.version
+    def qualifier = "None"
+    if (inputManifest.build.qualifier) {
+        qualifier = inputManifest.build.qualifier
+    }
     def product = inputManifest.build.name
     def integTestIndexName = 'opensearch-integration-test-results'
     def buildIndexName = 'opensearch-distribution-build-results'
@@ -36,8 +40,8 @@ void call(Map args = [:]) {
             def awsAccessKey = env.AWS_ACCESS_KEY_ID
             def awsSecretKey = env.AWS_SECRET_ACCESS_KEY
             def awsSessionToken = env.AWS_SESSION_TOKEN
-            def distributionBuildNumber = args.distributionBuildNumber ?: new ComponentBuildStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, buildIndexName, product, version, this).getLatestDistributionBuildNumber().toString()
-            ComponentIntegTestStatus componentIntegTestStatus = new ComponentIntegTestStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, integTestIndexName, product, version, distributionBuildNumber, this)
+            def distributionBuildNumber = args.distributionBuildNumber ?: new ComponentBuildStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, buildIndexName, product, version, qualifier, this).getLatestDistributionBuildNumber().toString()
+            ComponentIntegTestStatus componentIntegTestStatus = new ComponentIntegTestStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, integTestIndexName, product, version, qualifier, distributionBuildNumber, this)
             ReleaseMetricsData releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, releaseIndexName, this)
             println('Distribution Build Number: ' + distributionBuildNumber)
             passedComponents = componentIntegTestStatus.getComponents('passed')

@@ -19,6 +19,10 @@ import jenkins.ComponentBuildStatus
 void call(Map args = [:]) {
     def inputManifest = readYaml(file: args.inputManifestPath)
     def currentVersion = inputManifest.build.version
+    def qualifier = "None"
+    if (inputManifest.build.qualifier) {
+        qualifier = inputManifest.build.qualifier
+    }
     def product = inputManifest.build.name
     def buildStartTimeFrom = args.buildStartTimeFrom ?: 'now-6h'
     def buildStartTimeTo = args.buildStartTimeTo ?: 'now'
@@ -35,8 +39,8 @@ void call(Map args = [:]) {
                     def awsSessionToken = env.AWS_SESSION_TOKEN
                     def indexName = 'opensearch-distribution-build-results'
 
-                    ComponentBuildStatus componentBuildStatus = new ComponentBuildStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, product, currentVersion, args.distributionBuildNumber, buildStartTimeFrom, buildStartTimeTo, this)
-            
+                    ComponentBuildStatus componentBuildStatus = new ComponentBuildStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, product, currentVersion, qualifier, args.distributionBuildNumber, buildStartTimeFrom, buildStartTimeTo, this)
+
                     passedComponents = componentBuildStatus.getComponents('passed')
                     failedComponents = componentBuildStatus.getComponents('failed')
                     println('Failed Components: '+ failedComponents)

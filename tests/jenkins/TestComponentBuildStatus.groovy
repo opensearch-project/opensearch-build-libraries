@@ -24,6 +24,7 @@ class TestComponentBuildStatus {
     private final String indexName = 'opensearch-distribution-build-results-*'
     private final String product = "OpenSearch"
     private final String version = "2.18.0"
+    private final String qualifier = "None"
     private final String distributionBuildNumber = "4891"
     private final String buildStartTimeFrom = "now-6h"
     private final String buildStartTimeTo = "now"
@@ -66,7 +67,7 @@ class TestComponentBuildStatus {
             }
             return ""
         }
-        componentBuildStatus = new ComponentBuildStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, product, version, distributionBuildNumber, buildStartTimeFrom, buildStartTimeTo, script)
+        componentBuildStatus = new ComponentBuildStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, product, version, qualifier, distributionBuildNumber, buildStartTimeFrom, buildStartTimeTo, script)
     }
 
     @Test
@@ -112,6 +113,56 @@ class TestComponentBuildStatus {
         ]).replace('"', '\\"')
 
         def result = componentBuildStatus.getQuery('failed')
+        assert result == expectedOutput
+    }
+    @Test
+    void testGetQueryReturnsExpectedQueryWithQualifier() {
+        def expectedOutput = JsonOutput.toJson([
+                _source: [
+                        "component",
+                ],
+                query: [
+                        bool: [
+                                filter: [
+                                        [
+                                                match_phrase: [
+                                                        component_category: "OpenSearch"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        component_build_result: "failed"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        version: "2.18.0"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase : [
+                                                        distribution_build_number : "4891"
+                                                ]
+                                        ],
+                                        [
+                                                range: [
+                                                        build_start_time: [
+                                                                from: "now-6h",
+                                                                to: "now"
+                                                        ]
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase : [
+                                                        qualifier : "alpha1"
+                                                ]
+                                        ]
+                                ]
+                        ]
+                ]
+        ]).replace('"', '\\"')
+        def componentBuildStatusNew = new ComponentBuildStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, product, version, 'alpha1', distributionBuildNumber, buildStartTimeFrom, buildStartTimeTo, script)
+        def result = componentBuildStatusNew.getQuery('failed')
         assert result == expectedOutput
     }
 

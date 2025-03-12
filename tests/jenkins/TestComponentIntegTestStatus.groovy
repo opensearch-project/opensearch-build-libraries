@@ -25,6 +25,7 @@ class TestComponentIntegTestStatus {
     private final String indexName = 'opensearch-integration-test-results'
     private final String product = "OpenSearch"
     private final String version = "2.18.0"
+    private final String qualifier = "None"
     private final String distributionBuildNumber = "4891"
     private def script
 
@@ -97,7 +98,7 @@ class TestComponentIntegTestStatus {
             }
             return ""
         }
-        componentIntegTestStatus = new ComponentIntegTestStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, product, version, distributionBuildNumber, script)
+        componentIntegTestStatus = new ComponentIntegTestStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, product, version, qualifier, distributionBuildNumber, script)
     }
 
     @Test
@@ -177,6 +178,49 @@ class TestComponentIntegTestStatus {
     }
 
     @Test
+    void testComponentIntegTestFailedDataQueryWithQualifier() {
+        def expectedOutput = JsonOutput.toJson([
+                _source : [
+                        "platform",
+                        "architecture",
+                        "distribution",
+                        "test_report_manifest_yml",
+                        "integ_test_build_url",
+                        "rc_number"
+                ],
+                query: [
+                        bool: [
+                                filter: [
+                                        [
+                                                match_phrase: [
+                                                        component: "k-NN"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        version: "2.18.0"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        distribution_build_number: "4891"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        qualifier: "beta1"
+                                                ]
+                                        ]
+                                ]
+                        ]
+                ]
+        ]).replace('"', '\\"')
+        def componentIntegTestStatusNew = new ComponentIntegTestStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, product, version, 'beta1', distributionBuildNumber, script)
+        def result = componentIntegTestStatusNew.componentIntegTestFailedDataQuery('k-NN')
+        assert result == expectedOutput
+    }
+
+    @Test
     void testGetComponents() {
         def expectedOutput = ['cross-cluster-replication', 'k-NN', 'cross-cluster-replication', 'index-management', 'neural-search']
         def result = componentIntegTestStatus.getComponents('failed')
@@ -237,7 +281,7 @@ class TestComponentIntegTestStatus {
             }
             return ""
         }
-        componentIntegTestStatus = new ComponentIntegTestStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, product, version, distributionBuildNumber, script)
+        componentIntegTestStatus = new ComponentIntegTestStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, product, version, qualifier, distributionBuildNumber, script)
         def componentData = '''
                     {
                     "took": 5,

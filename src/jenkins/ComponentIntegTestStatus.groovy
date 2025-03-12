@@ -20,11 +20,12 @@ class ComponentIntegTestStatus {
     String indexName
     String product
     String version
+    String qualifier
     String distributionBuildNumber
     def script
     OpenSearchMetricsQuery openSearchMetricsQuery
 
-    ComponentIntegTestStatus(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, String indexName, String product, String version, String distributionBuildNumber, def script) {
+    ComponentIntegTestStatus(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, String indexName, String product, String version, String qualifier, String distributionBuildNumber, def script) {
         this.metricsUrl = metricsUrl
         this.awsAccessKey = awsAccessKey
         this.awsSecretKey = awsSecretKey
@@ -32,6 +33,7 @@ class ComponentIntegTestStatus {
         this.indexName = indexName
         this.product = product
         this.version = version
+        this.qualifier = qualifier
         this.distributionBuildNumber = distributionBuildNumber
         this.script = script
         this.openSearchMetricsQuery = new OpenSearchMetricsQuery(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, script)
@@ -70,6 +72,13 @@ class ComponentIntegTestStatus {
                         ]
                 ]
         ]
+        if (!isNullOrEmpty(this.qualifier)) {
+            queryMap.query.bool.filter.add([
+                    match_phrase: [
+                            qualifier: "${this.qualifier}"
+                    ]
+            ])
+        }
         def query = JsonOutput.toJson(queryMap)
         return query.replace('"', '\\"')
     }
@@ -106,6 +115,13 @@ class ComponentIntegTestStatus {
                         ]
                 ]
         ]
+        if (!isNullOrEmpty(this.qualifier)) {
+            queryMap.query.bool.filter.add([
+                    match_phrase: [
+                            qualifier: "${this.qualifier}"
+                    ]
+            ])
+        }
         def query = JsonOutput.toJson(queryMap)
         return query.replace('"', '\\"')
     }
@@ -119,6 +135,10 @@ class ComponentIntegTestStatus {
     def getComponentIntegTestFailedData(String component) {
         def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(componentIntegTestFailedDataQuery(component))
         return jsonResponse
+    }
+
+    private boolean isNullOrEmpty(String str) {
+        return (str == 'Null' || str == null || str.allWhitespace || str.isEmpty()) || str == "None"
     }
 
 }
