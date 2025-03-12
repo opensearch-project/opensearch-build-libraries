@@ -19,16 +19,18 @@ class ReleaseCandidateStatus {
     String awsSessionToken
     String indexName
     String version
+    String qualifier
     def script
     def openSearchMetricsQuery
 
-    ReleaseCandidateStatus(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, String indexName, String version, def script) {
+    ReleaseCandidateStatus(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, String indexName, String version, String qualifier, def script) {
         this.metricsUrl = metricsUrl
         this.awsAccessKey = awsAccessKey
         this.awsSecretKey = awsSecretKey
         this.awsSessionToken = awsSessionToken
         this.indexName = indexName
         this.version = version
+        this.qualifier = qualifier
         this.script = script
         this.openSearchMetricsQuery = new OpenSearchMetricsQuery(metricsUrl,awsAccessKey, awsSecretKey, awsSessionToken, indexName, script)
     }
@@ -71,43 +73,19 @@ class ReleaseCandidateStatus {
             ]
 
         if (rcNumber != null) {
-            queryMap = [
-                _source: "distribution_build_number",
-                sort: [
-                    [
-                        distribution_build_number: [
-                            order: "desc"
-                        ]
+            queryMap.sort[0].remove("rc_number")
+            queryMap.query.bool.filter.add([
+                    match_phrase: [
+                            rc_number: "${rcNumber}"
                     ]
-                ],
-                size: 1,
-                query: [
-                    bool: [
-                        filter: [
-                            [
-                                match_phrase: [
-                                    component: "${componentName}"
-                                ]
-                            ],
-                            [
-                                match_phrase: [
-                                    rc: "true"
-                                ]
-                            ],
-                            [
-                                match_phrase: [
-                                    version: "${this.version}"
-                                ]
-                            ],
-                            [
-                                match_phrase: [
-                                    rc_number: "${rcNumber}"
-                                ]
-                            ]
-                        ]
+            ])
+        }
+        if (this.qualifier != null && this.qualifier != "None") {
+            queryMap.query.bool.filter.add([
+                    match_phrase: [
+                            qualifier: "${this.qualifier}"
                     ]
-                ]
-            ]
+            ])
         }
 
         def query = JsonOutput.toJson(queryMap)
@@ -150,6 +128,13 @@ class ReleaseCandidateStatus {
                         ]
                 ]
         ]
+        if (this.qualifier != null && this.qualifier != "None") {
+            queryMap.query.bool.filter.add([
+                    match_phrase: [
+                            qualifier: "${this.qualifier}"
+                    ]
+            ])
+        }
         def query = JsonOutput.toJson(queryMap)
         return query.replace('"', '\\"')
     }

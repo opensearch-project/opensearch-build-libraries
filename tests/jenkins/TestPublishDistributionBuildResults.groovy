@@ -82,6 +82,9 @@ class TestPublishDistributionBuildResults extends BuildPipelineTest {
                     "version": {
                         "type": "keyword"
                     },
+                    "qualifier": {
+                        "type": "keyword"
+                    },
                     "distribution_build_number": {
                         "type": "integer"
                     },
@@ -150,7 +153,7 @@ class TestPublishDistributionBuildResults extends BuildPipelineTest {
     void testGenerateJson() {
         def script = loadScript('vars/publishDistributionBuildResults.groovy')
         def result = script.generateJson(
-            'component1', 'componentRepo', 'https://componentRepoUrl', 'ref1', '1.0', 123,
+            'component1', 'componentRepo', 'https://componentRepoUrl', 'ref1', '1.0', 'rc1', 123,
             'http://example.com/build/123', System.currentTimeMillis(), 'rc1', 1, 'test-category', 'failed'
         )
 
@@ -161,6 +164,7 @@ class TestPublishDistributionBuildResults extends BuildPipelineTest {
             component_repo_url: 'https://componentRepoUrl',
             component_ref: 'ref1',
             version: '1.0',
+            qualifier: 'rc1',
             distribution_build_number: 123,
             distribution_build_url: 'http://example.com/build/123',
             // Ignore build_start_time for comparison
@@ -189,6 +193,7 @@ class TestPublishDistributionBuildResults extends BuildPipelineTest {
         def componentRepoUrl = "https://componentRepoUrl"
         def componentRef = "refA"
         def version = "1.0.0"
+        def qualifier = "None"
         def distributionBuildNumber = "123"
         def distributionBuildUrl = "http://example.com/build/123"
         def buildStartTime = "2024-07-19T00:00:00Z"
@@ -197,13 +202,14 @@ class TestPublishDistributionBuildResults extends BuildPipelineTest {
         def componentCategory = "categoryA"
         def status = "success"
 
-        def result = script.generateAndAppendJson(component, componentRepo, componentRepoUrl, componentRef, version, distributionBuildNumber, distributionBuildUrl, buildStartTime, rc, rcNumber, componentCategory, status)
+        def result = script.generateAndAppendJson(component, componentRepo, componentRepoUrl, componentRef, version, qualifier,distributionBuildNumber, distributionBuildUrl, buildStartTime, rc, rcNumber, componentCategory, status)
         def expectedJson = JsonOutput.toJson([
             component: component,
             component_repo: componentRepo,
             component_repo_url: componentRepoUrl,
             component_ref: componentRef,
             version: version,
+            qualifier: qualifier,
             distribution_build_number: distributionBuildNumber,
             distribution_build_url: distributionBuildUrl,
             build_start_time: buildStartTime,
@@ -214,13 +220,14 @@ class TestPublishDistributionBuildResults extends BuildPipelineTest {
         ])
         assert result == expectedJson
 
-        result = script.generateAndAppendJson(null, null, null, null, null, null, null, null, null, null, null, null)
+        result = script.generateAndAppendJson(null, null, null, null, null, null, null, null, null, null, null, null, null)
         expectedJson = JsonOutput.toJson([
             component: null,
             component_repo: null,
             component_repo_url: null,
             component_ref: null,
             version: null,
+            qualifier: null,
             distribution_build_number: null,
             distribution_build_url: null,
             build_start_time: null,
