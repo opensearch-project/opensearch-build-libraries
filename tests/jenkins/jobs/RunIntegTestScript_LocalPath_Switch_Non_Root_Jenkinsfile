@@ -19,8 +19,7 @@ pipeline {
                         buildManifest: 'tests/data/opensearch-1.3.0-build.yml',
                         testManifest: 'tests/data/opensearch-1.3.0-test.yml',
                         localPath: 'tests/jenkins/artifacts/tar',
-                        switchUserNonRoot: 'true',
-                        ciGroup: ""
+                        switchUserNonRoot: 'true'
                     )
                 }
             }
