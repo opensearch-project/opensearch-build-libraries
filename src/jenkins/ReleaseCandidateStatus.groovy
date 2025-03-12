@@ -80,7 +80,7 @@ class ReleaseCandidateStatus {
                     ]
             ])
         }
-        if (this.qualifier != null && this.qualifier != "None") {
+        if (!isNullOrEmpty(this.qualifier)) {
             queryMap.query.bool.filter.add([
                     match_phrase: [
                             qualifier: "${this.qualifier}"
@@ -128,7 +128,7 @@ class ReleaseCandidateStatus {
                         ]
                 ]
         ]
-        if (this.qualifier != null && this.qualifier != "None") {
+        if (!isNullOrEmpty(this.qualifier)) {
             queryMap.query.bool.filter.add([
                     match_phrase: [
                             qualifier: "${this.qualifier}"
@@ -151,4 +151,7 @@ class ReleaseCandidateStatus {
         return rcNumber
     }
 
+    private boolean isNullOrEmpty(String str) {
+        return (str == 'Null' || str == null || str.allWhitespace || str.isEmpty()) || str == "None"
+    }
 }

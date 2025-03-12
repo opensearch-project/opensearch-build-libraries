@@ -72,7 +72,7 @@ class ComponentIntegTestStatus {
                         ]
                 ]
         ]
-        if (this.qualifier != null && this.qualifier != "None") {
+        if (!isNullOrEmpty(this.qualifier)) {
             queryMap.query.bool.filter.add([
                     match_phrase: [
                             qualifier: "${this.qualifier}"
@@ -115,7 +115,7 @@ class ComponentIntegTestStatus {
                         ]
                 ]
         ]
-        if (this.qualifier != null && this.qualifier != "None") {
+        if (!isNullOrEmpty(this.qualifier)) {
             queryMap.query.bool.filter.add([
                     match_phrase: [
                             qualifier: "${this.qualifier}"
@@ -135,6 +135,10 @@ class ComponentIntegTestStatus {
     def getComponentIntegTestFailedData(String component) {
         def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(componentIntegTestFailedDataQuery(component))
         return jsonResponse
+    }
+
+    private boolean isNullOrEmpty(String str) {
+        return (str == 'Null' || str == null || str.allWhitespace || str.isEmpty()) || str == "None"
     }
 
 }

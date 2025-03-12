@@ -96,7 +96,7 @@ class ComponentBuildStatus {
                         ]
                 ]
         ]
-        if (this.qualifier != null && this.qualifier != "None") {
+        if (!isNullOrEmpty(this.qualifier)) {
             queryMap.query.bool.filter.add([
                     match_phrase: [
                             qualifier: "${this.qualifier}"
@@ -138,7 +138,7 @@ class ComponentBuildStatus {
                 ]
         ]
 
-        if (this.qualifier != null && this.qualifier != "None") {
+        if (!isNullOrEmpty(this.qualifier)) {
             queryMap.query.bool.filter.add([
                     match_phrase: [
                             qualifier: "${this.qualifier}"
@@ -159,5 +159,9 @@ class ComponentBuildStatus {
          def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(getLatestDistributionBuildNumberQuery())
          def latestDistributionBuildNumber = jsonResponse.hits.hits[0]._source.distribution_build_number
          return latestDistributionBuildNumber
+    }
+
+    private boolean isNullOrEmpty(String str) {
+        return (str == 'Null' || str == null || str.allWhitespace || str.isEmpty()) || str == "None"
     }
 }
