@@ -23,6 +23,8 @@ void call(Map args = [:]) {
     if (matcher) {
         version = matcher[0][1]  // Captures the numeric part (3.0.0)
         qualifier = matcher[0][2] ?: "None" // Captures the qualifier (beta1) or None if no qualifier
+        // Explicitly null out the matcher after using it to avoid serialization issues with jenkins
+        matcher = null
     }
     def opensearchRcNumber
     def opensearchDashboardsRcNumber
