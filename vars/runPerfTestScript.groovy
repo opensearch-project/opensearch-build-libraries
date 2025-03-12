@@ -7,7 +7,7 @@
  * compatible open source license.
  */
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@8.3.0', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@8.3.1', retriever: legacySCM(scm))
     def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.bundleManifest))
 
     install_opensearch_infra_dependencies()
