@@ -34,5 +34,5 @@
                      runIntegTestScript.echo(Base Path null/null/1.3.0/29/linux/x64/tar)
                      runIntegTestScript.echo(Component: OpenSearch-Dashboards)
                      runIntegTestScript.echo(Switch User to Non-Root (uid=1000): false)
-                     runIntegTestScript.echo(Run command: env PATH=$PATH JAVA_HOME=/opt/java/openjdk-11 ./test.sh integ-test manifests/tests/data/opensearch-1.3.0-test.yml --component OpenSearch-Dashboards --ci-group 1 --test-run-id null --paths opensearch=/home/user/x64 --base-path null/null/1.3.0/29/linux/x64/tar )
-                     runIntegTestScript.sh(env PATH=$PATH JAVA_HOME=/opt/java/openjdk-11 ./test.sh integ-test manifests/tests/data/opensearch-1.3.0-test.yml --component OpenSearch-Dashboards --ci-group 1 --test-run-id null --paths opensearch=/home/user/x64 --base-path null/null/1.3.0/29/linux/x64/tar )
+                     runIntegTestScript.echo(Run command: env PATH=$PATH JAVA_HOME=/opt/java/openjdk-11 ./test.sh integ-test tests/data/opensearch-1.3.0-test.yml --component OpenSearch-Dashboards --ci-group 1 --test-run-id null --paths opensearch=/home/user/x64 --base-path null/null/1.3.0/29/linux/x64/tar )
+                     runIntegTestScript.sh(env PATH=$PATH JAVA_HOME=/opt/java/openjdk-11 ./test.sh integ-test tests/data/opensearch-1.3.0-test.yml --component OpenSearch-Dashboards --ci-group 1 --test-run-id null --paths opensearch=/home/user/x64 --base-path null/null/1.3.0/29/linux/x64/tar )
