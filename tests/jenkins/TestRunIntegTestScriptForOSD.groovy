@@ -33,7 +33,7 @@ class TestRunIntegTestScriptForOSD extends BuildPipelineTest {
         super.setUp()
         super.testPipeline("tests/jenkins/jobs/RunIntegTestScriptForOSD_Jenkinsfile")
         runScript("tests/jenkins/jobs/RunIntegTestScriptForOSD_Jenkinsfile")
-        assertThat(getShellCommands('sh', 'test.sh'), hasItems('env PATH=$PATH JAVA_HOME=/opt/java/openjdk-11 ./test.sh integ-test manifests/tests/data/opensearch-1.3.0-test.yml --component reportsDashboard  --test-run-id null --paths opensearch=/home/user/x64 --base-path null/null/1.3.0/29/linux/x64/tar '))
+        assertThat(getShellCommands('sh', 'test.sh'), hasItems('env PATH=$PATH JAVA_HOME=/opt/java/openjdk-11 ./test.sh integ-test tests/data/opensearch-1.3.0-test.yml --component reportsDashboard  --test-run-id null --paths opensearch=/home/user/x64 --base-path null/null/1.3.0/29/linux/x64/tar '))
     }
 
     @Test
@@ -53,7 +53,7 @@ class TestRunIntegTestScriptForOSD extends BuildPipelineTest {
         super.setUp()
         super.testPipeline("tests/jenkins/jobs/RunIntegTestScriptForOSDCiGroup_Jenkinsfile")
         runScript("tests/jenkins/jobs/RunIntegTestScriptForOSDCiGroup_Jenkinsfile")
-        assertThat(getShellCommands('sh','test.sh'), hasItems('env PATH=$PATH JAVA_HOME=/opt/java/openjdk-11 ./test.sh integ-test manifests/tests/data/opensearch-1.3.0-test.yml --component OpenSearch-Dashboards --ci-group 1 --test-run-id null --paths opensearch=/home/user/x64 --base-path null/null/1.3.0/29/linux/x64/tar '))
+        assertThat(getShellCommands('sh','test.sh'), hasItems('env PATH=$PATH JAVA_HOME=/opt/java/openjdk-11 ./test.sh integ-test tests/data/opensearch-1.3.0-test.yml --component OpenSearch-Dashboards --ci-group 1 --test-run-id null --paths opensearch=/home/user/x64 --base-path null/null/1.3.0/29/linux/x64/tar '))
     }
 
     def getShellCommands(methodName, searchString) {
