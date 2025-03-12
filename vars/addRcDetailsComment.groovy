@@ -11,13 +11,19 @@ import jenkins.ReleaseMetricsData
 
 /** Library to add Release Candidate Details to the release issue
  *  @param Map args = [:] args A map of the following parameters
- *  @param args.version <required> - Release version.
+ *  @param args.version <required> - Release version along with qualifier eg:3.0.0-alpha1.
  *  @param args.opensearchRcNumber <optional> - OpenSearch RC number. eg: 5. Defaults to latest RC number
  *  @param args.opensearchDashboardsRcNumber <optional> - OpenSearch-Dashboards RC number. eg: 5. Defaults to latest RC number
  * */
 void call(Map args = [:]) {
     def buildIndexName = 'opensearch-distribution-build-results'
     def version = args.version
+    def qualifier = "None"
+    def matcher = version =~ /^([\d.]+)(?:-(.+))?$/
+    if (matcher) {
+        version = matcher[0][1]  // Captures the numeric part (3.0.0)
+        qualifier = matcher[0][2] ?: "None" // Captures the qualifier (beta1) or None if no qualifier
+    }
     def opensearchRcNumber
     def opensearchDashboardsRcNumber
     def opensearchRcBuildNumber
@@ -36,7 +42,7 @@ void call(Map args = [:]) {
             def awsSecretKey = env.AWS_SECRET_ACCESS_KEY
             def awsSessionToken = env.AWS_SESSION_TOKEN
 
-            ReleaseCandidateStatus releaseCandidateStatus = new ReleaseCandidateStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, buildIndexName, version, this)
+            ReleaseCandidateStatus releaseCandidateStatus = new ReleaseCandidateStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, buildIndexName, version, qualifier, this)
             ReleaseMetricsData releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, this)
 
             releaseIssueUrl = releaseMetricsData.getReleaseIssue('opensearch-build')

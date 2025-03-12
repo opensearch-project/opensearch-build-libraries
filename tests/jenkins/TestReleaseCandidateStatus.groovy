@@ -23,12 +23,13 @@ class TestReleaseCandidateStatus {
     private final String awsSessionToken = 'testSessionToken'
     private final String buildIndexName = 'opensearch-distribution-build-results'
     private final String version = "2.19.0"
+    private final String qualifier = "None"
     private def script
 
 
     @Before
     void setUp() {
-        releaseCandidateStatus = new ReleaseCandidateStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, buildIndexName, version, script)
+        releaseCandidateStatus = new ReleaseCandidateStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, buildIndexName, version, qualifier, script)
     }
 
     @Test
@@ -154,6 +155,53 @@ class TestReleaseCandidateStatus {
     }
 
     @Test
+    void testGetLatestRcNumberQueryWithQualifier() {
+        String expectedOutput = JsonOutput.toJson([
+                _source: "rc_number",
+                sort   : [
+                        [
+                                distribution_build_number: [
+                                        order: "desc"
+                                ],
+                                rc_number                : [
+                                        order: "desc"
+                                ]
+                        ]
+                ],
+                size   : 1,
+                query  : [
+                        bool: [
+                                filter: [
+                                        [
+                                                match_phrase: [
+                                                        component: "OpenSearch"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        rc: "true"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        version: "${this.version}"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        qualifier: "alpha1"
+                                                ]
+                                        ]
+                                ]
+                        ]
+                ]
+        ]).replace('"', '\\"')
+        def releaseCandidateStatusNew = new ReleaseCandidateStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, buildIndexName, version, 'alpha1', script)
+        def queryResult = releaseCandidateStatusNew.getLatestRcNumberQuery('OpenSearch')
+        assert queryResult == expectedOutput
+    }
+
+    @Test
     void testGetRcDistributionNumber() {
         def responseText = """
                     {
@@ -194,7 +242,7 @@ class TestReleaseCandidateStatus {
                 return responseText
             }
         }
-        ReleaseCandidateStatus releaseCandidateStatusOb = new ReleaseCandidateStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, buildIndexName, version, script)
+        ReleaseCandidateStatus releaseCandidateStatusOb = new ReleaseCandidateStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, buildIndexName, version, qualifier, script)
         def expectedOutput = 10787
         def result = releaseCandidateStatusOb.getRcDistributionNumber('OpenSearch')
         assert result == expectedOutput
@@ -241,7 +289,7 @@ class TestReleaseCandidateStatus {
                 return responseText
             }
         }
-        ReleaseCandidateStatus releaseCandidateStatusOb = new ReleaseCandidateStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, buildIndexName, version, script)
+        ReleaseCandidateStatus releaseCandidateStatusOb = new ReleaseCandidateStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, buildIndexName, version, qualifier, script)
         def expectedOutput = 5
         def result = releaseCandidateStatusOb.getLatestRcNumber('OpenSearch')
         assert result == expectedOutput
