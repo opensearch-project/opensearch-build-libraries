@@ -1,0 +1,39 @@
+   CheckDocumentationIssues_Jenkinsfile.run()
+      CheckDocumentationIssues_Jenkinsfile.pipeline(groovy.lang.Closure)
+         CheckDocumentationIssues_Jenkinsfile.echo(Executing on agent [label:none])
+         CheckDocumentationIssues_Jenkinsfile.stage(check-doc-issues, groovy.lang.Closure)
+            CheckDocumentationIssues_Jenkinsfile.script(groovy.lang.Closure)
+               CheckDocumentationIssues_Jenkinsfile.checkDocumentationIssues({version=3.0.0, action=notify})
+                  checkDocumentationIssues.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
+                  checkDocumentationIssues.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+                     checkDocumentationIssues.sh({script=gh issue list --repo opensearch-project/documentation-website --state open --label v3.0.0 -S "-linked:pr" --json number --jq '.[].number', returnStdout=true})
+                     checkDocumentationIssues.echo(Open documentation issues found. Issue numbers: [22, 23])
+                     checkDocumentationIssues.sh({script=gh issue view 22 --repo opensearch-project/documentation-website --json assignees --jq '.assignees[0].login', returnStdout=true})
+                     checkDocumentationIssues.libraryResource(release/documentation-issues-template.md)
+                     checkDocumentationIssues.writeFile({file=/tmp/workspace/22.md, text=Hi @foo, </br>
+
+As part of the [entrance criteria](https://github.com/opensearch-project/.github/blob/main/RELEASING.md#entrance-criteria-to-start-release-window), all the documentation pull requests need to be drafted and in technical review. </br>
+**Since there is no pull request linked to this issue, please take one of the following actions:** </br>
+* Create the pull request and [link it](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue) to this issue. </br>
+* If you already have a pull request created, please [link it](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue) to this issue. </br>
+* If this feature is not targeted for the currently labeled release version, please update the issue with the correct release version. </br>
+
+Please note: Missing documentation can block the release and cause delays in the overall process. </br>
+Thank you!
+})
+                     checkDocumentationIssues.sh({script=gh issue comment 22 --repo opensearch-project/documentation-website --body-file /tmp/workspace/22.md, returnStdout=true})
+                     checkDocumentationIssues.sh({script=gh issue view 23 --repo opensearch-project/documentation-website --json assignees --jq '.assignees[0].login', returnStdout=true})
+                     checkDocumentationIssues.libraryResource(release/documentation-issues-template.md)
+                     checkDocumentationIssues.writeFile({file=/tmp/workspace/23.md, text=Hi @bbb
+ccc, </br>
+
+As part of the [entrance criteria](https://github.com/opensearch-project/.github/blob/main/RELEASING.md#entrance-criteria-to-start-release-window), all the documentation pull requests need to be drafted and in technical review. </br>
+**Since there is no pull request linked to this issue, please take one of the following actions:** </br>
+* Create the pull request and [link it](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue) to this issue. </br>
+* If you already have a pull request created, please [link it](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue) to this issue. </br>
+* If this feature is not targeted for the currently labeled release version, please update the issue with the correct release version. </br>
+
+Please note: Missing documentation can block the release and cause delays in the overall process. </br>
+Thank you!
+})
+                     checkDocumentationIssues.sh({script=gh issue comment 23 --repo opensearch-project/documentation-website --body-file /tmp/workspace/23.md, returnStdout=true})
