@@ -79,7 +79,7 @@ class ReleaseMetricsData {
         return query.replace('"', '\\"')
     }
 
-    String getReleaseIssueQuery(String repository) {
+    String getReleaseIssueQuery(String repository, String changedMatchPhraseKey = "repository") {
         def queryMap = [
                 size   : 1,
                 _source: "release_issue",
@@ -93,7 +93,7 @@ class ReleaseMetricsData {
                                         ],
                                         [
                                                 match_phrase: [
-                                                        repository: "${repository}"
+                                                        "${changedMatchPhraseKey}": "${repository}"
                                                 ]
                                         ]
                                 ]
@@ -122,9 +122,9 @@ ArrayList getReleaseOwners(String component) {
         }
 }
 
-String getReleaseIssue(String repository) {
+String getReleaseIssue(String repository, String changedMatchPhraseKey="repository") {
         try {
-                def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(getReleaseIssueQuery(repository))
+                def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(getReleaseIssueQuery(repository, changedMatchPhraseKey))
                 def releaseIssue = jsonResponse.hits.hits._source.release_issue[0]
                 return releaseIssue.toString()
         } catch (Exception e) {
