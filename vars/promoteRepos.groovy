@@ -142,7 +142,7 @@ void call(Map args = [:]) {
 
                 gpg_version_check=`gpg --version | head -n 1 | grep -oE '[0-9.]+'`
                 gpg_version_check_final=`echo \$gpg_version_check \$gpg_version_requirement | tr ' ' '\n' | sort -V | head -n 1`
-                aptly_version_check=`aptly version | head -n 1 | grep -oE '[0-9.]+'`
+                aptly_version_check=`aptly version | cut -d: -f2 | grep -oE '[0-9.]+' | head -n 1`
                 aptly_version_check_final=`echo \$aptly_version_check \$aptly_version_requirement | tr ' ' '\n' | sort -V | head -n 1`
                
                 echo -e "gpg_version_requirement gpg_version_check"
