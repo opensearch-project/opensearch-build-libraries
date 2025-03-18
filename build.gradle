@@ -128,12 +128,12 @@ jacocoTestReport {
     }
 }
 
-String version = '8.3.3'
+String version = '8.3.4'
 
 task updateVersion {
     doLast {
         println "Setting version to ${version} in all libraries"
-        ant.replaceregexp(match:'jenkins@main', replace: 'jenkins@' + version, flags: 'g') {
+        ant.replaceregexp(match:'jenkins@8.3.3', replace: 'jenkins@' + version, flags: 'g') {
             fileset(dir: projectDir) {
                 include (name: "vars/**")
                 include (name: "tests/**")
