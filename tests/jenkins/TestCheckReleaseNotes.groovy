@@ -86,7 +86,7 @@ class TestCheckReleaseNotes extends BuildPipelineTest {
         super.testPipeline('tests/jenkins/jobs/CheckReleaseNotes_JenkinsFile')
         def fileContent = getCommands('writeFile', 'release')[0]
         assertThat(fileContent, allOf(containsString("{file=/tmp/workspace/OpenSearch.md, text=Hi, </br>"),
-        containsString("This component is missing release notes at [main] ref. Please add them on priority in order to meet the entrance criteria for the release.")))
+        containsString("This component is missing release notes at [main] ref. Please add them on priority in order to meet the entrance criteria for the release. </br>")))
         assertThat(getCommands('echo', 'missing'), hasItem("Components missing release notes: [OpenSearch, functionalTestDashboards]"))
         assertThat(getCommands('sh', 'opensearch'), hasItem("{script=gh issue comment https://github.com/opensearch-project/opensearch/issues/123 --body-file /tmp/workspace/OpenSearch.md, returnStdout=true}"))
         assertThat(getCommands('sh', 'functionalTestDashboards').size(), equalTo(0))
