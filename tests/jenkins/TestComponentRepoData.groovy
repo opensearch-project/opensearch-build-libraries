@@ -144,6 +144,7 @@ class TestComponentRepoData {
                 }
         ]
         def result = componentRepoData.getMaintainers('sql', maintainersIndexName )
+<<<<<<< HEAD
         assert result == null
     }
 
@@ -252,6 +253,8 @@ class TestComponentRepoData {
                 }
         ]
         def result = componentRepoData.getCodeCoverage('OpenSearch', 'opensearch-code-coverage-metrics')
+=======
+>>>>>>> 4e96a439 (Add library to check the code-coverage status)
         assert result == null
     }
 }

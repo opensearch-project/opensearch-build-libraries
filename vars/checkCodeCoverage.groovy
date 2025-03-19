@@ -49,7 +49,11 @@ void call(Map args = [:]) {
                     if (!codeCoverage.isEmpty() && codeCoverage.state == "no-coverage") { // Also equivalent to codeCoverage.coverage == 0
                         componentsMissingCodeCoverageWithUrl[component.name] = codeCoverage.url
                         if (args.action == 'notify') {
+<<<<<<< HEAD
                             notifyReleaseOwners(component.name, codeCoverage, releaseIssue)
+=======
+                            notifyReleaseOwners(codeCoverage, releaseIssue)
+>>>>>>> 4e96a439 (Add library to check the code-coverage status)
                         }
                     }
                 }

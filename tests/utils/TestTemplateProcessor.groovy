@@ -14,7 +14,10 @@ import org.junit.Before
 import org.junit.Test
 import utils.TemplateProcessor
 import static org.junit.Assert.assertEquals
+<<<<<<< HEAD
 import static org.junit.Assert.assertThrows
+=======
+>>>>>>> 4e96a439 (Add library to check the code-coverage status)
 
 class TestTemplateProcessor {
     def script
@@ -46,13 +49,18 @@ class TestTemplateProcessor {
 
     @Test
     void testProcessor() {
+<<<<<<< HEAD
         Random.metaClass.nextInt = { int max -> 1 }
+=======
+
+>>>>>>> 4e96a439 (Add library to check the code-coverage status)
         def bindings = [
                 BRANCH: 'main',
                 VERSION: '3.0'
         ]
         def templateProcessor = new TemplateProcessor(script)
         def result  = templateProcessor.process("release/missing-code-coverage.md", bindings, '/tmp/workspace')
+<<<<<<< HEAD
         assertEquals (result, "/tmp/workspace/BBBBBBBBBB.md")
         assertEquals(writtenFiles["Content"].toString(),"[This is a test template checking values for main and 3.0]" )
     }
@@ -75,5 +83,10 @@ class TestTemplateProcessor {
             assertEquals("Failed to process template: Resource not found, /tmp", e.getMessage())
         }
     }
+=======
+        assert result.startsWith("/tmp/workspace/")
+        assertEquals(writtenFiles["Content"].toString(),"[This is a test template checking values for main and 3.0]" )
+    }
+>>>>>>> 4e96a439 (Add library to check the code-coverage status)
 }
 

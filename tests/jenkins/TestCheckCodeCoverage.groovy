@@ -17,7 +17,13 @@ import static com.lesfurets.jenkins.unit.MethodCall.callArgsToString
 import static org.hamcrest.CoreMatchers.containsString
 import static org.hamcrest.CoreMatchers.allOf
 import static org.hamcrest.CoreMatchers.hasItem
+<<<<<<< HEAD
 import static org.hamcrest.MatcherAssert.assertThat
+=======
+import static org.hamcrest.CoreMatchers.not
+import static org.hamcrest.MatcherAssert.assertThat
+import utils.TemplateProcessor
+>>>>>>> 4e96a439 (Add library to check the code-coverage status)
 
 class TestCheckCodeCoverage extends BuildPipelineTest {
     @Override
@@ -116,16 +122,26 @@ class TestCheckCodeCoverage extends BuildPipelineTest {
     @Test
     void testNotifyAction() {
         addParam('ACTION', 'notify')
+<<<<<<< HEAD
         Random.metaClass.nextInt = { int max -> 1 }
+=======
+>>>>>>> 4e96a439 (Add library to check the code-coverage status)
         this.registerLibTester(new CheckCodeCoverageLibTester(['tests/data/opensearch-1.3.0.yml'], 'notify'))
         super.testPipeline('tests/jenkins/jobs/CheckCodeCoverage_Jenkinsfile')
         def fileContent = getCommands('writeFile', 'code-coverage')[0]
         assertThat(fileContent, allOf(
+<<<<<<< HEAD
                 containsString("{file=/tmp/workspace/BBBBBBBBBB.md, text=Hi, </br>"),
                 containsString("OpenSearch is not reporting code-coverage for branch [1.3](https://api.codecov.io/api/v2/github/opensearch-project/repos/OpenSearch/commits?branch=1.3). </br>"),
                 containsString("Please fix the issue by checking your CI workflow responsible for reporting code coverage. See the details on [code coverage reporting](https://github.com/opensearch-project/opensearch-plugins/blob/main/TESTING.md#code-coverage-reporting) </br>")
         ))
         assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue comment https://github.com/opensearch-project/OpenSearch/issues/5152 --body-file /tmp/workspace/BBBBBBBBBB.md, returnStdout=true}"))
+=======
+                containsString("This component is not reporting code-coverage for branch [1.3](https://api.codecov.io/api/v2/github/opensearch-project/repos/OpenSearch/commits?branch=1.3). </br>"),
+                containsString("Please fix the issue by checking your CI workflow responsible for reporting code coverage. See the details on [code coverage reporting](https://github.com/opensearch-project/opensearch-plugins/blob/main/TESTING.md#code-coverage-reporting) </br>")
+        ))
+        assertThat(getCommands('sh', 'script'), hasItem(containsString("gh issue comment https://github.com/opensearch-project/OpenSearch/issues/5152 --body-file")))
+>>>>>>> 4e96a439 (Add library to check the code-coverage status)
     }
 
     @Test
