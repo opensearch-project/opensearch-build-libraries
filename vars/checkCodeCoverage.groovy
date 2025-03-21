@@ -87,6 +87,7 @@ private void validateParameters(Map args, action) {
 /**
  * Notify components regarding the missing code coverage adding a comment to the release issue.
  * @param codeCoverage: Map of args with with branch and url.
+ * @param releaseIssue: GitHub release issue URL
  */
 private void notifyReleaseOwners(Map codeCoverage, String releaseIssue) {
     try {
