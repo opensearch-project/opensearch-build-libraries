@@ -12,8 +12,18 @@ package jenkins.tests
 import jenkins.ParseReleaseNotesMarkdownTable
 import org.junit.Test
 import static org.junit.Assert.assertEquals
+import static org.junit.Assert.assertTrue
 
 class TestParseReleaseNotesMarkdownTable {
+    // Helper method to create a testable subclass that overrides error()
+    private ParseReleaseNotesMarkdownTable createParser(String markdown) {
+        return new ParseReleaseNotesMarkdownTable(markdown) {
+            def error(String message) {
+                throw new Exception(message)
+            }
+        }
+    }
+
     @Test
     void testParseMarkdownTableRows() {
         def markdown = """
@@ -39,5 +49,18 @@ class TestParseReleaseNotesMarkdownTable {
         assertEquals("6c0a95b9", result[0]['Commit ID'])
         assertEquals("2025-03-17", result[0]['Commit Date'])
         assertEquals("False", result[0]['Status'])
+    }
+
+    @Test
+    void testInvalidMarkdownParsing() {
+        def invalidMarkdown = "This is not a valid markdown table"
+        def parser = createParser(invalidMarkdown)
+
+        try {
+            parser.parseReleaseNotesMarkdownTableRows()
+            fail("Expected an exception to be thrown")
+        } catch (Exception e) {
+            assertTrue(e.getMessage().startsWith("Unable to parse the release notes markdown table:"))
+        }
     }
 }
