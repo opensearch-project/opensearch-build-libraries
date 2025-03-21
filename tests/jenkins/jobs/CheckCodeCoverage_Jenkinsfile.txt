@@ -30,15 +30,15 @@
                         TemplateProcessor.process(release/missing-code-coverage.md, {BRANCH=1.3, CODECOV_URL=https://api.codecov.io/api/v2/github/opensearch-project/repos/OpenSearch/commits?branch=1.3}, /tmp/workspace)
                            TemplateProcessor.getRandomName()
                            checkCodeCoverage.libraryResource(release/missing-code-coverage.md)
-                           checkCodeCoverage.writeFile({file=/tmp/workspace/BCNWQONCDN.md, text=Hi, </br>
+                           checkCodeCoverage.writeFile({file=/tmp/workspace/BBBBBBBBBB.md, text=Hi, </br>
 
 This component is not reporting code-coverage for branch [1.3](https://api.codecov.io/api/v2/github/opensearch-project/repos/OpenSearch/commits?branch=1.3). </br>
 Please fix the issue by checking your CI workflow responsible for reporting code coverage. See the details on [code coverage reporting](https://github.com/opensearch-project/opensearch-plugins/blob/main/TESTING.md#code-coverage-reporting) </br>
 
 Thank you!
 })
-                           checkCodeCoverage.println(Wrote file to /tmp/workspace/BCNWQONCDN.md)
+                           checkCodeCoverage.println(Wrote file to /tmp/workspace/BBBBBBBBBB.md)
                         checkCodeCoverage.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
                         checkCodeCoverage.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
-                           checkCodeCoverage.sh({script=gh issue comment https://github.com/opensearch-project/OpenSearch/issues/5152 --body-file /tmp/workspace/BCNWQONCDN.md, returnStdout=true})
+                           checkCodeCoverage.sh({script=gh issue comment https://github.com/opensearch-project/OpenSearch/issues/5152 --body-file /tmp/workspace/BBBBBBBBBB.md, returnStdout=true})
                   checkCodeCoverage.echo(Components missing code coverage are: [OpenSearch:https://api.codecov.io/api/v2/github/opensearch-project/repos/OpenSearch/commits?branch=1.3])
