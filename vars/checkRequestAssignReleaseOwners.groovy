@@ -9,6 +9,7 @@
 import jenkins.ReleaseMetricsData
 import jenkins.ComponentRepoData
 import java.time.LocalDate
+import utils.TemplateProcessor
 /**
  * Library to check and assign release owners to the release issues.
  * @param Map args = [:] args A map of the following parameters
@@ -18,9 +19,6 @@ import java.time.LocalDate
 void call(Map args = [:]) {
     def inputManifest = args.inputManifest
     String action = args.action ?: 'check'
-    def now = LocalDate.now()
-    def monthYear = String.format("%02d-%d", now.monthValue, now.year)
-    def maintainersIndex = "maintainer-inactivity-${monthYear}"
 
     // Parameter validation
     validateParameters(args)
@@ -41,7 +39,7 @@ void call(Map args = [:]) {
                 def awsSessionToken = env.AWS_SESSION_TOKEN
 
                 ReleaseMetricsData releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, this)
-                ComponentRepoData componentRepoData = new ComponentRepoData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, maintainersIndex, this)
+                ComponentRepoData componentRepoData = new ComponentRepoData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, this)
 
                 inputManifestObj.components.each { component ->
                     def releaseOwner = releaseMetricsData.getReleaseOwners(component.name)
@@ -88,9 +86,12 @@ private void validateParameters(Map args) {
  * Handle component with missing release owner
  */
 private void handleMissingReleaseOwner(def component, ReleaseMetricsData releaseMetricsData,  ComponentRepoData componentRepoData, String action) {
+    def now = LocalDate.now()
+    def monthYear = String.format("%02d-%d", now.monthValue, now.year)
+    def maintainersIndex = "maintainer-inactivity-${monthYear}"
     String repoName = component.repository.toString().split('/')[-1].replace('.git', '')
     String releaseIssueUrl = releaseMetricsData.getReleaseIssue(repoName)
-    ArrayList<String> componentMaintainers = componentRepoData.getMaintainers(repoName)
+    ArrayList<String> componentMaintainers = componentRepoData.getMaintainers(repoName, maintainersIndex)
 
     if (componentMaintainers == null || componentMaintainers.isEmpty()) {
         echo("No maintainers found for component: ${component.name}. Skipping action.")
@@ -117,7 +118,7 @@ private void handleMissingReleaseOwner(def component, ReleaseMetricsData release
 private void requestMaintainers(String componentName, String releaseIssueUrl, List<String> maintainersWithTag) {
     try {
         Map values = [LIST_OF_MAINTAINERS: maintainersWithTag.join(", ")]
-        def githubCommentBody = getNotificationMessageBodyFile(componentName, values, 'release/request-release-owner-template.md')
+        def githubCommentBody = new TemplateProcessor(this).process("release/request-release-owner-template.md", values, "${WORKSPACE}")
         withCredentials([usernamePassword(credentialsId: 'jenkins-github-bot-token', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'GITHUB_USER')]) {
             sh(
                     script: "gh issue comment ${releaseIssueUrl} --body-file ${githubCommentBody}",
@@ -138,7 +139,7 @@ private void assignRandomMaintainer(String componentName, String releaseIssueUrl
         def randomReleaseOwner = maintainersWithTag[random.nextInt(maintainersWithTag.size())]
         def randomReleaseOwnerFormatted = randomReleaseOwner.replace("@", '')
         Map values = [RELEASE_OWNER: randomReleaseOwner]
-        def githubCommentBody = getNotificationMessageBodyFile(componentName, values, 'release/release-owner-assignment-template.md')
+        def githubCommentBody = new TemplateProcessor(this).process("release/release-owner-assignment-template.md", values, "${WORKSPACE}")
         withCredentials([usernamePassword(credentialsId: 'jenkins-github-bot-token', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'GITHUB_USER')]) {
             sh(
                     script: "gh issue comment ${releaseIssueUrl} --body-file ${githubCommentBody}",
@@ -151,42 +152,5 @@ private void assignRandomMaintainer(String componentName, String releaseIssueUrl
         }
     } catch (Exception e) {
         error("Failed to assign release owner for ${componentName}: ${e.getMessage()}")
-    }
-}
-
-/**
- * Create and return notification message file path
- */
-def getNotificationMessageBodyFile(String componentName, def releaseOwners, String templatePath) {
-    try {
-        // Check for null or empty values
-        def nullOrEmptyKeys = releaseOwners.findAll { k, v ->
-            v == null || (v instanceof String && v.trim().isEmpty())
-        }.keySet()
-
-        if (nullOrEmptyKeys) {
-            error "Following required values are null or empty: ${nullOrEmptyKeys.join(', ')}"
-        }
-
-        // Load RC details template content
-        def templateContent = libraryResource "${templatePath}"
-
-        // Create binding for template variables
-        def binding = [:]
-        releaseOwners.each { k, v -> binding[k] = v }
-
-        // Process template using simple string replacement
-        def processedContent = templateContent
-        binding.each { key, value ->
-            processedContent = processedContent.replace('${' + key + '}', value.toString())
-        }
-
-        // Write the processed content
-        String commentBodyFilePath = "${WORKSPACE}/${componentName}.md"
-        writeFile(file: commentBodyFilePath , text: processedContent)
-        return commentBodyFilePath
-
-    } catch (Exception e) {
-        error "Failed to process template: ${e.getMessage()}"
     }
 }

@@ -20,7 +20,7 @@ class TestComponentRepoData {
     private final String awsSecretKey = 'testSecretKey'
     private final String awsSessionToken = 'testSessionToken'
     private final String version = "2.18.0"
-    private final String indexName = 'maintainer-inactivity-03-2025'
+    private final String maintainersIndexName = 'maintainer-inactivity-03-2025'
     private def script
 
     @Before
@@ -84,7 +84,7 @@ class TestComponentRepoData {
             }
             return ""
         }
-        componentRepoData = new ComponentRepoData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, indexName, script)
+        componentRepoData = new ComponentRepoData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, script)
     }
 
     @Test
@@ -127,7 +127,7 @@ class TestComponentRepoData {
     @Test
     void testGetMaintainers(){
         def expectedOutput = ['foo', 'bar']
-        def result = componentRepoData.getMaintainers('sql')
+        def result = componentRepoData.getMaintainers('sql', maintainersIndexName)
         assert  result == expectedOutput
     }
 
@@ -137,13 +137,13 @@ class TestComponentRepoData {
         script.println = { String message ->
             assert message.startsWith("Error fetching the maintainers for sql:")
         }
-        componentRepoData = new ComponentRepoData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, indexName, script)
-        componentRepoData.openSearchMetricsQuery = [
+        componentRepoData = new ComponentRepoData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, script)
+        componentRepoData.metaClass.openSearchMetricsQuery = [
                 fetchMetrics: { query ->
                     throw new RuntimeException("Test exception")
                 }
         ]
-        def result = componentRepoData.getMaintainers('sql')
+        def result = componentRepoData.getMaintainers('sql', maintainersIndexName )
         assert result == null
     }
 }

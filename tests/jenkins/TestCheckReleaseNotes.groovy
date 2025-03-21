@@ -39,6 +39,7 @@ class TestCheckReleaseNotes extends BuildPipelineTest {
         String testData = new File('tests/data/release-notes-check.md').text
         helper.addFileExistsMock('tests/data/release-notes-check.md', true)
         helper.addReadFileMock('tests/data/release-notes-check.md', testData)
+        Random.metaClass.nextInt = { int max -> 2 }
 
         def releaseIssueResponse = '''
                     {
@@ -85,10 +86,10 @@ class TestCheckReleaseNotes extends BuildPipelineTest {
         this.registerLibTester(new CheckReleaseNotesLibTester('2.19.0', 'tests/data/release-notes-check.md', 'notify'))
         super.testPipeline('tests/jenkins/jobs/CheckReleaseNotes_JenkinsFile')
         def fileContent = getCommands('writeFile', 'release')[0]
-        assertThat(fileContent, allOf(containsString("{file=/tmp/workspace/OpenSearch.md, text=Hi, </br>"),
+        assertThat(fileContent, allOf(containsString("{file=/tmp/workspace/CCCCCCCCCC.md, text=Hi, </br>"),
         containsString("This component is missing release notes at [main] ref. Please add them on priority in order to meet the entrance criteria for the release. </br>")))
         assertThat(getCommands('echo', 'missing'), hasItem("Components missing release notes: [OpenSearch, functionalTestDashboards]"))
-        assertThat(getCommands('sh', 'opensearch'), hasItem("{script=gh issue comment https://github.com/opensearch-project/opensearch/issues/123 --body-file /tmp/workspace/OpenSearch.md, returnStdout=true}"))
+        assertThat(getCommands('sh', 'opensearch'), hasItem("{script=gh issue comment https://github.com/opensearch-project/opensearch/issues/123 --body-file /tmp/workspace/CCCCCCCCCC.md, returnStdout=true}"))
         assertThat(getCommands('sh', 'functionalTestDashboards').size(), equalTo(0))
     }
 
