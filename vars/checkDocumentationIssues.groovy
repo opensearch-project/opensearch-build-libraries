@@ -6,6 +6,8 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
+import utils.TemplateProcessor
+
 /**
  * Library to check documentation issues per release.
  * @param Map args = [:] args A map of the following parameters
@@ -76,31 +78,6 @@ private String getAuthorOrAssignee(String issueNumber) {
 }
 
 /**
- * Create and return notification message file path
- */
-def getNotificationMessageBodyFile(String owner, String issueNumber) {
-    try {
-        // Load RC details template content
-        def templateContent = libraryResource "release/documentation-issues-template.md"
-
-        // Process template using simple string replacement
-        def processedContent = templateContent
-
-        if(owner) {
-            processedContent = processedContent.replace('${OWNER}', owner.trim())
-        } else {
-            processedContent = processedContent.replace('@{OWNER}', '')
-        }
-        // Write the processed content
-        String commentBodyFilePath = "${WORKSPACE}/${issueNumber}.md"
-        writeFile(file: commentBodyFilePath , text: processedContent)
-        return commentBodyFilePath
-    } catch (Exception e) {
-        error "Failed to process template: ${e.getMessage()}"
-    }
-}
-
-/**
  * Notify the owners about the possible actions
  * @param openIssuesList
  * @return
@@ -108,7 +85,10 @@ def getNotificationMessageBodyFile(String owner, String issueNumber) {
 private void notifyTheOwners(ArrayList openIssuesList) {
     openIssuesList.each { issueNumber ->
         def owner = getAuthorOrAssignee(issueNumber.toString())
-        def githubCommentBody = getNotificationMessageBodyFile(owner, issueNumber.toString())
+        def bindings = [
+                OWNER: owner
+        ]
+        def githubCommentBody = new TemplateProcessor(this).process("release/documentation-issues-template.md", bindings, "${WORKSPACE}")
         sh(
                 script: "gh issue comment ${issueNumber} --repo opensearch-project/documentation-website --body-file ${githubCommentBody}",
                 returnStdout: true

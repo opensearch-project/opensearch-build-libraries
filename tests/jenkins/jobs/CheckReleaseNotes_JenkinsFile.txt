@@ -21,17 +21,20 @@
             set +x
             curl -s -XGET "sample.url/opensearch_release_metrics/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"size\":1,\"_source\":\"release_issue\",\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"component.keyword\":\"OpenSearch\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]}" | jq '.'
         , returnStdout=true})
-                        checkReleaseNotes.libraryResource(release/missing-release-notes.md)
-                        checkReleaseNotes.writeFile({file=/tmp/workspace/OpenSearch.md, text=Hi, </br>
+                        TemplateProcessor.process(release/missing-release-notes.md, {BRANCH=[main]}, /tmp/workspace)
+                           TemplateProcessor.getRandomName()
+                           checkReleaseNotes.libraryResource(release/missing-release-notes.md)
+                           checkReleaseNotes.writeFile({file=/tmp/workspace/CCCCCCCCCC.md, text=Hi, </br>
 
 This component is missing release notes at [main] ref. Please add them on priority in order to meet the entrance criteria for the release. </br>
 Please check out the [guidelines](https://github.com/opensearch-project/opensearch-plugins/blob/main/RELEASE_NOTES.md) for the release notes. </br>
 
 Thank you!
 })
+                           checkReleaseNotes.println(Wrote file to /tmp/workspace/CCCCCCCCCC.md)
                         checkReleaseNotes.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
                         checkReleaseNotes.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
-                           checkReleaseNotes.sh({script=gh issue comment https://github.com/opensearch-project/opensearch/issues/123 --body-file /tmp/workspace/OpenSearch.md, returnStdout=true})
+                           checkReleaseNotes.sh({script=gh issue comment https://github.com/opensearch-project/opensearch/issues/123 --body-file /tmp/workspace/CCCCCCCCCC.md, returnStdout=true})
                   checkReleaseNotes.string({credentialsId=jenkins-health-metrics-account-number, variable=METRICS_HOST_ACCOUNT})
                   checkReleaseNotes.string({credentialsId=jenkins-health-metrics-cluster-endpoint, variable=METRICS_HOST_URL})
                   checkReleaseNotes.withCredentials([METRICS_HOST_ACCOUNT, METRICS_HOST_URL], groovy.lang.Closure)

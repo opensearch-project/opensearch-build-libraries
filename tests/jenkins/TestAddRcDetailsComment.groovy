@@ -237,13 +237,14 @@ class TestAddRcDetailsComment extends BuildPipelineTest {
         helper.addShMock('curl -s -XGET "https://build.ci.opensearch.org/job/docker-scan/4439/artifact/scan_docker_image.txt"') { script ->
             return [stdout: 'Total: 0 (UNKNOWN: 0, LOW: 0, MEDIUM: 0, HIGH: 0, CRITICAL: 0))', exitValue: 0]
         }
+        Random.metaClass.nextInt = { int max -> 1 }
     }
 
     @Test
     void testAddingComment() {
         this.registerLibTester(new AddRcDetailsCommentLibTester('2.19.0'))
         super.testPipeline('tests/jenkins/jobs/AddRcDetailsComment.jenkinsFile')
-        assertThat(getCommands('sh', 'comment'), hasItem("{script=gh issue comment https://github.com/opensearch-project/opensearch-build/issues/5152 --body-file 'rc-details-comment-body.md', returnStdout=true}"))
+        assertThat(getCommands('sh', 'comment'), hasItem("{script=gh issue comment https://github.com/opensearch-project/opensearch-build/issues/5152 --body-file /tmp/workspace/BBBBBBBBBB.md, returnStdout=true}"))
     }
 
     @Test
@@ -251,7 +252,7 @@ class TestAddRcDetailsComment extends BuildPipelineTest {
         this.registerLibTester(new AddRcDetailsCommentLibTester('2.19.0'))
         runScript('tests/jenkins/jobs/AddRcDetailsComment.jenkinsFile')
         def fileContent = getCommands('writeFile', 'OpenSearch')[0]
-        assertThat(fileContent, containsString("{file=rc-details-comment-body.md, text=## See OpenSearch RC 5 and OpenSearch-Dashboards RC 5 details"))
+        assertThat(fileContent, containsString("{file=/tmp/workspace/BBBBBBBBBB.md, text=## See OpenSearch RC 5 and OpenSearch-Dashboards RC 5 details"))
         assertThat(fileContent, containsString("OpenSearch 10787 and OpenSearch-Dashboards 8260 is ready for your test."))
         assertThat(fileContent, containsString("image: opensearchstaging/opensearch:2.19.0.1078"))
         assertThat(fileContent, containsString("image: opensearchstaging/opensearch-dashboards:2.19.0.8260"))

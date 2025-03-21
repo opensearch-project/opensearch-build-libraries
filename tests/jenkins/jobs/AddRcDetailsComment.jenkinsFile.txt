@@ -59,8 +59,14 @@ ccc" | jq -r '._links.artifacts.href', returnStdout=true})
 ccc" | jq -r '.[] | select(.name | endswith(".txt")) | .url', returnStdout=true})
                   addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.orgbbb
 ccc", returnStdout=true})
-                  addRcDetailsComment.libraryResource(release/rc-details-template.md)
-                  addRcDetailsComment.writeFile({file=rc-details-comment-body.md, text=## See OpenSearch RC 5 and OpenSearch-Dashboards RC 5 details
+                  TemplateProcessor.process(release/rc-details-template.md, {VERSION=2.19.0, OPENSEARCH_RC_NUMBER=5, OPENSEARCH_DASHBOARDS_RC_NUMBER=5, OPENSEARCH_RC_BUILD_NUMBER=10787, OPENSEARCH_DASHBOARDS_RC_BUILD_NUMBER=8260, OPENSEARCH_DOCKER_SCAN_RESULTS=Total: 0 (UNKNOWN: 0, LOW: 0, MEDIUM: 0, HIGH: 0, CRITICAL: 0)), OPENSEARCH_DASHBOARDS_DOCKER_SCAN_RESULTS=
+bbb
+ccc
+, OPENSEARCH_DOCKER_SCAN_URL=https://build.ci.opensearch.org/job/docker-scan/4439/artifact/scan_docker_image.txt, OPENSEARCH_DASHBOARDS_DOCKER_SCAN_URL=https://build.ci.opensearch.orgbbb
+ccc}, /tmp/workspace)
+                     TemplateProcessor.getRandomName()
+                     addRcDetailsComment.libraryResource(release/rc-details-template.md)
+                     addRcDetailsComment.writeFile({file=/tmp/workspace/BBBBBBBBBB.md, text=## See OpenSearch RC 5 and OpenSearch-Dashboards RC 5 details
 <details><summary>OpenSearch 5 and OpenSearch-Dashboards 5 details</summary>
 <p>
  ## OpenSearch 10787 and OpenSearch-Dashboards 8260 is ready for your test.
@@ -183,7 +189,7 @@ _Check how to install [opensearch](https://opensearch.org/docs/latest/install-an
 - Use the https://metrics.opensearch.org/_dashboards/goto/9ed74dd90eb31c7b83f3542e43328088?security_tenant=global.
 
 - Filter by the `distribution_build_number`. Use **10787** for OpenSearch and **8260** for OpenSearch Dashboards.
-  Example when filtered with **10787** we can see all the passed/failed OpenSearch components. Check the metrics [here](https://metrics.opensearch.org/_dashboards/app/dashboards#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now%2Fw,to:now%2Fw))&_a=(description:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',filters:!(('\$state':(store:appState),meta:(alias:!n,controlledBy:'1721852613904',disabled:!f,index:'16f55f10-4977-11ef-8565-15a1562cd0a0',key:version,negate:!f,params:(query:'2.19.0'),type:phrase),query:(match_phrase:(version:'2.19.0'))),('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:'23eb6520-4977-11ef-bbdd-39a9b324a5aa',key:distribution_build_number,negate:!f,params:!('10787','%208260'),type:phrases,value:'10787,%20%208260'),query:(bool:(minimum_should_match:1,should:!((match_phrase:(distribution_build_number:'10787')),(match_phrase:(distribution_build_number:'%208260')))))),('\$state':(store:appState),meta:(alias:!n,controlledBy:'1722482131538',disabled:!f,index:'16f55f10-4977-11ef-8565-15a1562cd0a0',key:rc_number,negate:!f,params:(query:4),type:phrase),query:(match_phrase:(rc_number:4)))),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),query:(language:kuery,query:''),timeRestore:!t,title:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',viewMode:view)).
+  Example when filtered with **10787** we can see all the passed/failed OpenSearch components. Check the metrics [here](https://metrics.opensearch.org/_dashboards/app/dashboards#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now%2Fw,to:now%2Fw))&_a=(description:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',filters:!(('$state':(store:appState),meta:(alias:!n,controlledBy:'1721852613904',disabled:!f,index:'16f55f10-4977-11ef-8565-15a1562cd0a0',key:version,negate:!f,params:(query:'2.19.0'),type:phrase),query:(match_phrase:(version:'2.19.0'))),('$state':(store:appState),meta:(alias:!n,disabled:!f,index:'23eb6520-4977-11ef-bbdd-39a9b324a5aa',key:distribution_build_number,negate:!f,params:!('10787','%208260'),type:phrases,value:'10787,%20%208260'),query:(bool:(minimum_should_match:1,should:!((match_phrase:(distribution_build_number:'10787')),(match_phrase:(distribution_build_number:'%208260')))))),('$state':(store:appState),meta:(alias:!n,controlledBy:'1722482131538',disabled:!f,index:'16f55f10-4977-11ef-8565-15a1562cd0a0',key:rc_number,negate:!f,params:(query:4),type:phrase),query:(match_phrase:(rc_number:4)))),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),query:(language:kuery,query:''),timeRestore:!t,title:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',viewMode:view)).
 
 - Find the list of the created **AUTOCUT** issues here https://github.com/issues?page=1&q=is%3Aopen+is%3Aissue+user%3Aopensearch-project+label%3Av2.19.0+label%3Aautocut+%5BAUTOCUT%5D+in%3Atitle.
 
@@ -224,7 +230,8 @@ ccc
 </p>
 </details>
 })
+                     addRcDetailsComment.println(Wrote file to /tmp/workspace/BBBBBBBBBB.md)
                   addRcDetailsComment.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
                   addRcDetailsComment.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
                      addRcDetailsComment.println(Adding RC details to the release issue as a comment.)
-                     addRcDetailsComment.sh({script=gh issue comment https://github.com/opensearch-project/opensearch-build/issues/5152 --body-file 'rc-details-comment-body.md', returnStdout=true})
+                     addRcDetailsComment.sh({script=gh issue comment https://github.com/opensearch-project/opensearch-build/issues/5152 --body-file /tmp/workspace/BBBBBBBBBB.md, returnStdout=true})
