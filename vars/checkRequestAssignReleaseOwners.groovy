@@ -18,9 +18,6 @@ import java.time.LocalDate
 void call(Map args = [:]) {
     def inputManifest = args.inputManifest
     String action = args.action ?: 'check'
-    def now = LocalDate.now()
-    def monthYear = String.format("%02d-%d", now.monthValue, now.year)
-    def maintainersIndex = "maintainer-inactivity-${monthYear}"
 
     // Parameter validation
     validateParameters(args)
@@ -41,7 +38,7 @@ void call(Map args = [:]) {
                 def awsSessionToken = env.AWS_SESSION_TOKEN
 
                 ReleaseMetricsData releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, this)
-                ComponentRepoData componentRepoData = new ComponentRepoData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, maintainersIndex, this)
+                ComponentRepoData componentRepoData = new ComponentRepoData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, this)
 
                 inputManifestObj.components.each { component ->
                     def releaseOwner = releaseMetricsData.getReleaseOwners(component.name)
@@ -88,9 +85,12 @@ private void validateParameters(Map args) {
  * Handle component with missing release owner
  */
 private void handleMissingReleaseOwner(def component, ReleaseMetricsData releaseMetricsData,  ComponentRepoData componentRepoData, String action) {
+    def now = LocalDate.now()
+    def monthYear = String.format("%02d-%d", now.monthValue, now.year)
+    def maintainersIndex = "maintainer-inactivity-${monthYear}"
     String repoName = component.repository.toString().split('/')[-1].replace('.git', '')
     String releaseIssueUrl = releaseMetricsData.getReleaseIssue(repoName)
-    ArrayList<String> componentMaintainers = componentRepoData.getMaintainers(repoName)
+    ArrayList<String> componentMaintainers = componentRepoData.getMaintainers(repoName, maintainersIndex)
 
     if (componentMaintainers == null || componentMaintainers.isEmpty()) {
         echo("No maintainers found for component: ${component.name}. Skipping action.")

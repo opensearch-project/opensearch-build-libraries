@@ -51,7 +51,7 @@ sourceSets {
 
     test {
         groovy {
-            srcDirs = ['tests/jenkins', 'tests/gradlecheck']
+            srcDirs = ['tests/jenkins', 'tests/gradlecheck', 'tests/utils']
         }
     }
 
