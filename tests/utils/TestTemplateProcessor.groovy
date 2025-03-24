@@ -53,8 +53,26 @@ class TestTemplateProcessor {
         ]
         def templateProcessor = new TemplateProcessor(script)
         def result  = templateProcessor.process("release/missing-code-coverage.md", bindings, '/tmp/workspace')
-        assert result.startsWith("/tmp/workspace/")
+        assertEquals (result, "/tmp/workspace/BBBBBBBBBB.md")
         assertEquals(writtenFiles["Content"].toString(),"[This is a test template checking values for main and 3.0]" )
     }
-}
 
+    @Test
+    void testProcessorException() {
+        def bindings = [
+                BRANCH: '',
+                VERSION: '3.0'
+        ]
+        script.libraryResource = { path ->
+            // Return a sample template content for testing
+            throw new IOException("Resource not found, ${path}")
+        }
+        def templateProcessor = new TemplateProcessor(script)
+        try {
+            templateProcessor.process("/tmp", bindings, '/tmp/workspace')
+            fail("Expected an exception to be thrown")
+        } catch (Exception e) {
+            assertEquals("Failed to process template: Resource not found, /tmp", e.getMessage())
+        }
+    }
+}
