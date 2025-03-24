@@ -10,7 +10,7 @@ import jenkins.ReleaseMetricsData
  /**
  * Library to check if release issue exists in the component repo.
  * @param Map args = [:] args A map of the following parameters
- * @param args.inputManifest <required> - Input manifest file(s) eg: [2.0.0/opensearch-2.0.0.yml, 2.0.0/opensearch-dashboards-2.0.0.yml] .
+ * @param args.inputManifest <required> - Input manifest file(s) eg: [manifests/2.0.0/opensearch-2.0.0.yml,manifests/2.0.0/opensearch-dashboards-2.0.0.yml] .
  * @param args.action <optional> - Action to be performed. Default is 'check'. Acceptable values are 'check' and 'create'.
  */
 void call(Map args = [:]) {
