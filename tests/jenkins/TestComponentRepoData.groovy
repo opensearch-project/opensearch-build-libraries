@@ -20,7 +20,7 @@ class TestComponentRepoData {
     private final String awsSecretKey = 'testSecretKey'
     private final String awsSessionToken = 'testSessionToken'
     private final String version = "2.18.0"
-    private final String indexName = 'maintainer-inactivity-03-2025'
+    private final String maintainersIndexName = 'maintainer-inactivity-03-2025'
     private def script
 
     @Before
@@ -84,7 +84,7 @@ class TestComponentRepoData {
             }
             return ""
         }
-        componentRepoData = new ComponentRepoData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, indexName, script)
+        componentRepoData = new ComponentRepoData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, script)
     }
 
     @Test
@@ -127,7 +127,7 @@ class TestComponentRepoData {
     @Test
     void testGetMaintainers(){
         def expectedOutput = ['foo', 'bar']
-        def result = componentRepoData.getMaintainers('sql')
+        def result = componentRepoData.getMaintainers('sql', maintainersIndexName)
         assert  result == expectedOutput
     }
 
@@ -137,13 +137,121 @@ class TestComponentRepoData {
         script.println = { String message ->
             assert message.startsWith("Error fetching the maintainers for sql:")
         }
-        componentRepoData = new ComponentRepoData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, indexName, script)
-        componentRepoData.openSearchMetricsQuery = [
+        componentRepoData = new ComponentRepoData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, script)
+        componentRepoData.metaClass.openSearchMetricsQuery = [
                 fetchMetrics: { query ->
                     throw new RuntimeException("Test exception")
                 }
         ]
-        def result = componentRepoData.getMaintainers('sql')
+        def result = componentRepoData.getMaintainers('sql', maintainersIndexName )
+        assert result == null
+    }
+
+    @Test
+    void testGetCodeCoverageQuery() {
+        String expectedOutput = JsonOutput.toJson([
+                size   : 1,
+                _source: [
+                        "coverage",
+                        "branch",
+                        "state",
+                        "url"
+                ],
+                query  : [
+                        bool: [
+                                filter: [
+                                        [
+                                                match_phrase: [
+                                                        "repository.keyword": "OpenSearch"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        "version": "${this.version}"
+                                                ]
+                                        ]
+                                ]
+                        ]
+                ],
+                sort   : [
+                        [
+                                current_date: [
+                                        order: "desc"
+                                ]
+                        ]
+                ]
+        ]).replace('"', '\\"')
+        def result = componentRepoData.getCodeCoverageQuery('OpenSearch')
+        assert result == expectedOutput
+    }
+
+    @Test
+    void testGetCodeCoverage() {
+        script = new Expando()
+        script.sh = { Map args ->
+            if (args.containsKey("script")) {
+                return """
+                    {
+                      "took": 4,
+                      "timed_out": false,
+                      "_shards": {
+                        "total": 5,
+                        "successful": 5,
+                        "skipped": 0,
+                        "failed": 0
+                      },
+                      "hits": {
+                        "total": {
+                          "value": 22,
+                          "relation": "eq"
+                        },
+                        "max_score": null,
+                        "hits": [
+                          {
+                            "_index": "opensearch-codecov-metrics-03-2025",
+                            "_id": "a23e3d82-d0fa-3904-989d-5eb6b6a38efc",
+                            "_score": null,
+                            "_source": {
+                              "coverage": 71.98,
+                              "state": "complete",
+                              "branch": "2.18",
+                              "url": "https://api.codecov.io/api/v2/github/opensearch-project/repos/OpenSearch/commits?branch=2.18"
+                            },
+                            "sort": [
+                              1742603121408
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                """
+            }
+            return ""
+        }
+        componentRepoData = new ComponentRepoData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, script)
+        def expectedOutput = [
+                coverage: 71.98,
+                state: "complete",
+                branch: "2.18",
+                url: "https://api.codecov.io/api/v2/github/opensearch-project/repos/OpenSearch/commits?branch=2.18"
+        ]
+        def result = componentRepoData.getCodeCoverage('OpenSearch', 'opensearch-code-coverage-metrics')
+        assert  result == expectedOutput
+    }
+
+    @Test
+    void testGetCodeCoverageException() {
+        script = new Expando()
+        script.println = { String message ->
+            assert message.startsWith("Error fetching code coverage metrics for OpenSearch:")
+        }
+        componentRepoData = new ComponentRepoData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, script)
+        componentRepoData.metaClass.openSearchMetricsQuery = [
+                fetchMetrics: { query ->
+                    throw new RuntimeException("Test exception")
+                }
+        ]
+        def result = componentRepoData.getCodeCoverage('OpenSearch', 'opensearch-code-coverage-metrics')
         assert result == null
     }
 }
