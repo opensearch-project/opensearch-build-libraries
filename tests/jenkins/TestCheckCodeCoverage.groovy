@@ -117,7 +117,6 @@ class TestCheckCodeCoverage extends BuildPipelineTest {
     void testNotifyAction() {
         addParam('ACTION', 'notify')
         Random.metaClass.nextInt = { int max -> 1 }
-        Random.metaClass.nextInt = { int max -> 1 }
         this.registerLibTester(new CheckCodeCoverageLibTester(['tests/data/opensearch-1.3.0.yml'], 'notify'))
         super.testPipeline('tests/jenkins/jobs/CheckCodeCoverage_Jenkinsfile')
         def fileContent = getCommands('writeFile', 'code-coverage')[0]
