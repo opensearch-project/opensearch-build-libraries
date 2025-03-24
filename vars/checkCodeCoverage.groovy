@@ -49,7 +49,7 @@ void call(Map args = [:]) {
                     if (!codeCoverage.isEmpty() && codeCoverage.state == "no-coverage") { // Also equivalent to codeCoverage.coverage == 0
                         componentsMissingCodeCoverageWithUrl[component.name] = codeCoverage.url
                         if (args.action == 'notify') {
-                            notifyReleaseOwners(codeCoverage, releaseIssue)
+                            notifyReleaseOwners(component.name, codeCoverage, releaseIssue)
                         }
                     }
                 }
@@ -89,11 +89,12 @@ private void validateParameters(Map args, action) {
  * @param codeCoverage: Map of args with with branch and url.
  * @param releaseIssue: GitHub release issue URL
  */
-private void notifyReleaseOwners(Map codeCoverage, String releaseIssue) {
+private void notifyReleaseOwners(String componentName, Map codeCoverage, String releaseIssue) {
     try {
         def bindings = [
                 BRANCH: codeCoverage.branch,
-                CODECOV_URL: codeCoverage.url
+                CODECOV_URL: codeCoverage.url,
+                COMPONENT_NAME: componentName
         ]
         def ghCommentBodyContent = new TemplateProcessor(this).process("release/missing-code-coverage.md", bindings, "${WORKSPACE}")
         addComment(releaseIssue, ghCommentBodyContent)

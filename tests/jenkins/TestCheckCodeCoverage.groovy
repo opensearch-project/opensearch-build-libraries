@@ -122,7 +122,7 @@ class TestCheckCodeCoverage extends BuildPipelineTest {
         def fileContent = getCommands('writeFile', 'code-coverage')[0]
         assertThat(fileContent, allOf(
                 containsString("{file=/tmp/workspace/BBBBBBBBBB.md, text=Hi, </br>"),
-                containsString("This component is not reporting code-coverage for branch [1.3](https://api.codecov.io/api/v2/github/opensearch-project/repos/OpenSearch/commits?branch=1.3). </br>"),
+                containsString("OpenSearch is not reporting code-coverage for branch [1.3](https://api.codecov.io/api/v2/github/opensearch-project/repos/OpenSearch/commits?branch=1.3). </br>"),
                 containsString("Please fix the issue by checking your CI workflow responsible for reporting code coverage. See the details on [code coverage reporting](https://github.com/opensearch-project/opensearch-plugins/blob/main/TESTING.md#code-coverage-reporting) </br>")
         ))
         assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue comment https://github.com/opensearch-project/OpenSearch/issues/5152 --body-file /tmp/workspace/BBBBBBBBBB.md, returnStdout=true}"))
