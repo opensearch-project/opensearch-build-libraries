@@ -126,6 +126,7 @@ class TestCheckCodeCoverage extends BuildPipelineTest {
                 containsString("Please fix the issue by checking your CI workflow responsible for reporting code coverage. See the details on [code coverage reporting](https://github.com/opensearch-project/opensearch-plugins/blob/main/TESTING.md#code-coverage-reporting) </br>")
         ))
         assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue comment https://github.com/opensearch-project/OpenSearch/issues/5152 --body-file /tmp/workspace/BBBBBBBBBB.md, returnStdout=true}"))
+        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue comment https://github.com/opensearch-project/OpenSearch/issues/5152 --body-file /tmp/workspace/BBBBBBBBBB.md, returnStdout=true}"))
     }
 
     @Test

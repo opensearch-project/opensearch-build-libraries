@@ -1,4 +1,4 @@
-Hi @${OWNER}, </br>
+Hi @$OWNER, </br>
 
 As part of the [entrance criteria](https://github.com/opensearch-project/.github/blob/main/RELEASING.md#entrance-criteria-to-start-release-window), all the documentation pull requests need to be drafted and in technical review. </br>
 **Since there is no pull request linked to this issue, please take one of the following actions:** </br>

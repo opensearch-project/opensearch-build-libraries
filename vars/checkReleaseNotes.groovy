@@ -8,6 +8,7 @@
  */
 import jenkins.ReleaseMetricsData
 import jenkins.ParseReleaseNotesMarkdownTable
+import utils.TemplateProcessor
 /**
  * Library to check and notify missing release notes.
  * @param Map args = [:] args A map of the following parameters
@@ -73,7 +74,10 @@ private void notifyReleaseOwners(String version,def componentsWithFalseStatus) {
                 def componentName = component["Component"]
                 if(componentName != 'functionalTestDashboards') {
                     def releaseIssueUrl = releaseMetricsData.getReleaseIssue("${componentName}", "component.keyword")
-                    def ghCommentContent = getNotificationMessageBodyFile(componentName, component["Branch"] )
+                    def bindings = [
+                            BRANCH: component["Branch"]
+                    ]
+                    def ghCommentContent = new TemplateProcessor(this).process("release/missing-release-notes.md", bindings, "${WORKSPACE}")
                     addComment(releaseIssueUrl, ghCommentContent)
                 }
             }
@@ -92,27 +96,5 @@ private void addComment(String releaseIssueUrl, def commentBodyFile) {
                 script: "gh issue comment ${releaseIssueUrl} --body-file ${commentBodyFile}",
                 returnStdout: true
         )
-    }
-}
-/**
- * Get notification message body file.
- * @param component: Component Name.
- * @param branch: Branch against which release notes are checked.
- */
-def getNotificationMessageBodyFile(String component, String branch) {
-    try {
-        // Load RC details template content
-        def templateContent = libraryResource "release/missing-release-notes.md"
-
-        // Process template using simple string replacement
-        def processedContent = templateContent
-
-        processedContent = processedContent.replace('${BRANCH}', branch.trim())
-        // Write the processed content
-        String commentBodyFilePath = "${WORKSPACE}/${component}.md"
-        writeFile(file: commentBodyFilePath , text: processedContent)
-        return commentBodyFilePath
-    } catch (Exception e) {
-        error "Failed to process template: ${e.getMessage()}"
     }
 }

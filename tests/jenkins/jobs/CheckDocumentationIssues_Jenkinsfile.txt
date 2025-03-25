@@ -9,8 +9,10 @@
                      checkDocumentationIssues.sh({script=gh issue list --repo opensearch-project/documentation-website --state open --label v3.0.0 -S "-linked:pr" --json number --jq '.[].number', returnStdout=true})
                      checkDocumentationIssues.echo(Open documentation issues found. Issue numbers: [22, 23])
                      checkDocumentationIssues.sh({script=gh issue view 22 --repo opensearch-project/documentation-website --json assignees --jq '.assignees[0].login', returnStdout=true})
-                     checkDocumentationIssues.libraryResource(release/documentation-issues-template.md)
-                     checkDocumentationIssues.writeFile({file=/tmp/workspace/22.md, text=Hi @foo, </br>
+                     TemplateProcessor.process(release/documentation-issues-template.md, {OWNER=foo}, /tmp/workspace)
+                        TemplateProcessor.getRandomName()
+                        checkDocumentationIssues.libraryResource(release/documentation-issues-template.md)
+                        checkDocumentationIssues.writeFile({file=/tmp/workspace/CCCCCCCCCC.md, text=Hi @foo, </br>
 
 As part of the [entrance criteria](https://github.com/opensearch-project/.github/blob/main/RELEASING.md#entrance-criteria-to-start-release-window), all the documentation pull requests need to be drafted and in technical review. </br>
 **Since there is no pull request linked to this issue, please take one of the following actions:** </br>
@@ -21,11 +23,19 @@ As part of the [entrance criteria](https://github.com/opensearch-project/.github
 Please note: Missing documentation can block the release and cause delays in the overall process. </br>
 Thank you!
 })
-                     checkDocumentationIssues.sh({script=gh issue comment 22 --repo opensearch-project/documentation-website --body-file /tmp/workspace/22.md, returnStdout=true})
+                        checkDocumentationIssues.println(Wrote file to /tmp/workspace/CCCCCCCCCC.md)
+                     checkDocumentationIssues.sh({script=gh issue comment 22 --repo opensearch-project/documentation-website --body-file /tmp/workspace/CCCCCCCCCC.md, returnStdout=true})
                      checkDocumentationIssues.sh({script=gh issue view 23 --repo opensearch-project/documentation-website --json assignees --jq '.assignees[0].login', returnStdout=true})
-                     checkDocumentationIssues.libraryResource(release/documentation-issues-template.md)
-                     checkDocumentationIssues.writeFile({file=/tmp/workspace/23.md, text=Hi @bbb
-ccc, </br>
+                     TemplateProcessor.process(release/documentation-issues-template.md, {OWNER=
+bbb
+ccc
+}, /tmp/workspace)
+                        TemplateProcessor.getRandomName()
+                        checkDocumentationIssues.libraryResource(release/documentation-issues-template.md)
+                        checkDocumentationIssues.writeFile({file=/tmp/workspace/CCCCCCCCCC.md, text=Hi @
+bbb
+ccc
+, </br>
 
 As part of the [entrance criteria](https://github.com/opensearch-project/.github/blob/main/RELEASING.md#entrance-criteria-to-start-release-window), all the documentation pull requests need to be drafted and in technical review. </br>
 **Since there is no pull request linked to this issue, please take one of the following actions:** </br>
@@ -36,4 +46,5 @@ As part of the [entrance criteria](https://github.com/opensearch-project/.github
 Please note: Missing documentation can block the release and cause delays in the overall process. </br>
 Thank you!
 })
-                     checkDocumentationIssues.sh({script=gh issue comment 23 --repo opensearch-project/documentation-website --body-file /tmp/workspace/23.md, returnStdout=true})
+                        checkDocumentationIssues.println(Wrote file to /tmp/workspace/CCCCCCCCCC.md)
+                     checkDocumentationIssues.sh({script=gh issue comment 23 --repo opensearch-project/documentation-website --body-file /tmp/workspace/CCCCCCCCCC.md, returnStdout=true})
