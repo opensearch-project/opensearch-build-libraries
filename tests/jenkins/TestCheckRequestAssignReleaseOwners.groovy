@@ -187,9 +187,9 @@ class TestCheckRequestAssignReleaseOwners extends BuildPipelineTest {
         addParam('ACTION', 'request')
         this.registerLibTester(new CheckReleaseOwnersLibTester(['tests/data/opensearch-1.3.0.yml'], 'request'))
         runScript('tests/jenkins/jobs/CheckRequestAssignReleaseOwnerJenkinsFile')
-        assertThat(getCommands('sh', 'issue'), hasItem("{script=gh issue comment https://github.com/opensearch-project/opensearch/issues/123 --body-file /tmp/workspace/OpenSearch.md, returnStdout=true}"))
+        assertThat(getCommands('sh', 'issue'), hasItem("{script=gh issue comment https://github.com/opensearch-project/opensearch/issues/123 --body-file /tmp/workspace/BBBBBBBBBB.md, returnStdout=true}"))
         def fileContent = getCommands('writeFile', 'release')[0]
-        assertThat(fileContent, containsString("{file=/tmp/workspace/OpenSearch.md, text=Hi @foo, @bar, </br>"))
+        assertThat(fileContent, containsString("{file=/tmp/workspace/BBBBBBBBBB.md, text=Hi @foo, @bar, </br>"))
         assertThat(fileContent, containsString("Could someone kindly volunteer to take on the role of release owner for this component in order to meet the [entrance criteria](https://github.com/opensearch-project/.github/blob/main/RELEASING.md#entrance-criteria-to-start-release-window) ? </br>"))
         assertThat(fileContent, containsString("If no one is able to take it on, we may need to assign someone randomly before the release window opens. </br>"))
     }
@@ -200,9 +200,9 @@ class TestCheckRequestAssignReleaseOwners extends BuildPipelineTest {
         Random.metaClass.nextInt = { int max -> 1 }
         this.registerLibTester(new CheckReleaseOwnersLibTester(['tests/data/opensearch-1.3.0.yml'], 'assign'))
         runScript('tests/jenkins/jobs/CheckRequestAssignReleaseOwnerJenkinsFile')
-        assertThat(getCommands('sh', 'issue'), hasItems("{script=gh issue comment https://github.com/opensearch-project/opensearch/issues/123 --body-file /tmp/workspace/OpenSearch.md, returnStdout=true}", "{script=gh issue edit https://github.com/opensearch-project/opensearch/issues/123 --add-assignee bar, returnStdout=true}"))
+        assertThat(getCommands('sh', 'issue'), hasItems("{script=gh issue comment https://github.com/opensearch-project/opensearch/issues/123 --body-file /tmp/workspace/BBBBBBBBBB.md, returnStdout=true}", "{script=gh issue edit https://github.com/opensearch-project/opensearch/issues/123 --add-assignee bar, returnStdout=true}"))
         def fileContent = getCommands('writeFile', 'release')[0]
-        assertThat(fileContent, containsString("{file=/tmp/workspace/OpenSearch.md, text=Hi @bar, </br>"))
+        assertThat(fileContent, containsString("{file=/tmp/workspace/BBBBBBBBBB.md, text=Hi @bar, </br>"))
         assertThat(fileContent, containsString("Since this component currently does not have a release owner, we will assign you to this role for the time being! </br>"))
         assertThat(fileContent, containsString("If you feel this should be reassigned, please feel free to delegate it to the appropriate maintainer. </br>"))
     }
@@ -218,7 +218,7 @@ class TestCheckRequestAssignReleaseOwners extends BuildPipelineTest {
     @Test
     void testAssignmentFailure() {
         addParam('ACTION', 'assign')
-        helper.addShMock("""gh issue comment https://github.com/opensearch-project/opensearch/issues/123 --body-file /tmp/workspace/OpenSearch.md""") { script ->
+        helper.addShMock("""gh issue comment https://github.com/opensearch-project/opensearch/issues/123 --body-file /tmp/workspace/BBBBBBBBBB.md""") { script ->
             return [stdout: "Wrong credentials", exitValue: 127]
         }
         this.registerLibTester(new CheckReleaseOwnersLibTester(['tests/data/opensearch-1.3.0.yml'], 'assign'))
@@ -229,7 +229,7 @@ class TestCheckRequestAssignReleaseOwners extends BuildPipelineTest {
     @Test
     void testMaintainerRequestFailure() {
         addParam('ACTION', 'request')
-        helper.addShMock("""gh issue comment https://github.com/opensearch-project/opensearch/issues/123 --body-file /tmp/workspace/OpenSearch.md""") { script ->
+        helper.addShMock("""gh issue comment https://github.com/opensearch-project/opensearch/issues/123 --body-file /tmp/workspace/BBBBBBBBBB.md""") { script ->
             return [stdout: "Wrong credentials", exitValue: 127]
         }
         this.registerLibTester(new CheckReleaseOwnersLibTester(['tests/data/opensearch-1.3.0.yml'], 'request'))
