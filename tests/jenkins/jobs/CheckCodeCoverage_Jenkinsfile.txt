@@ -1,0 +1,44 @@
+   CheckCodeCoverage_Jenkinsfile.run()
+      CheckCodeCoverage_Jenkinsfile.pipeline(groovy.lang.Closure)
+         CheckCodeCoverage_Jenkinsfile.echo(Executing on agent [label:none])
+         CheckCodeCoverage_Jenkinsfile.stage(check-code-coverage, groovy.lang.Closure)
+            CheckCodeCoverage_Jenkinsfile.script(groovy.lang.Closure)
+               CheckCodeCoverage_Jenkinsfile.checkCodeCoverage({inputManifest=[tests/data/opensearch-1.3.0.yml], action=notify})
+                  checkCodeCoverage.fileExists(tests/data/opensearch-1.3.0.yml)
+                  checkCodeCoverage.readYaml({file=tests/data/opensearch-1.3.0.yml})
+                  checkCodeCoverage.readYaml({file=tests/data/opensearch-1.3.0.yml})
+                  checkCodeCoverage.string({credentialsId=jenkins-health-metrics-account-number, variable=METRICS_HOST_ACCOUNT})
+                  checkCodeCoverage.string({credentialsId=jenkins-health-metrics-cluster-endpoint, variable=METRICS_HOST_URL})
+                  checkCodeCoverage.withCredentials([METRICS_HOST_ACCOUNT, METRICS_HOST_URL], groovy.lang.Closure)
+                     checkCodeCoverage.withAWS({role=OpenSearchJenkinsAccessRole, roleAccount=METRICS_HOST_ACCOUNT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
+                        ComponentRepoData.getCodeCoverage(OpenSearch, opensearch-codecov-metrics-03-2025)
+                           OpenSearchMetricsQuery.fetchMetrics({\"size\":1,\"_source\":[\"coverage\",\"branch\",\"state\",\"url\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"repository.keyword\":\"OpenSearch\"}},{\"match_phrase\":{\"version\":\"1.3.0\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]})
+                              checkCodeCoverage.println(Running query: {\"size\":1,\"_source\":[\"coverage\",\"branch\",\"state\",\"url\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"repository.keyword\":\"OpenSearch\"}},{\"match_phrase\":{\"version\":\"1.3.0\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]})
+                              checkCodeCoverage.sh({script=
+            set -e
+            set +x
+            curl -s -XGET "sample.url/opensearch-codecov-metrics-03-2025/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"size\":1,\"_source\":[\"coverage\",\"branch\",\"state\",\"url\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"repository.keyword\":\"OpenSearch\"}},{\"match_phrase\":{\"version\":\"1.3.0\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]}" | jq '.'
+        , returnStdout=true})
+                        ReleaseMetricsData.getReleaseIssue(OpenSearch)
+                           OpenSearchMetricsQuery.fetchMetrics({\"size\":1,\"_source\":\"release_issue\",\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"1.3.0\"}},{\"match_phrase\":{\"repository\":\"OpenSearch\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]})
+                              checkCodeCoverage.println(Running query: {\"size\":1,\"_source\":\"release_issue\",\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"1.3.0\"}},{\"match_phrase\":{\"repository\":\"OpenSearch\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]})
+                              checkCodeCoverage.sh({script=
+            set -e
+            set +x
+            curl -s -XGET "sample.url/opensearch_release_metrics/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"size\":1,\"_source\":\"release_issue\",\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"1.3.0\"}},{\"match_phrase\":{\"repository\":\"OpenSearch\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]}" | jq '.'
+        , returnStdout=true})
+                        TemplateProcessor.process(release/missing-code-coverage.md, {BRANCH=1.3, CODECOV_URL=https://api.codecov.io/api/v2/github/opensearch-project/repos/OpenSearch/commits?branch=1.3, COMPONENT_NAME=OpenSearch}, /tmp/workspace)
+                           TemplateProcessor.getRandomName()
+                           checkCodeCoverage.libraryResource(release/missing-code-coverage.md)
+                           checkCodeCoverage.writeFile({file=/tmp/workspace/BBBBBBBBBB.md, text=Hi, </br>
+
+OpenSearch is not reporting code-coverage for branch [1.3](https://api.codecov.io/api/v2/github/opensearch-project/repos/OpenSearch/commits?branch=1.3). </br>
+Please fix the issue by checking your CI workflow responsible for reporting code coverage. See the details on [code coverage reporting](https://github.com/opensearch-project/opensearch-plugins/blob/main/TESTING.md#code-coverage-reporting) </br>
+
+Thank you!
+})
+                           checkCodeCoverage.println(Wrote file to /tmp/workspace/BBBBBBBBBB.md)
+                        checkCodeCoverage.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
+                        checkCodeCoverage.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+                           checkCodeCoverage.sh({script=gh issue comment https://github.com/opensearch-project/OpenSearch/issues/5152 --body-file /tmp/workspace/BBBBBBBBBB.md, returnStdout=true})
+                  checkCodeCoverage.echo(Components missing code coverage are: [OpenSearch:https://api.codecov.io/api/v2/github/opensearch-project/repos/OpenSearch/commits?branch=1.3])
