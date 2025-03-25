@@ -8,6 +8,7 @@
  */
 import jenkins.ReleaseCandidateStatus
 import jenkins.ReleaseMetricsData
+import utils.TemplateProcessor
 
 /** Library to add Release Candidate Details to the release issue
  *  @param Map args = [:] args A map of the following parameters
@@ -64,38 +65,12 @@ void call(Map args = [:]) {
             OPENSEARCH_DASHBOARDS_DOCKER_SCAN_URL: opensearchDashboardsScanResults.dockerScanUrl
     ]
 
-    try {
-        // Check for null or empty values
-        def nullOrEmptyKeys = rcValues.findAll { k, v ->
-            v == null || (v instanceof String && v.trim().isEmpty())
-        }.keySet()
+    def ghCommentBodyContent = new TemplateProcessor(this).process("release/rc-details-template.md", rcValues, "${WORKSPACE}")
 
-        if (nullOrEmptyKeys) {
-            error "Following required values are null or empty: ${nullOrEmptyKeys.join(', ')}"
-        }
-
-        // Load RC details template content
-        def templateContent = libraryResource "release/rc-details-template.md"
-
-        // Create binding for template variables
-        def binding = [:]
-        rcValues.each { k, v -> binding[k] = v }
-
-        // Process template using simple string replacement
-        def processedContent = templateContent
-        binding.each { key, value ->
-            processedContent = processedContent.replace('${' + key + '}', value.toString())
-        }
-
-        // Write the processed content
-        writeFile(file: "rc-details-comment-body.md", text: processedContent)
-    } catch (Exception e) {
-        error "Failed to process template: ${e.getMessage()}"
-    }
     withCredentials([usernamePassword(credentialsId: 'jenkins-github-bot-token', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'GITHUB_USER')]) {
         println('Adding RC details to the release issue as a comment.')
         sh(
-                script: "gh issue comment ${releaseIssueUrl} --body-file 'rc-details-comment-body.md'",
+                script: "gh issue comment ${releaseIssueUrl} --body-file ${ghCommentBodyContent}",
                 returnStdout: true
         )
     }
