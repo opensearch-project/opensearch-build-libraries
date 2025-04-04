@@ -13,6 +13,7 @@ import jenkins.tests.CheckCodeCoverageLibTester
 import jenkins.tests.CheckReleaseNotesLibTester
 import org.junit.Before
 import org.junit.Test
+import java.time.LocalDate
 import static com.lesfurets.jenkins.unit.MethodCall.callArgsToString
 import static org.hamcrest.CoreMatchers.containsString
 import static org.hamcrest.CoreMatchers.allOf
@@ -20,6 +21,10 @@ import static org.hamcrest.CoreMatchers.hasItem
 import static org.hamcrest.MatcherAssert.assertThat
 
 class TestCheckCodeCoverage extends BuildPipelineTest {
+        def now = LocalDate.now()
+        def monthYear = String.format("%02d-%d", now.monthValue, now.year)
+        def codeCoverageIndex = "opensearch-codecov-metrics-${monthYear}"
+
     @Override
     @Before
     void setUp() {
@@ -54,7 +59,7 @@ class TestCheckCodeCoverage extends BuildPipelineTest {
                     "max_score": null,
                     "hits": [
                       {
-                        "_index": "opensearch-codecov-metrics-03-2025",
+                        "_index": "${codeCoverageIndex}",
                         "_id": "5e8f90ec-983d-362c-8828-ecff1731f301",
                         "_score": null,
                         "_source": {
@@ -105,7 +110,7 @@ class TestCheckCodeCoverage extends BuildPipelineTest {
                       }
                     }
 '''
-        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-codecov-metrics-03-2025/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"size\\":1,\\"_source\\":[\\"coverage\\",\\"branch\\",\\"state\\",\\"url\\"],\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"repository.keyword\\":\\"OpenSearch\\"}},{\\"match_phrase\\":{\\"version\\":\\"1.3.0\\"}}]}},\\"sort\\":[{\\"current_date\\":{\\"order\\":\\"desc\\"}}]}\" | jq '.'\n        """) { script ->
+        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/${codeCoverageIndex}/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"size\\":1,\\"_source\\":[\\"coverage\\",\\"branch\\",\\"state\\",\\"url\\"],\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"repository.keyword\\":\\"OpenSearch\\"}},{\\"match_phrase\\":{\\"version\\":\\"1.3.0\\"}}]}},\\"sort\\":[{\\"current_date\\":{\\"order\\":\\"desc\\"}}]}\" | jq '.'\n        """) { script ->
             return [stdout: coverageResponse, exitValue: 0]
         }
         helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch_release_metrics/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"size\\":1,\\"_source\\":\\"release_issue\\",\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"version\\":\\"1.3.0\\"}},{\\"match_phrase\\":{\\"repository\\":\\"OpenSearch\\"}}]}},\\"sort\\":[{\\"current_date\\":{\\"order\\":\\"desc\\"}}]}\" | jq '.'\n        """) { script ->
@@ -150,7 +155,7 @@ class TestCheckCodeCoverage extends BuildPipelineTest {
                     "max_score": null,
                     "hits": [
                       {
-                        "_index": "opensearch-codecov-metrics-03-2025",
+                        "_index": "${codeCoverageIndex}",
                         "_id": "5e8f90ec-983d-362c-8828-ecff1731f301",
                         "_score": null,
                         "_source": {
@@ -167,7 +172,7 @@ class TestCheckCodeCoverage extends BuildPipelineTest {
                   }
                 }
                     '''
-        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-codecov-metrics-03-2025/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"size\\":1,\\"_source\\":[\\"coverage\\",\\"branch\\",\\"state\\",\\"url\\"],\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"repository.keyword\\":\\"OpenSearch\\"}},{\\"match_phrase\\":{\\"version\\":\\"1.3.0\\"}}]}},\\"sort\\":[{\\"current_date\\":{\\"order\\":\\"desc\\"}}]}\" | jq '.'\n        """) { script ->
+        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/${codeCoverageIndex}/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"size\\":1,\\"_source\\":[\\"coverage\\",\\"branch\\",\\"state\\",\\"url\\"],\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"repository.keyword\\":\\"OpenSearch\\"}},{\\"match_phrase\\":{\\"version\\":\\"1.3.0\\"}}]}},\\"sort\\":[{\\"current_date\\":{\\"order\\":\\"desc\\"}}]}\" | jq '.'\n        """) { script ->
             return [stdout: coverageResponse, exitValue: 0]
         }
         this.registerLibTester(new CheckCodeCoverageLibTester(['tests/data/opensearch-1.3.0.yml'], 'check'))

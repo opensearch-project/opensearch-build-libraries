@@ -46,7 +46,7 @@ void call(Map args = [:]) {
                     String repoName = component.repository.toString().split('/')[-1].replace('.git', '')
                     def codeCoverage = componentRepoData.getCodeCoverage(repoName, codeCoverageIndex)
                     def releaseIssue = releaseMetricsData.getReleaseIssue(repoName)
-                    if (!codeCoverage.isEmpty() && codeCoverage.state == "no-coverage") { // Also equivalent to codeCoverage.coverage == 0
+                    if (codeCoverage != null && !codeCoverage.isEmpty() && codeCoverage.state == "no-coverage") { // Also equivalent to codeCoverage.coverage == 0
                         componentsMissingCodeCoverageWithUrl[component.name] = codeCoverage.url
                         if (args.action == 'notify') {
                             notifyReleaseOwners(component.name, codeCoverage, releaseIssue)
