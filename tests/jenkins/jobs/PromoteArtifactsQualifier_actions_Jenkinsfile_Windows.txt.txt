@@ -33,9 +33,9 @@
                      createSha512Checksums.echo(Not generating sha for ccc in tests/jenkins/tests/jenkins/file/found.zip, doesn't match allowed types [.tar.gz, .zip, .rpm, .deb])
                      promoteArtifacts.findFiles({glob=**/opensearch-min-2.0.0-rc1*.zip*,**/opensearch-2.0.0-rc1*.zip*})
                      promoteArtifacts.getPath()
-                     createSignatureFiles.signArtifacts({sigtype=.sig, artifactPath=tests/jenkins/tests/jenkins/file/found.zip})
+                     createSignatureFiles.signArtifacts({sigtype=.sig, email=opensearch@amazon.com, artifactPath=tests/jenkins/tests/jenkins/file/found.zip})
                         signArtifacts.fileExists(tests/jenkins/sign.sh)
-                        signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import -)
+                        signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import - && curl -sSL https://artifacts.opensearch.org/publickeys/opensearch-release.pgp | gpg --import -)
                         signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
                         signArtifacts.string({credentialsId=jenkins-signer-client-role, variable=SIGNER_CLIENT_ROLE})
                         signArtifacts.string({credentialsId=jenkins-signer-client-external-id, variable=SIGNER_CLIENT_EXTERNAL_ID})
@@ -49,7 +49,7 @@
                    export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET
                    export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET
 
-                   tests/jenkins/sign.sh tests/jenkins/tests/jenkins/file/found.zip --sigtype .sig
+                   tests/jenkins/sign.sh tests/jenkins/tests/jenkins/file/found.zip --sigtype .sig --email opensearch@amazon.com
                )
                      promoteArtifacts.withAWS({role=ARTIFACT_PROMOTION_ROLE_NAME, roleAccount=AWS_ACCOUNT_ARTIFACT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
                         promoteArtifacts.s3Upload({bucket=ARTIFACT_PRODUCTION_BUCKET_NAME, path=releases/bundle/opensearch/2.0.0-rc1/, workingDir=tests/jenkins/artifacts/zip/vars-build/2.0.0-rc1/33/windows/x64/zip/dist/opensearch/, includePathPattern=**/opensearch-2.0.0-rc1-windows-x64*})

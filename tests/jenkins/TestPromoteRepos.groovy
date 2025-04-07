@@ -37,7 +37,7 @@ class TestPromoteRepos extends BuildPipelineTest {
         runScript("tests/jenkins/jobs/PromoteRepos_Jenkinsfile")
         assertThat(getShellCommands('sh', 'curl'), hasItems('\n            set -e\n            set +x\n\n            echo \"Pulling 1.3.0 rpm\"\n            cd /tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum\n            curl -SLO https://ci.opensearch.org/dbc/opensearch/1.3.0/123/linux/x64/rpm/dist/opensearch/opensearch-1.3.0-linux-x64.rpm\n            curl -SLO https://ci.opensearch.org/dbc/opensearch/1.3.0/123/linux/arm64/rpm/dist/opensearch/opensearch-1.3.0-linux-arm64.rpm\n\n            ls -l\n        '))
         assertThat(getShellCommands('sh', 'aws'), hasItems('aws s3 sync s3://ARTIFACT_PRODUCTION_BUCKET_NAME/releases/bundle/opensearch/1.x/yum/ /tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum/ --no-progress'))
-        assertThat(getShellCommands('signArtifacts', ''), hasItems('{artifactPath=/tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum/repodata/repomd.pom, sigtype=.asc, platform=linux}'))
+        assertThat(getShellCommands('signArtifacts', ''), hasItems('{artifactPath=/tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum/repodata/repomd.pom, sigtype=.asc, platform=linux, email=opensearch@amazon.com}'))
         assertThat(getShellCommands('sh', 'repomd.pom.asc'), hasItems('\n                set -e\n                set +x\n    \n                cd /tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum/repodata/\n    \n                ls -l\n    \n                mv -v repomd.pom repomd.xml\n                mv -v repomd.pom.asc repomd.xml.asc\n    \n                ls -l\n    \n                cd -\n            '))
     }
 

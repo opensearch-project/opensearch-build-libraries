@@ -39,6 +39,7 @@ void call(Map args = [:]) {
     String distType = distTypeMap["${repoType}"]
     String version = inputManifest.build.version
     String majorVersion = version.tokenize('.')[0]
+    String signingEmail = majorVersion.toInteger() > 2 ? "release@opensearch.org" : "opensearch@amazon.com"
     String repoVersion = majorVersion + '.x'
     String qualifier = inputManifest.build.qualifier ? '-' + inputManifest.build.qualifier : ''
     String revision = version + qualifier
@@ -47,6 +48,7 @@ void call(Map args = [:]) {
     println("Input Manifest: ${manifest}")
     println("Revision: ${revision}")
     println("Major Version: ${majorVersion}")
+    println("Signing Email: ${signingEmail}")
     println("Repo Type: ${repoType}")
     println("Dist Type: ${distType}")
     println("Repo Version: ${repoVersion}")
@@ -105,7 +107,8 @@ void call(Map args = [:]) {
             signArtifacts(
                 artifactPath: "${artifactPath}/repodata/repomd.pom",
                 sigtype: '.asc',
-                platform: 'linux'
+                platform: 'linux',
+                email: "${signingEmail}"
             )
 
             sh """

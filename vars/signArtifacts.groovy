@@ -208,5 +208,6 @@ String generateArguments(args) {
 }
 
 void importPGPKey() {
-    sh 'curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import -'
+    sh 'curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import - ' +
+            '&& curl -sSL https://artifacts.opensearch.org/publickeys/opensearch-release.pgp | gpg --import -'
 }

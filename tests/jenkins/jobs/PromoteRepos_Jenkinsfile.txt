@@ -46,9 +46,9 @@
                 echo "Complete metadata update, awaiting signing repomd.xml"
                 cd -
             )
-                     promoteRepos.signArtifacts({artifactPath=/tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum/repodata/repomd.pom, sigtype=.asc, platform=linux})
+                     promoteRepos.signArtifacts({artifactPath=/tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum/repodata/repomd.pom, sigtype=.asc, platform=linux, email=opensearch@amazon.com})
                         signArtifacts.fileExists(/tmp/workspace/sign.sh)
-                        signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import -)
+                        signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import - && curl -sSL https://artifacts.opensearch.org/publickeys/opensearch-release.pgp | gpg --import -)
                         signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
                         signArtifacts.string({credentialsId=jenkins-signer-client-role, variable=SIGNER_CLIENT_ROLE})
                         signArtifacts.string({credentialsId=jenkins-signer-client-external-id, variable=SIGNER_CLIENT_EXTERNAL_ID})
@@ -62,7 +62,7 @@
                    export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET
                    export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET
 
-                   /tmp/workspace/sign.sh /tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum/repodata/repomd.pom --sigtype .asc --platform linux
+                   /tmp/workspace/sign.sh /tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum/repodata/repomd.pom --sigtype .asc --platform linux --email opensearch@amazon.com
                )
                      promoteRepos.sh(
                 set -e
