@@ -11,6 +11,7 @@ package jenkins.tests
 import jenkins.tests.BuildPipelineTest
 import org.junit.Before
 import org.junit.Test
+import java.time.LocalDate
 import static com.lesfurets.jenkins.unit.MethodCall.callArgsToString
 import static org.hamcrest.CoreMatchers.containsString
 import static org.hamcrest.CoreMatchers.hasItems
@@ -19,6 +20,10 @@ import static org.hamcrest.CoreMatchers.not
 import static org.hamcrest.MatcherAssert.assertThat
 
 class TestCheckRequestAssignReleaseOwners extends BuildPipelineTest {
+
+    def now = LocalDate.now()
+    def monthYear = String.format("%02d-%d", now.monthValue, now.year)
+    def maintainersIndex = "maintainer-inactivity-${monthYear}"
 
     @Override
     @Before
@@ -126,7 +131,7 @@ class TestCheckRequestAssignReleaseOwners extends BuildPipelineTest {
                         "max_score": null,
                         "hits": [
                           {
-                            "_index": "maintainer-inactivity-03-2025",
+                            "_index": "${maintainersIndex}",
                             "_id": "c45967b3-9f0b-3b5d-aaa8-45b36876077b",
                             "_score": null,
                             "_source": {
@@ -142,7 +147,7 @@ class TestCheckRequestAssignReleaseOwners extends BuildPipelineTest {
                             ]
                           },
                           {
-                            "_index": "maintainer-inactivity-03-2025",
+                            "_index": "${maintainersIndex}",
                             "_id": "2fa5f6a5-fe79-30ab-bb08-7ac837e55a01",
                             "_score": null,
                             "_source": {
@@ -169,7 +174,7 @@ class TestCheckRequestAssignReleaseOwners extends BuildPipelineTest {
         helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch_release_metrics/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"size\\":1,\\"_source\\":\\"release_issue\\",\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"version\\":\\"1.3.0\\"}},{\\"match_phrase\\":{\\"repository\\":\\"OpenSearch\\"}}]}},\\"sort\\":[{\\"current_date\\":{\\"order\\":\\"desc\\"}}]}\" | jq '.'\n        """) { script ->
             return [stdout: releaseIssueResponse, exitValue: 0]
         }
-        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/maintainer-inactivity-03-2025/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"size\\":100,\\"_source\\":\\"github_login\\",\\"collapse\\":{\\"field\\":\\"github_login.keyword\\"},\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"repository.keyword\\":\\"OpenSearch\\"}},{\\"match_phrase\\":{\\"inactive\\":\\"false\\"}}]}},\\"sort\\":[{\\"current_date\\":{\\"order\\":\\"desc\\"}}]}\" | jq '.'\n        """) { script ->
+        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/${maintainersIndex}/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"size\\":100,\\"_source\\":\\"github_login\\",\\"collapse\\":{\\"field\\":\\"github_login.keyword\\"},\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"repository.keyword\\":\\"OpenSearch\\"}},{\\"match_phrase\\":{\\"inactive\\":\\"false\\"}}]}},\\"sort\\":[{\\"current_date\\":{\\"order\\":\\"desc\\"}}]}\" | jq '.'\n        """) { script ->
             return [stdout: getMaintainersResponse, exitValue: 0]
         }
     }
