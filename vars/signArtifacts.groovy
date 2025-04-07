@@ -15,6 +15,7 @@ SignArtifacts signs the given artifacts and saves the signature in the same dire
 @param Map[type] <Optional> - Artifact type in the manifest, [type] is required for signing yml.
 @param Map[sigtype] <Optional> - The signature type of signing artifacts. e.g. '.sig'. Required for non-yml artifacts signing.
 @param Map[overwrite]<Optional> - Allow output artifacts to overwrite the existing artifacts. Defaults to False
+@param Map[email]<Optional> - Email used for signing. Default will be handled in build repo sign workflow [https://github.com/opensearch-project/opensearch-build/tree/main/src/sign_workflow].
 */
 void call(Map args = [:]) {
     if (args.sigtype.equals('.rpm')) {

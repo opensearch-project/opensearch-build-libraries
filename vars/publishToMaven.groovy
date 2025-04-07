@@ -19,7 +19,7 @@ void call(Map args = [:]) {
     loadCustomScript(scriptPath: 'publish/stage-maven-release.sh',
                      scriptName: 'stage-maven-release.sh')
     def autoPublish = args.autoPublish ?: false
-    def email = args.email ?: "opensearch@amazon.com"
+    def email = args.email ?: "release@opensearch.org"
     println("Signing Maven artifacts.")
     signArtifacts(
             artifactPath: args.signingArtifactsPath,

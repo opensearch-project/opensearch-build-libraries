@@ -200,7 +200,7 @@ if [ "$auto_publish" = true ] ; then
 fi
 })
                      loadCustomScript.sh(chmod a+x ./stage-maven-release.sh)
-                  publishToMaven.signArtifacts({artifactPath=/path/to/signing/manifest.yml, type=maven, platform=linux, sigtype=.asc, email=opensearch@amazon.com})
+                  publishToMaven.signArtifacts({artifactPath=/path/to/signing/manifest.yml, type=maven, platform=linux, sigtype=.asc, email=release@opensearch.org})
                      signArtifacts.fileExists(workspace/sign.sh)
                      signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import - && curl -sSL https://artifacts.opensearch.org/publickeys/opensearch-release.pgp | gpg --import -)
                      signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
@@ -216,7 +216,7 @@ fi
                    export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET
                    export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET
 
-                   workspace/sign.sh /path/to/signing/manifest.yml --type maven --platform linux --sigtype .asc --email opensearch@amazon.com
+                   workspace/sign.sh /path/to/signing/manifest.yml --type maven --platform linux --sigtype .asc --email release@opensearch.org
                )
                   publishToMaven.usernamePassword({credentialsId=jenkins-sonatype-creds, usernameVariable=SONATYPE_USERNAME, passwordVariable=SONATYPE_PASSWORD})
                   publishToMaven.withCredentials([[SONATYPE_USERNAME, SONATYPE_PASSWORD]], groovy.lang.Closure)
