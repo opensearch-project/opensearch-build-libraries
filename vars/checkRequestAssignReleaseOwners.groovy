@@ -75,7 +75,6 @@ private void validateParameters(Map args) {
     }
 
     String action = args.action
-    println("Action is: ${action}")
     List<String> validActions = ['check', 'assign', 'request']
     if (!validActions.contains(action)) {
         error "Invalid action '${action}'. Valid values: ${validActions.join(', ')}"
