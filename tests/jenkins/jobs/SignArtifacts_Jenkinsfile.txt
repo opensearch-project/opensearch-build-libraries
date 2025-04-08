@@ -67,17 +67,20 @@
                         PASSPHRASE_SECRETS_ARN="RPM_RELEASE_SIGNING_PASSPHRASE_SECRETS_ARN"
                         SECRET_KEY_ID_SECRETS_ARN="RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN"
                         KEY_ID="RPM_SIGNING_KEY_ID"
+                        KEY_NAME="OpenSearch Project"
 
                         if [ "null" = "opensearch@amazon.com" ]; then
                               PASSPHRASE_SECRETS_ARN="RPM_SIGNING_PASSPHRASE_SECRETS_ARN"
                               SECRET_KEY_ID_SECRETS_ARN="RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN"
                               KEY_ID="RPM_RELEASE_SIGNING_KEY_ID"
+                              KEY_NAME="OpenSearch project"
                         fi
 
                         echo "------------------------------------------------------------------------"
                         echo "Setup RPM Macros"
                         cp -v scripts/pkg/sign_templates/rpmmacros ~/.rpmmacros
-                        sed -i "s/##key_name##/OpenSearch project/g;s/##passphrase_name##/passphrase/g" ~/.rpmmacros
+                        sed -i "s/##key_name##/${KEY_NAME}/g;s/##passphrase_name##/passphrase/g" ~/.rpmmacros
+                        cat ~/.rpmmacros
 
                         echo "------------------------------------------------------------------------"
                         echo "Import OpenSearch keys"
