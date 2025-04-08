@@ -179,8 +179,8 @@ void call(Map args = [:]) {
                         SECRET_KEY_ID_SECRETS_ARN="${RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN}"
 
                         if [ "${signingEmail}" = "opensearch@amazon.com" ]; then
-                              PASSPHRASE_SECRETS_ARN="${RPM_SIGNING_PASSPHRASE_SECRETS_ARN}"
-                              SECRET_KEY_ID_SECRETS_ARN="${RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN}"
+                            PASSPHRASE_SECRETS_ARN="${RPM_SIGNING_PASSPHRASE_SECRETS_ARN}"
+                            SECRET_KEY_ID_SECRETS_ARN="${RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN}"
                         fi
 
                         echo "------------------------------------------------------------------------"
@@ -197,10 +197,10 @@ void call(Map args = [:]) {
                      set -e
                      set +x
 
-                     KEY_ID="${RPM_SIGNING_KEY_ID}"
+                     KEY_ID="${RPM_RELEASE_SIGNING_KEY_ID}"
 
                      if [ "${signingEmail}" = "opensearch@amazon.com" ]; then
-                         KEY_ID="${RPM_RELEASE_SIGNING_KEY_ID}"
+                         KEY_ID="${RPM_SIGNING_KEY_ID}"
                      fi
 
                      ARTIFACT_PATH="${artifactPath}"

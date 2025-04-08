@@ -156,8 +156,8 @@
                         SECRET_KEY_ID_SECRETS_ARN="RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN"
 
                         if [ "opensearch@amazon.com" = "opensearch@amazon.com" ]; then
-                              PASSPHRASE_SECRETS_ARN="RPM_SIGNING_PASSPHRASE_SECRETS_ARN"
-                              SECRET_KEY_ID_SECRETS_ARN="RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN"
+                            PASSPHRASE_SECRETS_ARN="RPM_SIGNING_PASSPHRASE_SECRETS_ARN"
+                            SECRET_KEY_ID_SECRETS_ARN="RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN"
                         fi
 
                         echo "------------------------------------------------------------------------"
@@ -172,10 +172,10 @@
                      set -e
                      set +x
 
-                     KEY_ID="RPM_SIGNING_KEY_ID"
+                     KEY_ID="RPM_RELEASE_SIGNING_KEY_ID"
 
                      if [ "opensearch@amazon.com" = "opensearch@amazon.com" ]; then
-                         KEY_ID="RPM_RELEASE_SIGNING_KEY_ID"
+                         KEY_ID="RPM_SIGNING_KEY_ID"
                      fi
 
                      ARTIFACT_PATH="/tmp/workspace/artifacts/releases/bundle/opensearch/1.x/apt"

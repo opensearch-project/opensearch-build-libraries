@@ -63,14 +63,14 @@ void call(Map args = [:]) {
 
                         PASSPHRASE_SECRETS_ARN="${RPM_RELEASE_SIGNING_PASSPHRASE_SECRETS_ARN}"
                         SECRET_KEY_ID_SECRETS_ARN="${RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN}"
-                        KEY_ID="${RPM_SIGNING_KEY_ID}"
+                        KEY_ID="${RPM_RELEASE_SIGNING_KEY_ID}"
                         KEY_NAME="OpenSearch Project"
 
                         if [ "${args.email}" = "opensearch@amazon.com" ]; then
-                              PASSPHRASE_SECRETS_ARN="${RPM_SIGNING_PASSPHRASE_SECRETS_ARN}"
-                              SECRET_KEY_ID_SECRETS_ARN="${RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN}"
-                              KEY_ID="${RPM_RELEASE_SIGNING_KEY_ID}"
-                              KEY_NAME="OpenSearch project"
+                            PASSPHRASE_SECRETS_ARN="${RPM_SIGNING_PASSPHRASE_SECRETS_ARN}"
+                            SECRET_KEY_ID_SECRETS_ARN="${RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN}"
+                            KEY_ID="${RPM_SIGNING_KEY_ID}"
+                            KEY_NAME="OpenSearch project"
                         fi
 
                         echo "------------------------------------------------------------------------"
