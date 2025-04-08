@@ -18,7 +18,7 @@ SignArtifacts signs the given artifacts and saves the signature in the same dire
 @param Map[email]<Optional> - Email used for signing. Default will be handled in build repo sign workflow [https://github.com/opensearch-project/opensearch-build/tree/main/src/sign_workflow].
 */
 void call(Map args = [:]) {
-    String signingEmail = args.email ?: "release@opensearch.org"
+    String email = args.email ?: "release@opensearch.org"
     if (args.sigtype.equals('.rpm')) {
         withCredentials([
         string(credentialsId: 'jenkins-rpm-signing-account-number', variable: 'RPM_SIGNING_ACCOUNT_NUMBER'),
@@ -66,7 +66,7 @@ void call(Map args = [:]) {
                         KEY_ID="${RPM_RELEASE_SIGNING_KEY_ID}"
                         KEY_NAME="OpenSearch Project"
 
-                        if [ "${args.email}" = "opensearch@amazon.com" ]; then
+                        if [ "${email}" = "opensearch@amazon.com" ]; then
                             PASSPHRASE_SECRETS_ARN="${RPM_SIGNING_PASSPHRASE_SECRETS_ARN}"
                             SECRET_KEY_ID_SECRETS_ARN="${RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN}"
                             KEY_ID="${RPM_SIGNING_KEY_ID}"
