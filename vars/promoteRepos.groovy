@@ -164,6 +164,9 @@ void call(Map args = [:]) {
 
             withCredentials([
             string(credentialsId: 'jenkins-rpm-signing-account-number', variable: 'RPM_SIGNING_ACCOUNT_NUMBER'),
+            string(credentialsId: 'jenkins-rpm-release-signing-passphrase-secrets-arn', variable: 'RPM_RELEASE_SIGNING_PASSPHRASE_SECRETS_ARN'),
+            string(credentialsId: 'jenkins-rpm-release-signing-secret-key-secrets-arn', variable: 'RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN'),
+            string(credentialsId: 'jenkins-rpm-release-signing-key-id', variable: 'RPM_RELEASE_SIGNING_KEY_ID'),
             string(credentialsId: 'jenkins-rpm-signing-passphrase-secrets-arn', variable: 'RPM_SIGNING_PASSPHRASE_SECRETS_ARN'),
             string(credentialsId: 'jenkins-rpm-signing-secret-key-secrets-arn', variable: 'RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN'),
             string(credentialsId: 'jenkins-rpm-signing-key-id', variable: 'RPM_SIGNING_KEY_ID')]) {
@@ -172,10 +175,18 @@ void call(Map args = [:]) {
 
                         export GPG_TTY=`tty`
 
+                        PASSPHRASE_SECRETS_ARN="${RPM_RELEASE_SIGNING_PASSPHRASE_SECRETS_ARN}"
+                        SECRET_KEY_ID_SECRETS_ARN="${RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN}"
+
+                        if [ "${signingEmail}" = "opensearch@amazon.com" ]; then
+                              PASSPHRASE_SECRETS_ARN="${RPM_SIGNING_PASSPHRASE_SECRETS_ARN}"
+                              SECRET_KEY_ID_SECRETS_ARN="${RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN}"
+                        fi
+
                         echo "------------------------------------------------------------------------"
                         echo "Import OpenSearch keys"
-                        aws secretsmanager get-secret-value --region us-west-2 --secret-id "${RPM_SIGNING_PASSPHRASE_SECRETS_ARN}" | jq -r .SecretBinary | base64 --decode > passphrase
-                        aws secretsmanager get-secret-value --region us-west-2 --secret-id "${RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN}" | jq -r .SecretBinary | base64 --decode | gpg --quiet --import --pinentry-mode loopback --passphrase-file passphrase -
+                        aws secretsmanager get-secret-value --region us-west-2 --secret-id "\$PASSPHRASE_SECRETS_ARN" | jq -r .SecretBinary | base64 --decode > passphrase
+                        aws secretsmanager get-secret-value --region us-west-2 --secret-id "\$SECRET_KEY_ID_SECRETS_ARN" | jq -r .SecretBinary | base64 --decode | gpg --quiet --import --pinentry-mode loopback --passphrase-file passphrase -
 
                         echo "------------------------------------------------------------------------"
                     """
@@ -185,6 +196,12 @@ void call(Map args = [:]) {
 
                      set -e
                      set +x
+
+                     KEY_ID="${RPM_SIGNING_KEY_ID}"
+
+                     if [ "${signingEmail}" = "opensearch@amazon.com" ]; then
+                         KEY_ID="${RPM_RELEASE_SIGNING_KEY_ID}"
+                     fi
 
                      ARTIFACT_PATH="${artifactPath}"
 
@@ -199,8 +216,8 @@ void call(Map args = [:]) {
                      aptly publish snapshot -label="${filename}" -origin="artifacts.opensearch.org" -batch=true -passphrase-file=passphrase ${jobname}-${repoVersion}
                      echo "------------------------------------------------------------------------"
                      echo "Clean up gpg"
-                     gpg --batch --yes --delete-secret-keys ${RPM_SIGNING_KEY_ID}
-                     gpg --batch --yes --delete-keys ${RPM_SIGNING_KEY_ID}
+                     gpg --batch --yes --delete-secret-keys \$KEY_ID
+                     gpg --batch --yes --delete-keys \$KEY_ID
                      rm -v passphrase
                      echo "------------------------------------------------------------------------"
                      rm -rf \$ARTIFACT_PATH/*
