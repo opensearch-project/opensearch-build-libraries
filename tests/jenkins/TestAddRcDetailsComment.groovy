@@ -222,19 +222,19 @@ class TestAddRcDetailsComment extends BuildPipelineTest {
             return [stdout: osdRcDistributionNumberResponse, exitValue: 0]
         }
 
-        helper.addShMock("""curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/distribution-build-opensearch/runs/10787/nodes/" | jq '.[] | select(.actions[].description? | contains("docker-scan")) | .actions[] | select(.description | contains("docker-scan")) | ._links.self.href'""") { script ->
+        helper.addShMock("""curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/distribution-build-opensearch/runs/10787/nodes/" --user GITHUB_USER:GITHUB_TOKEN | jq '.[] | select(.actions[].description? | contains("docker-scan")) | .actions[] | select(.description | contains("docker-scan")) | ._links.self.href'""") { script ->
             return [stdout: '/blue/rest/organizations/jenkins/pipelines/docker-scan/runs/4439/', exitValue: 0]
         }
 
-        helper.addShMock("""curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/docker-scan/runs/4439/" | jq -r '._links.artifacts.href'""") { script ->
+        helper.addShMock("""curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/docker-scan/runs/4439/" --user GITHUB_USER:GITHUB_TOKEN | jq -r '._links.artifacts.href'""") { script ->
             return [stdout: '/blue/rest/organizations/jenkins/pipelines/docker-scan/runs/4439/artifacts/', exitValue: 0]
         }
 
-        helper.addShMock("""curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/docker-scan/runs/4439/artifacts/" | jq -r '.[] | select(.name | endswith(".txt")) | .url'""") { script ->
+        helper.addShMock("""curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/docker-scan/runs/4439/artifacts/" --user GITHUB_USER:GITHUB_TOKEN | jq -r '.[] | select(.name | endswith(".txt")) | .url'""") { script ->
             return [stdout: '/job/docker-scan/4439/artifact/scan_docker_image.txt', exitValue: 0]
         }
 
-        helper.addShMock('curl -s -XGET "https://build.ci.opensearch.org/job/docker-scan/4439/artifact/scan_docker_image.txt"') { script ->
+        helper.addShMock('curl -s -XGET "https://build.ci.opensearch.org/job/docker-scan/4439/artifact/scan_docker_image.txt" --user GITHUB_USER:GITHUB_TOKEN') { script ->
             return [stdout: 'Total: 0 (UNKNOWN: 0, LOW: 0, MEDIUM: 0, HIGH: 0, CRITICAL: 0))', exitValue: 0]
         }
         Random.metaClass.nextInt = { int max -> 1 }
