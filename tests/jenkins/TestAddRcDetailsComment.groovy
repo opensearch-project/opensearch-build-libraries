@@ -259,6 +259,21 @@ class TestAddRcDetailsComment extends BuildPipelineTest {
         assertThat(fileContent, containsString("Total: 0 (UNKNOWN: 0, LOW: 0, MEDIUM: 0, HIGH: 0, CRITICAL: 0)"))
     }
 
+    @Test
+    void testCommentContentError() {
+        helper.addShMock("""curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/distribution-build-opensearch/runs/10787/nodes/" --user GITHUB_USER:GITHUB_TOKEN | jq '.[] | select(.actions[].description? | contains("docker-scan")) | .actions[] | select(.description | contains("docker-scan")) | ._links.self.href'""") { script ->
+            return [stdout: 'Parsing error', exitValue: 1]
+        }      
+        this.registerLibTester(new AddRcDetailsCommentLibTester('2.19.0'))
+        runScript('tests/jenkins/jobs/AddRcDetailsComment.jenkinsFile')
+        def fileContent = getCommands('writeFile', 'OpenSearch')[0]
+        assertThat(fileContent, containsString("{file=/tmp/workspace/BBBBBBBBBB.md, text=## See OpenSearch RC 5 and OpenSearch-Dashboards RC 5 details"))
+        assertThat(fileContent, containsString("OpenSearch 10787 and OpenSearch-Dashboards 8260 is ready for your test."))
+        assertThat(fileContent, containsString("image: opensearchstaging/opensearch:2.19.0.1078"))
+        assertThat(fileContent, containsString("image: opensearchstaging/opensearch-dashboards:2.19.0.8260"))
+        assertThat(fileContent, containsString("[Unable to get docker scan results for OpenSearch, RC build number: 10787]"))
+    }    
+
     def getCommands(method, text) {
         def shCommands = helper.callStack.findAll { call ->
             call.methodName == method
