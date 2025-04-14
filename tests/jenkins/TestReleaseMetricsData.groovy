@@ -130,7 +130,7 @@ class TestReleaseMetricsData {
                                         ],
                                         [
                                                 match_phrase: [
-                                                        repository: "opensearch-build"
+                                                        "repository.keyword": "opensearch-build"
                                                 ]
                                         ]
                                 ]
