@@ -79,7 +79,7 @@ class ReleaseMetricsData {
         return query.replace('"', '\\"')
     }
 
-    String getReleaseIssueQuery(String repository, String changedMatchPhraseKey = "repository") {
+    String getReleaseIssueQuery(String repository, String changedMatchPhraseKey = "repository.keyword") {
         def queryMap = [
                 size   : 1,
                 _source: "release_issue",
