@@ -9,12 +9,12 @@
                   addRcDetailsComment.withCredentials([METRICS_HOST_ACCOUNT, METRICS_HOST_URL], groovy.lang.Closure)
                      addRcDetailsComment.withAWS({role=OpenSearchJenkinsAccessRole, roleAccount=METRICS_HOST_ACCOUNT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
                         ReleaseMetricsData.getReleaseIssue(opensearch-build)
-                           OpenSearchMetricsQuery.fetchMetrics({\"size\":1,\"_source\":\"release_issue\",\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"repository\":\"opensearch-build\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]})
-                              addRcDetailsComment.println(Running query: {\"size\":1,\"_source\":\"release_issue\",\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"repository\":\"opensearch-build\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]})
+                           OpenSearchMetricsQuery.fetchMetrics({\"size\":1,\"_source\":\"release_issue\",\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"repository.keyword\":\"opensearch-build\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]})
+                              addRcDetailsComment.println(Running query: {\"size\":1,\"_source\":\"release_issue\",\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"repository.keyword\":\"opensearch-build\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]})
                               addRcDetailsComment.sh({script=
             set -e
             set +x
-            curl -s -XGET "sample.url/opensearch_release_metrics/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"size\":1,\"_source\":\"release_issue\",\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"repository\":\"opensearch-build\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]}" | jq '.'
+            curl -s -XGET "sample.url/opensearch_release_metrics/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"size\":1,\"_source\":\"release_issue\",\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"repository.keyword\":\"opensearch-build\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]}" | jq '.'
         , returnStdout=true})
                         ReleaseCandidateStatus.getLatestRcNumber(OpenSearch)
                            OpenSearchMetricsQuery.fetchMetrics({\"_source\":\"rc_number\",\"sort\":[{\"distribution_build_number\":{\"order\":\"desc\"},\"rc_number\":{\"order\":\"desc\"}}],\"size\":1,\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component\":\"OpenSearch\"}},{\"match_phrase\":{\"rc\":\"true\"}},{\"match_phrase\":{\"version\":\"2.19.0\"}}]}}})
