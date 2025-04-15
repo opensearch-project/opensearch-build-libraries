@@ -122,7 +122,7 @@ ArrayList getReleaseOwners(String component) {
         }
 }
 
-String getReleaseIssue(String repository, String changedMatchPhraseKey="repository") {
+String getReleaseIssue(String repository, String changedMatchPhraseKey="repository.keyword") {
         try {
                 def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(getReleaseIssueQuery(repository, changedMatchPhraseKey))
                 def releaseIssue = jsonResponse.hits.hits._source.release_issue[0]
