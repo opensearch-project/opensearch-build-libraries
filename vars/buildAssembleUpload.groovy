@@ -7,7 +7,7 @@
  * compatible open source license.
  */
 def call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@8.4.2', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@8.4.3', retriever: legacySCM(scm))
     def inputManifestObj = lib.jenkins.InputManifest.new(readYaml(file: args.inputManifest))
 
     buildManifest(args)
