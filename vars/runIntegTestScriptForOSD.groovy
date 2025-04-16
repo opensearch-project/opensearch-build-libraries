@@ -21,7 +21,7 @@
  * @param args.testManifest <required> OSD test manifest for release version
  */
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@9.0.0', retriever: legacySCM(scm))
 
     unstash "integtest-opensearch-dashboards-${BUILD_NUMBER}"
 
