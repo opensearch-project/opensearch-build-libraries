@@ -45,7 +45,8 @@ void call(Map args = [:]) {
     def testFailuresindexName = "opensearch-integration-test-failures-${formattedDate}"
     def finalJsonDoc = ""
     // Qualifier is in-built in the version. Splitting it until https://github.com/opensearch-project/opensearch-build/issues/5386 is resolved
-    def versionTokenize = manifest.version.tokenize('-')
+    def fullVersion = manifest.version
+    def versionTokenize = fullVersion.tokenize('-')
     def version = versionTokenize[0]
     def qualifier = versionTokenize[1] ?: "None"
     def distributionBuildNumber = manifest.id
@@ -54,7 +55,7 @@ void call(Map args = [:]) {
     def platform = manifest.platform
     def architecture = manifest.architecture
     def distribution = manifest.distribution
-    def testReportManifestYmlUrl = "https://ci.opensearch.org/ci/dbc/${jobName}/${version}/${distributionBuildNumber}/${platform}/${architecture}/${distribution}/test-results/${integTestBuildNumber}/integ-test/test-report.yml"
+    def testReportManifestYmlUrl = "https://ci.opensearch.org/ci/dbc/${jobName}/${fullVersion}/${distributionBuildNumber}/${platform}/${architecture}/${distribution}/test-results/${integTestBuildNumber}/integ-test/test-report.yml"
 
     manifest.components.each { component ->
         def componentName = component.name
