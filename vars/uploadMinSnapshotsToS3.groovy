@@ -21,6 +21,8 @@ void call(Map args = [:]) {
     String productName = inputManifest.build.getFilename()
     String version_plain = inputManifest.build.version
     String qualifier = inputManifest.build.qualifier ? '-' + inputManifest.build.qualifier : ''
+    String majorVersion = version_plain.tokenize('.')[0]
+    String signingEmail = majorVersion.toInteger() > 2 ? "release@opensearch.org" : "opensearch@amazon.com"
     String revision = version_plain + qualifier + '-SNAPSHOT'
     def buildManifestYamlOnly = readYaml(file: "$WORKSPACE/${distribution_arg}/builds/${productName}/manifest.yml")
     echo("Retreving build manifest from: $WORKSPACE/${distribution_arg}/builds/${productName}/manifest.yml")
@@ -59,6 +61,7 @@ void call(Map args = [:]) {
                 fileActions = [createSha512Checksums(), createSignatureFiles()]
                 argsMapPlugins = [:]
                 argsMapPlugins['sigtype'] = '.sig'
+                argsMapPlugins['email'] = "${signingEmail}"
                 argsMapPlugins['artifactPath'] = "${WORKSPACE}/${distribution}/builds/${productName}/core-plugins"
                 for (Closure action : fileActions) {
                     action(argsMapPlugins)
