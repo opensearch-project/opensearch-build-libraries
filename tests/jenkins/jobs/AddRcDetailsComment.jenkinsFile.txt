@@ -9,12 +9,12 @@
                   addRcDetailsComment.withCredentials([METRICS_HOST_ACCOUNT, METRICS_HOST_URL], groovy.lang.Closure)
                      addRcDetailsComment.withAWS({role=OpenSearchJenkinsAccessRole, roleAccount=METRICS_HOST_ACCOUNT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
                         ReleaseMetricsData.getReleaseIssue(opensearch-build)
-                           OpenSearchMetricsQuery.fetchMetrics({\"size\":1,\"_source\":\"release_issue\",\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"repository\":\"opensearch-build\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]})
-                              addRcDetailsComment.println(Running query: {\"size\":1,\"_source\":\"release_issue\",\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"repository\":\"opensearch-build\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]})
+                           OpenSearchMetricsQuery.fetchMetrics({\"size\":1,\"_source\":\"release_issue\",\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"repository.keyword\":\"opensearch-build\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]})
+                              addRcDetailsComment.println(Running query: {\"size\":1,\"_source\":\"release_issue\",\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"repository.keyword\":\"opensearch-build\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]})
                               addRcDetailsComment.sh({script=
             set -e
             set +x
-            curl -s -XGET "sample.url/opensearch_release_metrics/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"size\":1,\"_source\":\"release_issue\",\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"repository\":\"opensearch-build\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]}" | jq '.'
+            curl -s -XGET "sample.url/opensearch_release_metrics/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"size\":1,\"_source\":\"release_issue\",\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"repository.keyword\":\"opensearch-build\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]}" | jq '.'
         , returnStdout=true})
                         ReleaseCandidateStatus.getLatestRcNumber(OpenSearch)
                            OpenSearchMetricsQuery.fetchMetrics({\"_source\":\"rc_number\",\"sort\":[{\"distribution_build_number\":{\"order\":\"desc\"},\"rc_number\":{\"order\":\"desc\"}}],\"size\":1,\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component\":\"OpenSearch\"}},{\"match_phrase\":{\"rc\":\"true\"}},{\"match_phrase\":{\"version\":\"2.19.0\"}}]}}})
@@ -48,17 +48,23 @@
             set +x
             curl -s -XGET "sample.url/opensearch-distribution-build-results/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"_source\":\"distribution_build_number\",\"sort\":[{\"distribution_build_number\":{\"order\":\"desc\"}}],\"size\":1,\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component\":\"OpenSearch-Dashboards\"}},{\"match_phrase\":{\"rc\":\"true\"}},{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"rc_number\":\"5\"}}]}}}" | jq '.'
         , returnStdout=true})
-                  addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/distribution-build-opensearch/runs/10787/nodes/" | jq '.[] | select(.actions[].description? | contains("docker-scan")) | .actions[] | select(.description | contains("docker-scan")) | ._links.self.href', returnStdout=true})
-                  addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/docker-scan/runs/4439/" | jq -r '._links.artifacts.href', returnStdout=true})
-                  addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/docker-scan/runs/4439/artifacts/" | jq -r '.[] | select(.name | endswith(".txt")) | .url', returnStdout=true})
-                  addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.org/job/docker-scan/4439/artifact/scan_docker_image.txt", returnStdout=true})
-                  addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/distribution-build-opensearch-dashboards/runs/8260/nodes/" | jq '.[] | select(.actions[].description? | contains("docker-scan")) | .actions[] | select(.description | contains("docker-scan")) | ._links.self.href', returnStdout=true})
-                  addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.orgbbb
-ccc" | jq -r '._links.artifacts.href', returnStdout=true})
-                  addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.orgbbb
-ccc" | jq -r '.[] | select(.name | endswith(".txt")) | .url', returnStdout=true})
-                  addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.orgbbb
-ccc", returnStdout=true})
+                  addRcDetailsComment.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
+                  addRcDetailsComment.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+                     addRcDetailsComment.println(Getting docker scan results)
+                     addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/distribution-build-opensearch/runs/10787/nodes/" --user GITHUB_USER:GITHUB_TOKEN | jq '.[] | select(.actions[].description? | contains("docker-scan")) | .actions[] | select(.description | contains("docker-scan")) | ._links.self.href', returnStdout=true})
+                     addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/docker-scan/runs/4439/" --user GITHUB_USER:GITHUB_TOKEN | jq -r '._links.artifacts.href', returnStdout=true})
+                     addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/docker-scan/runs/4439/artifacts/" --user GITHUB_USER:GITHUB_TOKEN | jq -r '.[] | select(.name | endswith(".txt")) | .url', returnStdout=true})
+                     addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.org/job/docker-scan/4439/artifact/scan_docker_image.txt" --user GITHUB_USER:GITHUB_TOKEN, returnStdout=true})
+                  addRcDetailsComment.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
+                  addRcDetailsComment.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+                     addRcDetailsComment.println(Getting docker scan results)
+                     addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/distribution-build-opensearch-dashboards/runs/8260/nodes/" --user GITHUB_USER:GITHUB_TOKEN | jq '.[] | select(.actions[].description? | contains("docker-scan")) | .actions[] | select(.description | contains("docker-scan")) | ._links.self.href', returnStdout=true})
+                     addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.orgbbb
+ccc" --user GITHUB_USER:GITHUB_TOKEN | jq -r '._links.artifacts.href', returnStdout=true})
+                     addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.orgbbb
+ccc" --user GITHUB_USER:GITHUB_TOKEN | jq -r '.[] | select(.name | endswith(".txt")) | .url', returnStdout=true})
+                     addRcDetailsComment.sh({script=curl -s -XGET "https://build.ci.opensearch.orgbbb
+ccc" --user GITHUB_USER:GITHUB_TOKEN, returnStdout=true})
                   TemplateProcessor.process(release/rc-details-template.md, {VERSION=2.19.0, OPENSEARCH_RC_NUMBER=5, OPENSEARCH_DASHBOARDS_RC_NUMBER=5, OPENSEARCH_RC_BUILD_NUMBER=10787, OPENSEARCH_DASHBOARDS_RC_BUILD_NUMBER=8260, OPENSEARCH_DOCKER_SCAN_RESULTS=Total: 0 (UNKNOWN: 0, LOW: 0, MEDIUM: 0, HIGH: 0, CRITICAL: 0)), OPENSEARCH_DASHBOARDS_DOCKER_SCAN_RESULTS=
 bbb
 ccc

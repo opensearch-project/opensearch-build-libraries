@@ -206,7 +206,7 @@ class TestAddRcDetailsComment extends BuildPipelineTest {
                     }
                     '''
 
-        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch_release_metrics/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"size\\":1,\\"_source\\":\\"release_issue\\",\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"version\\":\\"2.19.0\\"}},{\\"match_phrase\\":{\\"repository\\":\\"opensearch-build\\"}}]}},\\"sort\\":[{\\"current_date\\":{\\"order\\":\\"desc\\"}}]}\" | jq '.'\n        """) { script ->
+        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch_release_metrics/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"size\\":1,\\"_source\\":\\"release_issue\\",\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"version\\":\\"2.19.0\\"}},{\\"match_phrase\\":{\\"repository.keyword\\":\\"opensearch-build\\"}}]}},\\"sort\\":[{\\"current_date\\":{\\"order\\":\\"desc\\"}}]}\" | jq '.'\n        """) { script ->
             return [stdout: releaseIssueResponse, exitValue: 0]
         }
         helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-distribution-build-results/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"_source\\":\\"rc_number\\",\\"sort\\":[{\\"distribution_build_number\\":{\\"order\\":\\"desc\\"},\\"rc_number\\":{\\"order\\":\\"desc\\"}}],\\"size\\":1,\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"component\\":\\"OpenSearch\\"}},{\\"match_phrase\\":{\\"rc\\":\\"true\\"}},{\\"match_phrase\\":{\\"version\\":\\"2.19.0\\"}}]}}}\" | jq '.'\n        """) { script ->
@@ -222,19 +222,19 @@ class TestAddRcDetailsComment extends BuildPipelineTest {
             return [stdout: osdRcDistributionNumberResponse, exitValue: 0]
         }
 
-        helper.addShMock("""curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/distribution-build-opensearch/runs/10787/nodes/" | jq '.[] | select(.actions[].description? | contains("docker-scan")) | .actions[] | select(.description | contains("docker-scan")) | ._links.self.href'""") { script ->
+        helper.addShMock("""curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/distribution-build-opensearch/runs/10787/nodes/" --user GITHUB_USER:GITHUB_TOKEN | jq '.[] | select(.actions[].description? | contains("docker-scan")) | .actions[] | select(.description | contains("docker-scan")) | ._links.self.href'""") { script ->
             return [stdout: '/blue/rest/organizations/jenkins/pipelines/docker-scan/runs/4439/', exitValue: 0]
         }
 
-        helper.addShMock("""curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/docker-scan/runs/4439/" | jq -r '._links.artifacts.href'""") { script ->
+        helper.addShMock("""curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/docker-scan/runs/4439/" --user GITHUB_USER:GITHUB_TOKEN | jq -r '._links.artifacts.href'""") { script ->
             return [stdout: '/blue/rest/organizations/jenkins/pipelines/docker-scan/runs/4439/artifacts/', exitValue: 0]
         }
 
-        helper.addShMock("""curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/docker-scan/runs/4439/artifacts/" | jq -r '.[] | select(.name | endswith(".txt")) | .url'""") { script ->
+        helper.addShMock("""curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/docker-scan/runs/4439/artifacts/" --user GITHUB_USER:GITHUB_TOKEN | jq -r '.[] | select(.name | endswith(".txt")) | .url'""") { script ->
             return [stdout: '/job/docker-scan/4439/artifact/scan_docker_image.txt', exitValue: 0]
         }
 
-        helper.addShMock('curl -s -XGET "https://build.ci.opensearch.org/job/docker-scan/4439/artifact/scan_docker_image.txt"') { script ->
+        helper.addShMock('curl -s -XGET "https://build.ci.opensearch.org/job/docker-scan/4439/artifact/scan_docker_image.txt" --user GITHUB_USER:GITHUB_TOKEN') { script ->
             return [stdout: 'Total: 0 (UNKNOWN: 0, LOW: 0, MEDIUM: 0, HIGH: 0, CRITICAL: 0))', exitValue: 0]
         }
         Random.metaClass.nextInt = { int max -> 1 }
@@ -258,6 +258,21 @@ class TestAddRcDetailsComment extends BuildPipelineTest {
         assertThat(fileContent, containsString("image: opensearchstaging/opensearch-dashboards:2.19.0.8260"))
         assertThat(fileContent, containsString("Total: 0 (UNKNOWN: 0, LOW: 0, MEDIUM: 0, HIGH: 0, CRITICAL: 0)"))
     }
+
+    @Test
+    void testCommentContentError() {
+        helper.addShMock("""curl -s -XGET "https://build.ci.opensearch.org/blue/rest/organizations/jenkins/pipelines/distribution-build-opensearch/runs/10787/nodes/" --user GITHUB_USER:GITHUB_TOKEN | jq '.[] | select(.actions[].description? | contains("docker-scan")) | .actions[] | select(.description | contains("docker-scan")) | ._links.self.href'""") { script ->
+            return [stdout: 'Parsing error', exitValue: 1]
+        }      
+        this.registerLibTester(new AddRcDetailsCommentLibTester('2.19.0'))
+        runScript('tests/jenkins/jobs/AddRcDetailsComment.jenkinsFile')
+        def fileContent = getCommands('writeFile', 'OpenSearch')[0]
+        assertThat(fileContent, containsString("{file=/tmp/workspace/BBBBBBBBBB.md, text=## See OpenSearch RC 5 and OpenSearch-Dashboards RC 5 details"))
+        assertThat(fileContent, containsString("OpenSearch 10787 and OpenSearch-Dashboards 8260 is ready for your test."))
+        assertThat(fileContent, containsString("image: opensearchstaging/opensearch:2.19.0.1078"))
+        assertThat(fileContent, containsString("image: opensearchstaging/opensearch-dashboards:2.19.0.8260"))
+        assertThat(fileContent, containsString("[Unable to get docker scan results for OpenSearch, RC build number: 10787]"))
+    }    
 
     def getCommands(method, text) {
         def shCommands = helper.callStack.findAll { call ->
