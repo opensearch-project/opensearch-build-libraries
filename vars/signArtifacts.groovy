@@ -15,11 +15,16 @@ SignArtifacts signs the given artifacts and saves the signature in the same dire
 @param Map[type] <Optional> - Artifact type in the manifest, [type] is required for signing yml.
 @param Map[sigtype] <Optional> - The signature type of signing artifacts. e.g. '.sig'. Required for non-yml artifacts signing.
 @param Map[overwrite]<Optional> - Allow output artifacts to overwrite the existing artifacts. Defaults to False
+@param Map[email]<Optional> - Email used for signing. Default will be handled in build repo sign workflow [https://github.com/opensearch-project/opensearch-build/tree/main/src/sign_workflow].
 */
 void call(Map args = [:]) {
+    String email = args.email ?: "release@opensearch.org"
     if (args.sigtype.equals('.rpm')) {
         withCredentials([
         string(credentialsId: 'jenkins-rpm-signing-account-number', variable: 'RPM_SIGNING_ACCOUNT_NUMBER'),
+        string(credentialsId: 'jenkins-rpm-release-signing-passphrase-secrets-arn', variable: 'RPM_RELEASE_SIGNING_PASSPHRASE_SECRETS_ARN'),
+        string(credentialsId: 'jenkins-rpm-release-signing-secret-key-secrets-arn', variable: 'RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN'),
+        string(credentialsId: 'jenkins-rpm-release-signing-key-id', variable: 'RPM_RELEASE_SIGNING_KEY_ID'),
         string(credentialsId: 'jenkins-rpm-signing-passphrase-secrets-arn', variable: 'RPM_SIGNING_PASSPHRASE_SECRETS_ARN'),
         string(credentialsId: 'jenkins-rpm-signing-secret-key-secrets-arn', variable: 'RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN'),
         string(credentialsId: 'jenkins-rpm-signing-key-id', variable: 'RPM_SIGNING_KEY_ID')]) {
@@ -56,15 +61,28 @@ void call(Map args = [:]) {
 
                         export GPG_TTY=`tty`
 
+                        PASSPHRASE_SECRETS_ARN="${RPM_RELEASE_SIGNING_PASSPHRASE_SECRETS_ARN}"
+                        SECRET_KEY_ID_SECRETS_ARN="${RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN}"
+                        KEY_ID="${RPM_RELEASE_SIGNING_KEY_ID}"
+                        KEY_NAME="OpenSearch Project"
+
+                        if [ "${email}" = "opensearch@amazon.com" ]; then
+                            PASSPHRASE_SECRETS_ARN="${RPM_SIGNING_PASSPHRASE_SECRETS_ARN}"
+                            SECRET_KEY_ID_SECRETS_ARN="${RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN}"
+                            KEY_ID="${RPM_SIGNING_KEY_ID}"
+                            KEY_NAME="OpenSearch project"
+                        fi
+
                         echo "------------------------------------------------------------------------"
                         echo "Setup RPM Macros"
                         cp -v scripts/pkg/sign_templates/rpmmacros ~/.rpmmacros
-                        sed -i "s/##key_name##/OpenSearch project/g;s/##passphrase_name##/passphrase/g" ~/.rpmmacros
+                        sed -i "s/##key_name##/\${KEY_NAME}/g;s/##passphrase_name##/passphrase/g" ~/.rpmmacros
+                        cat ~/.rpmmacros
 
                         echo "------------------------------------------------------------------------"
                         echo "Import OpenSearch keys"
-                        aws secretsmanager get-secret-value --region us-west-2 --secret-id "${RPM_SIGNING_PASSPHRASE_SECRETS_ARN}" | jq -r .SecretBinary | base64 --decode > passphrase
-                        aws secretsmanager get-secret-value --region us-west-2 --secret-id "${RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN}" | jq -r .SecretBinary | base64 --decode | gpg --quiet --import --pinentry-mode loopback --passphrase-file passphrase -
+                        aws secretsmanager get-secret-value --region us-west-2 --secret-id "\$PASSPHRASE_SECRETS_ARN" | jq -r .SecretBinary | base64 --decode > passphrase
+                        aws secretsmanager get-secret-value --region us-west-2 --secret-id "\$SECRET_KEY_ID_SECRETS_ARN" | jq -r .SecretBinary | base64 --decode | gpg --quiet --import --pinentry-mode loopback --passphrase-file passphrase -
 
                         echo "------------------------------------------------------------------------"
                         echo "Start Signing Rpm"
@@ -91,8 +109,8 @@ void call(Map args = [:]) {
 
                         echo "------------------------------------------------------------------------"
                         echo "Clean up gpg"
-                        gpg --batch --yes --delete-secret-keys ${RPM_SIGNING_KEY_ID}
-                        gpg --batch --yes --delete-keys ${RPM_SIGNING_KEY_ID}
+                        gpg --batch --yes --delete-secret-keys \$KEY_ID
+                        gpg --batch --yes --delete-keys \$KEY_ID
                         rm -v passphrase
 
                     """
@@ -208,5 +226,6 @@ String generateArguments(args) {
 }
 
 void importPGPKey() {
-    sh 'curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import -'
+    sh 'curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import - ' +
+            '&& curl -sSL https://artifacts.opensearch.org/publickeys/opensearch-release.pgp | gpg --import -'
 }

@@ -17,10 +17,13 @@ void call(Map args = [:]) {
     def inputManifest = lib.jenkins.InputManifest.new(readYaml(file: manifest))
     String filename = inputManifest.build.getFilename()
     String version = inputManifest.build.version
+    String majorVersion = version.tokenize('.')[0]
+    String signingEmail = majorVersion.toInteger() > 2 ? "release@opensearch.org" : "opensearch@amazon.com"
     String qualifier = inputManifest.build.qualifier ? '-' + inputManifest.build.qualifier : ''
     String revision = version + qualifier
     String distribution_name = "${DISTRIBUTION_NAME}"
     println("Revision: ${revision}")
+    println("Signing Email: ${signingEmail}")
 
     Map<String, List> distributionMap = [
         "linux": ['tar', 'rpm', 'deb'],
@@ -54,6 +57,7 @@ void call(Map args = [:]) {
 
                 argsMap = [:]
                 argsMap['sigtype'] = '.sig'
+                argsMap['email'] = signingEmail
 
                 String corePluginDir = "$prefixPath/$artifactPath/builds/$filename/core-plugins"
                 boolean corePluginDirExists = fileExists(corePluginDir)
