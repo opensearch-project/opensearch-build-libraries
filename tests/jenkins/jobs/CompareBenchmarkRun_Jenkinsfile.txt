@@ -65,6 +65,11 @@
                       "term": {
                         "user-tags.pull_request_number": "12345"
                       }
+                    },
+                    {
+                      "term": {
+                        "workload": \"big5\"
+                      }
                     }
                   ]
                 }
