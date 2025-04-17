@@ -11,6 +11,9 @@ void call(Map args = [:]) {
     def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.buildManifest))
     def filename = buildManifest.build.getFilename()
     def baseUrl = buildManifest.getArtifactRootUrlWithoutDistribution("${PUBLIC_ARTIFACT_URL}", "${JOB_NAME}", "${BUILD_NUMBER}")
+    String version = buildManifest.build.version
+    String majorVersion = version.tokenize('.')[0]
+    String signingEmail = majorVersion.toInteger() > 2 ? "release@opensearch.org" : "opensearch@amazon.com"
     sh([
         './assemble.sh',
         "\"${args.buildManifest}\"",
@@ -22,7 +25,8 @@ void call(Map args = [:]) {
         signArtifacts(
             artifactPath: "rpm/dist/${filename}",
             sigtype: '.rpm',
-            platform: 'linux'
+            platform: 'linux',
+            email: "${signingEmail}"
         )
 
         buildYumRepo(
