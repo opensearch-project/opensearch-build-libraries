@@ -24,7 +24,7 @@ Map<String, String> call(Map args = [:]) {
         return null
     }
     String baselineId = getBaselineTestExecutionId(args.baselineClusterConfig, args.distributionVersion, args.workload)
-    String contenderId = getContenderTestExecutionId(args.pullRequestNumber)
+    String contenderId = getContenderTestExecutionId(args.pullRequestNumber, args.workload)
     return ['baseline': baselineId, 'contender': contenderId]
 }
 
@@ -81,7 +81,7 @@ String getBaselineTestExecutionId(baselineClusterConfig, distributionVersion, wo
     }
 }
 
-String getContenderTestExecutionId(pullRequestNumber) {
+String getContenderTestExecutionId(pullRequestNumber, workload) {
     withCredentials([string(credentialsId: 'benchmark-metrics-datastore-user', variable: 'DATASTORE_USER'),
                      string(credentialsId: 'benchmark-metrics-datastore-password', variable: 'DATASTORE_PASSWORD'),
                      string(credentialsId: 'benchmark-metrics-datastore-nlb-endpoint', variable: 'DATASTORE_ENDPOINT')]) {
@@ -94,6 +94,11 @@ String getContenderTestExecutionId(pullRequestNumber) {
                     {
                       "term": {
                         "user-tags.pull_request_number": \"${pullRequestNumber}\"
+                      }
+                    },
+                    {
+                      "term": {
+                        "workload": \\"${workload}\\"
                       }
                     }
                   ]
