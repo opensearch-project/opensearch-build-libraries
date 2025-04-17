@@ -14,23 +14,30 @@ pipeline {
             steps {
                 script {
                     signArtifacts(
-                            artifactPath: "${WORKSPACE}/artifacts",
-                            sigtype: '.sig',
-                            platform: 'linux'
-                            )
+                        artifactPath: "${WORKSPACE}/artifacts",
+                        sigtype: '.sig',
+                        platform: 'linux'
+                        )
 
                     signArtifacts(
-                            artifactPath: "${WORKSPACE}/artifacts",
-                            sigtype: '.rpm',
-                            platform: 'linux',
-                            overwrite: false
-                            )
+                        artifactPath: "${WORKSPACE}/artifacts",
+                        sigtype: '.sig',
+                        platform: 'linux',
+                        email: 'opensearch@amazon.com'
+                        )
 
                     signArtifacts(
-                            artifactPath: "${WORKSPACE}/file.yml",
-                            platform: 'linux',
-                            type: 'maven',
-                            )
+                        artifactPath: "${WORKSPACE}/artifacts",
+                        sigtype: '.rpm',
+                        platform: 'linux',
+                        overwrite: false
+                        )
+
+                    signArtifacts(
+                        artifactPath: "${WORKSPACE}/file.yml",
+                        platform: 'linux',
+                        type: 'maven',
+                        )
 
                     signArtifacts(
                         artifactPath: "${WORKSPACE}/the_msi.msi",
