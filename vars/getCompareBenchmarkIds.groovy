@@ -98,7 +98,7 @@ String getContenderTestExecutionId(pullRequestNumber, workload) {
                     },
                     {
                       "term": {
-                        "workload": \\"${workload}\\"
+                        "workload": \"${workload}\"
                       }
                     }
                   ]
