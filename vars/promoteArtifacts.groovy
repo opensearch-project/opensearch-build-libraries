@@ -8,7 +8,7 @@
  */
 
 void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@9.0.1', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@9.0.2', retriever: legacySCM(scm))
 
     // fileActions are a closure that accepts a String, filepath with return type void
     List<Closure> fileActions = args.fileActions ?: []
