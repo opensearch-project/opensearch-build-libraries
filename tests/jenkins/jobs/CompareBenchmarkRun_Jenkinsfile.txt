@@ -68,7 +68,7 @@
                     },
                     {
                       "term": {
-                        "workload": \"big5\"
+                        "workload": "big5"
                       }
                     }
                   ]
