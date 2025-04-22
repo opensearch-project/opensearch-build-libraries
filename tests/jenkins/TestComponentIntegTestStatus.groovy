@@ -221,6 +221,262 @@ class TestComponentIntegTestStatus {
     }
 
     @Test
+    void testTermsQueryForComponents() {
+        script = new Expando()
+        script.sh = { Map args ->
+            if (args.containsKey("script")) {
+                return """
+                        {
+                            "took": 20,
+                            "timed_out": false,
+                            "_shards": {
+                                "total": 50,
+                                "successful": 50,
+                                "skipped": 0,
+                                "failed": 0
+                            },
+                            "hits": {
+                                "total": {
+                                    "value": 29,
+                                    "relation": "eq"
+                                },
+                                "max_score": null,
+                                "hits": [
+                                    {
+                                        "_index": "opensearch-integration-test-results-04-2025",
+                                        "_id": "j1yLX5YBIpIPk1eDvNqs",
+                                        "_score": null,
+                                        "_source": {
+                                            "component": "sql",
+                                            "component_build_result": "passed"
+                                        },
+                                        "fields": {
+                                            "component": [
+                                                "sql"
+                                            ]
+                                        },
+                                        "sort": [
+                                            1745353345259
+                                        ]
+                                    },
+                                    {
+                                        "_index": "opensearch-integration-test-results-04-2025",
+                                        "_id": "kFyLX5YBIpIPk1eDvNqs",
+                                        "_score": null,
+                                        "_source": {
+                                            "component": "alerting",
+                                            "component_build_result": "failed"
+                                        },
+                                        "fields": {
+                                            "component": [
+                                                "custom-codecs"
+                                            ]
+                                        },
+                                        "sort": [
+                                            1745353345259
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                        """
+            }
+        }
+        def expectedOutput = JsonOutput.toJson([
+                size: 100,
+                sort: [
+                        [
+                                build_start_time: [
+                                        order: "desc"
+                                ]
+                        ]
+                ],
+                _source: [
+                        "component",
+                        "component_build_result"
+                ],
+                query  : [
+                        bool: [
+                                must: [
+                                        [
+                                                match_phrase: [
+                                                        rc_number: "2"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        version: "2.18.0"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        distribution: "tar"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        architecture: "x64"
+                                                ]
+                                        ],
+                                        [
+                                                terms: [
+                                                        component: ["sql", "alerting"]
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        qualifier: "beta1"
+                                                ]
+                                        ]
+                                ]
+                        ]
+                ],
+                collapse: [
+                        field: "component"
+                ]
+        ]).replace('"', '\\"')
+
+
+        def componentIntegTestStatusNew = new ComponentIntegTestStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, 'beta1', script)
+        def result = componentIntegTestStatusNew.termsQueryForComponents(2, 'tar', 'x64', ['sql', 'alerting'])
+        def failedComponents = componentIntegTestStatusNew.getAllFailedComponents(2, 'tar', 'x64', ['sql', 'alerting'])
+        assert result == expectedOutput
+        assert failedComponents == ['alerting']
+    }
+
+    @Test
+    void testTermsQueryForOsdComponents() {
+        script = new Expando()
+        script.sh = { Map args ->
+            if (args.containsKey("script")) {
+                return """
+                        {
+                            "took": 20,
+                            "timed_out": false,
+                            "_shards": {
+                                "total": 50,
+                                "successful": 50,
+                                "skipped": 0,
+                                "failed": 0
+                            },
+                            "hits": {
+                                "total": {
+                                    "value": 29,
+                                    "relation": "eq"
+                                },
+                                "max_score": null,
+                                "hits": [
+                                    {
+                                        "_index": "opensearch-integration-test-results-04-2025",
+                                        "_id": "j1yLX5YBIpIPk1eDvNqs",
+                                        "_score": null,
+                                        "_source": {
+                                            "component": "sql",
+                                            "component_build_result": "passed"
+                                        },
+                                        "fields": {
+                                            "component": [
+                                                "sql"
+                                            ]
+                                        },
+                                        "sort": [
+                                            1745353345259
+                                        ]
+                                    },
+                                    {
+                                        "_index": "opensearch-integration-test-results-04-2025",
+                                        "_id": "kFyLX5YBIpIPk1eDvNqs",
+                                        "_score": null,
+                                        "_source": {
+                                            "component": "alerting",
+                                            "component_build_result": "failed"
+                                        },
+                                        "fields": {
+                                            "component": [
+                                                "custom-codecs"
+                                            ]
+                                        },
+                                        "sort": [
+                                            1745353345259
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                        """
+            }
+        }
+
+        def expectedOutputOsd = JsonOutput.toJson([
+                size: 100,
+                sort: [
+                        [
+                                build_start_time: [
+                                        order: "desc"
+                                ]
+                        ]
+                ],
+                _source: [
+                        "component",
+                        "component_build_result"
+                ],
+                query  : [
+                        bool: [
+                                must: [
+                                        [
+                                                match_phrase: [
+                                                        rc_number: "2"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        version: "2.18.0"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        distribution: "tar"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        architecture: "x64"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        qualifier: "beta1"
+                                                ]
+                                        ],
+                                        [
+                                                bool: [
+                                                        should: [
+                                                                [
+                                                                        regexp: [
+                                                                                component: "OpenSearch-Dashboards-ci-group-.*"
+                                                                        ]
+                                                                ],
+                                                                [
+                                                                        terms: [
+                                                                                component: ['OpenSearch-Dashboards', 'reportsDashboards']
+                                                                        ]
+                                                                ]
+                                                        ]
+                                                ]
+                                        ]
+                                ]
+                        ]
+                ],
+                collapse: [
+                        field: "component"
+                ]
+        ]).replace('"', '\\"')
+        def componentIntegTestStatusNew = new ComponentIntegTestStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, 'beta1', script)
+        def osdResult = componentIntegTestStatusNew.termsQueryForComponents(2, 'tar', 'x64', ['OpenSearch-Dashboards', 'reportsDashboards'])
+        assert osdResult == expectedOutputOsd
+    }
+
+    @Test
     void testGetComponents() {
         def expectedOutput = ['cross-cluster-replication', 'k-NN', 'cross-cluster-replication', 'index-management', 'neural-search']
         def result = componentIntegTestStatus.getComponents('failed')

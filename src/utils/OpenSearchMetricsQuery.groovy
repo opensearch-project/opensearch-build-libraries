@@ -38,6 +38,11 @@ class OpenSearchMetricsQuery {
         """,
         returnStdout: true
         ).trim()
+        this.script.println("""
+            set -e
+            set +x
+            curl -s -XGET "${metricsUrl}/${indexName}/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "${awsAccessKey}:${awsSecretKey}" -H "x-amz-security-token:${awsSessionToken}" -H 'Content-Type: application/json' -d "${query}" | jq '.'
+""")
         return new JsonSlurperClassic().parseText(response)
     }
 }
