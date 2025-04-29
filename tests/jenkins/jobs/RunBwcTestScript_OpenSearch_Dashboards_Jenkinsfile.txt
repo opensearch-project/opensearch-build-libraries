@@ -5,7 +5,7 @@
             RunBwcTestScript_OpenSearch_Dashboards_Jenkinsfile.script(groovy.lang.Closure)
                RunBwcTestScript_OpenSearch_Dashboards_Jenkinsfile.runBwcTestScript({jobName=dummy_job, buildManifest=tests/data/opensearch-dashboards-1.2.0-build.yml, testManifest=tests/data/opensearch-dashboards-1.2.0-test.yml, buildId=215})
                   runBwcTestScript.legacySCM(groovy.lang.Closure)
-                  runBwcTestScript.library({identifier=jenkins@9.1.0, retriever=null})
+                  runBwcTestScript.library({identifier=jenkins@9.1.1, retriever=null})
                   runBwcTestScript.readYaml({file=tests/data/opensearch-dashboards-1.2.0-build.yml})
                   BuildManifest.asBoolean()
                   BuildManifest.getArtifactRootUrl(dummy_job, 215)
