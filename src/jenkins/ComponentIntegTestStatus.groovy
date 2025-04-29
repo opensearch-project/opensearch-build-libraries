@@ -17,7 +17,7 @@ class ComponentIntegTestStatus {
     String awsAccessKey
     String awsSecretKey
     String awsSessionToken
-    String indexName = 'opensearch-integration-test-results'
+    String indexName
     String product
     String version
     String qualifier
@@ -39,11 +39,12 @@ class ComponentIntegTestStatus {
         this.openSearchMetricsQuery = new OpenSearchMetricsQuery(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, script)
     }
 
-    ComponentIntegTestStatus(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, String version, String qualifier, def script) {
+    ComponentIntegTestStatus(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, String indexName, String version, String qualifier, def script) {
         this.metricsUrl = metricsUrl
         this.awsAccessKey = awsAccessKey
         this.awsSecretKey = awsSecretKey
         this.awsSessionToken = awsSessionToken
+        this.indexName = indexName
         this.version = version
         this.qualifier = qualifier
         this.script = script

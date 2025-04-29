@@ -337,7 +337,7 @@ class TestComponentIntegTestStatus {
         ]).replace('"', '\\"')
 
 
-        def componentIntegTestStatusNew = new ComponentIntegTestStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, 'beta1', script)
+        def componentIntegTestStatusNew = new ComponentIntegTestStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, version, 'beta1', script)
         def result = componentIntegTestStatusNew.termsQueryForComponents(2, 'tar', 'x64', ['sql', 'alerting'])
         def failedComponents = componentIntegTestStatusNew.getAllFailedComponents(2, 'tar', 'x64', ['sql', 'alerting'])
         assert result == expectedOutput
@@ -471,7 +471,7 @@ class TestComponentIntegTestStatus {
                         field: "component"
                 ]
         ]).replace('"', '\\"')
-        def componentIntegTestStatusNew = new ComponentIntegTestStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, 'beta1', script)
+        def componentIntegTestStatusNew = new ComponentIntegTestStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, version, 'beta1', script)
         def osdResult = componentIntegTestStatusNew.termsQueryForComponents(2, 'tar', 'x64', ['OpenSearch-Dashboards', 'reportsDashboards'])
         assert osdResult == expectedOutputOsd
     }
