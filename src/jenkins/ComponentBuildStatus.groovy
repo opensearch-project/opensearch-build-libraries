@@ -25,7 +25,7 @@ class ComponentBuildStatus {
     String buildStartTimeFrom
     String buildStartTimeTo
     def script
-    OpenSearchMetricsQuery openSearchMetricsQuery
+    def openSearchMetricsQuery
 
     ComponentBuildStatus(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, String indexName, String product, String version, String qualifier, String distributionBuildNumber, String buildStartTimeFrom, String buildStartTimeTo, def script) {
         this.metricsUrl = metricsUrl
