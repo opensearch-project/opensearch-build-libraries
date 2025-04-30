@@ -23,7 +23,7 @@ class ComponentIntegTestStatus {
     String qualifier
     String distributionBuildNumber
     def script
-    OpenSearchMetricsQuery openSearchMetricsQuery
+    def openSearchMetricsQuery
 
     ComponentIntegTestStatus(String metricsUrl, String awsAccessKey, String awsSecretKey, String awsSessionToken, String indexName, String product, String version, String qualifier, String distributionBuildNumber, def script) {
         this.metricsUrl = metricsUrl
