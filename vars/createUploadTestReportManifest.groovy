@@ -59,7 +59,7 @@ def call(Map args = [:]) {
     echo "Run command: " + reportCommand
     sh(reportCommand)
 
-    String finalUploadPath = generateUploadPath(testManifest, buildManifest, dashboardsBuildManifest, testRunID)
+    String finalUploadPath = generateUploadPath(testManifest, buildManifest, dashboardsBuildManifest, testRunID, testType)
     withCredentials([
             string(credentialsId: 'jenkins-artifact-bucket-name', variable: 'ARTIFACT_BUCKET_NAME'),
             string(credentialsId: 'jenkins-aws-account-public', variable: 'AWS_ACCOUNT_PUBLIC')]) {
@@ -93,7 +93,7 @@ String generateBasePaths(buildManifest) {
     return ["${env.PUBLIC_ARTIFACT_URL}", "${env.JOB_NAME}", buildManifest.build.version, buildManifest.build.id, buildManifest.build.platform, buildManifest.build.architecture, buildManifest.build.distribution].join("/")
 }
 
-String generateUploadPath(testManifest, buildManifest, dashboardsBuildManifest, testRunID) {
+String generateUploadPath(testManifest, buildManifest, dashboardsBuildManifest, testRunID, testType) {
     def product = testManifest.name
     def productBuildManifest = (product.equals("OpenSearch")) ? buildManifest : dashboardsBuildManifest
 
@@ -101,7 +101,7 @@ String generateUploadPath(testManifest, buildManifest, dashboardsBuildManifest, 
     echo "Build Id: ${buildId}"
 
     def artifactPath = productBuildManifest.getArtifactRoot("${env.JOB_NAME}", buildId)
-    return [artifactPath, "test-results", testRunID, "integ-test", "test-report.yml"].join("/")
+    return [artifactPath, "test-results", testRunID, testType, "test-report.yml"].join("/")
 }
 
 boolean isNullOrEmpty(String str) { return (str == null || str.allWhitespace || str.isEmpty()) }
