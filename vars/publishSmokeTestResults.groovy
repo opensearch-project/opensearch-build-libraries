@@ -21,8 +21,6 @@ import java.util.Date
 
 void call(Map args = [:]) {
 
-
-    // To ensure the test TestOpenSearchIntegTest from opensearch-build repo passes.
     def isNullOrEmpty = { str ->
         str == null || (str instanceof String && str.trim().isEmpty())
     }
@@ -83,14 +81,14 @@ void call(Map args = [:]) {
         }
         writeFile file: "test-records.json", text: finalJsonDoc
         def fileContents = readFile(file: "test-records.json").trim()
-        indexFailedTestData(indexName, "test-records.json")
+        indexSmokeTestData(indexName, "test-records.json")
 
     }
 }
 
 boolean argCheck(String str) { return (str == null || str.allWhitespace || str.isEmpty()) }
 
-void indexFailedTestData(indexName, testRecordsFile) {
+void indexSmokeTestData(indexName, testRecordsFile) {
     withCredentials([
             string(credentialsId: 'jenkins-health-metrics-account-number', variable: 'METRICS_HOST_ACCOUNT'),
             string(credentialsId: 'jenkins-health-metrics-cluster-endpoint', variable: 'METRICS_HOST_URL')
@@ -114,9 +112,6 @@ void indexFailedTestData(indexName, testRecordsFile) {
                                 "type": "date"
                             },
                             "component": {
-                                "type": "keyword"
-                            },
-                            "component_build_result": {
                                 "type": "keyword"
                             },
                             "component_category": {
@@ -248,7 +243,6 @@ def generateJson(componentName, componentRepo, componentRepoUrl, version, qualif
         architecture: architecture,
         distribution: distribution,
         component_category: componentCategory,
-        component_build_result: componentTestSpecResult,
         test_report_manifest_yml: testReportManifestYmlUrl,
         component_test_spec_name: componentTestSpecName,
         component_test_spec_yml: componentTestSpecYml,
