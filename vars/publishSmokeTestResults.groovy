@@ -249,7 +249,7 @@ def generateJson(componentName, componentRepo, componentRepoUrl, version, qualif
         component_test_spec_result: componentTestSpecResult,
         component_test_spec_cluster_stdout: componentTestSpecClusterStdout,
         component_test_spec_cluster_stderr: componentTestSpecClusterStderr,
-        "component_test_spec_test_stdout": componentTestSpecTestStdout,
+        component_test_spec_test_stdout: componentTestSpecTestStdout,
         component_test_spec_test_stderr: componentTestSpecTestStderr,
     ]
     return JsonOutput.toJson(json)
