@@ -15,7 +15,7 @@ import jenkins.ReleaseCandidateStatus
  * @param args.inputManifest <required> - Input manifest file(s) eg: [manifests/2.0.0/opensearch-2.0.0.yml, manifests/2.0.0/opensearch-dashboards-2.0.0.yml] .
  */
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@9.2.0', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@9.3.0', retriever: legacySCM(scm))
     // Parameter validation
     validateParameters(args)
     def inputManifest = args.inputManifest
