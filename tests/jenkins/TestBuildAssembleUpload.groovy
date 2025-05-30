@@ -44,6 +44,7 @@ class TestBuildAssembleUpload extends BuildPipelineTest {
         })
 
         helper.registerAllowedMethod("git", [Map])
+        helper.registerAllowedMethod('isUnix', [], { true })
     }
 
     @Test

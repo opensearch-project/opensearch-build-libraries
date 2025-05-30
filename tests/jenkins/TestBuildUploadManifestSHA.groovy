@@ -31,6 +31,7 @@ class TestBuildUploadManifestSHA extends BuildPipelineTest {
             closure.delegate = delegate
             return helper.callClosure(closure)
         })
+        helper.registerAllowedMethod('isUnix', [], { true })
 
         helper.registerAllowedMethod("git", [Map])
     }
