@@ -36,26 +36,55 @@ void call(Map args = [:]) {
     def DISTRIBUTION_BUILD_NUMBER
 
     if (incremental_enabled && previousBuildId.equalsIgnoreCase("latest")) {
-        def latestIndexStatus = sh (
-                script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\" > /dev/null 2>&1",
-                returnStatus: true
-        )
-        def latestIndexStatusOld = sh (
-                script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index.json | jq -r \".latest\" > /dev/null 2>&1",
-                returnStatus: true
-        )
+        def latestIndexStatus
+        def latestIndexStatusOld
+
+        if (isUnix()) {
+            latestIndexStatus = sh (
+                    script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\" > /dev/null 2>&1",
+                    returnStatus: true
+            )
+            latestIndexStatusOld = sh (
+                    script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index.json | jq -r \".latest\" > /dev/null 2>&1",
+                    returnStatus: true
+            )
+        } else {
+            latestIndexStatus = bat (
+                    script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\" > nul 2>&1",
+                    returnStatus: true
+            )
+            latestIndexStatusOld = bat (
+                    script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index.json | jq -r \".latest\" > nul 2>&1",
+                    returnStatus: true
+            )
+        }
+
         if (latestIndexStatus == 0) {
             echo("Use new URL path for the latest index.")
-            DISTRIBUTION_BUILD_NUMBER = sh(
-                    script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\"",
-                    returnStdout: true
-            ).trim()
+            if (isUnix()) {
+                DISTRIBUTION_BUILD_NUMBER = sh(
+                        script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\"",
+                        returnStdout: true
+                ).trim()
+            } else {
+                DISTRIBUTION_BUILD_NUMBER = bat(
+                        script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\"",
+                        returnStdout: true
+                ).trim()
+            }
         } else if (latestIndexStatusOld == 0) {
             echo("Use old URL path for the latest index.")
-            DISTRIBUTION_BUILD_NUMBER = sh(
-                    script: "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index.json | jq -r \".latest\"",
-                    returnStdout: true
-            ).trim()
+            if (isUnix()) {
+                DISTRIBUTION_BUILD_NUMBER = sh(
+                        script: "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index.json | jq -r \".latest\"",
+                        returnStdout: true
+                ).trim()
+            } else {
+                DISTRIBUTION_BUILD_NUMBER = bat(
+                        script: "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index.json | jq -r \".latest\"",
+                        returnStdout: true
+                ).trim()
+            }
         } else {
             echo("No latest build for ${revision} is available. Building all components from the manifest.")
             incremental_enabled = false
@@ -70,16 +99,34 @@ void call(Map args = [:]) {
         retrievePreviousBuild(args)
     }
 
-    sh(([
-        './build.sh',
-        args.inputManifest ?: "manifests/${INPUT_MANIFEST}",
-        args.distribution ? "-d ${args.distribution}" : null,
-        args.componentName ? "--component ${args.componentName}" : null,
-        args.platform ? "-p ${args.platform}" : null,
-        args.architecture ? "-a ${args.architecture}" : null,
-        args.snapshot ? '--snapshot' : null,
-        args.lock ? '--lock' : null,
-        args.continueOnError ? '--continue-on-error' : null,
-        incremental_enabled ? '--incremental' : null
-    ] - null).join(' '))
+    // Execute build script based on platform
+    if (isUnix()) {
+        sh(([
+            './build.sh',
+            args.inputManifest ?: "manifests/${INPUT_MANIFEST}",
+            args.distribution ? "-d ${args.distribution}" : null,
+            args.componentName ? "--component ${args.componentName}" : null,
+            args.platform ? "-p ${args.platform}" : null,
+            args.architecture ? "-a ${args.architecture}" : null,
+            args.snapshot ? '--snapshot' : null,
+            args.lock ? '--lock' : null,
+            args.continueOnError ? '--continue-on-error' : null,
+            incremental_enabled ? '--incremental' : null
+        ] - null).join(' '))
+    } else {
+        // On Windows, use Git Bash or WSL to run the shell script
+        bat(([
+            'bash',
+            './build.sh',
+            args.inputManifest ?: "manifests/${INPUT_MANIFEST}",
+            args.distribution ? "-d ${args.distribution}" : null,
+            args.componentName ? "--component ${args.componentName}" : null,
+            args.platform ? "-p ${args.platform}" : null,
+            args.architecture ? "-a ${args.architecture}" : null,
+            args.snapshot ? '--snapshot' : null,
+            args.lock ? '--lock' : null,
+            args.continueOnError ? '--continue-on-error' : null,
+            incremental_enabled ? '--incremental' : null
+        ] - null).join(' '))
+    }
 }

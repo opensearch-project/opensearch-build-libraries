@@ -27,6 +27,7 @@ class TestbuildManifestVar extends BuildPipelineTest {
             return helper.callClosure(closure)
         })
         helper.registerAllowedMethod("s3Download", [Map])
+        helper.registerAllowedMethod('isUnix', [], { true })
     }
 
     @Test
