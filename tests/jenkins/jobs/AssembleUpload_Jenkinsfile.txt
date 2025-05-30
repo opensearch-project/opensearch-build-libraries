@@ -12,6 +12,7 @@
                      assembleManifest.readYaml({file=tests/data/opensearch-build-1.1.0.yml})
                      BuildManifest.asBoolean()
                      BuildManifest.getArtifactRootUrlWithoutDistribution(https://ci.opensearch.org/dbc, vars-build, 33)
+                     assembleManifest.isUnix()
                      assembleManifest.sh(./assemble.sh "tests/data/opensearch-build-1.1.0.yml" --base-url https://ci.opensearch.org/dbc/vars-build/1.1.0/33/linux/x64)
                   assembleUpload.uploadArtifacts({buildManifest=tests/data/opensearch-build-1.1.0.yml})
                      uploadArtifacts.legacySCM(groovy.lang.Closure)

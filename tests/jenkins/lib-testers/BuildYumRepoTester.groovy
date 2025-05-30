@@ -25,6 +25,7 @@ class BuildYumRepoTester extends LibFunctionTester {
         binding.setVariable('BUILD_NUMBER', '123')
 
         helper.registerAllowedMethod("writeFile", [Map])
+        helper.registerAllowedMethod('isUnix', [], { true })
     }
 
     void parameterInvariantsAssertions(call) {
