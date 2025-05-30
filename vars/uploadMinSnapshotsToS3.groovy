@@ -84,12 +84,22 @@ void call(Map args = [:]) {
                 sedCmd = "gsed"
             }
 
-            sh """
-                cp -v ${srcDir}/${baseName}.${extension} ${srcDir}/${baseName}-latest.${extension}
-                cp -v ${srcDir}/${baseName}.${extension}.sha512 ${srcDir}/${baseName}-latest.${extension}.sha512
-                cp -v ${srcDir}/../manifest.yml ${srcDir}/${baseName}-latest.${extension}.build-manifest.yml
-                ${sedCmd} -i "s/.${extension}/-latest.${extension}/g" ${srcDir}/${baseName}-latest.${extension}.sha512
-            """
+            if (isUnix()) {
+                sh """
+                    cp -v ${srcDir}/${baseName}.${extension} ${srcDir}/${baseName}-latest.${extension}
+                    cp -v ${srcDir}/${baseName}.${extension}.sha512 ${srcDir}/${baseName}-latest.${extension}.sha512
+                    cp -v ${srcDir}/../manifest.yml ${srcDir}/${baseName}-latest.${extension}.build-manifest.yml
+                    ${sedCmd} -i "s/.${extension}/-latest.${extension}/g" ${srcDir}/${baseName}-latest.${extension}.sha512
+                """
+            } else {
+                // Windows commands using bat with bash -c
+                bat """
+                    bash -c "cp -v '${srcDir}/${baseName}.${extension}' '${srcDir}/${baseName}-latest.${extension}'"
+                    bash -c "cp -v '${srcDir}/${baseName}.${extension}.sha512' '${srcDir}/${baseName}-latest.${extension}.sha512'"
+                    bash -c "cp -v '${srcDir}/../manifest.yml' '${srcDir}/${baseName}-latest.${extension}.build-manifest.yml'"
+                    bash -c "${sedCmd} -i 's/.${extension}/-latest.${extension}/g' '${srcDir}/${baseName}-latest.${extension}.sha512'"
+                """
+            }
             withAWS(role: "${ARTIFACT_PROMOTION_ROLE_NAME}", roleAccount: "${AWS_ACCOUNT_ARTIFACT}", duration: 900, roleSessionName: 'jenkins-session') {
                 // min artifacts
                 echo("Upload min snapshots")
