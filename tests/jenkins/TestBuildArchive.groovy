@@ -35,6 +35,7 @@ class TestBuildArchive extends BuildPipelineTest {
 
         helper.registerAllowedMethod("zip", [Map])
         helper.registerAllowedMethod("git", [Map])
+        helper.registerAllowedMethod('isUnix', [], { true })
     }
 
     @Test

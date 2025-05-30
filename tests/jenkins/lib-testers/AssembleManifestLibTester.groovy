@@ -24,6 +24,7 @@ class AssembleManifestLibTester extends LibFunctionTester {
         binding.setVariable('PUBLIC_ARTIFACT_URL', 'https://ci.opensearch.org/dbc')
         binding.setVariable('JOB_NAME', 'vars-build')
         binding.setVariable('BUILD_NUMBER', '123')
+        helper.registerAllowedMethod('isUnix', [], { true })
     }
 
     void parameterInvariantsAssertions(call) {
