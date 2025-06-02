@@ -41,6 +41,7 @@ class TestCheckCodeCoverage extends BuildPipelineTest {
             return helper.callClosure(closure)
         })
         helper.addFileExistsMock('tests/data/opensearch-1.3.0.yml', true)
+        helper.registerAllowedMethod('isUnix', [], { true })
         def coverageResponse = '''
                 {
                   "took": 3,
