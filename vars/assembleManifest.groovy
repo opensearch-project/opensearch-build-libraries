@@ -14,11 +14,21 @@ void call(Map args = [:]) {
     String version = buildManifest.build.version
     String majorVersion = version.tokenize('.')[0]
     String signingEmail = majorVersion.toInteger() > 2 ? "release@opensearch.org" : "opensearch@amazon.com"
-    sh([
+
+    if (isUnix()) {
+        sh([
         './assemble.sh',
         "\"${args.buildManifest}\"",
         "--base-url ${baseUrl}"
     ].join(' '))
+    } else {
+        bat([
+            'bash',
+        './assemble.sh',
+        "\"${args.buildManifest}\"",
+        "--base-url ${baseUrl}"
+    ].join(' '))
+    }
 
     if (buildManifest.build.distribution == 'rpm') {
 
