@@ -70,6 +70,8 @@ class TestPromoteLinuxArtifacts extends BuildPipelineTest {
         helper.registerAllowedMethod('findFiles', [Map], { args ->
             return [{}]
         })
+        helper.registerAllowedMethod('isUnix', [], { true })
+        
         helper.addFileExistsMock('tests/jenkins/artifacts/tar/vars-build/1.3.0/33/linux/x64/tar/builds/opensearch/core-plugins', true)
 
         helper.addShMock('find tests/jenkins/artifacts/tar/vars-build/1.3.0/33/linux/x64/tar/builds/opensearch/core-plugins -type f') { script ->
@@ -87,7 +89,6 @@ class TestPromoteLinuxArtifacts extends BuildPipelineTest {
         helper.addShMock('basename tests/jenkins/artifacts/tar/vars-build/1.3.0/33/linux/x64/tar/builds/opensearch/core-plugins/zip_dummy_artifact_1.3.0.zip') { script ->
             return [stdout: "zip_dummy_artifact_1.3.0.zip", exitValue: 0]
         }
-
         targetOpenSearchTar = copy(
             "tests/data/opensearch-build-1.3.0.yml",
             "tests/jenkins/artifacts/tar/vars-build/1.3.0/33/linux/x64/tar/builds/opensearch/manifest.yml"

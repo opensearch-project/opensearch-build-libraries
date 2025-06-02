@@ -62,6 +62,9 @@ class TestPromoteWindowsArtifacts extends BuildPipelineTest {
         helper.registerAllowedMethod('findFiles', [Map], { args ->
             return [{}]
         })
+
+        helper.registerAllowedMethod('isUnix', [], { false })
+
         helper.addFileExistsMock('tests/jenkins/artifacts/zip/vars-build/1.3.0/33/windows/x64/zip/builds/opensearch/core-plugins', true)
 
         helper.addShMock('find tests/jenkins/artifacts/zip/vars-build/1.3.0/33/windows/x64/zip/builds/opensearch/core-plugins -type f') { script ->
