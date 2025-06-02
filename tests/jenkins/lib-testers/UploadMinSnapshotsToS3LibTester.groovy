@@ -59,5 +59,7 @@ class UploadMinSnapshotsToS3LibTester extends LibFunctionTester {
             closure.delegate = delegate
             return helper.callClosure(closure)
         })
+
+        helper.registerAllowedMethod('isUnix', [], { true })
     }
 }
