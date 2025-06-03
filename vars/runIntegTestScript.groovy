@@ -34,7 +34,9 @@ void call(Map args = [:]) {
     if (filename == 'opensearch' && platform == 'windows') { // Windows use scoop to switch the Java Version
         String javaVersionNumber = javaVersion.replaceAll("[^0-9]", "") // Only get number
         echo("Switching to Java ${javaVersionNumber} on Windows Docker Container")
-        sh("scoop reset `scoop list jdk | cut -d ' ' -f1 | grep ${javaVersionNumber} | head -1`")
+        bat"""
+            bash -c "scoop reset `scoop list jdk | cut -d ' ' -f1 | grep ${javaVersionNumber} | head -1`"
+        """
     }
     echo "Possible Java Home: ${javaHomeCommand}"
 
@@ -81,7 +83,15 @@ void call(Map args = [:]) {
     ].join(' ')
 
     echo "Run command: " + testCommand
-    sh(testCommand)
+    if (isUnix()){
+        // On Unix, use sh to run the command
+        sh(testCommand)
+    } else {
+        // On Windows, use bat to run the command with bash -c
+        bat """
+            bash -c "${testCommand}"
+        """
+    }
 }
 
 String generatePaths(buildManifest, artifactRootUrl, localPath) {

@@ -41,6 +41,7 @@ class CreateUploadTestReportManifestLibTester extends LibFunctionTester {
             return helper.callClosure(closure)
         })
         helper.registerAllowedMethod("s3Upload", [Map])
+        helper.registerAllowedMethod('isUnix', [], { true })
     }
 
     void parameterInvariantsAssertions(call) {
