@@ -53,10 +53,12 @@ void call(Map args = [:]) {
                     script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\" > nul 2>&1",
                     returnStatus: true
             )
+            echo("Latest index status: ${latestIndexStatus}")
             latestIndexStatusOld = bat (
                     script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index.json | jq -r \".latest\" > nul 2>&1",
                     returnStatus: true
             )
+            echo("Latest index status old: ${latestIndexStatusOld}")
         }
 
         if (latestIndexStatus == 0) {
@@ -71,6 +73,7 @@ void call(Map args = [:]) {
                         script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\"",
                         returnStdout: true
                 ).trim()
+                echo("Distribution build number: ${DISTRIBUTION_BUILD_NUMBER}")
             }
         } else if (latestIndexStatusOld == 0) {
             echo("Use old URL path for the latest index.")
@@ -84,6 +87,7 @@ void call(Map args = [:]) {
                         script: "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index.json | jq -r \".latest\"",
                         returnStdout: true
                 ).trim()
+                echo("Distribution build number old: ${DISTRIBUTION_BUILD_NUMBER}")
             }
         } else {
             echo("No latest build for ${revision} is available. Building all components from the manifest.")

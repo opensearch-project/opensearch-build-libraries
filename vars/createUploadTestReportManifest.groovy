@@ -57,6 +57,14 @@ def call(Map args = [:]) {
             ].join(' ')
 
     echo "Run command: " + reportCommand
+
+    if (isUnix()) {
+        sh(reportCommand)
+    } else {
+        bat """
+            bash -c "${testCommand}"
+        """
+    }
     sh(reportCommand)
 
     String finalUploadPath = generateUploadPath(testManifest, buildManifest, dashboardsBuildManifest, testRunID, testType)
