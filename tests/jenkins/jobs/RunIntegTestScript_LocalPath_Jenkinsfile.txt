@@ -22,4 +22,5 @@
                   runIntegTestScript.echo(Component: OpenSearch-Dashboards)
                   runIntegTestScript.echo(Switch User to Non-Root (uid=1000): false)
                   runIntegTestScript.echo(Run command: env PATH=$PATH  ./test.sh integ-test tests/data/opensearch-dashboards-1.2.0-test.yml --component OpenSearch-Dashboards  --test-run-id 987 --paths opensearch=tests/jenkins/artifacts/tar opensearch-dashboards=tests/jenkins/artifacts/tar --base-path https://dummy_link/dummy_integ_test/1.2.0/215/linux/x64/tar )
+                  runIntegTestScript.isUnix()
                   runIntegTestScript.sh(env PATH=$PATH  ./test.sh integ-test tests/data/opensearch-dashboards-1.2.0-test.yml --component OpenSearch-Dashboards  --test-run-id 987 --paths opensearch=tests/jenkins/artifacts/tar opensearch-dashboards=tests/jenkins/artifacts/tar --base-path https://dummy_link/dummy_integ_test/1.2.0/215/linux/x64/tar )

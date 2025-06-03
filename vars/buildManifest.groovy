@@ -53,6 +53,7 @@ void call(Map args = [:]) {
                     script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\" > nul 2>&1",
                     returnStatus: true
             )
+            echo("Latest index status: ${latestIndexStatus}")
             latestIndexStatusOld = bat (
                     script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index.json | jq -r \".latest\" > nul 2>&1",
                     returnStatus: true

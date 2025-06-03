@@ -64,6 +64,7 @@ class RunIntegTestScriptForOSDLibTester extends LibFunctionTester {
                 closure.delegate = delegate
                 return helper.callClosure(closure)
         })
+        helper.registerAllowedMethod('isUnix', [], { true })
         binding.setVariable('BUILD_NUMBER', '307')
         binding.setVariable('BUILD_JOB_NAME', 'dummy-integ-test')
         binding.setVariable('WORKSPACE', '/home/user')

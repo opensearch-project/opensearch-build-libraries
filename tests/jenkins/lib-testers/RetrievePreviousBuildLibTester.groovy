@@ -29,6 +29,7 @@ class RetrievePreviousBuildLibTester extends LibFunctionTester {
 
     @Override
     void configure(helper, binding) {
+        helper.registerAllowedMethod('isUnix', [], { true })
     }
 
     @Override
