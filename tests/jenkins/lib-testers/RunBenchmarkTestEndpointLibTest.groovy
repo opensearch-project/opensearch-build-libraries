@@ -73,6 +73,7 @@ class RunBenchmarkTestEndpointLibTester extends LibFunctionTester{
                 closure.delegate = delegate
                 return helper.callClosure(closure)
         })
+        helper.registerAllowedMethod('isUnix', [], { true })
         helper.registerAllowedMethod('findFiles', [Map.class], null)
         helper.registerAllowedMethod("withCredentials", [Map])
         helper.registerAllowedMethod('parameterizedCron', [String], null)

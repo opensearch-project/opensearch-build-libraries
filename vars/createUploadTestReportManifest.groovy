@@ -62,10 +62,9 @@ def call(Map args = [:]) {
         sh(reportCommand)
     } else {
         bat """
-            bash -c "${testCommand}"
+            bash -c "${reportCommand}"
         """
     }
-    sh(reportCommand)
 
     String finalUploadPath = generateUploadPath(testManifest, buildManifest, dashboardsBuildManifest, testRunID, testType)
     withCredentials([
