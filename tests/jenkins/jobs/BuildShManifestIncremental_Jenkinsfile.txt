@@ -30,9 +30,11 @@ ccc/linux/x64/tar/, bucketName=ARTIFACT_BUCKET_NAME, localPath=/tmp/workspace/do
                               downloadFromS3.withAWS({role=opensearch-bundle, roleAccount=AWS_ACCOUNT_NUMBER, duration=900, roleSessionName=jenkins-session, region=us-east-1}, groovy.lang.Closure)
                                  downloadFromS3.s3Download({file=/tmp/workspace/download, bucket=ARTIFACT_BUCKET_NAME, path=dummy-build-job/2.12.0/bbb
 ccc/linux/x64/tar/, force=true})
+                     retrievePreviousBuild.isUnix()
                      retrievePreviousBuild.sh(rm -rf tar && mkdir -p tar && mv -v /tmp/workspace/download/dummy-build-job/2.12.0/bbb
 ccc/linux/x64/tar/* /tmp/workspace/tar)
                      retrievePreviousBuild.echo(Setting up Maven Local for OpenSearch build.)
+                     retrievePreviousBuild.isUnix()
                      retrievePreviousBuild.sh(mkdir -p $HOME/.m2/repository/org/ && cp -r tar/builds/opensearch/maven/org/opensearch/ $HOME/.m2/repository/org/)
                   buildManifest.isUnix()
                   buildManifest.sh(./build.sh tests/data/opensearch-input-2.12.0.yml -d tar -p linux -a x64 --incremental)

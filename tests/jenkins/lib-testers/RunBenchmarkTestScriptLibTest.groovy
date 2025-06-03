@@ -121,6 +121,7 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
         helper.registerAllowedMethod("downloadBuildManifest", [Map], {
             c -> lib.jenkins.BuildManifest.new(readYaml(file: bundleManifest))
         })
+        helper.registerAllowedMethod('isUnix', [], { true })
         helper.registerAllowedMethod('parameterizedCron', [String], null)
         binding.setVariable('AGENT_LABEL', 'Jenkins-Agent-AL2-X64-C54xlarge-Docker-Host')
         binding.setVariable('AGENT_IMAGE', 'opensearchstaging/ci-runner:ci-runner-centos7-v1')

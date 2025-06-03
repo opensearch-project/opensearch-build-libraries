@@ -32,6 +32,7 @@ class RunIntegTestScriptLibTester extends LibFunctionTester {
 
     void configure(helper, binding) {
         binding.setVariable('env', ['BUILD_NUMBER': '987', 'PUBLIC_ARTIFACT_URL': 'https://dummy_link', 'JOB_NAME': 'dummy_integ_test'])
+        helper.registerAllowedMethod('isUnix', [], { true })
     }
 
     void parameterInvariantsAssertions(call) {

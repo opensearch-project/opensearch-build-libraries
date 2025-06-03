@@ -42,10 +42,22 @@ void call(Map args = [:]) {
                 force: true,
         )
     }
-    sh("rm -rf ${distribution} && mkdir -p ${distribution} && mv -v ${prefixPath}/${artifactPath}/* ${WORKSPACE}/${distribution}")
+    if (isUnix()){
+        sh("rm -rf ${distribution} && mkdir -p ${distribution} && mv -v ${prefixPath}/${artifactPath}/* ${WORKSPACE}/${distribution}")
+    } else {
+        bat """
+            bash -c "rm -rf ${distribution} && mkdir -p ${distribution} && mv -v ${prefixPath}/${artifactPath}/* ${WORKSPACE}/${distribution}"
+        """
+    }
     if (inputManifestObj.build.getFilename().equals("opensearch")) {
         echo("Setting up Maven Local for OpenSearch build.")
-        sh("mkdir -p \$HOME/.m2/repository/org/ && cp -r ${distribution}/builds/opensearch/maven/org/opensearch/ \$HOME/.m2/repository/org/")
+        if (isUnix()) {
+            sh("mkdir -p \$HOME/.m2/repository/org/ && cp -r ${distribution}/builds/opensearch/maven/org/opensearch/ \$HOME/.m2/repository/org/")
+        } else {
+            bat """
+                bash -c "mkdir -p \$HOME/.m2/repository/org/ && cp -r ${distribution}/builds/opensearch/maven/org/opensearch/ \$HOME/.m2/repository/org/"
+            """
+        }
     }
 
 }
