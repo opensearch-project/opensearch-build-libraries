@@ -18,7 +18,7 @@ pipeline {
                         distribution: "tar",
                         platform: "linux",
                         architecture: "x64",
-                        incremental: 'true',
+                        incremental: true,
                         previousBuildId: "latest"
                     )
                 }
