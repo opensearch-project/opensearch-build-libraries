@@ -29,6 +29,31 @@ class InputManifest {
         Image image  // schema-version < 1.2
         Map<String, Map<String, Image>> images = [:]  // schema-version >= 1.2
 
+        // schemaVersion < 1.2:
+        // data.image = [ name: 'opensearchstaging/ci-runner:...', args: ... ]
+        // this.image holds a single Image instance:
+        // this.image = new InputManifest.Ci.Image(data.image)
+
+        // schemaVersion >= 1.2:
+        // data.image = [
+        //     'linux': [
+        //         'ubuntu': [ name: '...', args: ... ],
+        //         'centos': [ name: '...', args: ... ]
+        //     ],
+        //     'windows': [
+        //         '2019': [ name: '...', args: ... ]
+        //     ]
+        // ]
+        // this.images is a Map<String, Map<String, Image>> holds multiple Image instances:
+        // this.images = [
+        //    "linux": [
+        //        "centos7": new InputManifest.Ci.Image(...),
+        //        "ubuntu22": new InputManifest.Ci.Image(...)
+        //    ],
+        //    "windows": [
+        //        "2019": new InputManifest.Ci.Image(...)
+        //    ]
+        //]
         Ci(Map data) {
             if (this.schemaVersion < 1.2) {
                 this.image = new InputManifest.Ci.Image(data.image)

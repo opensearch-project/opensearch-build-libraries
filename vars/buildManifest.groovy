@@ -19,7 +19,7 @@
  @param args.incremental <optional> - Boolean value to enable incremental build.
  */
 void call(Map args = [:]) {
-    boolean incremental_enabled = args.incremental != null && args.incremental
+    boolean incremental_enabled = args.incremental != null && Boolean.parseBoolean(args.incremental)
 
     def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     def inputManifestObj = lib.jenkins.InputManifest.new(readYaml(file: args.inputManifest))
@@ -53,6 +53,7 @@ void call(Map args = [:]) {
                     script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\" > nul 2>&1",
                     returnStatus: true
             )
+            echo("Latest index status: ${latestIndexStatus}")
             latestIndexStatusOld = bat (
                     script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index.json | jq -r \".latest\" > nul 2>&1",
                     returnStatus: true

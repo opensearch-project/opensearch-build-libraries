@@ -30,7 +30,7 @@ Map call(Map args = [:]) {
     def dockerArgs = '-e JAVA_HOME=/opt/java/openjdk-21'  // Using default javaVersion as openjdk-21
     def javaVersion = 'openjdk-21'
 
-    if (schemaVersion < 1.2) {
+    if (schemaVersion != 'None' && schemaVersion.toDouble() < 1.2) {
         // echo "InputManifest SchemaVersion < 1.2"
         dockerImage = inputManifest.ci?.image?.name ?: dockerImage
         dockerArgs = inputManifest.ci?.image?.args ?: dockerArgs

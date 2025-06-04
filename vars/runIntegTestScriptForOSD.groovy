@@ -36,7 +36,9 @@ void call(Map args = [:]) {
                 localPath: "${WORKSPACE}/artifacts",
                 force: true
         )
-        sh("cp -a ${WORKSPACE}/artifacts/${artifactPathOpenSearch} ${WORKSPACE}")
+        bat"""
+            bash -c "cp -a ${WORKSPACE}/artifacts/${artifactPathOpenSearch} ${WORKSPACE}"
+        """
 
         echo "Downloading from S3: ${artifactPath}"
         downloadFromS3(
@@ -47,14 +49,18 @@ void call(Map args = [:]) {
                 localPath: "${WORKSPACE}/artifacts",
                 force: true
         )
-        sh("cp -a ${WORKSPACE}/artifacts/${args.artifactPath} ${WORKSPACE}")
-        sh("rm -rf ${WORKSPACE}/artifacts")
+        bat("bash -c \"cp -a ${WORKSPACE}/artifacts/${args.artifactPath} ${WORKSPACE}\"")
+        bat("bash -c \"rm -rf ${WORKSPACE}/artifacts\"")
     }
     else {
         echo "Not on Windows, unstash repository+artifacts"
     }
 
-    sh("rm -rf test-results")
+    if (isUnix()){
+        sh("rm -rf test-results")
+    } else {
+        bat("bash -c \"rm -rf test-results\"")
+    }
 
     runIntegTestScript(
             jobName: "${BUILD_JOB_NAME}",
