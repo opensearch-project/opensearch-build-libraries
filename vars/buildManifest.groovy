@@ -19,7 +19,7 @@
  @param args.incremental <optional> - Boolean value to enable incremental build.
  */
 void call(Map args = [:]) {
-    boolean incremental_enabled = args.incremental != null && Boolean.parseBoolean(args.incremental)
+    boolean incremental_enabled = args.incremental != null && args.incremental
 
     def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     def inputManifestObj = lib.jenkins.InputManifest.new(readYaml(file: args.inputManifest))
