@@ -11,7 +11,7 @@ package jenkins
 
 class InputManifest {
     class Ci implements Serializable {
-        class Image implements Serializable {
+        static class Image implements Serializable {
             String name
             String args
 
@@ -19,17 +19,55 @@ class InputManifest {
                 this.name = data.name
 
                 if (this.name == null) {
-                    error("Missing ci.image.name")
+                    error("Missing ci.image.<platform>.<distribution>.name")
                 }
 
                 this.args = data.args
             }
         }
 
-        Image image
+        Image image  // schema-version < 1.2
+        Map<String, Map<String, Image>> images = [:]  // schema-version >= 1.2
 
+        // schemaVersion < 1.2:
+        // data.image = [ name: 'opensearchstaging/ci-runner:...', args: ... ]
+        // this.image holds a single Image instance:
+        // this.image = new InputManifest.Ci.Image(data.image)
+
+        // schemaVersion >= 1.2:
+        // data.image = [
+        //     'linux': [
+        //         'ubuntu': [ name: '...', args: ... ],
+        //         'centos': [ name: '...', args: ... ]
+        //     ],
+        //     'windows': [
+        //         '2019': [ name: '...', args: ... ]
+        //     ]
+        // ]
+        // this.images is a Map<String, Map<String, Image>> holds multiple Image instances:
+        // this.images = [
+        //    "linux": [
+        //        "centos7": new InputManifest.Ci.Image(...),
+        //        "ubuntu22": new InputManifest.Ci.Image(...)
+        //    ],
+        //    "windows": [
+        //        "2019": new InputManifest.Ci.Image(...)
+        //    ]
+        //]
         Ci(Map data) {
-            this.image = new InputManifest.Ci.Image(data.image)
+            if (this.schemaVersion < 1.2) {
+                this.image = new InputManifest.Ci.Image(data.image)
+            }
+            else {
+                Map imageData = data.image
+                imageData.each { plat, dists ->
+                    Map<String, Image> distImageMap = [:]
+                    dists.each { dist, img ->
+                        distImageMap[dist] = new InputManifest.Ci.Image(img)
+                    }
+                    this.images[plat] = distImageMap
+                }
+            }
         }
     }
 
@@ -79,8 +117,10 @@ class InputManifest {
     Build build
     Ci ci
     Components components
+    Double schemaVersion
 
     InputManifest(Map data) {
+        this.schemaVersion = data."schema-version".toDouble()
         this.build = new InputManifest.Build(data.build)
         this.ci = data.ci ? new InputManifest.Ci(data.ci) : null
         this.components = new InputManifest.Components(data.components)
