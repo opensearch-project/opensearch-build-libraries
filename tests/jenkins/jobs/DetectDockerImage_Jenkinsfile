@@ -32,6 +32,20 @@ pipeline {
                 }
             }
         }
+        stage('opensearch-3.1.0') {
+            steps {
+                script { 
+                    dockerAgent = detectDockerAgent(
+                        manifest: 'tests/data/opensearch-3.1.0.yml',
+                        distribution: 'rpm',
+                        platform: 'linux'
+                    )
+                    echo dockerAgent.image
+                    echo dockerAgent.args
+                    echo dockerAgent.javaVersion
+                }
+            }
+        }
         stage('opensearch-dashboards-1.1.0') {
             steps {
                 script { 

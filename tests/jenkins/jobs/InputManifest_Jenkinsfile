@@ -41,5 +41,18 @@ pipeline {
                 }
             }
         }
+        stage('input manifest 3.1.0 docker agent test for schemaVersion greater than 1.2') {
+            steps {
+                script {
+                    def inputManifest = lib.jenkins.InputManifest.new(readYaml(file: "tests/data/opensearch-3.1.0.yml"))
+                    echo inputManifest?.ci?.images?.get('rpm')?.get('linux')?.name
+                    echo inputManifest?.ci?.images?.get('rpm')?.get('linux')?.args
+                    echo inputManifest.build.name
+                    echo inputManifest.build.version
+                    echo inputManifest.build.getFilename()
+                    echo inputManifest.getSHAsRoot('bundle-build')
+                }
+            }
+        }
     }
 }
