@@ -7,7 +7,7 @@
  * compatible open source license.
  */
 void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@9.5.2', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@9.6.0', retriever: legacySCM(scm))
     List<Closure> fileActions = args.fileActions ?: []
     String manifest = args.manifest ?: "manifests/${INPUT_MANIFEST}"
     String distribution_arg = args.distribution ?: 'None'
