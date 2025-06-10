@@ -79,11 +79,10 @@ void call(Map args = [:]) {
                 finalJsonDoc += "{\"index\": {\"_index\": \"${indexName}\"}}\n" + "${jsonContent}\n"
             }
         }
-        writeFile file: "test-records.json", text: finalJsonDoc
-        def fileContents = readFile(file: "test-records.json").trim()
-        indexSmokeTestData(indexName, "test-records.json")
-
     }
+    writeFile file: "test-records.json", text: finalJsonDoc
+    def fileContents = readFile(file: "test-records.json").trim()
+    indexSmokeTestData(indexName, "test-records.json")
 }
 
 boolean argCheck(String str) { return (str == null || str.allWhitespace || str.isEmpty()) }
