@@ -9,6 +9,6 @@
         trivy clean --all
         docker rmi `docker images -f "dangling=true" -q` || echo
         docker rmi opensearchstaging/opensearch:2.0.0 || echo
-        trivy image --format table --output scan_docker_image.txt opensearchstaging/opensearch:2.0.0
+        trivy image --format table --table-mode detailed --output scan_docker_image.txt opensearchstaging/opensearch:2.0.0
         trivy image --format json --output scan_docker_image.json opensearchstaging/opensearch:2.0.0
     )
