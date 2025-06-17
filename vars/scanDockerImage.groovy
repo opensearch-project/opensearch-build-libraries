@@ -13,7 +13,7 @@ void call(Map args = [:]) {
         trivy clean --all
         docker rmi `docker images -f "dangling=true" -q` || echo
         docker rmi ${args.imageFullName} || echo
-        trivy image --format table --output ${args.imageResultFile}.txt ${args.imageFullName}
+        trivy image --format table --table-mode detailed --output ${args.imageResultFile}.txt ${args.imageFullName}
         trivy image --format json --output ${args.imageResultFile}.json ${args.imageFullName}
     """
 
