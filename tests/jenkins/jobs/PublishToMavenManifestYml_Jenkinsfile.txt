@@ -47,7 +47,7 @@ usage() {
   echo "SONATYPE_PASSWORD - password for sonatype"
   echo "JOB_NAME-BUILD_ID - Job Name along with Build ID from CI so we can trace where the artifacts were built"
   echo "STAGING_PROFILE_ID - Sonatype Staging profile ID"
-  echo "NEW_REPO_URL - repository URL without path, ex. https://aws.oss.sonatype.org/"
+  echo "MAVEN_REPO_URL - repository URL without path, ex. https://ossrh-staging-api.central.sonatype.com"
   exit 1
 }
 
@@ -78,8 +78,8 @@ done
 #   exit 1
 # }
 
-[ -z "${NEW_REPO_URL}" ] && {
-  echo "NEW_REPO_URL is required"
+[ -z "${MAVEN_REPO_URL}" ] && {
+  echo "MAVEN_REPO_URL is required"
   exit 1
 }
 
@@ -136,7 +136,7 @@ EOF
 function create_staging_repository() {
   staging_repo_id=$(mvn --settings="${mvn_settings}" \
     org.sonatype.plugins:nexus-staging-maven-plugin:rc-open \
-    -DnexusUrl="${NEW_REPO_URL}" \
+    -DnexusUrl="${MAVEN_REPO_URL}" \
     -DserverId=central \
     -DstagingProfileId="${STAGING_PROFILE_ID}" \
     -DstagingDescription="Staging artifacts for ${JOB_NAME-BUILD_ID}" \
@@ -155,7 +155,7 @@ echo "==========================================="
 mvn --settings="${mvn_settings}" \
   org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:deploy-staged-repository \
   -DrepositoryDirectory="${staged_repo}" \
-  -DnexusUrl="${NEW_REPO_URL}" \
+  -DnexusUrl="${MAVEN_REPO_URL}" \
   -DserverId=central \
   -DautoReleaseAfterClose=false \
   -DstagingProgressTimeoutMinutes=30 \
@@ -177,7 +177,7 @@ if [ "$auto_publish" = true ] ; then
 
     mvn --settings="${mvn_settings}" \
       org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:rc-close \
-      -DnexusUrl="${NEW_REPO_URL}" \
+      -DnexusUrl="${MAVEN_REPO_URL}" \
       -DserverId=central \
       -DautoReleaseAfterClose=true \
       -DstagingProfileId="${STAGING_PROFILE_ID}" \
@@ -193,7 +193,7 @@ if [ "$auto_publish" = true ] ; then
 
     mvn --settings="${mvn_settings}" \
       org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:rc-release \
-      -DnexusUrl="${NEW_NEW_REPO_URL}" \
+      -DnexusUrl="${NEW_MAVEN_REPO_URL}" \
       -DserverId=central \
       -DstagingProfileId="${STAGING_PROFILE_ID}" \
       -DstagingRepositoryId="${staging_repo_id}"
