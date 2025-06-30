@@ -30,7 +30,7 @@ void call(Map args = [:]) {
     )
 
     println("Stage and Release Maven artifacts.")
-    withCredentials([usernamePassword(credentialsId: 'jenkins-sonatype-creds', usernameVariable: 'SONATYPE_USERNAME', passwordVariable: 'SONATYPE_PASSWORD')]) {
+    withCredentials([usernamePassword(credentialsId: 'temp-maven-creds', usernameVariable: 'SONATYPE_USERNAME', passwordVariable: 'SONATYPE_PASSWORD')]) {
         sh("./stage-maven-release.sh ${args.mavenArtifactsPath} ${autoPublish}")
     }
 }

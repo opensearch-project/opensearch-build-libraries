@@ -222,6 +222,6 @@ fi
 
                    workspace/sign.sh /path/to/signing/manifest.yml --type maven --platform linux --sigtype .asc --email release@opensearch.org
                )
-                  publishToMaven.usernamePassword({credentialsId=jenkins-sonatype-creds, usernameVariable=SONATYPE_USERNAME, passwordVariable=SONATYPE_PASSWORD})
+                  publishToMaven.usernamePassword({credentialsId=temp-maven-creds, usernameVariable=SONATYPE_USERNAME, passwordVariable=SONATYPE_PASSWORD})
                   publishToMaven.withCredentials([[SONATYPE_USERNAME, SONATYPE_PASSWORD]], groovy.lang.Closure)
                      publishToMaven.sh(./stage-maven-release.sh /path/to/maven/artifacts false)
