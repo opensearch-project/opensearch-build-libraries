@@ -35,7 +35,7 @@ usage() {
   echo "Required environment variables:"
   echo "SONATYPE_USERNAME - username with publish rights to a sonatype repository"
   echo "SONATYPE_PASSWORD - password for sonatype"
-  echo "BUILD_ID - Build ID from CI so we can trace where the artifacts were built"
+  echo "JOB_NAME-BUILD_ID - Job Name along with Build ID from CI so we can trace where the artifacts were built"
   echo "STAGING_PROFILE_ID - Sonatype Staging profile ID"
   echo "REPO_URL - repository URL without path, ex. https://aws.oss.sonatype.org/"
   exit 1
@@ -68,8 +68,8 @@ done
   exit 1
 }
 
-[ -z "${BUILD_ID}" ] && {
-  echo "BUILD_ID is required"
+[ -z "${JOB_NAME-BUILD_ID}" ] && {
+  echo "JOB_NAME-BUILD_ID is required"
   exit 1
 }
 
@@ -109,7 +109,7 @@ function create_maven_settings() {
                             http://maven.apache.org/xsd/settings-1.0.0.xsd">
   <servers>
     <server>
-      <id>nexus</id>
+      <id>central</id>
       <username>${SONATYPE_USERNAME}</username>
       <password>${SONATYPE_PASSWORD}</password>
     </server>
@@ -122,9 +122,9 @@ function create_staging_repository() {
   staging_repo_id=$(mvn --settings="${mvn_settings}" \
     org.sonatype.plugins:nexus-staging-maven-plugin:rc-open \
     -DnexusUrl="${REPO_URL}" \
-    -DserverId=nexus \
+    -DserverId=central \
     -DstagingProfileId="${STAGING_PROFILE_ID}" \
-    -DstagingDescription="Staging artifacts for build ${BUILD_ID}" \
+    -DstagingDescription="Staging artifacts for ${JOB_NAME-BUILD_ID}" \
     -DopenedRepositoryMessageFormat="opensearch-staging-repo-id=%s" |
     grep -E -o 'opensearch-staging-repo-id=.*$' | cut -d'=' -f2)
   echo "Opened staging repository ID $staging_repo_id"
@@ -134,26 +134,25 @@ create_maven_settings
 create_staging_repository
 
 echo "==========================================="
-echo "Deploying artifacts under ${artifact_path} to Staging Repository ${staging_repo_id}."
+echo "Deploying artifacts under ${staged_repo} to Staging Repository ${staging_repo_id}."
 echo "==========================================="
 
 mvn --settings="${mvn_settings}" \
   org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:deploy-staged-repository \
   -DrepositoryDirectory="${staged_repo}" \
   -DnexusUrl="${REPO_URL}" \
-  -DserverId=nexus \
+  -DserverId=central \
   -DautoReleaseAfterClose=false \
   -DstagingProgressTimeoutMinutes=30 \
-  -DstagingProfileId="${STAGING_PROFILE_ID}" \
-  -DstagingRepositoryId="${staging_repo_id}"
+  -DstagingProfileId="${STAGING_PROFILE_ID}" -X
 
 echo "==========================================="
 echo "Done."
 echo "==========================================="
 
-## Below commands will be executed if the user checks AUTO_RELEASE_STAGING_TO_PROD parameter in the
-## maven-sign-release job. See https://github.com/sonatype/nexus-maven-plugins/blob/main/staging/maven-plugin/README.md
-## for command reference.
+# Below commands will be executed if the user checks AUTO_RELEASE_STAGING_TO_PROD parameter in the
+# maven-sign-release job. See https://github.com/sonatype/nexus-maven-plugins/blob/main/staging/maven-plugin/README.md
+# for command reference.
 if [ "$auto_publish" = true ] ; then
     export MAVEN_OPTS=--add-opens=java.base/java.util=ALL-UNNAMED ## See https://issues.sonatype.org/browse/NEXUS-31214
 
@@ -164,7 +163,7 @@ if [ "$auto_publish" = true ] ; then
     mvn --settings="${mvn_settings}" \
       org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:rc-close \
       -DnexusUrl="${REPO_URL}" \
-      -DserverId=nexus \
+      -DserverId=central \
       -DautoReleaseAfterClose=true \
       -DstagingProfileId="${STAGING_PROFILE_ID}" \
       -DstagingRepositoryId="${staging_repo_id}"
@@ -180,7 +179,7 @@ if [ "$auto_publish" = true ] ; then
     mvn --settings="${mvn_settings}" \
       org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:rc-release \
       -DnexusUrl="${REPO_URL}" \
-      -DserverId=nexus \
+      -DserverId=central \
       -DstagingProfileId="${STAGING_PROFILE_ID}" \
       -DstagingRepositoryId="${staging_repo_id}"
 
