@@ -36,7 +36,6 @@ usage() {
   echo "JOB_NAME - Job Name which triggered this script for tracking purposes"
   echo "BUILD_ID - Build ID from CI so we can trace where the artifacts were built"
   echo "STAGING_PROFILE_ID - Sonatype Staging profile ID"
-  echo "MAVEN_REPO_URL - repository URL without path, ex. https://ossrh-staging-api.central.sonatype.com"
   exit 1
 }
 
@@ -68,11 +67,6 @@ done
 
 [ -z "${SONATYPE_PASSWORD}" ] && {
   echo "SONATYPE_PASSWORD is required"
-  exit 1
-}
-
-[ -z "${MAVEN_REPO_URL}" ] && {
-  echo "MAVEN_REPO_URL is required"
   exit 1
 }
 
@@ -134,7 +128,7 @@ function create_staging_repository() {
   echo "Creating staging repository."
   staging_repo_id=$(mvn --settings="${mvn_settings}" \
     org.sonatype.plugins:nexus-staging-maven-plugin:rc-open \
-    -DnexusUrl="${MAVEN_REPO_URL}" \
+    -DnexusUrl="https://ossrh-staging-api.central.sonatype.com" \
     -DserverId=central \
     -DstagingProfileId="${STAGING_PROFILE_ID}" \
     -DstagingDescription="Staging artifacts for ${JOB_NAME}-${BUILD_ID}" \
@@ -153,7 +147,7 @@ echo "==========================================="
 mvn --settings="${mvn_settings}" \
   org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:deploy-staged-repository \
   -DrepositoryDirectory="${staged_repo}" \
-  -DnexusUrl="${MAVEN_REPO_URL}" \
+  -DnexusUrl="https://ossrh-staging-api.central.sonatype.com" \
   -DserverId=central \
   -DautoReleaseAfterClose=false \
   -DstagingProgressTimeoutMinutes=30 \
@@ -174,7 +168,7 @@ if [ "$auto_publish" = true ] ; then
 
     mvn --settings="${mvn_settings}" \
       org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:rc-close \
-      -DnexusUrl="${MAVEN_REPO_URL}" \
+      -DnexusUrl="https://ossrh-staging-api.central.sonatype.com" \
       -DserverId=central \
       -DautoReleaseAfterClose=true \
       -DstagingProfileId="${STAGING_PROFILE_ID}" \
@@ -190,7 +184,7 @@ if [ "$auto_publish" = true ] ; then
 
     mvn --settings="${mvn_settings}" \
       org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:rc-release \
-      -DnexusUrl="${NEW_MAVEN_REPO_URL}" \
+      -DnexusUrl="https://ossrh-staging-api.central.sonatype.com" \
       -DserverId=central \
       -DstagingProfileId="${STAGING_PROFILE_ID}" \
       -DstagingRepositoryId="${staging_repo_id}"
