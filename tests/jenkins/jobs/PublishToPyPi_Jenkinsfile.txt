@@ -5,7 +5,7 @@
             PublishToPyPi_Jenkinsfile.script(groovy.lang.Closure)
                PublishToPyPi_Jenkinsfile.publishToPyPi({credentialId=pypi-token})
                   publishToPyPi.legacySCM(groovy.lang.Closure)
-                  publishToPyPi.library({identifier=jenkins@main, retriever=null})
+                  publishToPyPi.library({identifier=jenkins@10.0.0, retriever=null})
                   publishToPyPi.signArtifacts({artifactPath=/tmp/workspace/dist, sigtype=.asc, platform=linux})
                      signArtifacts.fileExists(/tmp/workspace/sign.sh)
                      signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import - && curl -sSL https://artifacts.opensearch.org/publickeys/opensearch-release.pgp | gpg --import -)
