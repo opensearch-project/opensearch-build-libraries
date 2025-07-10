@@ -33,6 +33,6 @@ void call(Map args = [:]) {
     withCredentials([
         string(credentialsId: 'maven-central-portal-username', variable: 'SONATYPE_USERNAME'),
         string(credentialsId: 'maven-central-portal-token', variable: 'SONATYPE_PASSWORD')]) {
-            sh("./stage-maven-release.sh ${args.mavenArtifactsPath} -a ${autoPublish}")
+            sh("./stage-maven-release.sh -d ${args.mavenArtifactsPath} -a ${autoPublish}")
         }
 }
