@@ -8,7 +8,7 @@
  */
 Closure call() {
 
-    lib = library(identifier: 'jenkins@10.0.0', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@10.0.1', retriever: legacySCM(scm))
 
     return { args -> signArtifacts(args) }
 
