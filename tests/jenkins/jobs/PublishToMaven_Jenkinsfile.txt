@@ -23,44 +23,43 @@
 #
 # About:         Deploy opensearch artifacts to a maven central.
 #                This script will create a new staging repository in Sonatype and stage
-#                all artifacts in the passed in directory. If auto_publish is enabled, 
+#                all artifacts in the passed in directory. If AUTO_PUBLISH is enabled, 
 #                it will publish to maven central. The folder passed as input should contain 
 #                subfolders org/opensearch to ensure artifacts are deployed under the correct groupId.
 #                Example: ./stage-maven-release.sh /maven
 #                - where maven contains /maven/org/opensearch
 #
-# Usage:         ./stage-maven-release.sh <directory> -a <true|false>
+# Usage:         ./stage-maven-release.sh -d <directory> -a <true|false>
 #
 ###############################################################################################
 set -e
 
 usage() {
-  echo "usage: $0 [-h] [dir] -a <true|false>"
-  echo "  dir     parent directory containing artifacts to org/opensearch namespace."
-  echo "          example: dir = ~/.m2/repository where repository contains /org/opensearch"
+  echo "usage: $0 [-h] -d <path_to_artifacts_dir> -a <true|false>"
   echo "  -h      display help"
+  echo "  -d      parent directory containing artifacts to org/opensearch namespace."
+  echo "          example: dir = ~/.m2/repository where repository contains /org/opensearch"
   echo "  -a      auto-publish to maven central after staging repository is created. Defaults to false."
   echo "Required environment variables:"
   echo "SONATYPE_USERNAME - username with publish rights to a sonatype repository"
-  echo "SONATYPE_PASSWORD - password for sonatype"
+  echo "SONATYPE_PASSWORD - publishing token for sonatype"
   echo "JOB_NAME - Job Name which triggered this script for tracking purposes"
   echo "BUILD_ID - Build ID from CI so we can trace where the artifacts were built"
   echo "STAGING_PROFILE_ID - Sonatype Staging profile ID"
   exit 1
 }
+AUTO_PUBLISH=false
 
-[ -z "${1:-}" ] && {
-  usage
-  exit 1
-}
-
-while getopts ":ha:" option; do
+while getopts "ha:d:" option; do
   case $option in
   h)
     usage
     ;;
   a)
-    auto_publish="${OPTARG:-false}"
+    AUTO_PUBLISH="${OPTARG}"
+    ;;
+  d)
+    ARTIFACT_DIRECTORY="${OPTARG}"
     ;;
   \?)
     echo "Invalid option -$OPTARG" >&2
@@ -70,42 +69,30 @@ while getopts ":ha:" option; do
   esac
 done
 
-[ -z "${SONATYPE_USERNAME}" ] && {
-  echo "SONATYPE_USERNAME is required"
+if [ "$AUTO_PUBLISH" != "true" ] && [ "$AUTO_PUBLISH" != "false" ]; then
+  echo "Error: Invalid value for -a: '$AUTO_PUBLISH'. Must be 'true' or 'false'"
+  usage
   exit 1
-}
+fi
 
-[ -z "${SONATYPE_PASSWORD}" ] && {
-  echo "SONATYPE_PASSWORD is required"
-  exit 1
-}
+required_env_vars=(ARTIFACT_DIRECTORY SONATYPE_USERNAME SONATYPE_PASSWORD JOB_NAME BUILD_ID STAGING_PROFILE_ID)
+for var in "${required_env_vars[@]}"; do
+  if [ -z "${!var}" ]; then
+    echo "Error: $var is required"
+    usage
+    exit 1
+  fi
+done
 
-[ -z "${JOB_NAME}" ] && {
-  echo "JOB_NAME is required"
-  exit 1
-}
-
-[ -z "${BUILD_ID}" ] && {
-  echo "BUILD_ID is required"
-  exit 1
-}
-
-[ -z "${STAGING_PROFILE_ID}" ] && {
-  echo "STAGING_PROFILE_ID is required"
-  exit 1
-}
-
-if [ ! -d "$1" ]; then
-  echo "Invalid directory $1 does not exist"
+if [ ! -d "$ARTIFACT_DIRECTORY" ]; then
+  echo "Invalid directory $ARTIFACT_DIRECTORY does not exist"
   usage
 fi
 
-[ ! -d "$1"/org/opensearch ] && {
+[ ! -d "$ARTIFACT_DIRECTORY"/org/opensearch ] && {
   echo "Given directory does not contain opensearch artifacts"
   usage
 }
-
-staged_repo=$1
 
 workdir=$(mktemp -d)
 
@@ -149,14 +136,14 @@ function create_staging_repository() {
 
 create_maven_settings
 create_staging_repository
-
+echo "AUTO_PUBLISH variable is set to: '$AUTO_PUBLISH'"
 echo "==========================================="
-echo "Deploying artifacts under ${staged_repo} to Staging Repository ${staging_repo_id}."
+echo "Deploying artifacts under ${ARTIFACT_DIRECTORY} to Staging Repository ${staging_repo_id}."
 echo "==========================================="
 
 mvn --settings="${mvn_settings}" \
   org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:deploy-staged-repository \
-  -DrepositoryDirectory="${staged_repo}" \
+  -DrepositoryDirectory="${ARTIFACT_DIRECTORY}" \
   -DnexusUrl="https://ossrh-staging-api.central.sonatype.com" \
   -DserverId=central \
   -DautoReleaseAfterClose=false \
@@ -167,9 +154,9 @@ echo "==========================================="
 echo "Done."
 echo "==========================================="
 
-# If auto_publish is set to true below commands will be executed See https://github.com/sonatype/nexus-maven-plugins/blob/main/staging/maven-plugin/README.md
+# If AUTO_PUBLISH is set to true below commands will be executed See https://github.com/sonatype/nexus-maven-plugins/blob/main/staging/maven-plugin/README.md
 # for command reference.
-if [ "$auto_publish" = true ] ; then
+if [ "$AUTO_PUBLISH" = true ] ; then
     export MAVEN_OPTS=--add-opens=java.base/java.util=ALL-UNNAMED
 
     echo "==========================================="
@@ -226,4 +213,4 @@ fi
                   publishToMaven.string({credentialsId=maven-central-portal-username, variable=SONATYPE_USERNAME})
                   publishToMaven.string({credentialsId=maven-central-portal-token, variable=SONATYPE_PASSWORD})
                   publishToMaven.withCredentials([SONATYPE_USERNAME, SONATYPE_PASSWORD], groovy.lang.Closure)
-                     publishToMaven.sh(./stage-maven-release.sh /path/to/maven/artifacts -a true)
+                     publishToMaven.sh(./stage-maven-release.sh -d /path/to/maven/artifacts -a true)
