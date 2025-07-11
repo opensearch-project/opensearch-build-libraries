@@ -37,21 +37,21 @@ class InputManifest {
         // schemaVersion >= 1.2:
         // data.image = [
         //     'linux': [
-        //         'ubuntu': [ name: '...', args: ... ],
-        //         'centos': [ name: '...', args: ... ]
+        //         'tar': [ name: '...', args: ... ],
+        //         'rpm': [ name: '...', args: ... ]
         //     ],
         //     'windows': [
-        //         '2019': [ name: '...', args: ... ]
+        //         'zip': [ name: '...', args: ... ]
         //     ]
         // ]
         // this.images is a Map<String, Map<String, Image>> holds multiple Image instances:
         // this.images = [
         //    "linux": [
-        //        "centos7": new InputManifest.Ci.Image(...),
-        //        "ubuntu22": new InputManifest.Ci.Image(...)
+        //        "tar": new InputManifest.Ci.Image(...),
+        //        "rpm": new InputManifest.Ci.Image(...)
         //    ],
         //    "windows": [
-        //        "2019": new InputManifest.Ci.Image(...)
+        //        "zip": new InputManifest.Ci.Image(...)
         //    ]
         //]
         Ci(Map data) {

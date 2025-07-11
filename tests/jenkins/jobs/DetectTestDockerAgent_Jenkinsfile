@@ -19,5 +19,19 @@ pipeline {
                 }
             }
         }
+        stage('opensearch-3.2.0') {
+            steps {
+                script { 
+                    dockerAgent = detectTestDockerAgent(
+                        testManifest: 'tests/data/opensearch-3.2.0-test.yml',
+                        distribution: 'rpm',
+                        platform: 'linux'
+                    )
+                    echo dockerAgent.image
+                    echo dockerAgent.args
+                    echo dockerAgent.javaVersion
+                }
+            }
+        }
     }
 }
