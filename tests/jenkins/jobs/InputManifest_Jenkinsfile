@@ -45,8 +45,8 @@ pipeline {
             steps {
                 script {
                     def inputManifest = lib.jenkins.InputManifest.new(readYaml(file: "tests/data/opensearch-3.1.0.yml"))
-                    echo inputManifest?.ci?.images?.get('rpm')?.get('linux')?.name
-                    echo inputManifest?.ci?.images?.get('rpm')?.get('linux')?.args
+                    echo inputManifest?.ci?.images?.get('linux')?.get('rpm')?.name
+                    echo inputManifest?.ci?.images?.get('linux')?.get('rpm')?.args
                     echo inputManifest.build.name
                     echo inputManifest.build.version
                     echo inputManifest.build.getFilename()
