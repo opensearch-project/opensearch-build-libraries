@@ -25,7 +25,7 @@ class CreateMarkDownTable {
         def tableHeader = """
 ## Flaky Test Report for `${this.failedTest}`
 
-Noticed the `${this.failedTest}` has some flaky, failing tests that failed during **post-merge actions**.
+Noticed the `${this.failedTest}` has some flaky, failing tests that failed during **post-merge actions** and **timer trigerred run on main branch**.
 
 ### Details
 

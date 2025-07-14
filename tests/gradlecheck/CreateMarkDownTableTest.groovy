@@ -28,7 +28,7 @@ class CreateMarkDownTableTest  {
         def expectedOutput = """
 ## Flaky Test Report for `ExampleTest`
 
-Noticed the `ExampleTest` has some flaky, failing tests that failed during **post-merge actions**.
+Noticed the `ExampleTest` has some flaky, failing tests that failed during **post-merge actions** and **timer trigerred run on main branch**.
 
 ### Details
 
