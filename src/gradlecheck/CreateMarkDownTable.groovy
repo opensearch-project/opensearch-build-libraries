@@ -21,8 +21,17 @@ class CreateMarkDownTable {
     }
 
     def createMarkdownTable() {
+        def groupRows = this.tableData.groupBy{it.gitReference }
+        def tableRows = groupRows.collect { Ref, rows ->
+            def pullRequestLink = rows.collect { it.pullRequestLink }.unique().join('<br><br>')
+            def buildDetailLink = rows.collect { it.buildDetailLink }.unique().join('<br><br>')
+            def testNames = rows.collectMany { it.testNames }.unique().join('<br><br>')
 
-        def tableHeader = """
+            "| ${Ref} | ${pullRequestLink} | ${buildDetailLink} | ${testNames} |"
+        }.join("\n")
+
+
+        def tableHeader = """   
 ## Flaky Test Report for `${this.failedTest}`
 
 Noticed the `${this.failedTest}` has some flaky, failing tests that failed during **post-merge actions** and **timer trigerred run on main branch**.
@@ -32,9 +41,6 @@ Noticed the `${this.failedTest}` has some flaky, failing tests that failed durin
 | Git Reference | Merged Pull Request | Build Details | Test Name |
 |---------------|----------------------|---------------|-----------|
 """
-        def tableRows = this.tableData.collect { row ->
-            "| ${row.gitReference} | ${row.pullRequestLink} | ${row.buildDetailLink} | ${row.testNames.join('<br><br>')} |"
-        }.join("\n")
 
         def additionalPRSection = """
 \nThe other pull requests, besides those involved in post-merge actions, that contain failing tests with the `${this.failedTest}` class are:
@@ -43,7 +49,6 @@ ${this.additionalPullRequests.collect { pr -> "- [${pr}](https://github.com/open
 
 For more details on the failed tests refer to [OpenSearch Gradle Check Metrics](https://metrics.opensearch.org/_dashboards/app/dashboards#/view/e5e64d40-ed31-11ee-be99-69d1dbc75083) dashboard.
 """
-
         return tableHeader + tableRows + additionalPRSection
     }
 
