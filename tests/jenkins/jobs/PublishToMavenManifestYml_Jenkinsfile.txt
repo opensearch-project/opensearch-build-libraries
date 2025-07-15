@@ -154,43 +154,41 @@ echo "==========================================="
 echo "Done."
 echo "==========================================="
 
-# If AUTO_PUBLISH is set to true below commands will be executed See https://github.com/sonatype/nexus-maven-plugins/blob/main/staging/maven-plugin/README.md
-# for command reference.
+# When using `org.sonatype.plugins:nexus-staging-maven-plugin` rc-close or rc-release we get below error:
+# `Failed to process request: Got unexpected XML element when reading stagedRepositoryIds: Got unexpected element StartElement(a, {"": "", "xml": "http://www.w3.org/XML/1998/namespace", "xmlns": "http://www.w3.org/2000/xmlns/"}, [class -> string-array]), expected one of: string`
+# Sending raw POST request to close ad release the staging repository instead.
+# Ref: https://github.com/cdklabs/publib/pull/1667/files#diff-36ff5f7d55e47535ad5f6a8236eaecc92dba5cc2223d39b09f870d090c47327eR396
+
 if [ "$AUTO_PUBLISH" = true ] ; then
     export MAVEN_OPTS=--add-opens=java.base/java.util=ALL-UNNAMED
 
     echo "==========================================="
-    echo "Closing Staging Repository ${staging_repo_id}."
+    echo "Closing and Releasing Staging Repository ${staging_repo_id}."
     echo "==========================================="
 
-    mvn --settings="${mvn_settings}" \
-      org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:rc-close \
-      -DnexusUrl="https://ossrh-staging-api.central.sonatype.com" \
-      -DserverId=central \
-      -DautoReleaseAfterClose=true \
-      -DstagingProfileId="${STAGING_PROFILE_ID}" \
-      -DstagingRepositoryId="${staging_repo_id}"
-
-    echo "==========================================="
-    echo "Done."
-    echo "==========================================="
-
-    echo "==========================================="
-    echo "Release Staging Repository ${staging_repo_id}."
-    echo "==========================================="
-
-    mvn --settings="${mvn_settings}" \
-      org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:rc-release \
-      -DnexusUrl="https://ossrh-staging-api.central.sonatype.com" \
-      -DserverId=central \
-      -DstagingProfileId="${STAGING_PROFILE_ID}" \
-      -DstagingRepositoryId="${staging_repo_id}"
+    PROMOTION_URL="https://ossrh-staging-api.central.sonatype.com/service/local/staging/bulk/promote"
+    JSON_DATA="{
+        \"stagedRepositoryIds\": [\"${staging_repo_id}\"], 
+        \"autoDropAfterRelease\": true, \"description\": \"Releasing ${staging_repo_id}, ${JOB_NAME}-${BUILD_ID}\"}
+      }"
+    
+    RESPONSE_CODE=$(curl -s -w "%{http_code}\n" -X POST \
+      -u "${SONATYPE_USERNAME}:${SONATYPE_PASSWORD}" \
+      -H "Content-Type: application/json" \
+      -H "Accept: application/json" \
+      -d "{\"data\": ${JSON_DATA}}" \
+      "${PROMOTION_URL}" -o "${workdir}/out.txt")
+    
+    if [[ ${RESPONSE_CODE} -ne 200 ]]; then
+        echo "Failed to close and release staging repository ${staging_repo_id}. Response code: ${REPONSE_CODE}"
+        echo "Response: $(cat ${workdir}/out.txt)"
+        echo "Please release the staging repository manually via Sonatype portal https://central.sonatype.com/publishing ."
+    fi
 
     echo "==========================================="
     echo "Done."
     echo "==========================================="
-fi
-})
+fi})
                      loadCustomScript.sh(chmod a+x ./stage-maven-release.sh)
                   publishToMaven.signArtifacts({artifactPath=/path/to/signing/manifest.yml, type=maven, platform=linux, sigtype=.asc, email=release@opensearch.org})
                      signArtifacts.fileExists(workspace/sign.sh)
