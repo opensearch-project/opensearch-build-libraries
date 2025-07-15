@@ -167,7 +167,8 @@ if [ "$AUTO_PUBLISH" = true ] ; then
     PROMOTION_URL="https://ossrh-staging-api.central.sonatype.com/service/local/staging/bulk/promote"
     JSON_DATA="{
         \"stagedRepositoryIds\": [\"${staging_repo_id}\"], 
-        \"autoDropAfterRelease\": true, \"description\": \"Releasing ${staging_repo_id}, ${JOB_NAME}-${BUILD_ID}\"}
+        \"autoDropAfterRelease\": true, 
+        \"description\": \"Releasing ${staging_repo_id}, ${JOB_NAME}-${BUILD_ID}\"}
       }"
     
     RESPONSE_CODE=$(curl -w "%{http_code}\n" -X POST \
