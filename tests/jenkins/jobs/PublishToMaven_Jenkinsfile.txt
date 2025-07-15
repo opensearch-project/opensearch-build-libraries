@@ -160,8 +160,6 @@ echo "==========================================="
 # Ref: https://github.com/cdklabs/publib/pull/1667/files#diff-36ff5f7d55e47535ad5f6a8236eaecc92dba5cc2223d39b09f870d090c47327eR396
 
 if [ "$AUTO_PUBLISH" = true ] ; then
-    export MAVEN_OPTS=--add-opens=java.base/java.util=ALL-UNNAMED
-
     echo "==========================================="
     echo "Closing and Releasing Staging Repository ${staging_repo_id}."
     echo "==========================================="
