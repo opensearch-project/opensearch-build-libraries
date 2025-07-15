@@ -170,17 +170,14 @@ if [ "$AUTO_PUBLISH" = true ] ; then
         \"autoDropAfterRelease\": true, 
         \"description\": \"Releasing ${staging_repo_id}, ${JOB_NAME}-${BUILD_ID}\"}
       }"
-    
-    RESPONSE_CODE=$(curl -o /tmp/out.txt -w "%{http_code}\n" -X POST \
+      
+    RESPONSE_CODE=$(curl -o /tmp/out.txt -w "%{http_code}\n" -X POST "${PROMOTION_URL}" \
       -u "${SONATYPE_USERNAME}:${SONATYPE_PASSWORD}" \
       -H "Content-Type: application/json" \
       -H "Accept: application/json" \
-      -d "{\"data\": ${JSON_DATA}}" \
-      "${PROMOTION_URL}")
-
-    echo "Response code: ${RESPONSE_CODE}"
+      -d "{\"data\": ${JSON_DATA}}")
     
-    if [[ ${RESPONSE_CODE} -ne 200 ]]; then
+    if [[ ${RESPONSE_CODE} != 200 ]]; then
         echo "Failed to close and release staging repository ${staging_repo_id}. Response code: ${RESPONSE_CODE}"
         echo "Response: $(cat /tmp/out.txt)"
         echo "Please release the staging repository manually via Sonatype portal https://central.sonatype.com/publishing ."
