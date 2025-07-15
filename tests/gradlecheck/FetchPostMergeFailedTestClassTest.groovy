@@ -55,17 +55,10 @@ class FetchPostMergeFailedTestClassTest {
                         bool: [
                                 must: [
                                         [
-                                                match: [
+                                                terms: [
                                                         "invoke_type.keyword": [
-                                                                query: "Post Merge Action",
-                                                                operator: "OR",
-                                                                prefix_length: 0,
-                                                                max_expansions: 50,
-                                                                fuzzy_transpositions: true,
-                                                                lenient: false,
-                                                                zero_terms_query: "NONE",
-                                                                auto_generate_synonyms_phrase_query: true,
-                                                                boost: 1
+                                                                "Post Merge Action",
+                                                                "Timer"
                                                         ]
                                                 ]
                                         ],
