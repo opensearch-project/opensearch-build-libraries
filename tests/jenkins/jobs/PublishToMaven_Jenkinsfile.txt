@@ -171,7 +171,7 @@ if [ "$AUTO_PUBLISH" = true ] ; then
         \"description\": \"Releasing ${staging_repo_id}, ${JOB_NAME}-${BUILD_ID}\"}
       }"
     
-    RESPONSE_CODE=$(curl -w "%{http_code}\n" -X POST \
+    RESPONSE_CODE=$(curl -o /tmp/out.txt -w "%{http_code}\n" -X POST \
       -u "${SONATYPE_USERNAME}:${SONATYPE_PASSWORD}" \
       -H "Content-Type: application/json" \
       -H "Accept: application/json" \
