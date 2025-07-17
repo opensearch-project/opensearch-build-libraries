@@ -47,6 +47,7 @@ usage() {
   exit 1
 }
 AUTO_PUBLISH=false
+DEPLOYED_STAGING_REPO_ID=""
 
 while getopts "ha:d:" option; do
   case $option in
@@ -136,10 +137,10 @@ deployment=$(mvn --settings="${mvn_settings}" \
   -DstagingProfileId="${STAGING_PROFILE_ID}" | tee /dev/stderr)
 
 if echo "$deployment" | grep "BUILD SUCCESS"; then
-  deployed_staging_repo_id=$(echo $deployment | grep "Closing staging repository with ID" | grep -o "\"[^\"]*\"" | tr -d '"')
-  echo "Successfully staged and validated artifacts. Staging repository ID: ${deployed_staging_repo_id}"
+  DEPLOYED_STAGING_REPO_ID=$(grep "Closing staging repository with ID" <<< "$deployment" | grep -o "\"[^\"]*\"" | tr -d '"')
+  echo "Successfully staged and validated artifacts. Staging repository ID: ${DEPLOYED_STAGING_REPO_ID}"
 else
-  echo "Deployment failed!! Please check the logs above for details or check the Sonatype portal https://central.sonatype.com/publishing ."
+  echo "Deployment failed!! Please check the logs above for details or check the Sonatype portal https://central.sonatype.com/publishing."
   exit 1
 fi
 
@@ -152,16 +153,16 @@ echo "==========================================="
 # Sending raw POST request to release the staging repository instead.
 # Ref: https://github.com/cdklabs/publib/pull/1667/files#diff-36ff5f7d55e47535ad5f6a8236eaecc92dba5cc2223d39b09f870d090c47327eR396
 
-if [ "$AUTO_PUBLISH" = true ] ; then
+if [ "$AUTO_PUBLISH" = true ] && [ -n "$DEPLOYED_STAGING_REPO_ID" ] ; then
     echo "==========================================="
-    echo "Releasing Staging Repository ${deployed_staging_repo_id}."
+    echo "Releasing Staging Repository ${DEPLOYED_STAGING_REPO_ID}."
     echo "==========================================="
 
     PROMOTION_URL="https://ossrh-staging-api.central.sonatype.com/service/local/staging/bulk/promote"
     JSON_DATA="{
-        \"stagedRepositoryIds\": [\"${deployed_staging_repo_id}\"], 
+        \"stagedRepositoryIds\": [\"${DEPLOYED_STAGING_REPO_ID}\"], 
         \"autoDropAfterRelease\": true, 
-        \"description\": \"Releasing ${deployed_staging_repo_id}\"}
+        \"description\": \"Releasing ${DEPLOYED_STAGING_REPO_ID}\"}
       }"
       
     RESPONSE_CODE=$(curl -o /tmp/out.txt -w "%{http_code}\n" -X POST "${PROMOTION_URL}" \
@@ -171,16 +172,19 @@ if [ "$AUTO_PUBLISH" = true ] ; then
       -d "{\"data\": ${JSON_DATA}}")
     
     if [[ ${RESPONSE_CODE} != 200 ]]; then
-        echo "Failed to close and release staging repository ${deployed_staging_repo_id}. Response code: ${RESPONSE_CODE}"
+        echo "Failed to close and release staging repository ${DEPLOYED_STAGING_REPO_ID}. Response code: ${RESPONSE_CODE}"
         echo "Response: $(cat /tmp/out.txt)"
         echo "Please release the staging repository manually via Sonatype portal https://central.sonatype.com/publishing ."
     else
-        echo "Staging repository ${deployed_staging_repo_id} released successfully."
+        echo "Staging repository ${DEPLOYED_STAGING_REPO_ID} released successfully."
     fi
 
     echo "==========================================="
     echo "Done."
     echo "==========================================="
+else 
+    echo "Skipping auto-release of staging repository ${DEPLOYED_STAGING_REPO_ID} as AUTO_PUBLISH is set to false or DEPLOYED_STAGING_REPO_ID is empty."
+    echo "Please release the staging repository manually via Sonatype portal https://central.sonatype.com/publishing ."
 fi})
                      loadCustomScript.sh(chmod a+x ./stage-maven-release.sh)
                   publishToMaven.signArtifacts({artifactPath=/path/to/signing, type=maven, platform=linux, sigtype=.asc, email=release@opensearch.org})
