@@ -33,12 +33,11 @@ usage() {
   echo "Required environment variables:"
   echo "SONATYPE_USERNAME - username with publish rights to a sonatype repository"
   echo "SONATYPE_PASSWORD - publishing token for sonatype"
-  echo "JOB_NAME - Job Name which triggered this script for tracking purposes"
-  echo "BUILD_ID - Build ID from CI so we can trace where the artifacts were built"
   echo "STAGING_PROFILE_ID - Sonatype Staging profile ID"
   exit 1
 }
 AUTO_PUBLISH=false
+DEPLOYED_STAGING_REPO_ID=""
 
 while getopts "ha:d:" option; do
   case $option in
@@ -65,7 +64,7 @@ if [ "$AUTO_PUBLISH" != "true" ] && [ "$AUTO_PUBLISH" != "false" ]; then
   exit 1
 fi
 
-required_env_vars=(ARTIFACT_DIRECTORY SONATYPE_USERNAME SONATYPE_PASSWORD JOB_NAME BUILD_ID STAGING_PROFILE_ID)
+required_env_vars=(ARTIFACT_DIRECTORY SONATYPE_USERNAME SONATYPE_PASSWORD STAGING_PROFILE_ID)
 for var in "${required_env_vars[@]}"; do
   if [ -z "${!var}" ]; then
     echo "Error: $var is required"
@@ -111,72 +110,69 @@ function create_maven_settings() {
 EOF
 }
 
-function create_staging_repository() {
-  echo "Creating staging repository."
-  staging_repo_id=$(mvn --settings="${mvn_settings}" \
-    org.sonatype.plugins:nexus-staging-maven-plugin:rc-open \
-    -DnexusUrl="https://ossrh-staging-api.central.sonatype.com" \
-    -DserverId=central \
-    -DstagingProfileId="${STAGING_PROFILE_ID}" \
-    -DstagingDescription="Staging artifacts for ${JOB_NAME}-${BUILD_ID}" \
-    -DopenedRepositoryMessageFormat="opensearch-staging-repo-id=%s" |
-    grep -E -o 'opensearch-staging-repo-id=.*$' | cut -d'=' -f2)
-  echo "Opened staging repository ID $staging_repo_id"
-}
-
 create_maven_settings
-create_staging_repository
+
 echo "AUTO_PUBLISH variable is set to: '$AUTO_PUBLISH'"
 echo "==========================================="
-echo "Deploying artifacts under ${ARTIFACT_DIRECTORY} to Staging Repository ${staging_repo_id}."
+echo "Deploying artifacts under ${ARTIFACT_DIRECTORY} to Staging Repository."
 echo "==========================================="
 
-mvn --settings="${mvn_settings}" \
+deployment=$(mvn --settings="${mvn_settings}" \
   org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:deploy-staged-repository \
   -DrepositoryDirectory="${ARTIFACT_DIRECTORY}" \
   -DnexusUrl="https://ossrh-staging-api.central.sonatype.com" \
   -DserverId=central \
   -DautoReleaseAfterClose=false \
   -DstagingProgressTimeoutMinutes=30 \
-  -DstagingProfileId="${STAGING_PROFILE_ID}"
+  -DstagingProfileId="${STAGING_PROFILE_ID}" | tee /dev/stderr)
+
+if echo "$deployment" | grep "BUILD SUCCESS"; then
+  DEPLOYED_STAGING_REPO_ID=$(grep "Closing staging repository with ID" <<< "$deployment" | grep -o "\"[^\"]*\"" | tr -d '"')
+  echo "Successfully staged and validated artifacts. Staging repository ID: ${DEPLOYED_STAGING_REPO_ID}"
+else
+  echo "Deployment failed!! Please check the logs above for details or check the Sonatype portal https://central.sonatype.com/publishing."
+  exit 1
+fi
 
 echo "==========================================="
 echo "Done."
 echo "==========================================="
 
-# If AUTO_PUBLISH is set to true below commands will be executed See https://github.com/sonatype/nexus-maven-plugins/blob/main/staging/maven-plugin/README.md
-# for command reference.
-if [ "$AUTO_PUBLISH" = true ] ; then
-    export MAVEN_OPTS=--add-opens=java.base/java.util=ALL-UNNAMED
+# When using `org.sonatype.plugins:nexus-staging-maven-plugin` rc-close or rc-release we get below error:
+# `Failed to process request: Got unexpected XML element when reading stagedRepositoryIds: Got unexpected element StartElement(a, {"": "", "xml": "http://www.w3.org/XML/1998/namespace", "xmlns": "http://www.w3.org/2000/xmlns/"}, [class -> string-array]), expected one of: string`
+# Sending raw POST request to release the staging repository instead.
+# Ref: https://github.com/cdklabs/publib/pull/1667/files#diff-36ff5f7d55e47535ad5f6a8236eaecc92dba5cc2223d39b09f870d090c47327eR396
 
+if [ "$AUTO_PUBLISH" = true ] && [ -n "$DEPLOYED_STAGING_REPO_ID" ] ; then
     echo "==========================================="
-    echo "Closing Staging Repository ${staging_repo_id}."
+    echo "Releasing Staging Repository ${DEPLOYED_STAGING_REPO_ID}."
     echo "==========================================="
 
-    mvn --settings="${mvn_settings}" \
-      org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:rc-close \
-      -DnexusUrl="https://ossrh-staging-api.central.sonatype.com" \
-      -DserverId=central \
-      -DautoReleaseAfterClose=true \
-      -DstagingProfileId="${STAGING_PROFILE_ID}" \
-      -DstagingRepositoryId="${staging_repo_id}"
+    PROMOTION_URL="https://ossrh-staging-api.central.sonatype.com/service/local/staging/bulk/promote"
+    JSON_DATA="{
+        \"stagedRepositoryIds\": [\"${DEPLOYED_STAGING_REPO_ID}\"], 
+        \"autoDropAfterRelease\": true, 
+        \"description\": \"Releasing ${DEPLOYED_STAGING_REPO_ID}\"}
+      }"
+      
+    RESPONSE_CODE=$(curl -o /tmp/out.txt -w "%{http_code}\n" -X POST "${PROMOTION_URL}" \
+      -u "${SONATYPE_USERNAME}:${SONATYPE_PASSWORD}" \
+      -H "Content-Type: application/json" \
+      -H "Accept: application/json" \
+      -d "{\"data\": ${JSON_DATA}}")
+    
+    if [[ ${RESPONSE_CODE} != 200 ]]; then
+        echo "Failed to close and release staging repository ${DEPLOYED_STAGING_REPO_ID}. Response code: ${RESPONSE_CODE}"
+        echo "Response: $(cat /tmp/out.txt)"
+        echo "Please release the staging repository manually via Sonatype portal https://central.sonatype.com/publishing ."
+    else
+        echo "Staging repository ${DEPLOYED_STAGING_REPO_ID} released successfully."
+    fi
 
     echo "==========================================="
     echo "Done."
     echo "==========================================="
-
-    echo "==========================================="
-    echo "Release Staging Repository ${staging_repo_id}."
-    echo "==========================================="
-
-    mvn --settings="${mvn_settings}" \
-      org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:rc-release \
-      -DnexusUrl="https://ossrh-staging-api.central.sonatype.com" \
-      -DserverId=central \
-      -DstagingProfileId="${STAGING_PROFILE_ID}" \
-      -DstagingRepositoryId="${staging_repo_id}"
-
-    echo "==========================================="
-    echo "Done."
-    echo "==========================================="
+else 
+    echo "Skipping auto-release of staging repository ${DEPLOYED_STAGING_REPO_ID} as AUTO_PUBLISH is set to false or DEPLOYED_STAGING_REPO_ID is empty."
+    echo "Please release the staging repository manually via Sonatype portal https://central.sonatype.com/publishing ."
 fi
