@@ -5,7 +5,7 @@
             PromoteArtifacts_OpenSearch_Dashboards_Jenkinsfile.script(groovy.lang.Closure)
                PromoteArtifacts_OpenSearch_Dashboards_Jenkinsfile.promoteArtifacts({manifest=tests/data/opensearch-dashboards-1.3.0.yml})
                   promoteArtifacts.legacySCM(groovy.lang.Closure)
-                  promoteArtifacts.library({identifier=jenkins@10.2.0, retriever=null})
+                  promoteArtifacts.library({identifier=jenkins@10.2.1, retriever=null})
                   promoteArtifacts.readYaml({file=tests/data/opensearch-dashboards-1.3.0.yml})
                   InputManifest.asBoolean()
                   promoteArtifacts.string({credentialsId=jenkins-aws-account-public, variable=AWS_ACCOUNT_PUBLIC})
