@@ -165,6 +165,7 @@ if [ "$AUTO_PUBLISH" = true ] && [ -n "$DEPLOYED_STAGING_REPO_ID" ] ; then
     if [[ ${RESPONSE_CODE} != 200 ]]; then
         echo "Failed to close and release staging repository ${DEPLOYED_STAGING_REPO_ID}. Response code: ${RESPONSE_CODE}"
         echo "Please release the staging repository manually via Sonatype portal https://central.sonatype.com/publishing ."
+        exit 1
     else
         echo "Staging repository ${DEPLOYED_STAGING_REPO_ID} released successfully."
     fi
@@ -173,6 +174,6 @@ if [ "$AUTO_PUBLISH" = true ] && [ -n "$DEPLOYED_STAGING_REPO_ID" ] ; then
     echo "Done."
     echo "==========================================="
 else 
-    echo "Skipping auto-release of staging repository ${DEPLOYED_STAGING_REPO_ID} as AUTO_PUBLISH is set to false or DEPLOYED_STAGING_REPO_ID is empty."
+    echo "Skipping auto-release of staging repository ${DEPLOYED_STAGING_REPO_ID} as AUTO_PUBLISH might be set false or unable to retrieve DEPLOYED_STAGING_REPO_ID."
     echo "Please release the staging repository manually via Sonatype portal https://central.sonatype.com/publishing ."
 fi
