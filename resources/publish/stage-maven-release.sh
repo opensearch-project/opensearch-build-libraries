@@ -153,7 +153,7 @@ if [ "$AUTO_PUBLISH" = true ] && [ -n "$DEPLOYED_STAGING_REPO_ID" ] ; then
     JSON_DATA="{
         \"stagedRepositoryIds\": [\"${DEPLOYED_STAGING_REPO_ID}\"], 
         \"autoDropAfterRelease\": true, 
-        \"description\": \"Releasing ${DEPLOYED_STAGING_REPO_ID}\"}
+        \"description\": \"Releasing ${DEPLOYED_STAGING_REPO_ID}\"
       }"
       
     RESPONSE_CODE=$(curl -w "%{http_code}\n" -X POST "${PROMOTION_URL}" \
