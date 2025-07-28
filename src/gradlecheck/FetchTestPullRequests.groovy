@@ -99,9 +99,13 @@ class FetchTestPullRequests  {
         return query.replace('"', '\\"')
     }
     List<String> getTestPullRequests(testName) {
-        def jsonResponse = new OpenSearchMetricsQuery(metricsUrl,awsAccessKey, awsSecretKey, awsSessionToken, indexName, script).fetchMetrics(getQuery(testName))
-        def keys = jsonResponse.aggregations.pull_request_keyword_agg.buckets.collect { it.key }
-        return keys
+        try {
+            def jsonResponse = new OpenSearchMetricsQuery(metricsUrl,awsAccessKey, awsSecretKey, awsSessionToken, indexName, script).fetchMetrics(getQuery(testName))
+            def keys = jsonResponse.aggregations.pull_request_keyword_agg.buckets.collect { it.key }
+            return keys
+        } catch (Exception e) {
+            this.script.println("Error fetching Pull Request Details: ${e.message}")
+            return null
+        }
     }
-
 }
