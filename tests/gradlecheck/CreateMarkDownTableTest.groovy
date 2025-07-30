@@ -21,7 +21,8 @@ class CreateMarkDownTableTest  {
         def tableData = [
                 [gitReference: "abc123", pullRequestLink: "https://github.com/opensearch-project/OpenSearch/pull/1", buildDetailLink: "https://ci.opensearch.org/1", testNames: ["test1", "test2"]],
                 [gitReference: "abc123", pullRequestLink: "https://github.com/opensearch-project/OpenSearch/pull/1", buildDetailLink: "https://ci.opensearch.org/2", testNames: ["test3"]],
-                [gitReference: "def456", pullRequestLink: "https://github.com/opensearch-project/OpenSearch/pull/2", buildDetailLink: "https://ci.opensearch.org/3", testNames: ["test4"]]
+                [gitReference: "def456", pullRequestLink: "https://github.com/opensearch-project/OpenSearch/pull/2", buildDetailLink: "https://ci.opensearch.org/3", testNames: ["test4"]],
+                [gitReference: "2.x", pullRequestLink: "https://github.com/opensearch-project/OpenSearch/pull/3", buildDetailLink: "https://ci.opensearch.org/4", testNames: ["test5"]]
         ]
         def additionalPullRequests = ["3", "4"]
         def createMarkDownTable = new CreateMarkDownTable(failedTest, tableData, additionalPullRequests)

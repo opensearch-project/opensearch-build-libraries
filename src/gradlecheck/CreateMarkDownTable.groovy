@@ -21,7 +21,7 @@ class CreateMarkDownTable {
     }
 
     def createMarkdownTable() {
-        def groupRows = this.tableData.groupBy{it.gitReference }
+        def groupRows = this.tableData.findAll { it.gitReference && !["2.19", "2.x", "1.x"].contains(it.gitReference)}.groupBy{ it.gitReference }
         def tableRows = groupRows.collect { Ref, rows ->
             def pullRequestLink = rows.collect { it.pullRequestLink }.unique().join('<br><br>')
             def buildDetailLink = rows.collect { it.buildDetailLink }.unique().join('<br><br>')
