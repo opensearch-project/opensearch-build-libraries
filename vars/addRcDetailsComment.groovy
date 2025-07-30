@@ -16,7 +16,18 @@ import utils.TemplateProcessor
  *  @param args.opensearchRcNumber <optional> - OpenSearch RC number. eg: 5. Defaults to latest RC number
  *  @param args.opensearchDashboardsRcNumber <optional> - OpenSearch-Dashboards RC number. eg: 5. Defaults to latest RC number
  * */
+
 void call(Map args = [:]) {
+    def secret_metrics_cluster = [
+        [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-infra-secrets/aws-accounts/jenkins-health-metrics-account-number'],
+        [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-infra-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
+    ]
+
+    def secret_github_bot = [
+        [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-username'],
+        [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-token']
+    ]
+
     def buildIndexName = 'opensearch-distribution-build-results'
     if (args.version.isEmpty()){
         error('version is required to get RC details.')
@@ -30,9 +41,7 @@ void call(Map args = [:]) {
     def opensearchDashboardsRcBuildNumber
     String releaseIssueUrl
 
-    withCredentials([
-            string(credentialsId: 'jenkins-health-metrics-account-number', variable: 'METRICS_HOST_ACCOUNT'),
-            string(credentialsId: 'jenkins-health-metrics-cluster-endpoint', variable: 'METRICS_HOST_URL')]) {
+    withSecrets(secrets: secret_metrics_cluster){
         withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
             def metricsUrl = env.METRICS_HOST_URL
             def awsAccessKey = env.AWS_ACCESS_KEY_ID
@@ -67,7 +76,7 @@ void call(Map args = [:]) {
 
     def ghCommentBodyContent = new TemplateProcessor(this).process("release/rc-details-template.md", rcValues, "${WORKSPACE}")
 
-    withCredentials([usernamePassword(credentialsId: 'jenkins-github-bot-token', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'GITHUB_USER')]) {
+    withSecrets(secrets: secret_github_bot){
         println('Adding RC details to the release issue as a comment.')
         sh(
                 script: "gh issue comment ${releaseIssueUrl} --body-file ${ghCommentBodyContent}",
@@ -77,8 +86,12 @@ void call(Map args = [:]) {
 }
 
 def getDockerScanResult(String component, def distributionRcBuildNumber) {
+    def secret_github_bot = [
+        [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-username'],
+        [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-token']
+    ]
     try {
-        withCredentials([usernamePassword(credentialsId: 'jenkins-github-bot-token', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'GITHUB_USER')]) {
+        withSecrets(secrets: secret_github_bot){
             println('Getting docker scan results')
             String buildJobName = ''
             String JENKINS_BASE_URL = 'https://build.ci.opensearch.org'
