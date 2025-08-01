@@ -29,9 +29,13 @@ Map<String, String> call(Map args = [:]) {
 }
 
 String getBaselineTestExecutionId(baselineClusterConfig, distributionVersion, workload) {
-    withCredentials([string(credentialsId: 'benchmark-metrics-datastore-user', variable: 'DATASTORE_USER'),
-                     string(credentialsId: 'benchmark-metrics-datastore-password', variable: 'DATASTORE_PASSWORD'),
-                     string(credentialsId: 'benchmark-metrics-datastore-nlb-endpoint', variable: 'DATASTORE_ENDPOINT')]) {
+    def secret_benchmark_metrics = [
+        [envVar: 'DATASTORE_USER', secretRef: 'op://opensearch-infra-secrets/benchmark-metrics/benchmark-metrics-datastore-user'],
+        [envVar: 'DATASTORE_PASSWORD', secretRef: 'op://opensearch-infra-secrets/benchmark-metrics/benchmark-metrics-datastore-password'],
+        [envVar: 'DATASTORE_ENDPOINT', secretRef: 'op://opensearch-infra-secrets/benchmark-metrics/benchmark-metrics-datastore-nlb-endpoint']
+    ]
+
+    withSecrets(secrets: secret_benchmark_metrics){
         def curlCommand = """
               curl -X POST "https://${DATASTORE_ENDPOINT}/benchmark-results-*/_search" -ku ${DATASTORE_USER}:${DATASTORE_PASSWORD} -H 'Content-Type: application/json' -d '{
               "size": 1,
@@ -82,9 +86,13 @@ String getBaselineTestExecutionId(baselineClusterConfig, distributionVersion, wo
 }
 
 String getContenderTestExecutionId(pullRequestNumber, workload) {
-    withCredentials([string(credentialsId: 'benchmark-metrics-datastore-user', variable: 'DATASTORE_USER'),
-                     string(credentialsId: 'benchmark-metrics-datastore-password', variable: 'DATASTORE_PASSWORD'),
-                     string(credentialsId: 'benchmark-metrics-datastore-nlb-endpoint', variable: 'DATASTORE_ENDPOINT')]) {
+    def secret_benchmark_metrics = [
+        [envVar: 'DATASTORE_USER', secretRef: 'op://opensearch-infra-secrets/benchmark-metrics/benchmark-metrics-datastore-user'],
+        [envVar: 'DATASTORE_PASSWORD', secretRef: 'op://opensearch-infra-secrets/benchmark-metrics/benchmark-metrics-datastore-password'],
+        [envVar: 'DATASTORE_ENDPOINT', secretRef: 'op://opensearch-infra-secrets/benchmark-metrics/benchmark-metrics-datastore-nlb-endpoint']
+    ]
+
+    withSecrets(secrets: secret_benchmark_metrics){
         def curlCommand = """
               curl -X POST "https://${DATASTORE_ENDPOINT}/benchmark-results-*/_search" -ku ${DATASTORE_USER}:${DATASTORE_PASSWORD} -H 'Content-Type: application/json' -d '{
               "size": 1,
