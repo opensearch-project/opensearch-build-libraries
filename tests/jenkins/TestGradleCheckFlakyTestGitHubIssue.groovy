@@ -21,6 +21,10 @@ class TestGradleCheckFlakyTestGitHubIssue extends BuildPipelineTest {
     @Before
     void setUp() {
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
         binding.setVariable('GITHUB_USER', 'dummy_user')
         binding.setVariable('GITHUB_TOKEN', 'dummy_token')
     }

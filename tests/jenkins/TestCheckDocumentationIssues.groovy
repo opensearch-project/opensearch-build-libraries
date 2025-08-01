@@ -23,12 +23,17 @@ class TestCheckDocumentationIssues extends BuildPipelineTest {
     @Before
     void setUp() {
         super.setUp()
-        helper.registerAllowedMethod('withCredentials', [Map])
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
         helper.addShMock("""gh issue list --repo opensearch-project/documentation-website --state open --label v3.0.0 -S "-linked:pr" --json number --jq '.[].number'""") { script ->
             return [stdout: "22\n23", exitValue: 0]
         }
         addParam('VERSION', '3.0.0')
         Random.metaClass.nextInt = { int max -> 2 }
+        binding.setVariable('GITHUB_USER', "GITHUB_USER")
+        binding.setVariable('GITHUB_TOKEN', "GITHUB_TOKEN")
     }
 
     @Test

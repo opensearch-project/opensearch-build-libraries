@@ -7,6 +7,10 @@
  * compatible open source license.
  */
 def call(Map args = [:]) {
+    def secret_github_bot = [
+        [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-username'],
+        [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-token']
+    ]
 
     def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     def bundleManifestObj = lib.jenkins.BundleManifest.new(readYaml(file: args.distManifest))
@@ -17,7 +21,7 @@ def call(Map args = [:]) {
     def untaggedRepoList = []
     echo "Creating $version release tag for $componetsNumber components in the manifest"
 
-    withCredentials([usernamePassword(credentialsId: "${GITHUB_BOT_TOKEN_NAME}", usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
+    withSecrets(secrets: secret_github_bot){
         for (component in componentsName) {
             def commitID = bundleManifestObj.getCommitId(component)
             def repo = bundleManifestObj.getRepo(component)

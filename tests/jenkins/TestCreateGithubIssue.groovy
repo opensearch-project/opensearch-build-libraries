@@ -23,6 +23,12 @@ class TestCreateGithubIssue extends BuildPipelineTest {
     @Before
     void setUp() {
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('GITHUB_USER', "GITHUB_USER")
+        binding.setVariable('GITHUB_TOKEN', "GITHUB_TOKEN")
     }
 
     @Test

@@ -12,13 +12,18 @@
  * @param args.version <required> - Release version to track the documentation PRs for.
  */
 void call(Map args = [:]) {
+    def secret_github_bot = [
+        [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-username'],
+        [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-token']
+    ]
+
     // Validate Parameters
     validateParameters(args)
     def versionTokenize = args.version.tokenize('-')
     // Qualifiers are not a part of the labels in GitHub. Ignoring it.
     def version = versionTokenize[0]
 
-    withCredentials([usernamePassword(credentialsId: 'jenkins-github-bot-token', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'GITHUB_USER')]) {
+    withSecrets(secrets: secret_github_bot){
         def openPRs = sh(
                 script: "gh pr list --repo opensearch-project/documentation-website --state open --label v${version} -S \"-label:\\\"6 - Done but waiting to merge\\\"\" --json url --jq '.[].url'",
                 returnStdout: true
