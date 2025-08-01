@@ -4,8 +4,7 @@
          CloseGithubIssue_JenkinsFile.stage(closeGithubIssue, groovy.lang.Closure)
             CloseGithubIssue_JenkinsFile.script(groovy.lang.Closure)
                CloseGithubIssue_JenkinsFile.closeGithubIssue({repoUrl=https://github.com/opensearch-project/opensearch-build, issueTitle=Test GH issue title, closeComment=Test GH issue close comment})
-                  closeGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
-                  closeGithubIssue.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+                  closeGithubIssue.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-token}]}, groovy.lang.Closure)
                      closeGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/opensearch-build -S "Test GH issue title in:title" --json number --jq '.[0].number', returnStdout=true})
                      closeGithubIssue.sh({script=gh issue close bbb
 ccc -R opensearch-project/opensearch-build --comment "Test GH issue close comment", returnStdout=true})

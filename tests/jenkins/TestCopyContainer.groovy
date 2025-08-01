@@ -33,6 +33,10 @@ class TestCopyContainer extends BuildPipelineTest {
         binding.setVariable('DESTINATION_IMAGE_REGISTRY', 'opensearchstaging')
         binding.setVariable('DESTINATION_IMAGE', destinationImage)
         binding.setVariable('ALL_TAGS', true)
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
         helper.registerAllowedMethod('withAWS', [Map, Closure], null)
         super.setUp()
 
