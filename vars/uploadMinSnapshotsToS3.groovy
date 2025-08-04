@@ -48,10 +48,13 @@ void call(Map args = [:]) {
     String dstDir = "snapshots/core/${productName}/${version}"
     String baseName = "${productName}-min-${version}-${platform}-${architecture}"
 
-    withCredentials([
-        string(credentialsId: 'jenkins-artifact-promotion-role', variable: 'ARTIFACT_PROMOTION_ROLE_NAME'),
-        string(credentialsId: 'jenkins-aws-production-account', variable: 'AWS_ACCOUNT_ARTIFACT'),
-        string(credentialsId: 'jenkins-artifact-production-bucket-name', variable: 'ARTIFACT_PRODUCTION_BUCKET_NAME')]) {
+    def secret_artifacts = [
+        [envVar: 'ARTIFACT_PROMOTION_ROLE_NAME', secretRef: 'op://opensearch-infra-secrets/aws-iam-roles/jenkins-artifact-promotion-role'],
+        [envVar: 'AWS_ACCOUNT_ARTIFACT', secretRef: 'op://opensearch-infra-secrets/aws-accounts/jenkins-aws-production-account'],
+        [envVar: 'ARTIFACT_PRODUCTION_BUCKET_NAME', secretRef: 'op://opensearch-infra-secrets/aws-resource-arns/jenkins-artifact-production-bucket-name']
+    ]
+
+    withSecrets(secrets: secret_artifacts) {
 
             // Setup core plugins snapshots with .sha512 and .sig (Tar x64 only)
             String corePluginDir = "${WORKSPACE}/${distribution}/builds/${productName}/core-plugins".replace("\\", "/")

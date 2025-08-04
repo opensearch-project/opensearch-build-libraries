@@ -21,6 +21,12 @@ class TestUploadToS3 extends BuildPipelineTest {
         this.registerLibTester(new UploadToS3LibTester( '/tmp/src/path', 'dummy_bucket', '/upload/path' ))
 
         super.setUp()
+
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('AWS_ACCOUNT_PUBLIC', "AWS_ACCOUNT_PUBLIC")
     }
 
     @Test
