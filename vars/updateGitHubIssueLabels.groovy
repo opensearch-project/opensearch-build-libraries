@@ -15,9 +15,14 @@
  @param args.action <required> - Either remove or add the given label(s)
  */
 void call(Map args = [:]) {
+    def secret_github_bot = [
+        [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-username'],
+        [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-token']
+    ]
+
     verifyActions(args.action)
     try {
-        withCredentials([usernamePassword(credentialsId: 'jenkins-github-bot-token', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'GITHUB_USER')]) {
+        withSecrets(secrets: secret_github_bot){
             def issueNumber = sh(
                     script: "gh issue list --repo ${args.repoUrl} -S \"${args.issueTitle} in:title\" --json number --jq '.[0].number'",
                     returnStdout: true

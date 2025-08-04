@@ -24,6 +24,12 @@ class TestUpdateBuildFailuresIssues extends BuildPipelineTest {
     @Before
     void setUp() {
         this.registerLibTester(new UpdateBuildFailureIssuesLibTester('tests/data/opensearch-2.2.0.yml', '32'))
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('METRICS_HOST_ACCOUNT', "METRICS_HOST_ACCOUNT")
+        binding.setVariable('METRICS_HOST_URL', "METRICS_HOST_URL")
         super.setUp()
         def unformattedResponseForPass = '''
         {
