@@ -85,8 +85,7 @@
         dotnet pack /tmp/workspace/test-solution-file.sln --configuration Release --no-build
         find src -name OpenSearch*.nupkg > /tmp/workspace/nupkg.txt
     )
-                  publishToNuget.string({credentialsId=net-api-key, variable=API_KEY})
-                  publishToNuget.withCredentials([API_KEY], groovy.lang.Closure)
+                  publishToNuget.withSecrets({secrets=[{envVar=API_KEY, secretRef=op://opensearch-infra-secrets/nuget/net-api-key}]}, groovy.lang.Closure)
                      publishToNuget.readFile({file=/tmp/workspace/nupkg.txt})
                      publishToNuget.sh(dotnet nuget push /tmp/workspace/src/net/one.nupkg --api-key API_KEY --source https://api.nuget.org/v3/index.json)
                      publishToNuget.sh(dotnet nuget push /tmp/workspace/src/net/two.nupkg --api-key API_KEY --source https://api.nuget.org/v3/index.json)

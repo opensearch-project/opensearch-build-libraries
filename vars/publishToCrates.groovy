@@ -19,7 +19,11 @@ void call(Map args = [:]) {
 
     checkout([$class: 'GitSCM', userRemoteConfigs: [[url: "${args.repository}" ]], branches: [[name: "${args.tag}" ]]])
 
-    withCredentials([string(credentialsId: 'crates-api-token', variable: 'API_TOKEN')]) {
+    def secret_rust = [
+        [envVar: 'API_TOKEN', secretRef: 'op://opensearch-infra-secrets/rust/crates-api-token']
+    ]
+
+    withSecrets(secrets: secret_rust){
         sh "cargo publish ${packageToPublish} --dry-run && cargo publish ${packageToPublish} --token ${API_TOKEN}"
     }
 }

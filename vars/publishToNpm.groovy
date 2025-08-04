@@ -20,7 +20,11 @@ void call(Map args = [:]) {
     }
     def npmTag = getNpmTag("${env.tag}")
 
-    withCredentials([string(credentialsId: 'jenkins-opensearch-publish-to-npm-token', variable: 'NPM_TOKEN')]) {
+    def secret_npm_token = [
+        [envVar: 'NPM_TOKEN', secretRef: 'op://opensearch-infra-secrets/npm/jenkins-opensearch-publish-to-npm-token']
+    ]
+
+    withSecrets(secrets: secret_npm_token){
         sh """
             npm set registry "https://registry.npmjs.org"
             npm set //registry.npmjs.org/:_authToken ${NPM_TOKEN}

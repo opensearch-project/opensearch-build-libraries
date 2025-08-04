@@ -28,6 +28,11 @@ class TestPublishToNuget extends BuildPipelineTest {
             'net-api-key',
             'test-solution-file.sln'))
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('API_KEY', "API_KEY")
     }
 
     @Test

@@ -38,7 +38,11 @@ void call(Map args = [:]) {
         find src -name OpenSearch*.nupkg > ${WORKSPACE}/nupkg.txt
     """
 
-    withCredentials([string(credentialsId: "${args.apiKeyCredentialId}", variable: 'API_KEY')]) {
+    def secret_nuget_key = [
+        [envVar: 'API_KEY', secretRef: "op://opensearch-infra-secrets/nuget/${args.apiKeyCredentialId}"]
+    ]
+
+    withSecrets(secrets: secret_nuget_key){
         nupkgs = readFile(file: "${WORKSPACE}/nupkg.txt").readLines()
         nupkgs.each{ nupkg ->
             sh "dotnet nuget push ${WORKSPACE}/${nupkg.trim()} --api-key ${API_KEY} --source https://api.nuget.org/v3/index.json"

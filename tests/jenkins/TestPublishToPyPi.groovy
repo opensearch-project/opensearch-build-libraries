@@ -22,6 +22,12 @@ class TestPublishToPyPi extends BuildPipelineTest {
     void testWithDefaults() {
         this.registerLibTester(new PublishToPyPiLibTester('pypi-token'))
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('TWINE_USERNAME', "TWINE_USERNAME")
+        binding.setVariable('TWINE_PASSWORD', "TWINE_PASSWORD")
         super.testPipeline('tests/jenkins/jobs/PublishToPyPi_Jenkinsfile')
         def twineCommands = getCommands('sh', 'twine')
         assertThat(twineCommands, hasItem(
@@ -38,6 +44,12 @@ class TestPublishToPyPi extends BuildPipelineTest {
     void testWithCustomDir() {
         this.registerLibTester(new PublishToPyPiLibTester('pypi-token', 'test'))
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('TWINE_USERNAME', "TWINE_USERNAME")
+        binding.setVariable('TWINE_PASSWORD', "TWINE_PASSWORD")
         super.testPipeline('tests/jenkins/jobs/PublishToPyPiWithDir_Jenkinsfile')
 
         def twineCommands = getCommands('sh', 'twine')

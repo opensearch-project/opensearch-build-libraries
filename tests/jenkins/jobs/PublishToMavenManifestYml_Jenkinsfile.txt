@@ -207,7 +207,5 @@ fi
 
                    workspace/sign.sh /path/to/signing/manifest.yml --type maven --platform linux --sigtype .asc --email release@opensearch.org
                )
-                  publishToMaven.string({credentialsId=maven-central-portal-username, variable=SONATYPE_USERNAME})
-                  publishToMaven.string({credentialsId=maven-central-portal-token, variable=SONATYPE_PASSWORD})
-                  publishToMaven.withCredentials([SONATYPE_USERNAME, SONATYPE_PASSWORD], groovy.lang.Closure)
+                  publishToMaven.withSecrets({secrets=[{envVar=SONATYPE_USERNAME, secretRef=op://opensearch-infra-secrets/maven-central-portal-credentials/username}, {envVar=SONATYPE_PASSWORD, secretRef=op://opensearch-infra-secrets/maven-central-portal-credentials/password}]}, groovy.lang.Closure)
                      publishToMaven.sh(./stage-maven-release.sh -d /path/to/maven/artifacts -a false)

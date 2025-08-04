@@ -22,6 +22,11 @@ class TestPublishToRubyGems extends BuildPipelineTest {
     void testPublishingRuby() {
         this.registerLibTester(new PublishToRubyGemsLibTester('ruby-api-key'))
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('API_KEY', "API_KEY")
         super.testPipeline('tests/jenkins/jobs/PublishToRubyGems_JenkinsFile')
         def curlCommands = getCommands('sh', 'curl')
         def gemCommands = getCommands('sh', 'gem')
@@ -35,6 +40,11 @@ class TestPublishToRubyGems extends BuildPipelineTest {
     void testPublishingRubyWithArgs() {
         this.registerLibTester(new PublishToRubyGemsLibTester('ruby-api-key', 'test', 'certificate/path'))
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('API_KEY', "API_KEY")
         super.testPipeline('tests/jenkins/jobs/PublishToRubyGemWithArgs_Jenkinsfile')
         def curlCommands = getCommands('sh', 'curl')
         def gemCommands = getCommands('sh', 'gem')

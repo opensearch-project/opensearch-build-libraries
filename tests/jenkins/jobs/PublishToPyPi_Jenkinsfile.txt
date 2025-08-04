@@ -24,6 +24,5 @@
 
                    /tmp/workspace/sign.sh /tmp/workspace/dist --sigtype .asc --platform linux
                )
-                  publishToPyPi.usernamePassword({credentialsId=pypi-token, usernameVariable=TWINE_USERNAME, passwordVariable=TWINE_PASSWORD})
-                  publishToPyPi.withCredentials([[TWINE_USERNAME, TWINE_PASSWORD]], groovy.lang.Closure)
+                  publishToPyPi.withSecrets({secrets=[{envVar=TWINE_USERNAME, secretRef=op://opensearch-infra-secrets/pypi/twine-username}, {envVar=TWINE_PASSWORD, secretRef=op://opensearch-infra-secrets/pypi/pypi-token}]}, groovy.lang.Closure)
                      publishToPyPi.sh(twine upload -r pypi /tmp/workspace/dist/*)
