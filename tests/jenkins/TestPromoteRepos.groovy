@@ -38,6 +38,10 @@ class TestPromoteRepos extends BuildPipelineTest {
         binding.setVariable('RPM_SIGNING_PASSPHRASE_SECRETS_ARN', 'RPM_SIGNING_PASSPHRASE_SECRETS_ARN')
         binding.setVariable('RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN', 'RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN')
         binding.setVariable('RPM_SIGNING_KEY_ID', 'RPM_SIGNING_KEY_ID')
+        binding.setVariable('SIGNER_CLIENT_ROLE', 'SIGNER_CLIENT_ROLE')
+        binding.setVariable('SIGNER_CLIENT_EXTERNAL_ID', 'SIGNER_CLIENT_EXTERNAL_ID')
+        binding.setVariable('SIGNER_CLIENT_UNSIGNED_BUCKET', 'SIGNER_CLIENT_UNSIGNED_BUCKET')
+        binding.setVariable('SIGNER_CLIENT_SIGNED_BUCKET', 'SIGNER_CLIENT_SIGNED_BUCKET')
     }
 
     @Test

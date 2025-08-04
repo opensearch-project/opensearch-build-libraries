@@ -33,6 +33,12 @@ class TestPublishToNuget extends BuildPipelineTest {
             return helper.callClosure(closure)
         })
         binding.setVariable('API_KEY', "API_KEY")
+        binding.setVariable('SIGNER_WINDOWS_ROLE', 'SIGNER_WINDOWS_ROLE')
+        binding.setVariable('SIGNER_WINDOWS_EXTERNAL_ID', 'SIGNER_WINDOWS_EXTERNAL_ID')
+        binding.setVariable('SIGNER_WINDOWS_UNSIGNED_BUCKET', 'SIGNER_WINDOWS_UNSIGNED_BUCKET')
+        binding.setVariable('SIGNER_WINDOWS_SIGNED_BUCKET', 'SIGNER_WINDOWS_SIGNED_BUCKET')
+        binding.setVariable('SIGNER_WINDOWS_PROFILE_IDENTIFIER', 'SIGNER_WINDOWS_PROFILE_IDENTIFIER')
+        binding.setVariable('SIGNER_WINDOWS_PLATFORM_IDENTIFIER', 'SIGNER_WINDOWS_PLATFORM_IDENTIFIER')
     }
 
     @Test

@@ -41,6 +41,10 @@ class TestPromoteWindowsArtifacts extends BuildPipelineTest {
         binding.setVariable('ARTIFACT_PROMOTION_ROLE_NAME', 'ARTIFACT_PROMOTION_ROLE_NAME')
         binding.setVariable('AWS_ACCOUNT_ARTIFACT', 'AWS_ACCOUNT_ARTIFACT')
         binding.setVariable('ARTIFACT_PRODUCTION_BUCKET_NAME', 'ARTIFACT_PRODUCTION_BUCKET_NAME')
+        binding.setVariable('SIGNER_CLIENT_ROLE', 'SIGNER_CLIENT_ROLE')
+        binding.setVariable('SIGNER_CLIENT_EXTERNAL_ID', 'SIGNER_CLIENT_EXTERNAL_ID')
+        binding.setVariable('SIGNER_CLIENT_UNSIGNED_BUCKET', 'SIGNER_CLIENT_UNSIGNED_BUCKET')
+        binding.setVariable('SIGNER_CLIENT_SIGNED_BUCKET', 'SIGNER_CLIENT_SIGNED_BUCKET')
         helper.addFileExistsMock('tests/jenkins/sign.sh', true)
         binding.setVariable('GITHUB_BOT_TOKEN_NAME', 'github_bot_token_name')
         def configs = ["role": "dummy_role",

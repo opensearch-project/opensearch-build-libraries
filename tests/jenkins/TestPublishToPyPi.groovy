@@ -28,6 +28,10 @@ class TestPublishToPyPi extends BuildPipelineTest {
         })
         binding.setVariable('TWINE_USERNAME', "TWINE_USERNAME")
         binding.setVariable('TWINE_PASSWORD', "TWINE_PASSWORD")
+        binding.setVariable('SIGNER_CLIENT_ROLE', 'SIGNER_CLIENT_ROLE')
+        binding.setVariable('SIGNER_CLIENT_EXTERNAL_ID', 'SIGNER_CLIENT_EXTERNAL_ID')
+        binding.setVariable('SIGNER_CLIENT_UNSIGNED_BUCKET', 'SIGNER_CLIENT_UNSIGNED_BUCKET')
+        binding.setVariable('SIGNER_CLIENT_SIGNED_BUCKET', 'SIGNER_CLIENT_SIGNED_BUCKET')
         super.testPipeline('tests/jenkins/jobs/PublishToPyPi_Jenkinsfile')
         def twineCommands = getCommands('sh', 'twine')
         assertThat(twineCommands, hasItem(
@@ -50,6 +54,10 @@ class TestPublishToPyPi extends BuildPipelineTest {
         })
         binding.setVariable('TWINE_USERNAME', "TWINE_USERNAME")
         binding.setVariable('TWINE_PASSWORD', "TWINE_PASSWORD")
+        binding.setVariable('SIGNER_CLIENT_ROLE', 'SIGNER_CLIENT_ROLE')
+        binding.setVariable('SIGNER_CLIENT_EXTERNAL_ID', 'SIGNER_CLIENT_EXTERNAL_ID')
+        binding.setVariable('SIGNER_CLIENT_UNSIGNED_BUCKET', 'SIGNER_CLIENT_UNSIGNED_BUCKET')
+        binding.setVariable('SIGNER_CLIENT_SIGNED_BUCKET', 'SIGNER_CLIENT_SIGNED_BUCKET')
         super.testPipeline('tests/jenkins/jobs/PublishToPyPiWithDir_Jenkinsfile')
 
         def twineCommands = getCommands('sh', 'twine')

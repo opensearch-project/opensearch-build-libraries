@@ -24,6 +24,10 @@ class TestPublishToMaven extends BuildPipelineTest {
             closure.delegate = delegate
             return helper.callClosure(closure)
         })
+        binding.setVariable('SIGNER_CLIENT_ROLE', 'SIGNER_CLIENT_ROLE')
+        binding.setVariable('SIGNER_CLIENT_EXTERNAL_ID', 'SIGNER_CLIENT_EXTERNAL_ID')
+        binding.setVariable('SIGNER_CLIENT_UNSIGNED_BUCKET', 'SIGNER_CLIENT_UNSIGNED_BUCKET')
+        binding.setVariable('SIGNER_CLIENT_SIGNED_BUCKET', 'SIGNER_CLIENT_SIGNED_BUCKET')
         binding.setVariable('SONATYPE_USERNAME', "SONATYPE_USERNAME")
         binding.setVariable('SONATYPE_PASSWORD', "SONATYPE_PASSWORD")
         super.testPipeline("tests/jenkins/jobs/PublishToMaven_Jenkinsfile")
@@ -47,6 +51,10 @@ class TestPublishToMaven extends BuildPipelineTest {
             closure.delegate = delegate
             return helper.callClosure(closure)
         })
+        binding.setVariable('SIGNER_CLIENT_ROLE', 'SIGNER_CLIENT_ROLE')
+        binding.setVariable('SIGNER_CLIENT_EXTERNAL_ID', 'SIGNER_CLIENT_EXTERNAL_ID')
+        binding.setVariable('SIGNER_CLIENT_UNSIGNED_BUCKET', 'SIGNER_CLIENT_UNSIGNED_BUCKET')
+        binding.setVariable('SIGNER_CLIENT_SIGNED_BUCKET', 'SIGNER_CLIENT_SIGNED_BUCKET')
         binding.setVariable('SONATYPE_USERNAME', "SONATYPE_USERNAME")
         binding.setVariable('SONATYPE_PASSWORD', "SONATYPE_PASSWORD")
         super.testPipeline("tests/jenkins/jobs/PublishToMavenManifestYml_Jenkinsfile")
