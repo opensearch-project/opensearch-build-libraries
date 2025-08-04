@@ -23,6 +23,11 @@
 */
 
 void call(Map arguments = [:], Closure body) {
+    def secret_github_bot = [
+        [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-username'],
+        [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-token']
+    ]
+
     pipeline {
         agent
         {
@@ -68,7 +73,7 @@ void call(Map arguments = [:], Closure body) {
                 steps {
                     script {
                         if (arguments.downloadReleaseAsset && "$assets_url" != '') {
-                            withCredentials([usernamePassword(credentialsId: 'jenkins-github-bot-token', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
+                            withSecrets(secrets: secret_github_bot){
                                 String assets = sh(
                                     script: "curl -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${GITHUB_TOKEN}' ${assets_url}",
                                     returnStdout: true
@@ -100,7 +105,7 @@ void call(Map arguments = [:], Closure body) {
             success {
                 script {
                     if (arguments.publishRelease && release_url != null) {
-                        withCredentials([usernamePassword(credentialsId: 'jenkins-github-bot-token', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
+                        withSecrets(secrets: secret_github_bot){
                             sh "curl -X PATCH -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer ${GITHUB_TOKEN}' ${release_url} -d '{\"tag_name\":\"${tag}\",\"draft\":false,\"prerelease\":false}'"
                         }
                     }

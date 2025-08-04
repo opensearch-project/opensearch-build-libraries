@@ -6,8 +6,7 @@
             standardReleasePipelineWithGenericTrigger.GenericTrigger({genericVariables=[{key=ref, value=$.release.tag_name}, {key=repository, value=$.repository.html_url}, {key=action, value=$.action}, {key=isDraft, value=$.release.draft}, {key=release_url, value=$.release.url}, {key=assets_url, value=$.release.assets_url}], tokenCredentialId=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, printContributedVariables=false, printPostContent=false, regexpFilterText=$isDraft $action, regexpFilterExpression=^true created$})
             standardReleasePipelineWithGenericTrigger.stage(Download artifacts, groovy.lang.Closure)
                standardReleasePipelineWithGenericTrigger.script(groovy.lang.Closure)
-                  standardReleasePipelineWithGenericTrigger.usernamePassword({credentialsId=jenkins-github-bot-token, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
-                  standardReleasePipelineWithGenericTrigger.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+                  standardReleasePipelineWithGenericTrigger.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-token}]}, groovy.lang.Closure)
                      standardReleasePipelineWithGenericTrigger.sh({script=curl -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/owner/name/releases/1234/assets, returnStdout=true})
                      standardReleasePipelineWithGenericTrigger.readJSON({text=
 bbb
@@ -22,6 +21,5 @@ ccc
                standardReleasePipelineWithGenericTrigger.postCleanup()
                   postCleanup.cleanWs({disableDeferredWipeout=true, deleteDirs=true})
             standardReleasePipelineWithGenericTrigger.script(groovy.lang.Closure)
-               standardReleasePipelineWithGenericTrigger.usernamePassword({credentialsId=jenkins-github-bot-token, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
-               standardReleasePipelineWithGenericTrigger.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+               standardReleasePipelineWithGenericTrigger.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-token}]}, groovy.lang.Closure)
                   standardReleasePipelineWithGenericTrigger.sh(curl -X PATCH -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/Codertocat/Hello-World/releases/17372790 -d '{"tag_name":"1.0.0","draft":false,"prerelease":false}')

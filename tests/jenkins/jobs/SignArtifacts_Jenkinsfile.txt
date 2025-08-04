@@ -6,12 +6,7 @@
                SignArtifacts_Jenkinsfile.signArtifacts({artifactPath=/tmp/workspace/artifacts, sigtype=.sig, platform=linux})
                   signArtifacts.fileExists(/tmp/workspace/sign.sh)
                   signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import - && curl -sSL https://artifacts.opensearch.org/publickeys/opensearch-release.pgp | gpg --import -)
-                  signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
-                  signArtifacts.string({credentialsId=jenkins-signer-client-role, variable=SIGNER_CLIENT_ROLE})
-                  signArtifacts.string({credentialsId=jenkins-signer-client-external-id, variable=SIGNER_CLIENT_EXTERNAL_ID})
-                  signArtifacts.string({credentialsId=jenkins-signer-client-unsigned-bucket, variable=SIGNER_CLIENT_UNSIGNED_BUCKET})
-                  signArtifacts.string({credentialsId=jenkins-signer-client-signed-bucket, variable=SIGNER_CLIENT_SIGNED_BUCKET})
-                  signArtifacts.withCredentials([[GITHUB_USER, GITHUB_TOKEN], SIGNER_CLIENT_ROLE, SIGNER_CLIENT_EXTERNAL_ID, SIGNER_CLIENT_UNSIGNED_BUCKET, SIGNER_CLIENT_SIGNED_BUCKET], groovy.lang.Closure)
+                  signArtifacts.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-token}, {envVar=SIGNER_CLIENT_ROLE, secretRef=op://opensearch-infra-secrets/client-signing/jenkins-signer-client-role}, {envVar=SIGNER_CLIENT_EXTERNAL_ID, secretRef=op://opensearch-infra-secrets/client-signing/jenkins-signer-client-external-id}, {envVar=SIGNER_CLIENT_UNSIGNED_BUCKET, secretRef=op://opensearch-infra-secrets/client-signing/jenkins-signer-client-unsigned-bucket}, {envVar=SIGNER_CLIENT_SIGNED_BUCKET, secretRef=op://opensearch-infra-secrets/client-signing/jenkins-signer-client-signed-bucket}]}, groovy.lang.Closure)
                      signArtifacts.sh(#!/bin/bash
                    set +x
                    export ROLE=SIGNER_CLIENT_ROLE
@@ -24,12 +19,7 @@
                SignArtifacts_Jenkinsfile.signArtifacts({artifactPath=/tmp/workspace/artifacts, sigtype=.sig, platform=linux, email=opensearch@amazon.com})
                   signArtifacts.fileExists(/tmp/workspace/sign.sh)
                   signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import - && curl -sSL https://artifacts.opensearch.org/publickeys/opensearch-release.pgp | gpg --import -)
-                  signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
-                  signArtifacts.string({credentialsId=jenkins-signer-client-role, variable=SIGNER_CLIENT_ROLE})
-                  signArtifacts.string({credentialsId=jenkins-signer-client-external-id, variable=SIGNER_CLIENT_EXTERNAL_ID})
-                  signArtifacts.string({credentialsId=jenkins-signer-client-unsigned-bucket, variable=SIGNER_CLIENT_UNSIGNED_BUCKET})
-                  signArtifacts.string({credentialsId=jenkins-signer-client-signed-bucket, variable=SIGNER_CLIENT_SIGNED_BUCKET})
-                  signArtifacts.withCredentials([[GITHUB_USER, GITHUB_TOKEN], SIGNER_CLIENT_ROLE, SIGNER_CLIENT_EXTERNAL_ID, SIGNER_CLIENT_UNSIGNED_BUCKET, SIGNER_CLIENT_SIGNED_BUCKET], groovy.lang.Closure)
+                  signArtifacts.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-token}, {envVar=SIGNER_CLIENT_ROLE, secretRef=op://opensearch-infra-secrets/client-signing/jenkins-signer-client-role}, {envVar=SIGNER_CLIENT_EXTERNAL_ID, secretRef=op://opensearch-infra-secrets/client-signing/jenkins-signer-client-external-id}, {envVar=SIGNER_CLIENT_UNSIGNED_BUCKET, secretRef=op://opensearch-infra-secrets/client-signing/jenkins-signer-client-unsigned-bucket}, {envVar=SIGNER_CLIENT_SIGNED_BUCKET, secretRef=op://opensearch-infra-secrets/client-signing/jenkins-signer-client-signed-bucket}]}, groovy.lang.Closure)
                      signArtifacts.sh(#!/bin/bash
                    set +x
                    export ROLE=SIGNER_CLIENT_ROLE
@@ -40,14 +30,7 @@
                    /tmp/workspace/sign.sh /tmp/workspace/artifacts --sigtype .sig --platform linux --email opensearch@amazon.com
                )
                SignArtifacts_Jenkinsfile.signArtifacts({artifactPath=/tmp/workspace/artifacts, sigtype=.rpm, platform=linux, overwrite=false})
-                  signArtifacts.string({credentialsId=jenkins-rpm-signing-account-number, variable=RPM_SIGNING_ACCOUNT_NUMBER})
-                  signArtifacts.string({credentialsId=jenkins-rpm-release-signing-passphrase-secrets-arn, variable=RPM_RELEASE_SIGNING_PASSPHRASE_SECRETS_ARN})
-                  signArtifacts.string({credentialsId=jenkins-rpm-release-signing-secret-key-secrets-arn, variable=RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN})
-                  signArtifacts.string({credentialsId=jenkins-rpm-release-signing-key-id, variable=RPM_RELEASE_SIGNING_KEY_ID})
-                  signArtifacts.string({credentialsId=jenkins-rpm-signing-passphrase-secrets-arn, variable=RPM_SIGNING_PASSPHRASE_SECRETS_ARN})
-                  signArtifacts.string({credentialsId=jenkins-rpm-signing-secret-key-secrets-arn, variable=RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN})
-                  signArtifacts.string({credentialsId=jenkins-rpm-signing-key-id, variable=RPM_SIGNING_KEY_ID})
-                  signArtifacts.withCredentials([RPM_SIGNING_ACCOUNT_NUMBER, RPM_RELEASE_SIGNING_PASSPHRASE_SECRETS_ARN, RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN, RPM_RELEASE_SIGNING_KEY_ID, RPM_SIGNING_PASSPHRASE_SECRETS_ARN, RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN, RPM_SIGNING_KEY_ID], groovy.lang.Closure)
+                  signArtifacts.withSecrets({secrets=[{envVar=RPM_SIGNING_ACCOUNT_NUMBER, secretRef=op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-signing-account-number}, {envVar=RPM_RELEASE_SIGNING_PASSPHRASE_SECRETS_ARN, secretRef=op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-release-signing-passphrase-secrets-arn}, {envVar=RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN, secretRef=op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-release-signing-secret-key-secrets-arn}, {envVar=RPM_RELEASE_SIGNING_KEY_ID, secretRef=op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-release-signing-key-id}, {envVar=RPM_SIGNING_PASSPHRASE_SECRETS_ARN, secretRef=op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-signing-passphrase-secrets-arn}, {envVar=RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN, secretRef=op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-signing-secret-key-secrets-arn}, {envVar=RPM_SIGNING_KEY_ID, secretRef=op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-signing-key-id}]}, groovy.lang.Closure)
                      signArtifacts.echo(RPM Add Sign for email release@opensearch.org)
                      signArtifacts.withAWS({role=jenkins-prod-rpm-signing-assume-role, roleAccount=RPM_SIGNING_ACCOUNT_NUMBER, duration=900, roleSessionName=jenkins-signing-session}, groovy.lang.Closure)
                         signArtifacts.sh(#!/bin/bash
@@ -138,12 +121,7 @@
                SignArtifacts_Jenkinsfile.signArtifacts({artifactPath=/tmp/workspace/file.yml, platform=linux, type=maven})
                   signArtifacts.fileExists(/tmp/workspace/sign.sh)
                   signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import - && curl -sSL https://artifacts.opensearch.org/publickeys/opensearch-release.pgp | gpg --import -)
-                  signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
-                  signArtifacts.string({credentialsId=jenkins-signer-client-role, variable=SIGNER_CLIENT_ROLE})
-                  signArtifacts.string({credentialsId=jenkins-signer-client-external-id, variable=SIGNER_CLIENT_EXTERNAL_ID})
-                  signArtifacts.string({credentialsId=jenkins-signer-client-unsigned-bucket, variable=SIGNER_CLIENT_UNSIGNED_BUCKET})
-                  signArtifacts.string({credentialsId=jenkins-signer-client-signed-bucket, variable=SIGNER_CLIENT_SIGNED_BUCKET})
-                  signArtifacts.withCredentials([[GITHUB_USER, GITHUB_TOKEN], SIGNER_CLIENT_ROLE, SIGNER_CLIENT_EXTERNAL_ID, SIGNER_CLIENT_UNSIGNED_BUCKET, SIGNER_CLIENT_SIGNED_BUCKET], groovy.lang.Closure)
+                  signArtifacts.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-token}, {envVar=SIGNER_CLIENT_ROLE, secretRef=op://opensearch-infra-secrets/client-signing/jenkins-signer-client-role}, {envVar=SIGNER_CLIENT_EXTERNAL_ID, secretRef=op://opensearch-infra-secrets/client-signing/jenkins-signer-client-external-id}, {envVar=SIGNER_CLIENT_UNSIGNED_BUCKET, secretRef=op://opensearch-infra-secrets/client-signing/jenkins-signer-client-unsigned-bucket}, {envVar=SIGNER_CLIENT_SIGNED_BUCKET, secretRef=op://opensearch-infra-secrets/client-signing/jenkins-signer-client-signed-bucket}]}, groovy.lang.Closure)
                      signArtifacts.sh(#!/bin/bash
                    set +x
                    export ROLE=SIGNER_CLIENT_ROLE
@@ -155,14 +133,7 @@
                )
                SignArtifacts_Jenkinsfile.signArtifacts({artifactPath=/tmp/workspace/the_msi.msi, platform=windows, overwrite=true})
                   signArtifacts.fileExists(/tmp/workspace/sign.sh)
-                  signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
-                  signArtifacts.string({credentialsId=jenkins-signer-windows-role, variable=SIGNER_WINDOWS_ROLE})
-                  signArtifacts.string({credentialsId=jenkins-signer-windows-external-id, variable=SIGNER_WINDOWS_EXTERNAL_ID})
-                  signArtifacts.string({credentialsId=jenkins-signer-windows-unsigned-bucket, variable=SIGNER_WINDOWS_UNSIGNED_BUCKET})
-                  signArtifacts.string({credentialsId=jenkins-signer-windows-signed-bucket, variable=SIGNER_WINDOWS_SIGNED_BUCKET})
-                  signArtifacts.string({credentialsId=jenkins-signer-windows-profile-identifier, variable=SIGNER_WINDOWS_PROFILE_IDENTIFIER})
-                  signArtifacts.string({credentialsId=jenkins-signer-windows-platform-identifier, variable=SIGNER_WINDOWS_PLATFORM_IDENTIFIER})
-                  signArtifacts.withCredentials([[GITHUB_USER, GITHUB_TOKEN], SIGNER_WINDOWS_ROLE, SIGNER_WINDOWS_EXTERNAL_ID, SIGNER_WINDOWS_UNSIGNED_BUCKET, SIGNER_WINDOWS_SIGNED_BUCKET, SIGNER_WINDOWS_PROFILE_IDENTIFIER, SIGNER_WINDOWS_PLATFORM_IDENTIFIER], groovy.lang.Closure)
+                  signArtifacts.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-token}, {envVar=SIGNER_WINDOWS_ROLE, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-role}, {envVar=SIGNER_WINDOWS_EXTERNAL_ID, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-external-id}, {envVar=SIGNER_WINDOWS_UNSIGNED_BUCKET, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-unsigned-bucket}, {envVar=SIGNER_WINDOWS_SIGNED_BUCKET, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-signed-bucket}, {envVar=SIGNER_WINDOWS_PROFILE_IDENTIFIER, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-profile-identifier}, {envVar=SIGNER_WINDOWS_PLATFORM_IDENTIFIER, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-platform-identifier}]}, groovy.lang.Closure)
                      signArtifacts.sh(#!/bin/bash
                    set +x
                    export ROLE=SIGNER_WINDOWS_ROLE
@@ -176,12 +147,7 @@
                )
                SignArtifacts_Jenkinsfile.signArtifacts({artifactPath=/tmp/workspace/the_pkg.pkg, platform=mac, overwrite=true})
                   signArtifacts.fileExists(/tmp/workspace/sign.sh)
-                  signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
-                  signArtifacts.string({credentialsId=jenkins-signer-mac-role, variable=SIGNER_MAC_ROLE})
-                  signArtifacts.string({credentialsId=jenkins-signer-mac-external-id, variable=SIGNER_MAC_EXTERNAL_ID})
-                  signArtifacts.string({credentialsId=jenkins-signer-mac-unsigned-bucket, variable=SIGNER_MAC_UNSIGNED_BUCKET})
-                  signArtifacts.string({credentialsId=jenkins-signer-mac-signed-bucket, variable=SIGNER_MAC_SIGNED_BUCKET})
-                  signArtifacts.withCredentials([[GITHUB_USER, GITHUB_TOKEN], SIGNER_MAC_ROLE, SIGNER_MAC_EXTERNAL_ID, SIGNER_MAC_UNSIGNED_BUCKET, SIGNER_MAC_SIGNED_BUCKET], groovy.lang.Closure)
+                  signArtifacts.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-token}, {envVar=SIGNER_MAC_ROLE, secretRef=op://opensearch-infra-secrets/mac-signing/jenkins-signer-mac-role}, {envVar=SIGNER_MAC_EXTERNAL_ID, secretRef=op://opensearch-infra-secrets/mac-signing/jenkins-signer-mac-external-id}, {envVar=SIGNER_MAC_UNSIGNED_BUCKET, secretRef=op://opensearch-infra-secrets/mac-signing/jenkins-signer-mac-unsigned-bucket}, {envVar=SIGNER_MAC_SIGNED_BUCKET, secretRef=op://opensearch-infra-secrets/mac-signing/jenkins-signer-mac-signed-bucket}]}, groovy.lang.Closure)
                      signArtifacts.sh(#!/bin/bash
                    set +x
                    export ROLE=SIGNER_MAC_ROLE
@@ -192,12 +158,7 @@
                )
                SignArtifacts_Jenkinsfile.signArtifacts({artifactPath=/tmp/workspace/the_jar.jar, platform=jar_signer, overwrite=true})
                   signArtifacts.fileExists(/tmp/workspace/sign.sh)
-                  signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
-                  signArtifacts.string({credentialsId=jenkins-jar-signer-role, variable=JAR_SIGNER_ROLE})
-                  signArtifacts.string({credentialsId=jenkins-jar-signer-external-id, variable=JAR_SIGNER_EXTERNAL_ID})
-                  signArtifacts.string({credentialsId=jenkins-jar-signer-unsigned-bucket, variable=JAR_SIGNER_UNSIGNED_BUCKET})
-                  signArtifacts.string({credentialsId=jenkins-jar-signer-signed-bucket, variable=JAR_SIGNER_SIGNED_BUCKET})
-                  signArtifacts.withCredentials([[GITHUB_USER, GITHUB_TOKEN], JAR_SIGNER_ROLE, JAR_SIGNER_EXTERNAL_ID, JAR_SIGNER_UNSIGNED_BUCKET, JAR_SIGNER_SIGNED_BUCKET], groovy.lang.Closure)
+                  signArtifacts.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-token}, {envVar=JAR_SIGNER_ROLE, secretRef=op://opensearch-infra-secrets/jar-signing/jenkins-jar-signer-role}, {envVar=JAR_SIGNER_EXTERNAL_ID, secretRef=op://opensearch-infra-secrets/jar-signing/jenkins-jar-signer-external-id}, {envVar=JAR_SIGNER_UNSIGNED_BUCKET, secretRef=op://opensearch-infra-secrets/jar-signing/jenkins-jar-signer-unsigned-bucket}, {envVar=JAR_SIGNER_SIGNED_BUCKET, secretRef=op://opensearch-infra-secrets/jar-signing/jenkins-jar-signer-signed-bucket}]}, groovy.lang.Closure)
                      signArtifacts.sh(#!/bin/bash
                    set +x
                    export ROLE=JAR_SIGNER_ROLE

@@ -30,6 +30,14 @@ class TestRunPerfTestScript extends BuildPipelineTest {
             true
         ))
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('GITHUB_USER', "GITHUB_USER")
+        binding.setVariable('GITHUB_TOKEN', "GITHUB_TOKEN")
+        binding.setVariable('ARTIFACT_BUCKET_NAME', "ARTIFACT_BUCKET_NAME")
+        binding.setVariable('AWS_ACCOUNT_PUBLIC', "AWS_ACCOUNT_PUBLIC")
     }
 
     @Test

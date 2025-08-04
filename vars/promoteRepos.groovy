@@ -167,12 +167,12 @@ void call(Map args = [:]) {
             """
 
             def secret_rpm_signing = [
-                [envVar: 'RPM_SIGNING_ACCOUNT_NUMBER', secretRef: 'op://opensearch-infra-secrets/aws-accounts/jenkins-rpm-signing-account-number'],
-                [envVar: 'RPM_RELEASE_SIGNING_PASSPHRASE_SECRETS_ARN', secretRef: 'op://opensearch-infra-secrets/aws-resource-arns/jenkins-rpm-release-signing-passphrase-secrets-arn'],
-                [envVar: 'RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN', secretRef: 'op://opensearch-infra-secrets/aws-resource-arns/jenkins-rpm-release-signing-secret-key-secrets-arn'],
+                [envVar: 'RPM_SIGNING_ACCOUNT_NUMBER', secretRef: 'op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-signing-account-number'],
+                [envVar: 'RPM_RELEASE_SIGNING_PASSPHRASE_SECRETS_ARN', secretRef: 'op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-release-signing-passphrase-secrets-arn'],
+                [envVar: 'RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN', secretRef: 'op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-release-signing-secret-key-secrets-arn'],
                 [envVar: 'RPM_RELEASE_SIGNING_KEY_ID', secretRef: 'op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-release-signing-key-id'],
-                [envVar: 'RPM_SIGNING_PASSPHRASE_SECRETS_ARN', secretRef: 'op://opensearch-infra-secrets/aws-resource-arns/jenkins-rpm-signing-passphrase-secrets-arn'],
-                [envVar: 'RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN', secretRef: 'op://opensearch-infra-secrets/aws-resource-arns/jenkins-rpm-signing-secret-key-secrets-arn'],
+                [envVar: 'RPM_SIGNING_PASSPHRASE_SECRETS_ARN', secretRef: 'op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-signing-passphrase-secrets-arn'],
+                [envVar: 'RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN', secretRef: 'op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-signing-secret-key-secrets-arn'],
                 [envVar: 'RPM_SIGNING_KEY_ID', secretRef: 'op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-signing-key-id']
             ]
 
