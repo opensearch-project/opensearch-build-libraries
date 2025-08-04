@@ -46,6 +46,12 @@ class TestRunBenchmarkTestScriptMultiNode extends BuildPipelineTest {
                 'false'
         ))
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('DATASTORE_USER', "DATASTORE_USER")
+        binding.setVariable('DATASTORE_PASSWORD', "DATASTORE_PASSWORD")
     }
 
     @Test
