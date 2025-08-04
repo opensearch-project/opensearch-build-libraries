@@ -9,13 +9,13 @@
                   checkCodeCoverage.readYaml({file=tests/data/opensearch-1.3.0.yml})
                   checkCodeCoverage.withSecrets({secrets=[{envVar=METRICS_HOST_ACCOUNT, secretRef=op://opensearch-infra-secrets/aws-accounts/jenkins-health-metrics-account-number}, {envVar=METRICS_HOST_URL, secretRef=op://opensearch-infra-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint}]}, groovy.lang.Closure)
                      checkCodeCoverage.withAWS({role=OpenSearchJenkinsAccessRole, roleAccount=METRICS_HOST_ACCOUNT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
-                        ComponentRepoData.getCodeCoverage(OpenSearch, opensearch-codecov-metrics-07-2025)
+                        ComponentRepoData.getCodeCoverage(OpenSearch, opensearch-codecov-metrics-08-2025)
                            OpenSearchMetricsQuery.fetchMetrics({\"size\":1,\"_source\":[\"coverage\",\"branch\",\"state\",\"url\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"repository.keyword\":\"OpenSearch\"}},{\"match_phrase\":{\"version\":\"1.3.0\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]})
                               checkCodeCoverage.println(Running query: {\"size\":1,\"_source\":[\"coverage\",\"branch\",\"state\",\"url\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"repository.keyword\":\"OpenSearch\"}},{\"match_phrase\":{\"version\":\"1.3.0\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]})
                               checkCodeCoverage.sh({script=
             set -e
             set +x
-            curl -s -XGET "sample.url/opensearch-codecov-metrics-07-2025/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"size\":1,\"_source\":[\"coverage\",\"branch\",\"state\",\"url\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"repository.keyword\":\"OpenSearch\"}},{\"match_phrase\":{\"version\":\"1.3.0\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]}" | jq '.'
+            curl -s -XGET "sample.url/opensearch-codecov-metrics-08-2025/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"size\":1,\"_source\":[\"coverage\",\"branch\",\"state\",\"url\"],\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"repository.keyword\":\"OpenSearch\"}},{\"match_phrase\":{\"version\":\"1.3.0\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]}" | jq '.'
         , returnStdout=true})
                         ReleaseMetricsData.getReleaseIssue(OpenSearch)
                            OpenSearchMetricsQuery.fetchMetrics({\"size\":1,\"_source\":\"release_issue\",\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"version\":\"1.3.0\"}},{\"match_phrase\":{\"repository.keyword\":\"OpenSearch\"}}]}},\"sort\":[{\"current_date\":{\"order\":\"desc\"}}]})

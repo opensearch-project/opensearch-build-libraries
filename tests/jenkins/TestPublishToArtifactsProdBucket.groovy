@@ -25,6 +25,12 @@ class TestPublishToArtifactsProdBucket extends BuildPipelineTest {
         this.registerLibTester(new PublishToArtifactsProdBucketLibTester('test-role', 'the-windows-msi.msi', 'msi/', 'windows', 'null', true))
         this.registerLibTester(new PublishToArtifactsProdBucketLibTester('test-role-2', 'reporting-cli-2.3.0.tg.gz', 'reporting-cli/'))
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('AWS_ACCOUNT_ARTIFACT', 'AWS_ACCOUNT_ARTIFACT')
+        binding.setVariable('ARTIFACT_PRODUCTION_BUCKET_NAME', 'ARTIFACT_PRODUCTION_BUCKET_NAME')
     }
 
     @Test

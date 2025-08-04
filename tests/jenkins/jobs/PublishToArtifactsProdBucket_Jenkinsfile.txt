@@ -29,9 +29,7 @@
 
                    /tmp/workspace/opensearch-build/sign.sh the-windows-msi.msi --platform windows --overwrite 
                )
-                  publishToArtifactsProdBucket.string({credentialsId=jenkins-aws-production-account, variable=AWS_ACCOUNT_ARTIFACT})
-                  publishToArtifactsProdBucket.string({credentialsId=jenkins-artifact-production-bucket-name, variable=ARTIFACT_PRODUCTION_BUCKET_NAME})
-                  publishToArtifactsProdBucket.withCredentials([AWS_ACCOUNT_ARTIFACT, ARTIFACT_PRODUCTION_BUCKET_NAME], groovy.lang.Closure)
+                  publishToArtifactsProdBucket.withSecrets({secrets=[{envVar=AWS_ACCOUNT_ARTIFACT, secretRef=op://opensearch-infra-secrets/aws-accounts/jenkins-aws-production-account}, {envVar=ARTIFACT_PRODUCTION_BUCKET_NAME, secretRef=op://opensearch-infra-secrets/aws-resource-arns/jenkins-artifact-production-bucket-name}]}, groovy.lang.Closure)
                      publishToArtifactsProdBucket.withAWS({role=test-role, roleAccount=AWS_ACCOUNT_ARTIFACT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
                         publishToArtifactsProdBucket.s3Upload({file=the-windows-msi.msi, bucket=ARTIFACT_PRODUCTION_BUCKET_NAME, path=msi/})
                PublishToArtifactsProdBucket_Jenkinsfile.publishToArtifactsProdBucket({assumedRoleName=test-role-2, source=reporting-cli-2.3.0.tg.gz, destination=reporting-cli/})
@@ -57,8 +55,6 @@
 
                    /tmp/workspace/opensearch-build/sign.sh reporting-cli-2.3.0.tg.gz --platform linux --sigtype .sig
                )
-                  publishToArtifactsProdBucket.string({credentialsId=jenkins-aws-production-account, variable=AWS_ACCOUNT_ARTIFACT})
-                  publishToArtifactsProdBucket.string({credentialsId=jenkins-artifact-production-bucket-name, variable=ARTIFACT_PRODUCTION_BUCKET_NAME})
-                  publishToArtifactsProdBucket.withCredentials([AWS_ACCOUNT_ARTIFACT, ARTIFACT_PRODUCTION_BUCKET_NAME], groovy.lang.Closure)
+                  publishToArtifactsProdBucket.withSecrets({secrets=[{envVar=AWS_ACCOUNT_ARTIFACT, secretRef=op://opensearch-infra-secrets/aws-accounts/jenkins-aws-production-account}, {envVar=ARTIFACT_PRODUCTION_BUCKET_NAME, secretRef=op://opensearch-infra-secrets/aws-resource-arns/jenkins-artifact-production-bucket-name}]}, groovy.lang.Closure)
                      publishToArtifactsProdBucket.withAWS({role=test-role-2, roleAccount=AWS_ACCOUNT_ARTIFACT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
                         publishToArtifactsProdBucket.s3Upload({file=reporting-cli-2.3.0.tg.gz, bucket=ARTIFACT_PRODUCTION_BUCKET_NAME, path=reporting-cli/})
