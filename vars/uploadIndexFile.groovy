@@ -10,7 +10,11 @@ void call(Map args = [:]) {
     def latestBuildData = ['latest': "${BUILD_NUMBER}"]
     writeJSON file: 'index.json', json: latestBuildData
 
-    withCredentials([string(credentialsId: 'jenkins-artifact-bucket-name', variable: 'ARTIFACT_BUCKET_NAME')]) {
+    def secret_artifacts = [
+        [envVar: 'ARTIFACT_BUCKET_NAME', secretRef: 'op://opensearch-infra-secrets/aws-resource-arns/jenkins-artifact-bucket-name']
+    ]
+
+    withSecrets(secrets: secret_artifacts) {
         echo "Uploading index.json to s3://${ARTIFACT_BUCKET_NAME}/${args.indexFilePath}"
 
         uploadToS3(

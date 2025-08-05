@@ -20,6 +20,13 @@ class TestUploadTestResults extends BuildPipelineTest {
         this.registerLibTester(new UploadTestResultsLibTester( 'tests/data/opensearch-1.3.0-build.yml', 'dummy_job'))
 
         super.setUp()
+
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('ARTIFACT_BUCKET_NAME', "ARTIFACT_BUCKET_NAME")
+        binding.setVariable('AWS_ACCOUNT_PUBLIC', "AWS_ACCOUNT_PUBLIC")
     }
 
     @Test

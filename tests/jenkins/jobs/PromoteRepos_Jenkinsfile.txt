@@ -8,10 +8,7 @@
                   promoteRepos.library({identifier=jenkins@main, retriever=null})
                   promoteRepos.readYaml({file=tests/data/opensearch-1.3.0.yml})
                   InputManifest.asBoolean()
-                  promoteRepos.string({credentialsId=jenkins-artifact-promotion-role, variable=ARTIFACT_PROMOTION_ROLE_NAME})
-                  promoteRepos.string({credentialsId=jenkins-aws-production-account, variable=AWS_ACCOUNT_ARTIFACT})
-                  promoteRepos.string({credentialsId=jenkins-artifact-production-bucket-name, variable=ARTIFACT_PRODUCTION_BUCKET_NAME})
-                  promoteRepos.withCredentials([ARTIFACT_PROMOTION_ROLE_NAME, AWS_ACCOUNT_ARTIFACT, ARTIFACT_PRODUCTION_BUCKET_NAME], groovy.lang.Closure)
+                  promoteRepos.withSecrets({secrets=[{envVar=ARTIFACT_PROMOTION_ROLE_NAME, secretRef=op://opensearch-infra-secrets/aws-iam-roles/jenkins-artifact-promotion-role}, {envVar=AWS_ACCOUNT_ARTIFACT, secretRef=op://opensearch-infra-secrets/aws-accounts/jenkins-aws-production-account}, {envVar=ARTIFACT_PRODUCTION_BUCKET_NAME, secretRef=op://opensearch-infra-secrets/aws-resource-arns/jenkins-artifact-production-bucket-name}]}, groovy.lang.Closure)
                      promoteRepos.withAWS({role=ARTIFACT_PROMOTION_ROLE_NAME, roleAccount=AWS_ACCOUNT_ARTIFACT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
                         promoteRepos.println(Pulling Prod yum)
                         promoteRepos.sh(aws s3 sync s3://ARTIFACT_PRODUCTION_BUCKET_NAME/releases/bundle/opensearch/1.x/yum/ /tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum/ --no-progress)
@@ -49,12 +46,7 @@
                      promoteRepos.signArtifacts({artifactPath=/tmp/workspace/artifacts/releases/bundle/opensearch/1.x/yum/repodata/repomd.pom, sigtype=.asc, platform=linux, email=opensearch@amazon.com})
                         signArtifacts.fileExists(/tmp/workspace/sign.sh)
                         signArtifacts.sh(curl -sSL https://artifacts.opensearch.org/publickeys/opensearch.pgp | gpg --import - && curl -sSL https://artifacts.opensearch.org/publickeys/opensearch-release.pgp | gpg --import -)
-                        signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
-                        signArtifacts.string({credentialsId=jenkins-signer-client-role, variable=SIGNER_CLIENT_ROLE})
-                        signArtifacts.string({credentialsId=jenkins-signer-client-external-id, variable=SIGNER_CLIENT_EXTERNAL_ID})
-                        signArtifacts.string({credentialsId=jenkins-signer-client-unsigned-bucket, variable=SIGNER_CLIENT_UNSIGNED_BUCKET})
-                        signArtifacts.string({credentialsId=jenkins-signer-client-signed-bucket, variable=SIGNER_CLIENT_SIGNED_BUCKET})
-                        signArtifacts.withCredentials([[GITHUB_USER, GITHUB_TOKEN], SIGNER_CLIENT_ROLE, SIGNER_CLIENT_EXTERNAL_ID, SIGNER_CLIENT_UNSIGNED_BUCKET, SIGNER_CLIENT_SIGNED_BUCKET], groovy.lang.Closure)
+                        signArtifacts.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-token}, {envVar=SIGNER_CLIENT_ROLE, secretRef=op://opensearch-infra-secrets/client-signing/jenkins-signer-client-role}, {envVar=SIGNER_CLIENT_EXTERNAL_ID, secretRef=op://opensearch-infra-secrets/client-signing/jenkins-signer-client-external-id}, {envVar=SIGNER_CLIENT_UNSIGNED_BUCKET, secretRef=op://opensearch-infra-secrets/client-signing/jenkins-signer-client-unsigned-bucket}, {envVar=SIGNER_CLIENT_SIGNED_BUCKET, secretRef=op://opensearch-infra-secrets/client-signing/jenkins-signer-client-signed-bucket}]}, groovy.lang.Closure)
                            signArtifacts.sh(#!/bin/bash
                    set +x
                    export ROLE=SIGNER_CLIENT_ROLE
@@ -89,10 +81,7 @@
                   promoteRepos.library({identifier=jenkins@main, retriever=null})
                   promoteRepos.readYaml({file=tests/data/opensearch-1.3.0.yml})
                   InputManifest.asBoolean()
-                  promoteRepos.string({credentialsId=jenkins-artifact-promotion-role, variable=ARTIFACT_PROMOTION_ROLE_NAME})
-                  promoteRepos.string({credentialsId=jenkins-aws-production-account, variable=AWS_ACCOUNT_ARTIFACT})
-                  promoteRepos.string({credentialsId=jenkins-artifact-production-bucket-name, variable=ARTIFACT_PRODUCTION_BUCKET_NAME})
-                  promoteRepos.withCredentials([ARTIFACT_PROMOTION_ROLE_NAME, AWS_ACCOUNT_ARTIFACT, ARTIFACT_PRODUCTION_BUCKET_NAME], groovy.lang.Closure)
+                  promoteRepos.withSecrets({secrets=[{envVar=ARTIFACT_PROMOTION_ROLE_NAME, secretRef=op://opensearch-infra-secrets/aws-iam-roles/jenkins-artifact-promotion-role}, {envVar=AWS_ACCOUNT_ARTIFACT, secretRef=op://opensearch-infra-secrets/aws-accounts/jenkins-aws-production-account}, {envVar=ARTIFACT_PRODUCTION_BUCKET_NAME, secretRef=op://opensearch-infra-secrets/aws-resource-arns/jenkins-artifact-production-bucket-name}]}, groovy.lang.Closure)
                      promoteRepos.withAWS({role=ARTIFACT_PROMOTION_ROLE_NAME, roleAccount=AWS_ACCOUNT_ARTIFACT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
                         promoteRepos.println(Pulling Prod apt)
                         promoteRepos.sh(aws s3 sync s3://ARTIFACT_PRODUCTION_BUCKET_NAME/releases/bundle/opensearch/1.x/apt/ /tmp/workspace/artifacts/releases/bundle/opensearch/1.x/apt/ --no-progress)
@@ -139,14 +128,7 @@
                 fi
 
             )
-                     promoteRepos.string({credentialsId=jenkins-rpm-signing-account-number, variable=RPM_SIGNING_ACCOUNT_NUMBER})
-                     promoteRepos.string({credentialsId=jenkins-rpm-release-signing-passphrase-secrets-arn, variable=RPM_RELEASE_SIGNING_PASSPHRASE_SECRETS_ARN})
-                     promoteRepos.string({credentialsId=jenkins-rpm-release-signing-secret-key-secrets-arn, variable=RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN})
-                     promoteRepos.string({credentialsId=jenkins-rpm-release-signing-key-id, variable=RPM_RELEASE_SIGNING_KEY_ID})
-                     promoteRepos.string({credentialsId=jenkins-rpm-signing-passphrase-secrets-arn, variable=RPM_SIGNING_PASSPHRASE_SECRETS_ARN})
-                     promoteRepos.string({credentialsId=jenkins-rpm-signing-secret-key-secrets-arn, variable=RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN})
-                     promoteRepos.string({credentialsId=jenkins-rpm-signing-key-id, variable=RPM_SIGNING_KEY_ID})
-                     promoteRepos.withCredentials([RPM_SIGNING_ACCOUNT_NUMBER, RPM_RELEASE_SIGNING_PASSPHRASE_SECRETS_ARN, RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN, RPM_RELEASE_SIGNING_KEY_ID, RPM_SIGNING_PASSPHRASE_SECRETS_ARN, RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN, RPM_SIGNING_KEY_ID], groovy.lang.Closure)
+                     promoteRepos.withSecrets({secrets=[{envVar=RPM_SIGNING_ACCOUNT_NUMBER, secretRef=op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-signing-account-number}, {envVar=RPM_RELEASE_SIGNING_PASSPHRASE_SECRETS_ARN, secretRef=op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-release-signing-passphrase-secrets-arn}, {envVar=RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN, secretRef=op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-release-signing-secret-key-secrets-arn}, {envVar=RPM_RELEASE_SIGNING_KEY_ID, secretRef=op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-release-signing-key-id}, {envVar=RPM_SIGNING_PASSPHRASE_SECRETS_ARN, secretRef=op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-signing-passphrase-secrets-arn}, {envVar=RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN, secretRef=op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-signing-secret-key-secrets-arn}, {envVar=RPM_SIGNING_KEY_ID, secretRef=op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-signing-key-id}]}, groovy.lang.Closure)
                         promoteRepos.withAWS({role=jenkins-prod-rpm-signing-assume-role, roleAccount=RPM_SIGNING_ACCOUNT_NUMBER, duration=900, roleSessionName=jenkins-signing-session}, groovy.lang.Closure)
                            promoteRepos.sh(#!/bin/bash
 

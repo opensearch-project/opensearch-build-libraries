@@ -25,6 +25,18 @@ class TestAssembleManifest extends BuildPipelineTest {
 
         super.setUp()
 
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('RPM_SIGNING_ACCOUNT_NUMBER', "RPM_SIGNING_ACCOUNT_NUMBER")
+        binding.setVariable('RPM_RELEASE_SIGNING_PASSPHRASE_SECRETS_ARN', 'RPM_RELEASE_SIGNING_PASSPHRASE_SECRETS_ARN')
+        binding.setVariable('RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN', 'RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN')
+        binding.setVariable('RPM_RELEASE_SIGNING_KEY_ID', 'RPM_RELEASE_SIGNING_KEY_ID')
+        binding.setVariable('RPM_SIGNING_PASSPHRASE_SECRETS_ARN', 'RPM_SIGNING_PASSPHRASE_SECRETS_ARN')
+        binding.setVariable('RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN', 'RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN')
+        binding.setVariable('RPM_SIGNING_KEY_ID', 'RPM_SIGNING_KEY_ID')
+
         super.testPipeline('tests/jenkins/jobs/AssembleManifest_rpm_Jenkinsfile')
     }
 

@@ -5,9 +5,7 @@
             UpdateIntegTestFailureIssues_Jenkinsfile.script(groovy.lang.Closure)
                UpdateIntegTestFailureIssues_Jenkinsfile.updateIntegTestFailureIssues({inputManifestPath=tests/data/opensearch-2.2.0.yml, distributionBuildNumber=4891})
                   updateIntegTestFailureIssues.readYaml({file=tests/data/opensearch-2.2.0.yml})
-                  updateIntegTestFailureIssues.string({credentialsId=jenkins-health-metrics-account-number, variable=METRICS_HOST_ACCOUNT})
-                  updateIntegTestFailureIssues.string({credentialsId=jenkins-health-metrics-cluster-endpoint, variable=METRICS_HOST_URL})
-                  updateIntegTestFailureIssues.withCredentials([METRICS_HOST_ACCOUNT, METRICS_HOST_URL], groovy.lang.Closure)
+                  updateIntegTestFailureIssues.withSecrets({secrets=[{envVar=METRICS_HOST_ACCOUNT, secretRef=op://opensearch-infra-secrets/aws-accounts/jenkins-health-metrics-account-number}, {envVar=METRICS_HOST_URL, secretRef=op://opensearch-infra-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint}]}, groovy.lang.Closure)
                      updateIntegTestFailureIssues.withAWS({role=OpenSearchJenkinsAccessRole, roleAccount=METRICS_HOST_ACCOUNT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
                         updateIntegTestFailureIssues.println(Distribution Build Number: 4891)
                         ComponentIntegTestStatus.getComponents(passed)
@@ -60,8 +58,7 @@
 
 Check out test report manifest linked above for steps to reproduce, cluster and integration test failure logs. For additional information checkout the [wiki](https://github.com/opensearch-project/opensearch-build/wiki/Testing-the-Distribution) and [OpenSearch Metrics Dashboard](https://metrics.opensearch.org/_dashboards/app/dashboards#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa).
 , label=autocut,v2.2.0, issueEdit=true})
-                           createGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
-                           createGithubIssue.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+                           createGithubIssue.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-token}]}, groovy.lang.Closure)
                               createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/geospatial.git -S "[AUTOCUT] Integration Test Failed for geospatial-2.2.0 in:title" --json number --jq '.[0].number', returnStdout=true})
                               createGithubIssue.sh({script=date -d "3 days ago" +'%Y-%m-%d', returnStdout=true})
                               createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/geospatial.git -S "[AUTOCUT] Integration Test Failed for geospatial-2.2.0 in:title is:closed closed:>=bbb
@@ -114,8 +111,7 @@ Check out test report manifest linked above for steps to reproduce, cluster and 
 Check out test report manifest linked above for steps to reproduce, cluster and integration test failure logs. For additional information checkout the [wiki](https://github.com/opensearch-project/opensearch-build/wiki/Testing-the-Distribution) and [OpenSearch Metrics Dashboard](https://metrics.opensearch.org/_dashboards/app/dashboards#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa).
 
 Tagging the release owners to take a look @foo @bar, label=autocut,v2.2.0, issueEdit=true})
-                           createGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
-                           createGithubIssue.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+                           createGithubIssue.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-token}]}, groovy.lang.Closure)
                               createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/k-NN.git -S "[AUTOCUT] Integration Test Failed for k-NN-2.2.0 in:title" --json number --jq '.[0].number', returnStdout=true})
                               createGithubIssue.sh({script=date -d "3 days ago" +'%Y-%m-%d', returnStdout=true})
                               createGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/k-NN.git -S "[AUTOCUT] Integration Test Failed for k-NN-2.2.0 in:title is:closed closed:>=bbb
@@ -138,16 +134,14 @@ Tagging the release owners to take a look @foo @bar", returnStdout=true})
                         updateIntegTestFailureIssues.sleep({time=3, unit=SECONDS})
                         updateIntegTestFailureIssues.println(Integration tests passed for cross-cluster-replication, closing github issue)
                         updateIntegTestFailureIssues.closeGithubIssue({repoUrl=https://github.com/opensearch-project/cross-cluster-replication.git, issueTitle=[AUTOCUT] Integration Test Failed for cross-cluster-replication-2.2.0, closeComment=Closing the issue as the integration tests for cross-cluster-replication passed for version: **2.2.0**.})
-                           closeGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
-                           closeGithubIssue.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+                           closeGithubIssue.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-token}]}, groovy.lang.Closure)
                               closeGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/cross-cluster-replication.git -S "[AUTOCUT] Integration Test Failed for cross-cluster-replication-2.2.0 in:title" --json number --jq '.[0].number', returnStdout=true})
                               closeGithubIssue.sh({script=gh issue close bbb
 ccc -R opensearch-project/cross-cluster-replication --comment "Closing the issue as the integration tests for cross-cluster-replication passed for version: **2.2.0**.", returnStdout=true})
                         updateIntegTestFailureIssues.sleep({time=3, unit=SECONDS})
                         updateIntegTestFailureIssues.println(Integration tests passed for index-management, closing github issue)
                         updateIntegTestFailureIssues.closeGithubIssue({repoUrl=https://github.com/opensearch-project/index-management.git, issueTitle=[AUTOCUT] Integration Test Failed for index-management-2.2.0, closeComment=Closing the issue as the integration tests for index-management passed for version: **2.2.0**.})
-                           closeGithubIssue.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
-                           closeGithubIssue.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+                           closeGithubIssue.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-token}]}, groovy.lang.Closure)
                               closeGithubIssue.sh({script=gh issue list --repo https://github.com/opensearch-project/index-management.git -S "[AUTOCUT] Integration Test Failed for index-management-2.2.0 in:title" --json number --jq '.[0].number', returnStdout=true})
                               closeGithubIssue.sh({script=gh issue close bbb
 ccc -R opensearch-project/index-management --comment "Closing the issue as the integration tests for index-management passed for version: **2.2.0**.", returnStdout=true})

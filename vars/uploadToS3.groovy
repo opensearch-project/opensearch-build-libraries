@@ -7,7 +7,11 @@
  * compatible open source license.
  */
 void call(Map args = [:]) {
-    withCredentials([string(credentialsId: 'jenkins-aws-account-public', variable: 'AWS_ACCOUNT_PUBLIC')]) {
+    def secret_s3 = [
+        [envVar: 'AWS_ACCOUNT_PUBLIC', secretRef: 'op://opensearch-infra-secrets/aws-accounts/jenkins-aws-account-public']
+    ]
+
+    withSecrets(secrets: secret_s3){
         withAWS(role: 'opensearch-bundle', roleAccount: "${AWS_ACCOUNT_PUBLIC}", duration: 900, roleSessionName: 'jenkins-session') {
             s3Upload(file: args.sourcePath, bucket: args.bucket, path: args.path)
         }

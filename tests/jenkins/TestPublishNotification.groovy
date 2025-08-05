@@ -22,6 +22,11 @@ class TestPublishNotification extends BuildPipelineTest {
                 ':white_check_mark:', 'Successful Build' , 'extra', '1.2.0/opensearch-1.2.0.yml', 'jenkins-build-notice-webhook'))
 
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('WEBHOOK_URL', "WEBHOOK_URL")
     }
 
     @Test

@@ -19,9 +19,13 @@ void call(Map args = [:]) {
     if (args.buildNumber){
         uploadPath = "${artifactPath}/test-results/${args.buildNumber}"
     }
-    withCredentials([
-        string(credentialsId: 'jenkins-artifact-bucket-name', variable: 'ARTIFACT_BUCKET_NAME'),
-        string(credentialsId: 'jenkins-aws-account-public', variable: 'AWS_ACCOUNT_PUBLIC')]) {
+
+    def secret_s3 = [
+        [envVar: 'ARTIFACT_BUCKET_NAME', secretRef: 'op://opensearch-infra-secrets/aws-resource-arns/jenkins-artifact-bucket-name'],
+        [envVar: 'AWS_ACCOUNT_PUBLIC', secretRef: 'op://opensearch-infra-secrets/aws-accounts/jenkins-aws-account-public']
+    ]
+
+    withSecrets(secrets: secret_s3){
             echo "Uploading to s3://${ARTIFACT_BUCKET_NAME}/${artifactPath}"
 
             withAWS(role: 'opensearch-test', roleAccount: "${AWS_ACCOUNT_PUBLIC}", duration: 900, roleSessionName: 'jenkins-session') {

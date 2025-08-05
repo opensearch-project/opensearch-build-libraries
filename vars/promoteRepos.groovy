@@ -10,10 +10,10 @@
 
  /**
  * Library to sign and promote repositories to artifacts.opensearch.org
-@param Map[jobName] <required> - Name of the distribution build workflow on Jenkins that build the artifacts
-@param Map[buildNumber] <required> - The build number of the artifacts in above build workflow
-@param Map[distributionRepoType] <required> - distribution repository type, e.g. yum / apt
-@param Map[manifest] <optional> - input manifest of the corresponding OpenSearch/OpenSearch-Dashboards product version (e.g. 2.0.0)
+ * @param Map[jobName] <required> - Name of the distribution build workflow on Jenkins that build the artifacts
+ * @param Map[buildNumber] <required> - The build number of the artifacts in above build workflow
+ * @param Map[distributionRepoType] <required> - distribution repository type, e.g. yum / apt
+ * @param Map[manifest] <optional> - input manifest of the corresponding OpenSearch/OpenSearch-Dashboards product version (e.g. 2.0.0)
  */
 
 void call(Map args = [:]) {
@@ -60,13 +60,17 @@ void call(Map args = [:]) {
     String RepoProdPath = "releases/bundle/${filename}/${repoVersion}/${repoType}"
     String artifactPath = "${localPath}/${RepoProdPath}"
 
-    withCredentials([string(credentialsId: 'jenkins-artifact-promotion-role', variable: 'ARTIFACT_PROMOTION_ROLE_NAME'),
-        string(credentialsId: 'jenkins-aws-production-account', variable: 'AWS_ACCOUNT_ARTIFACT'),
-        string(credentialsId: 'jenkins-artifact-production-bucket-name', variable: 'ARTIFACT_PRODUCTION_BUCKET_NAME')]) {
-            withAWS(role: "${ARTIFACT_PROMOTION_ROLE_NAME}", roleAccount: "${AWS_ACCOUNT_ARTIFACT}", duration: 900, roleSessionName: 'jenkins-session') {
-                println("Pulling Prod ${repoType}")
-                sh("aws s3 sync s3://${ARTIFACT_PRODUCTION_BUCKET_NAME}/${RepoProdPath}/ ${artifactPath}/ --no-progress")
-            }
+    def secret_artifacts = [
+        [envVar: 'ARTIFACT_PROMOTION_ROLE_NAME', secretRef: 'op://opensearch-infra-secrets/aws-iam-roles/jenkins-artifact-promotion-role'],
+        [envVar: 'AWS_ACCOUNT_ARTIFACT', secretRef: 'op://opensearch-infra-secrets/aws-accounts/jenkins-aws-production-account'],
+        [envVar: 'ARTIFACT_PRODUCTION_BUCKET_NAME', secretRef: 'op://opensearch-infra-secrets/aws-resource-arns/jenkins-artifact-production-bucket-name']
+    ]
+
+    withSecrets(secrets: secret_artifacts){
+        withAWS(role: "${ARTIFACT_PROMOTION_ROLE_NAME}", roleAccount: "${AWS_ACCOUNT_ARTIFACT}", duration: 900, roleSessionName: 'jenkins-session') {
+            println("Pulling Prod ${repoType}")
+            sh("aws s3 sync s3://${ARTIFACT_PRODUCTION_BUCKET_NAME}/${RepoProdPath}/ ${artifactPath}/ --no-progress")
+        }
 
         sh """
             set -e
@@ -162,14 +166,17 @@ void call(Map args = [:]) {
 
             """
 
-            withCredentials([
-            string(credentialsId: 'jenkins-rpm-signing-account-number', variable: 'RPM_SIGNING_ACCOUNT_NUMBER'),
-            string(credentialsId: 'jenkins-rpm-release-signing-passphrase-secrets-arn', variable: 'RPM_RELEASE_SIGNING_PASSPHRASE_SECRETS_ARN'),
-            string(credentialsId: 'jenkins-rpm-release-signing-secret-key-secrets-arn', variable: 'RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN'),
-            string(credentialsId: 'jenkins-rpm-release-signing-key-id', variable: 'RPM_RELEASE_SIGNING_KEY_ID'),
-            string(credentialsId: 'jenkins-rpm-signing-passphrase-secrets-arn', variable: 'RPM_SIGNING_PASSPHRASE_SECRETS_ARN'),
-            string(credentialsId: 'jenkins-rpm-signing-secret-key-secrets-arn', variable: 'RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN'),
-            string(credentialsId: 'jenkins-rpm-signing-key-id', variable: 'RPM_SIGNING_KEY_ID')]) {
+            def secret_rpm_signing = [
+                [envVar: 'RPM_SIGNING_ACCOUNT_NUMBER', secretRef: 'op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-signing-account-number'],
+                [envVar: 'RPM_RELEASE_SIGNING_PASSPHRASE_SECRETS_ARN', secretRef: 'op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-release-signing-passphrase-secrets-arn'],
+                [envVar: 'RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN', secretRef: 'op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-release-signing-secret-key-secrets-arn'],
+                [envVar: 'RPM_RELEASE_SIGNING_KEY_ID', secretRef: 'op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-release-signing-key-id'],
+                [envVar: 'RPM_SIGNING_PASSPHRASE_SECRETS_ARN', secretRef: 'op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-signing-passphrase-secrets-arn'],
+                [envVar: 'RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN', secretRef: 'op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-signing-secret-key-secrets-arn'],
+                [envVar: 'RPM_SIGNING_KEY_ID', secretRef: 'op://opensearch-infra-secrets/rpm-signing/jenkins-rpm-signing-key-id']
+            ]
+
+            withSecrets(secrets: secret_rpm_signing){
                 withAWS(role: 'jenkins-prod-rpm-signing-assume-role', roleAccount: "${RPM_SIGNING_ACCOUNT_NUMBER}", duration: 900, roleSessionName: 'jenkins-signing-session') {
                     sh """#!/bin/bash
 

@@ -17,6 +17,11 @@ import utils.TemplateProcessor
  * @param args.action <optional> - Action to perform. Default is 'check'. Acceptable values are 'check' and 'notify'.
  */
 void call(Map args = [:]) {
+    def secret_metrics_cluster = [
+        [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-infra-secrets/aws-accounts/jenkins-health-metrics-account-number'],
+        [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-infra-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
+    ]
+
     String action = args.action ?: 'check'
     // Parameter check
     validateParameters(args, action)
@@ -31,9 +36,7 @@ void call(Map args = [:]) {
 
     inputManifests.each { inputManifestFile ->
         def inputManifestObj = readYaml(file: inputManifestFile)
-        withCredentials([
-                string(credentialsId: 'jenkins-health-metrics-account-number', variable: 'METRICS_HOST_ACCOUNT'),
-                string(credentialsId: 'jenkins-health-metrics-cluster-endpoint', variable: 'METRICS_HOST_URL')]) {
+        withSecrets(secrets: secret_metrics_cluster){
             withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
                 def metricsUrl = env.METRICS_HOST_URL
                 def awsAccessKey = env.AWS_ACCESS_KEY_ID
@@ -109,7 +112,12 @@ private void notifyReleaseOwners(String componentName, Map codeCoverage, String 
  * @param commentBodyFile: Path to the file containing GitHub comment content.
  */
 private void addComment(String releaseIssueUrl, def commentBodyFile) {
-    withCredentials([usernamePassword(credentialsId: 'jenkins-github-bot-token', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'GITHUB_USER')]) {
+    def secret_github_bot = [
+        [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-username'],
+        [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-token']
+    ]
+
+    withSecrets(secrets: secret_github_bot){
         sh(
                 script: "gh issue comment ${releaseIssueUrl} --body-file ${commentBodyFile}",
                 returnStdout: true

@@ -30,7 +30,12 @@ class TestPublishDistributionBuildResults extends BuildPipelineTest {
         binding.setVariable('sh', { cmd -> println cmd })
         binding.setVariable('readFile', { filePath -> 'components:\n- name: component1\n  repository: repo1\n  ref: ref1' })
         binding.setVariable('writeFile', { params -> println params.text })
-        binding.setVariable('withCredentials', { creds, closure -> closure() })
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('METRICS_HOST_URL', "METRICS_HOST_URL")
+        binding.setVariable('METRICS_HOST_ACCOUNT', "METRICS_HOST_ACCOUNT")
         helper.registerAllowedMethod("withAWS", [Map, Closure], { args, closure ->
             closure.delegate = delegate
             return helper.callClosure(closure)

@@ -5,8 +5,7 @@
             PublishToNpm_Jenkinsfile.script(groovy.lang.Closure)
                PublishToNpm_Jenkinsfile.publishToNpm({publicationType=github})
                   publishToNpm.checkout({$class=GitSCM, branches=[{name=2.0.0}], userRemoteConfigs=[{url=https://github.com/opensearch-project/opensearch-ci}]})
-                  publishToNpm.string({credentialsId=jenkins-opensearch-publish-to-npm-token, variable=NPM_TOKEN})
-                  publishToNpm.withCredentials([NPM_TOKEN], groovy.lang.Closure)
+                  publishToNpm.withSecrets({secrets=[{envVar=NPM_TOKEN, secretRef=op://opensearch-infra-secrets/npm/jenkins-opensearch-publish-to-npm-token}]}, groovy.lang.Closure)
                      publishToNpm.sh(
             npm set registry "https://registry.npmjs.org"
             npm set //registry.npmjs.org/:_authToken NPM_TOKEN

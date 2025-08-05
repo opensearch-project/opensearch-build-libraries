@@ -34,7 +34,11 @@ void call(Map args = [:]) {
         gem install \$gemNameWithVersion -P HighSecurity
     """
 
-    withCredentials([string(credentialsId: "${args.apiKeyCredentialId}", variable: 'API_KEY')]) {
+    def secret_rubygems_token = [
+        [envVar: 'API_KEY', secretRef: "op://opensearch-infra-secrets/rubygems/${args.apiKeyCredentialId}"]
+    ]
+
+    withSecrets(secrets: secret_rubygems_token){
         sh "cd ${releaseArtifactsDir} && curl --fail --data-binary @`ls *.gem` -H 'Authorization:${API_KEY}' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems"
     }
 }

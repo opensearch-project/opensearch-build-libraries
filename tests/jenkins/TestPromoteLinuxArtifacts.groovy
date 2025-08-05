@@ -44,6 +44,15 @@ class TestPromoteLinuxArtifacts extends BuildPipelineTest {
         binding.setVariable('DISTRIBUTION_PLATFORM', 'linux')
         binding.setVariable('DISTRIBUTION_ARCHITECTURE', 'x64')
         binding.setVariable('WORKSPACE', 'tests/jenkins')
+        binding.setVariable('AWS_ACCOUNT_PUBLIC', 'AWS_ACCOUNT_PUBLIC')
+        binding.setVariable('ARTIFACT_BUCKET_NAME', 'ARTIFACT_BUCKET_NAME')
+        binding.setVariable('ARTIFACT_PROMOTION_ROLE_NAME', 'ARTIFACT_PROMOTION_ROLE_NAME')
+        binding.setVariable('AWS_ACCOUNT_ARTIFACT', 'AWS_ACCOUNT_ARTIFACT')
+        binding.setVariable('ARTIFACT_PRODUCTION_BUCKET_NAME', 'ARTIFACT_PRODUCTION_BUCKET_NAME')
+        binding.setVariable('SIGNER_CLIENT_ROLE', 'SIGNER_CLIENT_ROLE')
+        binding.setVariable('SIGNER_CLIENT_EXTERNAL_ID', 'SIGNER_CLIENT_EXTERNAL_ID')
+        binding.setVariable('SIGNER_CLIENT_UNSIGNED_BUCKET', 'SIGNER_CLIENT_UNSIGNED_BUCKET')
+        binding.setVariable('SIGNER_CLIENT_SIGNED_BUCKET', 'SIGNER_CLIENT_SIGNED_BUCKET')
         helper.addFileExistsMock('tests/jenkins/sign.sh', true)
         binding.setVariable('GITHUB_BOT_TOKEN_NAME', 'github_bot_token_name')
         def configs = ["role": "dummy_role",
@@ -56,7 +65,7 @@ class TestPromoteLinuxArtifacts extends BuildPipelineTest {
         helper.registerAllowedMethod("git", [Map])
         helper.registerAllowedMethod("s3Download", [Map])
         helper.registerAllowedMethod("s3Upload", [Map])
-        helper.registerAllowedMethod("withCredentials", [Map, Closure], { args, closure ->
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
             closure.delegate = delegate
             return helper.callClosure(closure)
         })

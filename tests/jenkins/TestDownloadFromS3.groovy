@@ -39,6 +39,11 @@ class TestDownloadFromS3 extends BuildPipelineTest {
             ))
 
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('AWS_ACCOUNT_NUMBER', "AWS_ACCOUNT_NUMBER")
     }
 
     @Test

@@ -30,7 +30,12 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
         binding.setVariable('sh', { cmd -> println cmd })
         binding.setVariable('readFile', { filePath -> 'components:\n- name: component1\n  configs:\n    - name: with-security\n      status: pass\n    - name: without-security\n      status: fail' })
         binding.setVariable('writeFile', { params -> println params.text })
-        binding.setVariable('withCredentials', { creds, closure -> closure() })
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('METRICS_HOST_URL', "METRICS_HOST_URL")
+        binding.setVariable('METRICS_HOST_ACCOUNT', "METRICS_HOST_ACCOUNT")
         helper.registerAllowedMethod("withAWS", [Map, Closure], { args, closure ->
             closure.delegate = delegate
             return helper.callClosure(closure)

@@ -20,6 +20,13 @@ class TestUploadMinSnapshotsToS3 extends BuildPipelineTest {
         List <Closure> fileActions = ['createSha512Checksums']
         this.registerLibTester(new UploadMinSnapshotsToS3LibTester( fileActions, 'tests/data/opensearch-1.3.0.yml', 'tar' ))
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('ARTIFACT_PROMOTION_ROLE_NAME', "ARTIFACT_PROMOTION_ROLE_NAME")
+        binding.setVariable('AWS_ACCOUNT_ARTIFACT', "AWS_ACCOUNT_ARTIFACT")
+        binding.setVariable('ARTIFACT_PRODUCTION_BUCKET_NAME', "ARTIFACT_PRODUCTION_BUCKET_NAME")
     }
 
     @Test

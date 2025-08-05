@@ -5,6 +5,5 @@
             publishToCratesWithPackage_Jenkinsfile.script(groovy.lang.Closure)
                publishToCratesWithPackage_Jenkinsfile.publishToCrates({repository=https://github.com/opensearch-project/opensearch-rs, tag=1.0.0, packageToPublish=opensearch})
                   publishToCrates.checkout({$class=GitSCM, userRemoteConfigs=[{url=https://github.com/opensearch-project/opensearch-rs}], branches=[{name=1.0.0}]})
-                  publishToCrates.string({credentialsId=crates-api-token, variable=API_TOKEN})
-                  publishToCrates.withCredentials([API_TOKEN], groovy.lang.Closure)
+                  publishToCrates.withSecrets({secrets=[{envVar=API_TOKEN, secretRef=op://opensearch-infra-secrets/rust/crates-api-token}]}, groovy.lang.Closure)
                      publishToCrates.sh(cargo publish -p opensearch --dry-run && cargo publish -p opensearch --token API_TOKEN)

@@ -27,6 +27,12 @@ class TestRetrievePreviousBuild extends BuildPipelineTest {
             closure.delegate = delegate
             return helper.callClosure(closure)
         })
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('ARTIFACT_BUCKET_NAME', "ARTIFACT_BUCKET_NAME")
+        binding.setVariable('AWS_ACCOUNT_NUMBER', "AWS_ACCOUNT_NUMBER")
         helper.registerAllowedMethod("s3Download", [Map])
         helper.registerAllowedMethod('isUnix', [], { true })
     }

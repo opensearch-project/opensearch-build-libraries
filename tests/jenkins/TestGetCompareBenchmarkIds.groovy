@@ -31,6 +31,13 @@ class TestGetCompareBenchmarkIds extends BuildPipelineTest {
                 'big5',
                 '12345'))
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('DATASTORE_USER', "DATASTORE_USER")
+        binding.setVariable('DATASTORE_PASSWORD', "DATASTORE_PASSWORD")
+        binding.setVariable('DATASTORE_ENDPOINT', "DATASTORE_ENDPOINT")
     }
 
     @Test

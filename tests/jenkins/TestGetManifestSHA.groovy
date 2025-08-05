@@ -21,6 +21,10 @@ class TestGetManifestSHA extends BuildPipelineTest {
         binding.setVariable('JOB_NAME', 'get-manifest-sha-build')
         binding.setVariable('AWS_ACCOUNT_PUBLIC', 'account')
         binding.setVariable('ARTIFACT_BUCKET_NAME', 'artifact-bucket')
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
 
         helper.registerAllowedMethod("sha1", [String], { filename ->
             return 'sha1'

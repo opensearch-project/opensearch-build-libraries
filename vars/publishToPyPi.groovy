@@ -22,7 +22,12 @@ void call(Map args = [:]) {
         platform: 'linux'
     )
 
-    withCredentials([usernamePassword(credentialsId: args.credentialId, usernameVariable: 'TWINE_USERNAME', passwordVariable: 'TWINE_PASSWORD')]) {
+    def secret_pypi_credentials = [
+        [envVar: 'TWINE_USERNAME', secretRef: 'op://opensearch-infra-secrets/pypi/twine-username'],
+        [envVar: 'TWINE_PASSWORD', secretRef: "op://opensearch-infra-secrets/pypi/${args.credentialId}"]
+    ]
+
+    withSecrets(secrets: secret_pypi_credentials){
             sh """twine upload -r pypi ${releaseArtifactsDir}/*"""
     }
 }

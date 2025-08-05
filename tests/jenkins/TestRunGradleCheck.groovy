@@ -28,6 +28,14 @@ class TestRunGradleCheck extends BuildPipelineTest {
             )
         )
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('amazon_s3_access_key', "amazon_s3_access_key")
+        binding.setVariable('amazon_s3_secret_key', "amazon_s3_secret_key")
+        binding.setVariable('amazon_s3_base_path', "amazon_s3_base_path")
+        binding.setVariable('amazon_s3_bucket', "amazon_s3_bucket")
     }
 
     @Test

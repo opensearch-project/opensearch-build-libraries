@@ -7,6 +7,10 @@
  * compatible open source license.
  */
 Map call(Map args = [:]) {
+    def secret_artifacts = [
+        [envVar: 'ARTIFACT_BUCKET_NAME', secretRef: 'op://opensearch-infra-secrets/aws-resource-arns/jenkins-artifact-bucket-name'],
+        [envVar: 'AWS_ACCOUNT_PUBLIC', secretRef: 'op://opensearch-infra-secrets/aws-accounts/jenkins-aws-account-public']
+    ]
     String inputManifest = args.inputManifest ?: "manifests/${INPUT_MANIFEST}"
     String jobName = args.jobName ?: "${JOB_NAME}"
 
@@ -29,8 +33,7 @@ Map call(Map args = [:]) {
     echo "Manifest SHA path: ${manifestSHAPath}"
 
     Boolean manifestSHAExists = false
-    withCredentials([string(credentialsId: 'jenkins-aws-account-public', variable: 'AWS_ACCOUNT_PUBLIC'),
-    string(credentialsId: 'jenkins-artifact-bucket-name', variable: 'ARTIFACT_BUCKET_NAME')]) {
+    withSecrets(secrets: secret_artifacts) {
         withAWS(role: 'opensearch-bundle', roleAccount: "${AWS_ACCOUNT_PUBLIC}", duration: 900, roleSessionName: 'jenkins-session') {
             if (s3DoesObjectExist(bucket: "${ARTIFACT_BUCKET_NAME}", path: manifestSHAPath)) {
                 manifestSHAExists = true

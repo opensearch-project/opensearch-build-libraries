@@ -15,6 +15,5 @@
         gem uninstall $gemName
         gem install $gemNameWithVersion -P HighSecurity
     )
-                  publishToRubyGems.string({credentialsId=ruby-api-key, variable=API_KEY})
-                  publishToRubyGems.withCredentials([API_KEY], groovy.lang.Closure)
+                  publishToRubyGems.withSecrets({secrets=[{envVar=API_KEY, secretRef=op://opensearch-infra-secrets/rubygems/ruby-api-key}]}, groovy.lang.Closure)
                      publishToRubyGems.sh(cd /tmp/workspace/dist && curl --fail --data-binary @`ls *.gem` -H 'Authorization:API_KEY' -H 'Content-Type: application/octet-stream' https://rubygems.org/api/v1/gems)

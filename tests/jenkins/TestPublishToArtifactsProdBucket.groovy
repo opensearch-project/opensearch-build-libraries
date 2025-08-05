@@ -25,6 +25,22 @@ class TestPublishToArtifactsProdBucket extends BuildPipelineTest {
         this.registerLibTester(new PublishToArtifactsProdBucketLibTester('test-role', 'the-windows-msi.msi', 'msi/', 'windows', 'null', true))
         this.registerLibTester(new PublishToArtifactsProdBucketLibTester('test-role-2', 'reporting-cli-2.3.0.tg.gz', 'reporting-cli/'))
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('AWS_ACCOUNT_ARTIFACT', 'AWS_ACCOUNT_ARTIFACT')
+        binding.setVariable('ARTIFACT_PRODUCTION_BUCKET_NAME', 'ARTIFACT_PRODUCTION_BUCKET_NAME')
+        binding.setVariable('SIGNER_WINDOWS_ROLE', 'SIGNER_WINDOWS_ROLE')
+        binding.setVariable('SIGNER_WINDOWS_EXTERNAL_ID', 'SIGNER_WINDOWS_EXTERNAL_ID')
+        binding.setVariable('SIGNER_WINDOWS_UNSIGNED_BUCKET', 'SIGNER_WINDOWS_UNSIGNED_BUCKET')
+        binding.setVariable('SIGNER_WINDOWS_SIGNED_BUCKET', 'SIGNER_WINDOWS_SIGNED_BUCKET')
+        binding.setVariable('SIGNER_WINDOWS_PROFILE_IDENTIFIER', 'SIGNER_WINDOWS_PROFILE_IDENTIFIER')
+        binding.setVariable('SIGNER_WINDOWS_PLATFORM_IDENTIFIER', 'SIGNER_WINDOWS_PLATFORM_IDENTIFIER')
+        binding.setVariable('SIGNER_CLIENT_ROLE', 'SIGNER_CLIENT_ROLE')
+        binding.setVariable('SIGNER_CLIENT_EXTERNAL_ID', 'SIGNER_CLIENT_EXTERNAL_ID')
+        binding.setVariable('SIGNER_CLIENT_UNSIGNED_BUCKET', 'SIGNER_CLIENT_UNSIGNED_BUCKET')
+        binding.setVariable('SIGNER_CLIENT_SIGNED_BUCKET', 'SIGNER_CLIENT_SIGNED_BUCKET')
     }
 
     @Test

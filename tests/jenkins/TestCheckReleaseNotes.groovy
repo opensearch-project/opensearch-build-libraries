@@ -24,8 +24,14 @@ class TestCheckReleaseNotes extends BuildPipelineTest {
     @Before
     void setUp() {
         super.setUp()
-        helper.registerAllowedMethod('withCredentials', [Map])
         helper.registerAllowedMethod('sleep', [Map])
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('METRICS_HOST_ACCOUNT', "METRICS_HOST_ACCOUNT")
+        binding.setVariable('GITHUB_USER', "GITHUB_USER")
+        binding.setVariable('GITHUB_TOKEN', "GITHUB_TOKEN")
         binding.setVariable('env', [
                 'METRICS_HOST_URL'     : 'sample.url',
                 'AWS_ACCESS_KEY_ID'    : 'abc',

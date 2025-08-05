@@ -46,6 +46,12 @@ class TestRunBenchmarkTestScript extends BuildPipelineTest {
                 'false'
         ))
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('DATASTORE_USER', "DATASTORE_USER")
+        binding.setVariable('DATASTORE_PASSWORD', "DATASTORE_PASSWORD")
     }
 
     @Test
@@ -72,10 +78,10 @@ class TestRunBenchmarkTestScript extends BuildPipelineTest {
 
         assertThat(s3DownloadCommands.size(), equalTo(4))
         assertThat(s3DownloadCommands, hasItem(
-                "{file=config.yml, bucket=ARTIFACT_BUCKET_NAME, path=test_config/config.yml, force=true}".toString()
+                "{file=config.yml, bucket=test_bucket, path=test_config/config.yml, force=true}".toString()
         ))
         assertThat(s3DownloadCommands, hasItem(
-                "{file=benchmark.ini, bucket=ARTIFACT_BUCKET_NAME, path=test_config/benchmark.ini, force=true}".toString()
+                "{file=benchmark.ini, bucket=test_bucket, path=test_config/benchmark.ini, force=true}".toString()
         ))
     }
 

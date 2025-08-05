@@ -20,7 +20,11 @@ void call(Map args = [:]) {
     boolean forceDownload = args.force ?: false
     String region = args.region ?: 'us-east-1'
 
-    withCredentials([string(credentialsId: "${args.roleAccountNumberCred}", variable: 'AWS_ACCOUNT_NUMBER')]) {
+    def secret_aws_account = [
+        [envVar: 'AWS_ACCOUNT_NUMBER', secretRef: "op://opensearch-infra-secrets/aws-accounts/${args.roleAccountNumberCred}"]
+    ]
+
+    withSecrets(secrets: secret_aws_account){
             withAWS(role: args.assumedRoleName, roleAccount: "${AWS_ACCOUNT_NUMBER}", duration: 900, roleSessionName: 'jenkins-session', region: "${region}") {
                 s3Download(file: args.localPath, bucket: args.bucketName, path: args.downloadPath, force: "${forceDownload}")
             }

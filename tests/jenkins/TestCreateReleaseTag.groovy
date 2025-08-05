@@ -23,6 +23,12 @@ class TestCreateReleaseTag extends BuildPipelineTest {
 
         this.registerLibTester(new CreateReleaseTagLibTester('tests/data/opensearch-build-1.1.0.yml', '1.1.0'))
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('GITHUB_USER', "GITHUB_USER")
+        binding.setVariable('GITHUB_TOKEN', "GITHUB_TOKEN")
         super.testPipeline("tests/jenkins/jobs/CreateReleaseTag_Jenkinsfile")
     }
 

@@ -16,7 +16,12 @@ void call(Map args = [:]) {
         "MANIFEST: ${args.manifest}",
         args.extra
     ] - null).join("\n")
-    withCredentials([string(credentialsId: args.credentialsId, variable: 'WEBHOOK_URL')]) {
+
+    def secret_webhook = [
+        [envVar: 'WEBHOOK_URL', secretRef: "op://opensearch-infra-secrets/webhook/${args.credentialsId}"]
+    ]
+
+    withSecrets(secrets: secret_webhook){
         sh ([
             'curl',
             '-XPOST',
