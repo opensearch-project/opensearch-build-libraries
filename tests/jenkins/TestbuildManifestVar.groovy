@@ -26,6 +26,13 @@ class TestbuildManifestVar extends BuildPipelineTest {
             closure.delegate = delegate
             return helper.callClosure(closure)
         })
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('AWS_ACCOUNT_PUBLIC', 'AWS_ACCOUNT_PUBLIC')
+        binding.setVariable('AWS_ACCOUNT_NUMBER', 'AWS_ACCOUNT_NUMBER')
+        binding.setVariable('ARTIFACT_BUCKET_NAME', 'ARTIFACT_BUCKET_NAME')
         helper.registerAllowedMethod("s3Download", [Map])
         helper.registerAllowedMethod('isUnix', [], { true })
     }
