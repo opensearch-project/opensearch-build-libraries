@@ -21,7 +21,7 @@ Map call(Map args = [:]) {
     String manifestSHA = sha1(manifestLock)
     echo "Manifest SHA: ${manifestSHA}"
 
-    def lib = library(identifier: 'jenkins@10.2.2', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@10.2.3', retriever: legacySCM(scm))
     def inputManifestObj = lib.jenkins.InputManifest.new(readYaml(file: manifestLock))
     String shasRoot = inputManifestObj.getSHAsRoot(jobName)
     String manifestSHAPath = "${shasRoot}/${manifestSHA}.yml"

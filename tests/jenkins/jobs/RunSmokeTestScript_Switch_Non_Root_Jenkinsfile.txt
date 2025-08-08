@@ -5,7 +5,7 @@
             RunSmokeTestScript_Switch_Non_Root_Jenkinsfile.script(groovy.lang.Closure)
                RunSmokeTestScript_Switch_Non_Root_Jenkinsfile.runSmokeTestScript({jobName=dummy_job, buildManifest=tests/data/opensearch-2.18.0-build.yml, testManifest=tests/data/opensearch-2.18.0-test.yml, buildId=2345, switchUserNonRoot=true})
                   runSmokeTestScript.legacySCM(groovy.lang.Closure)
-                  runSmokeTestScript.library({identifier=jenkins@10.2.2, retriever=null})
+                  runSmokeTestScript.library({identifier=jenkins@10.2.3, retriever=null})
                   runSmokeTestScript.readYaml({file=tests/data/opensearch-2.18.0-build.yml})
                   BuildManifest.asBoolean()
                   BuildManifest.getArtifactRootUrl(dummy_job, 2345)
