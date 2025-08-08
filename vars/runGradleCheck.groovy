@@ -78,7 +78,8 @@ void call(Map args = [:]) {
 
                 echo "Start gradlecheck"
                 GRADLE_CHECK_STATUS=0
-                ./gradlew clean && ./gradlew check -Dtests.coverage=true ${bwc_checkout_align_param} --no-daemon --no-scan || GRADLE_CHECK_STATUS=1
+                ./gradlew clean && ./gradlew check ${bwc_checkout_align_param} --no-daemon --no-scan || GRADLE_CHECK_STATUS=1
+                ./gradlew jacocoTestReport
 
                 if [ "\$GRADLE_CHECK_STATUS" != 0 ]; then
                     echo Gradle Check Failed!
