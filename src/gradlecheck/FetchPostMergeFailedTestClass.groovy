@@ -90,8 +90,13 @@ class FetchPostMergeFailedTestClass {
     }
 
     def getPostMergeFailedTestClass(timeFrame) {
-         def jsonResponse = new OpenSearchMetricsQuery(metricsUrl,awsAccessKey, awsSecretKey, awsSessionToken, indexName, script).fetchMetrics(getQuery(timeFrame))
-         def keys = jsonResponse.aggregations.test_class_keyword_agg.buckets.collect { it.key }
-         return keys
+        try {
+            def jsonResponse = new OpenSearchMetricsQuery(metricsUrl,awsAccessKey, awsSecretKey, awsSessionToken, indexName, script).fetchMetrics(getQuery(timeFrame))
+            def keys = jsonResponse.aggregations.test_class_keyword_agg.buckets.collect { it.key }
+            return keys
+        } catch (Exception e) {
+            this.script.println("Error fetching Failed Test Class Details: ${e.message}")
+            return null
+        }
     }
 }

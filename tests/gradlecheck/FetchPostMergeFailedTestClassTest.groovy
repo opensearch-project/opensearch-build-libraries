@@ -13,6 +13,8 @@ import gradlecheck.FetchPostMergeFailedTestClass
 import org.junit.Before
 import org.junit.Test
 import groovy.json.JsonOutput
+import utils.OpenSearchMetricsQuery
+
 
 class FetchPostMergeFailedTestClassTest {
 
@@ -21,7 +23,7 @@ class FetchPostMergeFailedTestClassTest {
     private final String awsAccessKey = "testAccessKey"
     private final String awsSecretKey = "testSecretKey"
     private final String awsSessionToken = "testSessionToken"
-    private final String indexName = "gradle-check-*"
+    private final String indexName = "gradle-check"
     private def script
 
     @Before
@@ -117,5 +119,24 @@ class FetchPostMergeFailedTestClassTest {
         def result = fetchPostMergeFailedTestClass.getPostMergeFailedTestClass(timeFrame)
 
         assert result == expectedOutput
+    }
+
+    @Test
+    void testGetPostMergeFailedTestClassException() {
+        script = new Expando()
+        def timeFrame = "15d"
+        script.println = { String message ->
+            assert message.startsWith("Error fetching Failed Test Class Details:")
+        }
+        fetchPostMergeFailedTestClass = new FetchPostMergeFailedTestClass(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, script)
+        OpenSearchMetricsQuery.metaClass.constructor = { Object[] args ->
+            return [
+                fetchMetrics: { query ->
+                    throw new RuntimeException("Test exception")
+                }
+            ] as OpenSearchMetricsQuery
+        }
+        def result = fetchPostMergeFailedTestClass.getPostMergeFailedTestClass(timeFrame)
+        assert result == null
     }
 }

@@ -93,8 +93,13 @@ class FetchPostMergeTestGitReference  {
     }
 
     def getPostMergeTestGitReference(testName) {
-        def jsonResponse = new OpenSearchMetricsQuery(metricsUrl,awsAccessKey, awsSecretKey, awsSessionToken, indexName, script).fetchMetrics(getQuery(testName))
-        def keys = jsonResponse.aggregations.git_reference_keyword_agg.buckets.collect { it.key }
-        return keys
+        try {
+            def jsonResponse = new OpenSearchMetricsQuery(metricsUrl,awsAccessKey, awsSecretKey, awsSessionToken, indexName, script).fetchMetrics(getQuery(testName))
+            def keys = jsonResponse.aggregations.git_reference_keyword_agg.buckets.collect { it.key }
+            return keys
+        } catch (Exception e) {
+            this.script.println("Error fetching Git Reference Details: ${e.message}")
+            return null
+        }
     }
 }

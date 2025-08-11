@@ -13,6 +13,7 @@ import gradlecheck.FetchTestPullRequests
 import org.junit.Before
 import org.junit.Test
 import groovy.json.JsonOutput
+import utils.OpenSearchMetricsQuery
 
 class FetchTestPullRequestsTest {
 
@@ -128,5 +129,24 @@ class FetchTestPullRequestsTest {
         def result = fetchTestPullRequests.getTestPullRequests(testName)
 
         assert result == expectedOutput
+    }
+
+    @Test
+    void testGetTestPullRequestsException() {
+        script = new Expando()
+        def testName = "ExampleTest"
+        script.println = { String message ->
+            assert message.startsWith("Error fetching Pull Request Details:")
+        }
+        fetchTestPullRequests = new FetchTestPullRequests(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, script)
+        OpenSearchMetricsQuery.metaClass.constructor = { Object[] args ->
+            return [
+                    fetchMetrics: { query ->
+                        throw new RuntimeException("Test exception")
+                    }
+            ] as OpenSearchMetricsQuery
+        }
+        def result = fetchTestPullRequests.getTestPullRequests(testName)
+        assert result == null
     }
 }

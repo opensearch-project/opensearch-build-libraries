@@ -13,6 +13,7 @@ import gradlecheck.FetchPostMergeTestGitReference
 import org.junit.Before
 import org.junit.Test
 import groovy.json.JsonOutput
+import utils.OpenSearchMetricsQuery
 
 class FetchPostMergeTestGitReferenceTest {
 
@@ -122,4 +123,24 @@ class FetchPostMergeTestGitReferenceTest {
 
         assert result == expectedOutput
     }
+
+    @Test
+    void testGetPostMergeTestGitReferenceException() {
+        script = new Expando()
+        def testName = "ExampleTest"
+        script.println = { String message ->
+            assert message.startsWith("Error fetching Git Reference Details:")
+        }
+        fetchPostMergeTestGitReference = new FetchPostMergeTestGitReference(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, script)
+        OpenSearchMetricsQuery.metaClass.constructor = { Object[] args ->
+            return [
+                    fetchMetrics: { query ->
+                        throw new RuntimeException("Test exception")
+                    }
+            ] as OpenSearchMetricsQuery
+        }
+        def result = fetchPostMergeTestGitReference.getPostMergeTestGitReference(testName)
+        assert result == null
+    }
 }
+
