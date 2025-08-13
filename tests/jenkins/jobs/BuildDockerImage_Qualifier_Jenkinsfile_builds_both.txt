@@ -5,7 +5,7 @@
             BuildDockerImage_Qualifier_Jenkinsfile.script(groovy.lang.Closure)
                BuildDockerImage_Qualifier_Jenkinsfile.buildDockerImage({inputManifest=tests/data/opensearch-2.0.0.yml, artifactUrlX64=opensearch.linux.x64, artifactUrlArm64=opensearch.linux.arm64})
                   buildDockerImage.legacySCM(groovy.lang.Closure)
-                  buildDockerImage.library({identifier=jenkins@10.2.3, retriever=null})
+                  buildDockerImage.library({identifier=jenkins@10.2.4, retriever=null})
                   buildDockerImage.readYaml({file=tests/data/opensearch-2.0.0.yml})
                   InputManifest.asBoolean()
                   buildDockerImage.echo(Triggering docker-build)
