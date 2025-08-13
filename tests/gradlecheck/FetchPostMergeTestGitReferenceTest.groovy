@@ -103,7 +103,17 @@ class FetchPostMergeTestGitReferenceTest {
                         git_reference_keyword_agg: [
                                 terms: [
                                         field: "git_reference.keyword",
-                                        size: 500
+                                        size: 500,
+                                        order: [
+                                                sort_build_number: "desc"
+                                        ]
+                                ],
+                                aggs: [
+                                        sort_build_number: [
+                                                max: [
+                                                        field: "build_number",
+                                                ]
+                                        ]
                                 ]
                         ]
                 ]
