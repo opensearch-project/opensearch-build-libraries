@@ -21,6 +21,13 @@ jobs:
       - name: Run Tests
         run: |
           ./gradlew test --info
+      - name: Upload Test Reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-${{ matrix.os }}
+          path: |
+            build/reports/
       - name: Upload Coverage Report
         uses: codecov/codecov-action@v4
         with:
