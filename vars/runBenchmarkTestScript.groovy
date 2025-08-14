@@ -15,6 +15,9 @@
  * @param args.distributionVersion <optional> - Provide OpenSearch version if using distributionUrl param
  * @param args.endpoint <optional> - Endpoint to the cluster.
  * @param args.insecure <optional> - Force the security of the cluster to be disabled, default is false.
+ * @param args.sigv4 <optional> - Use AWS SigV4 authentication, default is false.
+ * @param args.region <optional> - AWS region for signing, default is us-east-1
+ * @param args.service <optional> - AWS service to sign for (es = OpenSearch Service, aoss = OpenSearch Serverless)
  * @param args.workload <required> - Name of the workload that OpenSearch Benchmark should run, default is nyc_taxis.
  * @param args.singleNode <optional> - Create single node OS cluster, default is true.
  * @param args.minDistribution <optional> - Use min distribution of OpenSearch for cluster, default is false.
@@ -99,6 +102,9 @@ void call(Map args = [:]) {
             "--benchmark-config ${WORKSPACE}/benchmark.ini",
             "--user-tag ${userTags}",
             args.insecure?.toBoolean() ? "--without-security" : "",
+            args.sigv4?.toBoolean() ? "--sigv4" : "",
+            isNullOrEmpty(args.region) ? "" : "--region ${args.region}",
+            isNullOrEmpty(args.service) ? "" : "--service ${args.service}",
             isNullOrEmpty(args.username) ? "" : "--username ${args.username}",
             isNullOrEmpty(args.password) ? "" : "--password ${args.password}",
             args.singleNode?.toBoolean() ? "--single-node" : "",
