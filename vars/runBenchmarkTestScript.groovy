@@ -59,7 +59,7 @@ void call(Map args = [:]) {
     }
 
     config_name = isNullOrEmpty(args.config) ? 'config.yml' : args.config
-    benchmark_config = 'benchmark.ini'
+    benchmark_config = args.sigv4.toBoolean() ? 'benchmark_sigv4.ini' : 'benchmark.ini'
     withCredentials([string(credentialsId: 'jenkins-aws-account-public', variable: 'AWS_ACCOUNT_PUBLIC'),
                     string(credentialsId: 'jenkins-artifact-bucket-name', variable: 'ARTIFACT_BUCKET_NAME')]) {
         withAWS(role: 'opensearch-test', roleAccount: "${AWS_ACCOUNT_PUBLIC}", duration: 900, roleSessionName: 'jenkins-session') {
