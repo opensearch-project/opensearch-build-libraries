@@ -148,8 +148,11 @@ void call(Map args = [:]) {
         ].join(' ').trim()
     }
 
-    sh """set +x && ${command}"""
-
+    withCredentials([string(credentialsId: 'perf-test-account-id', variable: 'PERF_TEST_ACCOUNT_ID')]) {
+        withAWS(role: 'opensearch-full-access-nightlies', roleAccount: "${PERF_TEST_ACCOUNT_ID}", duration: 43200, roleSessionName: 'jenkins-session') {
+            sh """set +x && ${command}"""
+        }
+    }
 }
 
 void editBenchmarkConfig(String config_file) {
