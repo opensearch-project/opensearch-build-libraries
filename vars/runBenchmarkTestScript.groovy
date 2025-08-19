@@ -58,8 +58,15 @@ void call(Map args = [:]) {
         buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.bundleManifest))
     }
 
-    config_name = isNullOrEmpty(args.config) ? 'config.yml' : args.config
-    benchmark_config = args.sigv4.toBoolean() ? 'benchmark_sigv4.ini' : 'benchmark.ini'
+    boolean sigv4
+    if (!isNullOrEmpty(args.sigv4)) {
+        sigv4 = args.sigv4.toBoolean()
+    } else {
+        sigv4 = false
+    }
+
+    def config_name = isNullOrEmpty(args.config) ? 'config.yml' : args.config
+    def benchmark_config = sigv4 ? 'benchmark_sigv4.ini' : 'benchmark.ini'
     withCredentials([string(credentialsId: 'jenkins-aws-account-public', variable: 'AWS_ACCOUNT_PUBLIC'),
                     string(credentialsId: 'jenkins-artifact-bucket-name', variable: 'ARTIFACT_BUCKET_NAME')]) {
         withAWS(role: 'opensearch-test', roleAccount: "${AWS_ACCOUNT_PUBLIC}", duration: 900, roleSessionName: 'jenkins-session') {
@@ -102,7 +109,7 @@ void call(Map args = [:]) {
             "--benchmark-config ${WORKSPACE}/benchmark.ini",
             "--user-tag ${userTags}",
             args.insecure?.toBoolean() ? "--without-security" : "",
-            args.sigv4?.toBoolean() ? "--sigv4" : "",
+            sigv4 ? "--sigv4" : "",
             isNullOrEmpty(args.region) ? "" : "--region ${args.region}",
             isNullOrEmpty(args.service) ? "" : "--service ${args.service}",
             isNullOrEmpty(args.username) ? "" : "--username ${args.username}",

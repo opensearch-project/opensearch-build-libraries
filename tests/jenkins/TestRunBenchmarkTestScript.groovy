@@ -43,6 +43,7 @@ class TestRunBenchmarkTestScript extends BuildPipelineTest {
                 'false',
                 'true',
                 '',
+                'false',
                 'false'
         ))
         super.setUp()

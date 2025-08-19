@@ -24,10 +24,11 @@ class RunBenchmarkTestEndpointLibTester extends LibFunctionTester{
     private String includeTasks
     private String additionalConfig
     private String telemetryParams
+    private String sigv4
 
     public RunBenchmarkTestEndpointLibTester(command, endpoint, insecure, workload, userTag, workloadParams,
                                            testProcedure, excludeTasks, includeTasks,
-                                           additionalConfig,telemetryParams){
+                                           additionalConfig,telemetryParams, sigv4){
         this.command = command
         this.endpoint = endpoint
         this.insecure = insecure
@@ -39,6 +40,7 @@ class RunBenchmarkTestEndpointLibTester extends LibFunctionTester{
         this.includeTasks = includeTasks
         this.additionalConfig = additionalConfig
         this.telemetryParams = telemetryParams
+        this.sigv4 = sigv4
     }
 
 
