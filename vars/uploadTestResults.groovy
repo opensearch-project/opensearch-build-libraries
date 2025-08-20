@@ -7,7 +7,7 @@
  * compatible open source license.
  */
 void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@10.2.4', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@10.3.0', retriever: legacySCM(scm))
 
     def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.buildManifestFileName))
 

@@ -18,7 +18,7 @@
  * @param args.ciGroup <optional> The particular ci-group number to run the integration tests for
  */
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@10.2.4', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@10.3.0', retriever: legacySCM(scm))
 
     String jobName = args.jobName ?: 'distribution-build-opensearch'
     def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.buildManifest))
