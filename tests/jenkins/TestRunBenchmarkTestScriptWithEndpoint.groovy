@@ -32,7 +32,8 @@ class TestRunBenchmarkTestScriptWithEndpoint extends BuildPipelineTest {
                 '',
                 '',
                 '',
-                ''
+                '',
+                'true'
         ))
         super.setUp()
         helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
@@ -58,7 +59,7 @@ class TestRunBenchmarkTestScriptWithEndpoint extends BuildPipelineTest {
 
         assertThat(testScriptCommands.size(), equalTo(1))
         assertThat(testScriptCommands, hasItem(
-                "set +x && ./test.sh benchmark-test execute-test    --cluster-endpoint opensearch-ABCxdfdfhyfk.com  --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag true,security-enabled:true"
+                "set +x && ./test.sh benchmark-test execute-test    --cluster-endpoint opensearch-ABCxdfdfhyfk.com  --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag true,security-enabled:true  --sigv4"
         ))
     }
 

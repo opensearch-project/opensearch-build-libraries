@@ -47,7 +47,7 @@ void call(Map args = [:]) {
                     def rowData = [
                             gitReference: gitReference,
                             pullRequestLink: pullRequests.collect { pr -> "[${pr}](https://github.com/opensearch-project/OpenSearch/pull/${pr})" }.join('<br><br>'),
-                            buildDetailLink: buildNumber.collect { build -> "[${build}](https://build.ci.opensearch.org/job/gradle-check/${build}/testReport/)" }.join('<br><br>'),
+                            buildDetailLink: buildNumber.collect { build -> "[${build}](https://build.ci.opensearch.org/job/gradle-check/${build}/testReport/)" }.join(' <br><br>'),
                             testNames: testNames.collect { testName -> "`${testName}`" }
                     ]
                     testData << rowData

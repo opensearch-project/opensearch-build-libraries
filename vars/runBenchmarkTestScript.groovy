@@ -15,6 +15,9 @@
  * @param args.distributionVersion <optional> - Provide OpenSearch version if using distributionUrl param
  * @param args.endpoint <optional> - Endpoint to the cluster.
  * @param args.insecure <optional> - Force the security of the cluster to be disabled, default is false.
+ * @param args.sigv4 <optional> - Use AWS SigV4 authentication, default is false.
+ * @param args.region <optional> - AWS region for signing, default is us-east-1
+ * @param args.service <optional> - AWS service to sign for (es = OpenSearch Service, aoss = OpenSearch Serverless)
  * @param args.workload <required> - Name of the workload that OpenSearch Benchmark should run, default is nyc_taxis.
  * @param args.singleNode <optional> - Create single node OS cluster, default is true.
  * @param args.minDistribution <optional> - Use min distribution of OpenSearch for cluster, default is false.
@@ -55,14 +58,20 @@ void call(Map args = [:]) {
         buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.bundleManifest))
     }
 
-    config_name = isNullOrEmpty(args.config) ? 'config.yml' : args.config
-    benchmark_config = 'benchmark.ini'
-
     def secret_artifacts = [
         [envVar: 'ARTIFACT_BUCKET_NAME', secretRef: 'op://opensearch-infra-secrets/aws-resource-arns/jenkins-artifact-bucket-name'],
         [envVar: 'AWS_ACCOUNT_PUBLIC', secretRef: 'op://opensearch-infra-secrets/aws-accounts/jenkins-aws-account-public']
     ]
 
+    boolean sigv4
+    if (!isNullOrEmpty(args.sigv4)) {
+        sigv4 = args.sigv4.toBoolean()
+    } else {
+        sigv4 = false
+    }
+
+    def config_name = isNullOrEmpty(args.config) ? 'config.yml' : args.config
+    def benchmark_config = sigv4 ? 'benchmark_sigv4.ini' : 'benchmark.ini'
     withSecrets(secrets: secret_artifacts) {
         withAWS(role: 'opensearch-test', roleAccount: "${AWS_ACCOUNT_PUBLIC}", duration: 900, roleSessionName: 'jenkins-session') {
             if(isNullOrEmpty(args.endpoint) && args.command == 'execute-test') {
@@ -104,6 +113,9 @@ void call(Map args = [:]) {
             "--benchmark-config ${WORKSPACE}/benchmark.ini",
             "--user-tag ${userTags}",
             args.insecure?.toBoolean() ? "--without-security" : "",
+            sigv4 ? "--sigv4" : "",
+            isNullOrEmpty(args.region) ? "" : "--region ${args.region}",
+            isNullOrEmpty(args.service) ? "" : "--service ${args.service}",
             isNullOrEmpty(args.username) ? "" : "--username ${args.username}",
             isNullOrEmpty(args.password) ? "" : "--password ${args.password}",
             args.singleNode?.toBoolean() ? "--single-node" : "",
@@ -147,8 +159,11 @@ void call(Map args = [:]) {
         ].join(' ').trim()
     }
 
-    sh """set +x && ${command}"""
-
+    withCredentials([string(credentialsId: 'perf-test-account-id', variable: 'PERF_TEST_ACCOUNT_ID')]) {
+        withAWS(role: 'opensearch-full-access-nightlies', roleAccount: "${PERF_TEST_ACCOUNT_ID}", duration: 43200, roleSessionName: 'jenkins-session') {
+            sh """set +x && ${command}"""
+        }
+    }
 }
 
 void editBenchmarkConfig(String config_file) {
