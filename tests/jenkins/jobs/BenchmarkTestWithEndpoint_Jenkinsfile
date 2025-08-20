@@ -17,6 +17,7 @@ pipeline {
                             command: COMMAND,
                             endpoint: CLUSTER_ENDPOINT,
                             insecure: "false",
+                            sigv4: "true",
                             workload: TEST_WORKLOAD,
                             userTag: USER_TAGS.isEmpty() ? "security-enabled:true" : "${USER_TAGS},security-enabled:true",
                             workloadParams: WORKLOAD_PARAMS,
