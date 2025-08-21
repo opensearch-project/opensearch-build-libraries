@@ -19,7 +19,7 @@
  */
 
 def call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@11.0.0', retriever: legacySCM(scm))
 
     def secret_s3 = [
         [envVar: 'ARTIFACT_BUCKET_NAME', secretRef: 'op://opensearch-infra-secrets/aws-resource-arns/jenkins-artifact-bucket-name'],
