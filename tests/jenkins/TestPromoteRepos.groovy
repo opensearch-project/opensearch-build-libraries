@@ -24,7 +24,24 @@ class TestPromoteRepos extends BuildPipelineTest {
         this.registerLibTester(new PromoteReposLibTester('opensearch', '123', 'yum'))
         this.registerLibTester(new PromoteReposLibTester('opensearch', '123', 'apt'))
         super.setUp()
-
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('ARTIFACT_PROMOTION_ROLE_NAME', 'ARTIFACT_PROMOTION_ROLE_NAME')
+        binding.setVariable('AWS_ACCOUNT_ARTIFACT', 'AWS_ACCOUNT_ARTIFACT')
+        binding.setVariable('ARTIFACT_PRODUCTION_BUCKET_NAME', 'ARTIFACT_PRODUCTION_BUCKET_NAME')
+        binding.setVariable('RPM_SIGNING_ACCOUNT_NUMBER', 'RPM_SIGNING_ACCOUNT_NUMBER')
+        binding.setVariable('RPM_RELEASE_SIGNING_PASSPHRASE_SECRETS_ARN', 'RPM_RELEASE_SIGNING_PASSPHRASE_SECRETS_ARN')
+        binding.setVariable('RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN', 'RPM_RELEASE_SIGNING_SECRET_KEY_ID_SECRETS_ARN')
+        binding.setVariable('RPM_RELEASE_SIGNING_KEY_ID', 'RPM_RELEASE_SIGNING_KEY_ID')
+        binding.setVariable('RPM_SIGNING_PASSPHRASE_SECRETS_ARN', 'RPM_SIGNING_PASSPHRASE_SECRETS_ARN')
+        binding.setVariable('RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN', 'RPM_SIGNING_SECRET_KEY_ID_SECRETS_ARN')
+        binding.setVariable('RPM_SIGNING_KEY_ID', 'RPM_SIGNING_KEY_ID')
+        binding.setVariable('SIGNER_CLIENT_ROLE', 'SIGNER_CLIENT_ROLE')
+        binding.setVariable('SIGNER_CLIENT_EXTERNAL_ID', 'SIGNER_CLIENT_EXTERNAL_ID')
+        binding.setVariable('SIGNER_CLIENT_UNSIGNED_BUCKET', 'SIGNER_CLIENT_UNSIGNED_BUCKET')
+        binding.setVariable('SIGNER_CLIENT_SIGNED_BUCKET', 'SIGNER_CLIENT_SIGNED_BUCKET')
     }
 
     @Test

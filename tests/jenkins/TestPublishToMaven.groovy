@@ -20,6 +20,16 @@ class TestPublishToMaven extends BuildPipelineTest {
     void testWithDir(){
         this.registerLibTester(new PublishToMavenLibTester('/path/to/signing', '/path/to/artifacts', 'true'))
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('SIGNER_CLIENT_ROLE', 'SIGNER_CLIENT_ROLE')
+        binding.setVariable('SIGNER_CLIENT_EXTERNAL_ID', 'SIGNER_CLIENT_EXTERNAL_ID')
+        binding.setVariable('SIGNER_CLIENT_UNSIGNED_BUCKET', 'SIGNER_CLIENT_UNSIGNED_BUCKET')
+        binding.setVariable('SIGNER_CLIENT_SIGNED_BUCKET', 'SIGNER_CLIENT_SIGNED_BUCKET')
+        binding.setVariable('SONATYPE_USERNAME', "SONATYPE_USERNAME")
+        binding.setVariable('SONATYPE_PASSWORD', "SONATYPE_PASSWORD")
         super.testPipeline("tests/jenkins/jobs/PublishToMaven_Jenkinsfile")
 
         def signing = getCommands('signArtifacts', '')
@@ -37,6 +47,16 @@ class TestPublishToMaven extends BuildPipelineTest {
         this.registerLibTester(new PublishToMavenLibTester('/path/to/signing/manifest.yml', '/path/to/artifacts', 'false'))
 
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('SIGNER_CLIENT_ROLE', 'SIGNER_CLIENT_ROLE')
+        binding.setVariable('SIGNER_CLIENT_EXTERNAL_ID', 'SIGNER_CLIENT_EXTERNAL_ID')
+        binding.setVariable('SIGNER_CLIENT_UNSIGNED_BUCKET', 'SIGNER_CLIENT_UNSIGNED_BUCKET')
+        binding.setVariable('SIGNER_CLIENT_SIGNED_BUCKET', 'SIGNER_CLIENT_SIGNED_BUCKET')
+        binding.setVariable('SONATYPE_USERNAME', "SONATYPE_USERNAME")
+        binding.setVariable('SONATYPE_PASSWORD', "SONATYPE_PASSWORD")
         super.testPipeline("tests/jenkins/jobs/PublishToMavenManifestYml_Jenkinsfile")
 
         def signing = getCommands('signArtifacts', '')

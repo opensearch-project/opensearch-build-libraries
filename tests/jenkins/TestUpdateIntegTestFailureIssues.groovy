@@ -24,7 +24,6 @@ class TestUpdateIntegTestFailureIssues extends BuildPipelineTest {
     @Before
     void setUp() {
         super.setUp()
-        helper.registerAllowedMethod('withCredentials', [Map])
         helper.registerAllowedMethod('sleep', [Map])
         binding.setVariable('env', [
                 'METRICS_HOST_URL'     : 'sample.url',
@@ -32,10 +31,12 @@ class TestUpdateIntegTestFailureIssues extends BuildPipelineTest {
                 'AWS_SECRET_ACCESS_KEY': 'xyz',
                 'AWS_SESSION_TOKEN'    : 'sampleToken'
         ])
-        helper.registerAllowedMethod('withCredentials', [Map, Closure], { args, closure ->
+        helper.registerAllowedMethod('withSecrets', [Map, Closure], { args, closure ->
             closure.delegate = delegate
             return helper.callClosure(closure)
         })
+        binding.setVariable('METRICS_HOST_URL', "METRICS_HOST_URL")
+        binding.setVariable('METRICS_HOST_ACCOUNT', "METRICS_HOST_ACCOUNT")
         helper.registerAllowedMethod('withAWS', [Map, Closure], { args, closure ->
             closure.delegate = delegate
             return helper.callClosure(closure)

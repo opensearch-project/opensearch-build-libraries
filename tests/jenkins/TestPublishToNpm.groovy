@@ -22,6 +22,11 @@ class TestPublishToNpm extends BuildPipelineTest {
     @Before
     void setUp() {
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('NPM_TOKEN', "NPM_TOKEN")
     }
 
     @Test

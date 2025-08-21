@@ -22,7 +22,9 @@ class TestCheckReleaseIssues extends BuildPipelineTest {
     @Before
     void setUp() {
         super.setUp()
-        helper.registerAllowedMethod('withCredentials', [Map])
+        binding.setVariable('METRICS_HOST_ACCOUNT', "METRICS_HOST_ACCOUNT")
+        binding.setVariable('GITHUB_USER', "GITHUB_USER")
+        binding.setVariable('GITHUB_TOKEN', "GITHUB_TOKEN")
         helper.registerAllowedMethod('sleep', [Map])
         binding.setVariable('env', [
                 'METRICS_HOST_URL'     : 'sample.url',
@@ -30,7 +32,7 @@ class TestCheckReleaseIssues extends BuildPipelineTest {
                 'AWS_SECRET_ACCESS_KEY': 'xyz',
                 'AWS_SESSION_TOKEN'    : 'sampleToken'
         ])
-        helper.registerAllowedMethod('withCredentials', [Map, Closure], { args, closure ->
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
             closure.delegate = delegate
             return helper.callClosure(closure)
         })

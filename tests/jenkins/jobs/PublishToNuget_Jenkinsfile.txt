@@ -16,14 +16,7 @@
                      signArtifacts.fileExists(/tmp/workspace/sign.sh)
                      signArtifacts.dir(opensearch-build, groovy.lang.Closure)
                         signArtifacts.git({url=https://github.com/opensearch-project/opensearch-build.git, branch=main})
-                     signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
-                     signArtifacts.string({credentialsId=jenkins-signer-windows-role, variable=SIGNER_WINDOWS_ROLE})
-                     signArtifacts.string({credentialsId=jenkins-signer-windows-external-id, variable=SIGNER_WINDOWS_EXTERNAL_ID})
-                     signArtifacts.string({credentialsId=jenkins-signer-windows-unsigned-bucket, variable=SIGNER_WINDOWS_UNSIGNED_BUCKET})
-                     signArtifacts.string({credentialsId=jenkins-signer-windows-signed-bucket, variable=SIGNER_WINDOWS_SIGNED_BUCKET})
-                     signArtifacts.string({credentialsId=jenkins-signer-windows-profile-identifier, variable=SIGNER_WINDOWS_PROFILE_IDENTIFIER})
-                     signArtifacts.string({credentialsId=jenkins-signer-windows-platform-identifier, variable=SIGNER_WINDOWS_PLATFORM_IDENTIFIER})
-                     signArtifacts.withCredentials([[GITHUB_USER, GITHUB_TOKEN], SIGNER_WINDOWS_ROLE, SIGNER_WINDOWS_EXTERNAL_ID, SIGNER_WINDOWS_UNSIGNED_BUCKET, SIGNER_WINDOWS_SIGNED_BUCKET, SIGNER_WINDOWS_PROFILE_IDENTIFIER, SIGNER_WINDOWS_PLATFORM_IDENTIFIER], groovy.lang.Closure)
+                     signArtifacts.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-token}, {envVar=SIGNER_WINDOWS_ROLE, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-role}, {envVar=SIGNER_WINDOWS_EXTERNAL_ID, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-external-id}, {envVar=SIGNER_WINDOWS_UNSIGNED_BUCKET, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-unsigned-bucket}, {envVar=SIGNER_WINDOWS_SIGNED_BUCKET, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-signed-bucket}, {envVar=SIGNER_WINDOWS_PROFILE_IDENTIFIER, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-profile-identifier}, {envVar=SIGNER_WINDOWS_PLATFORM_IDENTIFIER, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-platform-identifier}]}, groovy.lang.Closure)
                         signArtifacts.sh(#!/bin/bash
                    set +x
                    export ROLE=SIGNER_WINDOWS_ROLE
@@ -39,14 +32,7 @@
                      signArtifacts.fileExists(/tmp/workspace/sign.sh)
                      signArtifacts.dir(opensearch-build, groovy.lang.Closure)
                         signArtifacts.git({url=https://github.com/opensearch-project/opensearch-build.git, branch=main})
-                     signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
-                     signArtifacts.string({credentialsId=jenkins-signer-windows-role, variable=SIGNER_WINDOWS_ROLE})
-                     signArtifacts.string({credentialsId=jenkins-signer-windows-external-id, variable=SIGNER_WINDOWS_EXTERNAL_ID})
-                     signArtifacts.string({credentialsId=jenkins-signer-windows-unsigned-bucket, variable=SIGNER_WINDOWS_UNSIGNED_BUCKET})
-                     signArtifacts.string({credentialsId=jenkins-signer-windows-signed-bucket, variable=SIGNER_WINDOWS_SIGNED_BUCKET})
-                     signArtifacts.string({credentialsId=jenkins-signer-windows-profile-identifier, variable=SIGNER_WINDOWS_PROFILE_IDENTIFIER})
-                     signArtifacts.string({credentialsId=jenkins-signer-windows-platform-identifier, variable=SIGNER_WINDOWS_PLATFORM_IDENTIFIER})
-                     signArtifacts.withCredentials([[GITHUB_USER, GITHUB_TOKEN], SIGNER_WINDOWS_ROLE, SIGNER_WINDOWS_EXTERNAL_ID, SIGNER_WINDOWS_UNSIGNED_BUCKET, SIGNER_WINDOWS_SIGNED_BUCKET, SIGNER_WINDOWS_PROFILE_IDENTIFIER, SIGNER_WINDOWS_PLATFORM_IDENTIFIER], groovy.lang.Closure)
+                     signArtifacts.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-token}, {envVar=SIGNER_WINDOWS_ROLE, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-role}, {envVar=SIGNER_WINDOWS_EXTERNAL_ID, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-external-id}, {envVar=SIGNER_WINDOWS_UNSIGNED_BUCKET, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-unsigned-bucket}, {envVar=SIGNER_WINDOWS_SIGNED_BUCKET, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-signed-bucket}, {envVar=SIGNER_WINDOWS_PROFILE_IDENTIFIER, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-profile-identifier}, {envVar=SIGNER_WINDOWS_PLATFORM_IDENTIFIER, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-platform-identifier}]}, groovy.lang.Closure)
                         signArtifacts.sh(#!/bin/bash
                    set +x
                    export ROLE=SIGNER_WINDOWS_ROLE
@@ -62,14 +48,7 @@
                      signArtifacts.fileExists(/tmp/workspace/sign.sh)
                      signArtifacts.dir(opensearch-build, groovy.lang.Closure)
                         signArtifacts.git({url=https://github.com/opensearch-project/opensearch-build.git, branch=main})
-                     signArtifacts.usernamePassword({credentialsId=github_bot_token_name, usernameVariable=GITHUB_USER, passwordVariable=GITHUB_TOKEN})
-                     signArtifacts.string({credentialsId=jenkins-signer-windows-role, variable=SIGNER_WINDOWS_ROLE})
-                     signArtifacts.string({credentialsId=jenkins-signer-windows-external-id, variable=SIGNER_WINDOWS_EXTERNAL_ID})
-                     signArtifacts.string({credentialsId=jenkins-signer-windows-unsigned-bucket, variable=SIGNER_WINDOWS_UNSIGNED_BUCKET})
-                     signArtifacts.string({credentialsId=jenkins-signer-windows-signed-bucket, variable=SIGNER_WINDOWS_SIGNED_BUCKET})
-                     signArtifacts.string({credentialsId=jenkins-signer-windows-profile-identifier, variable=SIGNER_WINDOWS_PROFILE_IDENTIFIER})
-                     signArtifacts.string({credentialsId=jenkins-signer-windows-platform-identifier, variable=SIGNER_WINDOWS_PLATFORM_IDENTIFIER})
-                     signArtifacts.withCredentials([[GITHUB_USER, GITHUB_TOKEN], SIGNER_WINDOWS_ROLE, SIGNER_WINDOWS_EXTERNAL_ID, SIGNER_WINDOWS_UNSIGNED_BUCKET, SIGNER_WINDOWS_SIGNED_BUCKET, SIGNER_WINDOWS_PROFILE_IDENTIFIER, SIGNER_WINDOWS_PLATFORM_IDENTIFIER], groovy.lang.Closure)
+                     signArtifacts.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-token}, {envVar=SIGNER_WINDOWS_ROLE, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-role}, {envVar=SIGNER_WINDOWS_EXTERNAL_ID, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-external-id}, {envVar=SIGNER_WINDOWS_UNSIGNED_BUCKET, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-unsigned-bucket}, {envVar=SIGNER_WINDOWS_SIGNED_BUCKET, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-signed-bucket}, {envVar=SIGNER_WINDOWS_PROFILE_IDENTIFIER, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-profile-identifier}, {envVar=SIGNER_WINDOWS_PLATFORM_IDENTIFIER, secretRef=op://opensearch-infra-secrets/windows-signing/jenkins-signer-windows-platform-identifier}]}, groovy.lang.Closure)
                         signArtifacts.sh(#!/bin/bash
                    set +x
                    export ROLE=SIGNER_WINDOWS_ROLE
@@ -85,8 +64,7 @@
         dotnet pack /tmp/workspace/test-solution-file.sln --configuration Release --no-build
         find src -name OpenSearch*.nupkg > /tmp/workspace/nupkg.txt
     )
-                  publishToNuget.string({credentialsId=net-api-key, variable=API_KEY})
-                  publishToNuget.withCredentials([API_KEY], groovy.lang.Closure)
+                  publishToNuget.withSecrets({secrets=[{envVar=API_KEY, secretRef=op://opensearch-infra-secrets/nuget/net-api-key}]}, groovy.lang.Closure)
                      publishToNuget.readFile({file=/tmp/workspace/nupkg.txt})
                      publishToNuget.sh(dotnet nuget push /tmp/workspace/src/net/one.nupkg --api-key API_KEY --source https://api.nuget.org/v3/index.json)
                      publishToNuget.sh(dotnet nuget push /tmp/workspace/src/net/two.nupkg --api-key API_KEY --source https://api.nuget.org/v3/index.json)

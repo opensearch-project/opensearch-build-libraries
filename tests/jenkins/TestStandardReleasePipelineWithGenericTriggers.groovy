@@ -64,6 +64,12 @@ class TestStandardReleasePipelineWithGenericTriggers extends BuildPipelineTest {
         helper.registerAllowedMethod('readJSON', [Map], { Map parameters ->
             return new JsonSlurper().parseText(json)
         })
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('GITHUB_USER', "GITHUB_USER")
+        binding.setVariable('GITHUB_TOKEN', "GITHUB_TOKEN")
         super.setUp()
     }
 

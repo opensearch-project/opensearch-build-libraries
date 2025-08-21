@@ -30,9 +30,13 @@ void call(Map args = [:]) {
     )
 
     println("Stage and Release Maven artifacts.")
-    withCredentials([
-        string(credentialsId: 'maven-central-portal-username', variable: 'SONATYPE_USERNAME'),
-        string(credentialsId: 'maven-central-portal-token', variable: 'SONATYPE_PASSWORD')]) {
+
+    def secret_maven_central = [
+        [envVar: 'SONATYPE_USERNAME', secretRef: 'op://opensearch-infra-secrets/maven-central-portal-credentials/username'],
+        [envVar: 'SONATYPE_PASSWORD', secretRef: 'op://opensearch-infra-secrets/maven-central-portal-credentials/password']
+    ]
+
+    withSecrets(secrets: secret_maven_central){
             sh("./stage-maven-release.sh -d ${args.mavenArtifactsPath} -a ${autoPublish}")
         }
 }

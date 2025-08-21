@@ -6,9 +6,7 @@
                RunGradleCheck_Jenkinsfile.runGradleCheck({gitRepoUrl=https://github.com/opensearch-project/OpenSearch, gitReference=main, bwcCheckoutAlign=false})
                   runGradleCheck.legacySCM(groovy.lang.Closure)
                   runGradleCheck.library({identifier=jenkins@main, retriever=null})
-                  runGradleCheck.usernamePassword({credentialsId=jenkins-gradle-check-s3-aws-credentials, usernameVariable=amazon_s3_access_key, passwordVariable=amazon_s3_secret_key})
-                  runGradleCheck.usernamePassword({credentialsId=jenkins-gradle-check-s3-aws-resources, usernameVariable=amazon_s3_base_path, passwordVariable=amazon_s3_bucket})
-                  runGradleCheck.withCredentials([[amazon_s3_access_key, amazon_s3_secret_key], [amazon_s3_base_path, amazon_s3_bucket]], groovy.lang.Closure)
+                  runGradleCheck.withSecrets({secrets=[{envVar=amazon_s3_access_key, secretRef=op://opensearch-infra-secrets/gradle-check/jenkins-gradle-check-s3-aws-access-key}, {envVar=amazon_s3_secret_key, secretRef=op://opensearch-infra-secrets/gradle-check/jenkins-gradle-check-s3-aws-secret-key}, {envVar=amazon_s3_base_path, secretRef=op://opensearch-infra-secrets/gradle-check/jenkins-gradle-check-s3-aws-base-path}, {envVar=amazon_s3_bucket, secretRef=op://opensearch-infra-secrets/gradle-check/jenkins-gradle-check-s3-aws-bucket-name}]}, groovy.lang.Closure)
                      runGradleCheck.sh(
                 #!/bin/bash
 

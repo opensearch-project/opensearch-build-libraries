@@ -58,6 +58,11 @@ void call(Map args = [:]) {
         buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.bundleManifest))
     }
 
+    def secret_artifacts = [
+        [envVar: 'ARTIFACT_BUCKET_NAME', secretRef: 'op://opensearch-infra-secrets/aws-resource-arns/jenkins-artifact-bucket-name'],
+        [envVar: 'AWS_ACCOUNT_PUBLIC', secretRef: 'op://opensearch-infra-secrets/aws-accounts/jenkins-aws-account-public']
+    ]
+
     boolean sigv4
     if (!isNullOrEmpty(args.sigv4)) {
         sigv4 = args.sigv4.toBoolean()
@@ -67,8 +72,7 @@ void call(Map args = [:]) {
 
     def config_name = isNullOrEmpty(args.config) ? 'config.yml' : args.config
     def benchmark_config = sigv4 ? 'benchmark_sigv4.ini' : 'benchmark.ini'
-    withCredentials([string(credentialsId: 'jenkins-aws-account-public', variable: 'AWS_ACCOUNT_PUBLIC'),
-                    string(credentialsId: 'jenkins-artifact-bucket-name', variable: 'ARTIFACT_BUCKET_NAME')]) {
+    withSecrets(secrets: secret_artifacts) {
         withAWS(role: 'opensearch-test', roleAccount: "${AWS_ACCOUNT_PUBLIC}", duration: 900, roleSessionName: 'jenkins-session') {
             if(isNullOrEmpty(args.endpoint) && args.command == 'execute-test') {
                 s3Download(file: 'config.yml', bucket: "${ARTIFACT_BUCKET_NAME}", path: "${BENCHMARK_TEST_CONFIG_LOCATION}/${config_name}", force: true)
@@ -163,8 +167,12 @@ void call(Map args = [:]) {
 }
 
 void editBenchmarkConfig(String config_file) {
-    withCredentials([string(credentialsId: 'benchmark-metrics-datastore-user', variable: 'DATASTORE_USER'),
-                     string(credentialsId: 'benchmark-metrics-datastore-password', variable: 'DATASTORE_PASSWORD')]) {
+    def secret_benchmark_metrics = [
+        [envVar: 'DATASTORE_USER', secretRef: 'op://opensearch-infra-secrets/benchmark-metrics/benchmark-metrics-datastore-user'],
+        [envVar: 'DATASTORE_PASSWORD', secretRef: 'op://opensearch-infra-secrets/benchmark-metrics/benchmark-metrics-datastore-password']
+    ]
+
+    withSecrets(secrets: secret_benchmark_metrics){
         def file = readFile(file: "${config_file}")
         def contents = file.replace("insert_user_here", "${DATASTORE_USER}")
         contents = contents.replace("insert_password_here", "${DATASTORE_PASSWORD}")

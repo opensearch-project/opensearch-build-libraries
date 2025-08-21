@@ -17,6 +17,11 @@ import utils.TemplateProcessor
  * @param args.action <optional> - Action to be performed. Default is 'check'. Acceptable values are 'check', 'request' and 'assign'.
  */
 void call(Map args = [:]) {
+    def secret_metrics_cluster = [
+        [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-infra-secrets/aws-accounts/jenkins-health-metrics-account-number'],
+        [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-infra-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
+    ]
+
     def inputManifest = args.inputManifest
     String action = args.action ?: 'check'
 
@@ -29,9 +34,7 @@ void call(Map args = [:]) {
 
     inputManifest.each { inputManifestFile ->
         def inputManifestObj = readYaml(file: inputManifestFile)
-        withCredentials([
-                string(credentialsId: 'jenkins-health-metrics-account-number', variable: 'METRICS_HOST_ACCOUNT'),
-                string(credentialsId: 'jenkins-health-metrics-cluster-endpoint', variable: 'METRICS_HOST_URL')]) {
+        withSecrets(secrets: secret_metrics_cluster){
             withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
                 def metricsUrl = env.METRICS_HOST_URL
                 def awsAccessKey = env.AWS_ACCESS_KEY_ID
@@ -115,10 +118,15 @@ private void handleMissingReleaseOwner(def component, ReleaseMetricsData release
  * Notify maintainers about missing release owner
  */
 private void requestMaintainers(String componentName, String releaseIssueUrl, List<String> maintainersWithTag) {
+    def secret_github_bot = [
+        [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-username'],
+        [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-token']
+    ]
+
     try {
         Map values = [LIST_OF_MAINTAINERS: maintainersWithTag.join(", ")]
         def githubCommentBody = new TemplateProcessor(this).process("release/request-release-owner-template.md", values, "${WORKSPACE}")
-        withCredentials([usernamePassword(credentialsId: 'jenkins-github-bot-token', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'GITHUB_USER')]) {
+        withSecrets(secrets: secret_github_bot){
             sh(
                     script: "gh issue comment ${releaseIssueUrl} --body-file ${githubCommentBody}",
                     returnStdout: true
@@ -133,13 +141,18 @@ private void requestMaintainers(String componentName, String releaseIssueUrl, Li
  * Assign a random maintainer as release owner
  */
 private void assignRandomMaintainer(String componentName, String releaseIssueUrl, List<String> maintainersWithTag) {
+    def secret_github_bot = [
+        [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-username'],
+        [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-token']
+    ]
+
     try {
         def random = new Random()
         def randomReleaseOwner = maintainersWithTag[random.nextInt(maintainersWithTag.size())]
         def randomReleaseOwnerFormatted = randomReleaseOwner.replace("@", '')
         Map values = [RELEASE_OWNER: randomReleaseOwner]
         def githubCommentBody = new TemplateProcessor(this).process("release/release-owner-assignment-template.md", values, "${WORKSPACE}")
-        withCredentials([usernamePassword(credentialsId: 'jenkins-github-bot-token', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'GITHUB_USER')]) {
+        withSecrets(secrets: secret_github_bot){
             sh(
                     script: "gh issue comment ${releaseIssueUrl} --body-file ${githubCommentBody}",
                     returnStdout: true

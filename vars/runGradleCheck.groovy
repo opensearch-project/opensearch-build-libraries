@@ -26,9 +26,14 @@ void call(Map args = [:]) {
         System.exit(1)
     }
     else {
-        withCredentials([
-            usernamePassword(credentialsId: "jenkins-gradle-check-s3-aws-credentials", usernameVariable: 'amazon_s3_access_key', passwordVariable: 'amazon_s3_secret_key'),
-            usernamePassword(credentialsId: "jenkins-gradle-check-s3-aws-resources", usernameVariable: 'amazon_s3_base_path', passwordVariable: 'amazon_s3_bucket')]) {
+        def secret_s3 = [
+            [envVar: 'amazon_s3_access_key', secretRef: 'op://opensearch-infra-secrets/gradle-check/jenkins-gradle-check-s3-aws-access-key'],
+            [envVar: 'amazon_s3_secret_key', secretRef: 'op://opensearch-infra-secrets/gradle-check/jenkins-gradle-check-s3-aws-secret-key'],
+            [envVar: 'amazon_s3_base_path', secretRef: 'op://opensearch-infra-secrets/gradle-check/jenkins-gradle-check-s3-aws-base-path'],
+            [envVar: 'amazon_s3_bucket', secretRef: 'op://opensearch-infra-secrets/gradle-check/jenkins-gradle-check-s3-aws-bucket-name']
+        ]
+
+        withSecrets(secrets: secret_s3){
 
             sh """
                 #!/bin/bash

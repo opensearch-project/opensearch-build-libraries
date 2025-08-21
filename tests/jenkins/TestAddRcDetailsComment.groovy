@@ -22,18 +22,25 @@ class TestAddRcDetailsComment extends BuildPipelineTest {
     @Before
     void setUp() {
         super.setUp()
-        helper.registerAllowedMethod('withCredentials', [Map])
         helper.registerAllowedMethod('sleep', [Map])
+        helper.registerAllowedMethod("withSecrets", [Map])
         binding.setVariable('env', [
                 'METRICS_HOST_URL'     : 'sample.url',
                 'AWS_ACCESS_KEY_ID'    : 'abc',
                 'AWS_SECRET_ACCESS_KEY': 'xyz',
                 'AWS_SESSION_TOKEN'    : 'sampleToken'
         ])
-        helper.registerAllowedMethod('withCredentials', [Map, Closure], { args, closure ->
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
             closure.delegate = delegate
             return helper.callClosure(closure)
         })
+        binding.setVariable('METRICS_HOST_ACCOUNT', "METRICS_HOST_ACCOUNT")
+        binding.setVariable('GITHUB_USER', "GITHUB_USER")
+        binding.setVariable('GITHUB_TOKEN', "GITHUB_TOKEN")
+        binding.setVariable('JENKINS_BASE_URL', "https://build.ci.opensearch.org")
+        binding.setVariable('BLUE_OCEAN_URL', "blue/rest/organizations/jenkins/pipelines")
+        binding.setVariable('buildJobName', "distribution-build-opensearch")
+        binding.setVariable('distributionRcBuildNumber', "10787")
         helper.registerAllowedMethod('withAWS', [Map, Closure], { args, closure ->
             closure.delegate = delegate
             return helper.callClosure(closure)

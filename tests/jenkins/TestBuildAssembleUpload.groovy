@@ -30,12 +30,10 @@ class TestBuildAssembleUpload extends BuildPipelineTest {
         binding.setVariable('ARTIFACT_PROMOTION_ROLE_NAME', 'role')
         binding.setVariable('AWS_ACCOUNT_ARTIFACT', 'dummy')
         binding.setVariable('ARTIFACT_PRODUCTION_BUCKET_NAME', 'bucket')
-
-        helper.registerAllowedMethod("withCredentials", [List, Closure], { list, closure ->
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
             closure.delegate = delegate
             return helper.callClosure(closure)
         })
-
         helper.registerAllowedMethod("s3Upload", [Map])
         helper.registerAllowedMethod("writeJSON", [Map])
         helper.registerAllowedMethod("withAWS", [Map, Closure], { args, closure ->

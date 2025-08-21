@@ -4,8 +4,7 @@
          CheckDocumentationPRs_Jenkinsfile.stage(check-doc-prs, groovy.lang.Closure)
             CheckDocumentationPRs_Jenkinsfile.script(groovy.lang.Closure)
                CheckDocumentationPRs_Jenkinsfile.checkDocumentationPullRequests({version=3.0.0-beta1})
-                  checkDocumentationPullRequests.usernamePassword({credentialsId=jenkins-github-bot-token, passwordVariable=GITHUB_TOKEN, usernameVariable=GITHUB_USER})
-                  checkDocumentationPullRequests.withCredentials([[GITHUB_USER, GITHUB_TOKEN]], groovy.lang.Closure)
+                  checkDocumentationPullRequests.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-token}]}, groovy.lang.Closure)
                      checkDocumentationPullRequests.sh({script=gh pr list --repo opensearch-project/documentation-website --state open --label v3.0.0 -S "-label:\"6 - Done but waiting to merge\"" --json url --jq '.[].url', returnStdout=true})
                      checkDocumentationPullRequests.echo(Documentation pull requests pending to be merged: 
 https://github.com/opensearch-project/documentation-website/pull/123)

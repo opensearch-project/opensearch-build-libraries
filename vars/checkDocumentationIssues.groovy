@@ -15,6 +15,11 @@ import utils.TemplateProcessor
  * @param args.action <optional> - Action to be performed. Default is 'check'. Acceptable values are 'check' and 'notify'.
  */
 void call(Map args = [:]) {
+    def secret_github_bot = [
+        [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-username'],
+        [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-token']
+    ]
+
     String action = args.action ?: 'check'
     // Validate Parameters
     validateParameters(args)
@@ -22,7 +27,7 @@ void call(Map args = [:]) {
     // Qualifiers are not a part of the labels in GitHub. Ignoring it.
     def version = versionTokenize[0]
 
-    withCredentials([usernamePassword(credentialsId: 'jenkins-github-bot-token', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'GITHUB_USER')]) {
+    withSecrets(secrets: secret_github_bot){
         def openIssues = sh(
                 script: "gh issue list --repo opensearch-project/documentation-website --state open --label v${version} -S \"-linked:pr\" --json number --jq '.[].number'",
                 returnStdout: true

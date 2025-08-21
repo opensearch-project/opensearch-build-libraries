@@ -19,6 +19,12 @@ class TestUploadIndexFile extends BuildPipelineTest {
         this.registerLibTester(new UploadToS3LibTester('index.json', 'ARTIFACT_BUCKET_NAME', 'test/index.json'))
 
         super.setUp()
+
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('ARTIFACT_BUCKET_NAME', "ARTIFACT_BUCKET_NAME")
     }
 
     @Test

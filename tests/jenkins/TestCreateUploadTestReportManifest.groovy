@@ -29,6 +29,12 @@ class TestCreateUploadTestReportManifest extends BuildPipelineTest {
             )
         )
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('ARTIFACT_BUCKET_NAME', "ARTIFACT_BUCKET_NAME")
+        binding.setVariable('AWS_ACCOUNT_PUBLIC', "AWS_ACCOUNT_PUBLIC")
         super.testPipeline("tests/jenkins/jobs/CreateUploadTestReportManifest_Jenkinsfile")
         assertThat(getShellCommands('sh', 'report.sh'), hasItems('./report.sh tests/data/opensearch-1.3.0-test.yml --artifact-paths opensearch=https://ci.opensearch.org/ci/dbc/distribution-build-opensearch/1.3.0/29/linux/x64/tar --test-run-id 1234 --test-type integ-test --base-path DUMMY_PUBLIC_ARTIFACT_URL/dummy_integ_test/1.3.0/29/linux/x64/tar  '))
         assertThat(getShellCommands('sh', 'report.sh'), hasItems('./report.sh tests/data/opensearch-dashboards-1.3.0-test.yml --artifact-paths opensearch=https://ci.opensearch.org/ci/dbc/distribution-build-opensearch/1.3.0/29/linux/x64/tar opensearch-dashboards=https://ci.opensearch.org/ci/dbc/distribution-build-opensearch-dashboards/1.3.0/25b38c278cdd45efa583765d8ba76346/linux/x64/tar --test-run-id 1234 --test-type integ-test --base-path DUMMY_PUBLIC_ARTIFACT_URL/dummy_integ_test/1.3.0/25b38c278cdd45efa583765d8ba76346/linux/x64/tar  '))

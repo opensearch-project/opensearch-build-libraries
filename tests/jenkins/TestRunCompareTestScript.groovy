@@ -31,6 +31,15 @@ class TestRunCompareTestScript extends BuildPipelineTest {
                 'tests/data/opensearch-1.3.0-bundle.yml'
         ))
         super.setUp()
+        helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
+            closure.delegate = delegate
+            return helper.callClosure(closure)
+        })
+        binding.setVariable('ARTIFACT_BUCKET_NAME', "ARTIFACT_BUCKET_NAME")
+        binding.setVariable('AWS_ACCOUNT_PUBLIC', "AWS_ACCOUNT_PUBLIC")
+        binding.setVariable('DATASTORE_USER', "DATASTORE_USER")
+        binding.setVariable('DATASTORE_PASSWORD', "DATASTORE_PASSWORD")
+        binding.setVariable('DATASTORE_ENDPOINT', "DATASTORE_ENDPOINT")
     }
 
     @Test

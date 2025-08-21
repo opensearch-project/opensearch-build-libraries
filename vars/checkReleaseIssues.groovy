@@ -14,6 +14,16 @@ import jenkins.ReleaseMetricsData
  * @param args.action <optional> - Action to be performed. Default is 'check'. Acceptable values are 'check' and 'create'.
  */
 void call(Map args = [:]) {
+    def secret_metrics_cluster = [
+        [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-infra-secrets/aws-accounts/jenkins-health-metrics-account-number'],
+        [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-infra-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
+    ]
+
+    def secret_github_bot = [
+        [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-username'],
+        [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-infra-secrets/github-bot/ci-bot-token']
+    ]
+
     def inputManifest = args.inputManifest
     String action = args.action ?: 'check'
 
@@ -31,9 +41,7 @@ void call(Map args = [:]) {
 
     inputManifest.each { inputManifestFile ->
         def inputManifestObj = readYaml(file: inputManifestFile)
-        withCredentials([
-                string(credentialsId: 'jenkins-health-metrics-account-number', variable: 'METRICS_HOST_ACCOUNT'),
-                string(credentialsId: 'jenkins-health-metrics-cluster-endpoint', variable: 'METRICS_HOST_URL')]) {
+        withSecrets(secrets: secret_metrics_cluster){
             withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
                 def metricsUrl = env.METRICS_HOST_URL
                 def awsAccessKey = env.AWS_ACCESS_KEY_ID
@@ -52,7 +60,7 @@ void call(Map args = [:]) {
     echo("Components missing release issues: " + componentsMissingReleaseIssue)
 
     if (action == 'create' && !componentsMissingReleaseIssue.isEmpty()) {
-        withCredentials([usernamePassword(credentialsId: 'jenkins-github-bot-token', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'GITHUB_USER')]) {
+        withSecrets(secrets: secret_github_bot){
             println("Triggering GitHub workflows for creating issues:")
             try {
                 sh(
