@@ -5,7 +5,7 @@
             BuildShManifestIncremental_Jenkinsfile.script(groovy.lang.Closure)
                BuildShManifestIncremental_Jenkinsfile.buildManifest({inputManifest=tests/data/opensearch-input-2.12.0.yml, distribution=tar, platform=linux, architecture=x64, incremental=true, previousBuildId=latest})
                   buildManifest.legacySCM(groovy.lang.Closure)
-                  buildManifest.library({identifier=jenkins@11.0.0, retriever=null})
+                  buildManifest.library({identifier=jenkins@11.0.1, retriever=null})
                   buildManifest.readYaml({file=tests/data/opensearch-input-2.12.0.yml})
                   InputManifest.asBoolean()
                   buildManifest.isUnix()
@@ -18,7 +18,7 @@
                   buildManifest.retrievePreviousBuild({inputManifest=tests/data/opensearch-input-2.12.0.yml, distribution=tar, platform=linux, architecture=x64, incremental=true, previousBuildId=latest, distributionBuildNumber=bbb
 ccc})
                      retrievePreviousBuild.legacySCM(groovy.lang.Closure)
-                     retrievePreviousBuild.library({identifier=jenkins@11.0.0, retriever=null})
+                     retrievePreviousBuild.library({identifier=jenkins@11.0.1, retriever=null})
                      retrievePreviousBuild.readYaml({file=tests/data/opensearch-input-2.12.0.yml})
                      InputManifest.asBoolean()
                      retrievePreviousBuild.withSecrets({secrets=[{envVar=ARTIFACT_BUCKET_NAME, secretRef=op://opensearch-infra-secrets/aws-resource-arns/jenkins-artifact-bucket-name}]}, groovy.lang.Closure)
