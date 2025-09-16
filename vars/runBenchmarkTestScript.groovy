@@ -159,7 +159,11 @@ void call(Map args = [:]) {
         ].join(' ').trim()
     }
 
-    withCredentials([string(credentialsId: 'perf-test-account-id', variable: 'PERF_TEST_ACCOUNT_ID')]) {
+    def secret_perf_account = [
+        [envVar: 'PERF_TEST_ACCOUNT_ID', secretRef: 'op://opensearch-infra-secrets/aws-accounts/perf-test-account-id']
+    ]
+
+    withSecrets(secrets: secret_perf_account) {
         withAWS(role: 'opensearch-full-access-nightlies', roleAccount: "${PERF_TEST_ACCOUNT_ID}", duration: 43200, roleSessionName: 'jenkins-session') {
             sh """set +x && ${command}"""
         }
