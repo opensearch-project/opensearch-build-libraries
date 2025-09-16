@@ -40,6 +40,7 @@ class TestRunCompareTestScript extends BuildPipelineTest {
         binding.setVariable('DATASTORE_USER', "DATASTORE_USER")
         binding.setVariable('DATASTORE_PASSWORD', "DATASTORE_PASSWORD")
         binding.setVariable('DATASTORE_ENDPOINT', "DATASTORE_ENDPOINT")
+        binding.setVariable('PERF_TEST_ACCOUNT_ID', "PERF_TEST_ACCOUNT_ID")
     }
 
     @Test
