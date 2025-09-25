@@ -1,0 +1,31 @@
+/**
+ * Copyright OpenSearch Contributors
+ * SPDX-License-Identifier: Apache-2.0
+
+ The OpenSearch Contributors require contributions made to
+ this file be licensed under the Apache-2.0 license or a
+ compatible open source license.
+*/
+
+pipeline {
+    agent none
+    parameters {
+        string(
+            name: 'PRODUCT',
+            description: 'Which product to build RC for: opensearch, opensearch-dashboards or both',
+            trim: true
+        )
+    }
+    stages {
+        stage('buildBothRC') {
+            steps {
+                script {
+                    buildRC(
+                        version: '2.19.0',
+                        product: "${params.PRODUCT}"
+                    )
+                }
+            }
+        }
+    }
+}
