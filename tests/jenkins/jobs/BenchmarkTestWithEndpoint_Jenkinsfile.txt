@@ -5,7 +5,7 @@
             BenchmarkTestWithEndpoint_Jenkinsfile.script(groovy.lang.Closure)
                BenchmarkTestWithEndpoint_Jenkinsfile.runBenchmarkTestScript({command=execute-test, endpoint=opensearch-ABCxdfdfhyfk.com, insecure=false, sigv4=true, workload=nyc_taxis, userTag=true,security-enabled:true, workloadParams=, testProcedure=, excludeTasks=, includeTasks=, additionalConfig=, telemetryParams=})
                   runBenchmarkTestScript.legacySCM(groovy.lang.Closure)
-                  runBenchmarkTestScript.library({identifier=jenkins@11.0.1, retriever=null})
+                  runBenchmarkTestScript.library({identifier=jenkins@11.1.0, retriever=null})
                   runBenchmarkTestScript.withSecrets({secrets=[{envVar=ARTIFACT_BUCKET_NAME, secretRef=op://opensearch-infra-secrets/aws-resource-arns/jenkins-artifact-bucket-name}, {envVar=AWS_ACCOUNT_PUBLIC, secretRef=op://opensearch-infra-secrets/aws-accounts/jenkins-aws-account-public}]}, groovy.lang.Closure)
                      runBenchmarkTestScript.withAWS({role=opensearch-test, roleAccount=dummy_account, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)
                         runBenchmarkTestScript.s3Download({file=benchmark.ini, bucket=test_bucket, path=test_config/benchmark_sigv4.ini, force=true})

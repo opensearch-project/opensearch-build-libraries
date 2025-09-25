@@ -5,7 +5,7 @@
             CheckIntegTestResultsOverview_Jenkinsfile.script(groovy.lang.Closure)
                CheckIntegTestResultsOverview_Jenkinsfile.checkIntegTestResultsOverview({inputManifest=[tests/data/opensearch-input-2.12.0.yml, tests/data/opensearch-dashboards-input-2.12.0.yml]})
                   checkIntegTestResultsOverview.legacySCM(groovy.lang.Closure)
-                  checkIntegTestResultsOverview.library({identifier=jenkins@11.0.1, retriever=null})
+                  checkIntegTestResultsOverview.library({identifier=jenkins@11.1.0, retriever=null})
                   checkIntegTestResultsOverview.fileExists(tests/data/opensearch-input-2.12.0.yml)
                   checkIntegTestResultsOverview.fileExists(tests/data/opensearch-dashboards-input-2.12.0.yml)
                   checkIntegTestResultsOverview.readYaml({file=tests/data/opensearch-input-2.12.0.yml})
