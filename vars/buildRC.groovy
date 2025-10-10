@@ -92,8 +92,8 @@ def triggerBuildWorkflow(String version, String product, String rcNumber) {
             booleanParam(name: 'CONTINUE_ON_ERROR', value: false),
             booleanParam(name: 'UPDATE_GITHUB_ISSUE', value: true),
         ], 
-        wait: true,
-        propagate: true
+        wait: false,
+        propagate: false
 }
 
 /**
