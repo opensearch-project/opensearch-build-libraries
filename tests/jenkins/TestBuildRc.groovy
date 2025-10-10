@@ -131,7 +131,7 @@ class TestBuildRc extends BuildPipelineTest {
         assertCallStack().contains('buildRC.string({name=BUILD_DOCKER, value=build_docker_with_build_number_tag})')
         assertCallStack().contains('buildRC.booleanParam({name=CONTINUE_ON_ERROR, value=false})')
         assertCallStack().contains('buildRC.booleanParam({name=UPDATE_GITHUB_ISSUE, value=true})')
-        assertCallStack().contains('buildRC.build({job=distribution-build-opensearch, parameters=[null, null, null, null, null, null, null, null, null, null], wait=true, propagate=true})')
+        assertCallStack().contains('buildRC.build({job=distribution-build-opensearch, parameters=[null, null, null, null, null, null, null, null, null, null], wait=false, propagate=false})')
         assertCallStack().contains('buildRC.string({name=INPUT_MANIFEST, value=2.19.0/opensearch-dashboards-2.19.0.yml})')
         assertCallStack().contains('buildRC.string({name=TEST_MANIFEST, value=2.19.0/opensearch-dashboards-2.19.0-test.yml})')
         assertCallStack().contains('buildRC.string({name=BUILD_PLATFORM, value=linux windows})')
@@ -142,7 +142,7 @@ class TestBuildRc extends BuildPipelineTest {
         assertCallStack().contains('buildRC.string({name=BUILD_DOCKER, value=build_docker_with_build_number_tag})')
         assertCallStack().contains('buildRC.booleanParam({name=CONTINUE_ON_ERROR, value=false})')
         assertCallStack().contains('buildRC.booleanParam({name=UPDATE_GITHUB_ISSUE, value=true})')
-        assertCallStack().contains('buildRC.build({job=distribution-build-opensearch-dashboards, parameters=[null, null, null, null, null, null, null, null, null, null], wait=true, propagate=true})')
+        assertCallStack().contains('buildRC.build({job=distribution-build-opensearch-dashboards, parameters=[null, null, null, null, null, null, null, null, null, null], wait=false, propagate=false})')
         assertThat(getCommands('echo', 'Current'), hasItem('Current RC numbers: OpenSearch - 5, OpenSearch-Dashboards - 5'))
         assertThat(getCommands('echo', 'Triggering'), hasItem('Triggering both OpenSearch and OpenSearch-Dashboards builds with RC numbers: 6, 6 respectively'))
     }
@@ -166,7 +166,7 @@ class TestBuildRc extends BuildPipelineTest {
         assertCallStack().contains('buildRC.string({name=BUILD_DOCKER, value=build_docker_with_build_number_tag})')
         assertCallStack().contains('buildRC.booleanParam({name=CONTINUE_ON_ERROR, value=false})')
         assertCallStack().contains('buildRC.booleanParam({name=UPDATE_GITHUB_ISSUE, value=true})')
-        assertCallStack().contains('buildRC.build({job=distribution-build-opensearch, parameters=[null, null, null, null, null, null, null, null, null, null], wait=true, propagate=true})')
+        assertCallStack().contains('buildRC.build({job=distribution-build-opensearch, parameters=[null, null, null, null, null, null, null, null, null, null], wait=false, propagate=false})')
     }
 
     @Test
@@ -187,7 +187,7 @@ class TestBuildRc extends BuildPipelineTest {
         assertCallStack().contains('buildRC.string({name=BUILD_DOCKER, value=build_docker_with_build_number_tag})')
         assertCallStack().contains('buildRC.booleanParam({name=CONTINUE_ON_ERROR, value=false})')
         assertCallStack().contains('buildRC.booleanParam({name=UPDATE_GITHUB_ISSUE, value=true})')
-        assertCallStack().contains('buildRC.build({job=distribution-build-opensearch-dashboards, parameters=[null, null, null, null, null, null, null, null, null, null], wait=true, propagate=true})')
+        assertCallStack().contains('buildRC.build({job=distribution-build-opensearch-dashboards, parameters=[null, null, null, null, null, null, null, null, null, null], wait=false, propagate=false})')
     }
 
     @Test
