@@ -32,7 +32,7 @@ class TestGradleCheckFlakyTestGitHubIssue extends BuildPipelineTest {
     @Test
     public void testDefaultIssueEdit() {
         super.testPipeline("tests/jenkins/jobs/TestGradleCheckFlakyTestGitHubIssue_Jenkinsfile", "tests/jenkins/jobs/TestGradleCheckFlakyTestGitHubIssueEdit_Jenkinsfile")
-        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue edit bbb\nccc --repo https://github.com/opensearch-project/OpenSearch --body-file \"SampleTest.md\", returnStdout=true}"))
+        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue edit bbb\nccc --repo https://github.com/opensearch-project/OpenSearch --body-file \"SampleTest.md\", returnStatus=true}"))
     }
 
     @Test
