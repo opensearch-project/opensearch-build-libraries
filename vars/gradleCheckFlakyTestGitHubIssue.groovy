@@ -43,10 +43,13 @@ void call(Map args = [:]) {
 
             if (openIssue) {
                 println('Issue already exists, editing the issue body')
-                sh(
-                        script: "gh issue edit ${openIssue} --repo ${args.repoUrl} --body-file \"${args.issueBodyFile}\"",
-                        returnStdout: true
+                def editResult = sh(
+                    script: "gh issue edit ${openIssue} --repo ${args.repoUrl} --body-file \"${args.issueBodyFile}\"",
+                    returnStatus: true
                 )
+                if (editResult != 0) {
+                    println("Warning: Failed to edit issue ${openIssue} with exit code: ${editResult})")
+                }
             }
             else if (!openIssue && closedIssue) {
                 def existingIssueBody = sh(
