@@ -46,7 +46,7 @@ class TestTemplateProcessor {
 
     @Test
     void testProcessor() {
-        Random.metaClass.nextInt = { int max -> 1 }
+        TemplateProcessor.metaClass.'static'.getRandomName = { -> "BBBBBBBBBB" }
         def bindings = [
                 BRANCH: 'main',
                 VERSION: '3.0'
