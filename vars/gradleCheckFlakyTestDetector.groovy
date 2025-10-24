@@ -26,7 +26,7 @@ void call(Map args = [:]) {
     ]
 
     withSecrets(secrets: secret_metrics_cluster){
-        withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
+        withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 1800, roleSessionName: 'jenkins-session') {
             def metricsUrl = env.METRICS_HOST_URL
             def awsAccessKey = env.AWS_ACCESS_KEY_ID
             def awsSecretKey = env.AWS_SECRET_ACCESS_KEY
