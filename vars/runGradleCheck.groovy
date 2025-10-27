@@ -10,33 +10,36 @@ void call(Map args = [:]) {
     def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     def git_repo_url = args.gitRepoUrl ?: 'null'
     def git_reference = args.gitReference ?: 'null'
+    def module_name = args.scope ?: 'null'
     def bwc_checkout_align = args.bwcCheckoutAlign ?: 'false'
     def bwc_checkout_align_param = ''
     def command
-    switch (args.scope) {
-        case 'server':
-            command = ':server:check -Dmoduletests.coverage=true'
-            break
-        case 'non-server':
-            command = 'check -x :server:check -Dtests.coverage=true'
-            break
-        default:
-            command = 'check -Dtests.coverage=true'
-            break
-    }
     println("Git Repo: ${git_repo_url}")
     println("Git Reference: ${git_reference}")
     println("Bwc Checkout Align: ${bwc_checkout_align}")
+    println("Module Scope: ${module_name}")
 
     if (Boolean.parseBoolean(bwc_checkout_align)) {
         bwc_checkout_align_param = '-Dbwc.checkout.align=true'
     }
 
-    if (git_repo_url.equals('null') || git_reference.equals('null')) {
-        println("No git repo url or git reference to checkout the commit, exit 1")
+    if (git_repo_url.equals('null') || git_reference.equals('null') || module_name.equals('null')) {
+        println("git repo url or git reference or module_name aren't specified to checkout the commit and run gradle check task, exit 1")
         System.exit(1)
     }
     else {
+        switch (args.scope) {
+            case 'server':
+                command = ':server:check -Dmoduletests.coverage=true'
+                break
+            case 'non-server':
+                command = 'check -x :server:check -Dtests.coverage=true'
+                break
+            default:
+                command = 'check -Dtests.coverage=true'
+                break
+        }
+
         def secret_s3 = [
             [envVar: 'amazon_s3_access_key', secretRef: 'op://opensearch-infra-secrets/gradle-check/jenkins-gradle-check-s3-aws-access-key'],
             [envVar: 'amazon_s3_secret_key', secretRef: 'op://opensearch-infra-secrets/gradle-check/jenkins-gradle-check-s3-aws-secret-key'],
