@@ -6,6 +6,16 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
+
+ /** Library to run Gradle Check Tasks in OpenSearch repo
+ *  The library triggers gradle check task from a Pull Request or through Timer (cron based runs)
+ *  @param Map args = [:] args A map of the following parameters
+ *  @param args.gitRepoUrl <required> - Github repo url generally - https://github.com/opensearch-project/OpenSearch.git  is cloned and checks tasks are executed in it.
+ *  @param args.gitReference <optional> - The git commit or branch that needs to be checked in OpenSearch repo to run check tasks defaults to main.
+ *  @param args.bwcCheckoutAlign <optional> - Used to set the value of bwc.checkout.align, can be either true or false
+ *  @param args.module_name <optional> - Defines module scope which has check tasks running and reported against it.
+ **/
+
 void call(Map args = [:]) {
     def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
     def git_repo_url = args.gitRepoUrl ?: 'null'
