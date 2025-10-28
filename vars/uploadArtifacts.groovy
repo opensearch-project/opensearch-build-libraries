@@ -19,9 +19,9 @@ void call(Map args = [:]) {
     def productFilename = buildManifest.build.getFilename()
     def packageName = buildManifest.build.getPackageName()
     def distribution = buildManifest.build.distribution
-    def buildFeature = args.buildFeature ?: null
+    def buildFeature = args.buildFeature ?: buildManifest.build.version
 
-    def artifactPath = buildManifest.getArtifactRoot("${JOB_NAME}", "${BUILD_NUMBER}", "${buildFeature}")
+    def artifactPath = buildManifest.getArtifactRoot("${JOB_NAME}", "${BUILD_NUMBER}", buildFeature)
 
     def secret_artifacts = [
         [envVar: 'ARTIFACT_BUCKET_NAME', secretRef: 'op://opensearch-infra-secrets/aws-resource-arns/jenkins-artifact-bucket-name'],
@@ -53,7 +53,7 @@ void call(Map args = [:]) {
         }
     }
 
-    def baseUrl = buildManifest.getArtifactRootUrl("${PUBLIC_ARTIFACT_URL}", "${JOB_NAME}", "${BUILD_NUMBER}", "${buildFeature}")
+    def baseUrl = buildManifest.getArtifactRootUrl("${PUBLIC_ARTIFACT_URL}", "${JOB_NAME}", "${BUILD_NUMBER}", buildFeature)
     lib.jenkins.Messages.new(this).add("${STAGE_NAME}", [
             "${baseUrl}/builds/${productFilename}/manifest.yml",
             "${baseUrl}/dist/${productFilename}/manifest.yml"
