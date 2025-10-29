@@ -100,27 +100,27 @@ class BuildManifest implements Serializable {
         this.components = new BuildManifest.Components(data.components)
     }
 
-    public String getArtifactRootWithoutDistribution(String jobName, String buildNumber) {
+    public String getArtifactRootWithoutDistribution(String jobName, String buildNumber, String buildFeature = null) {
         return [
                 jobName,
-                this.build.version,
+                buildFeature ?: this.build.version,
                 buildNumber,
                 this.build.platform,
                 this.build.architecture
         ].join('/')
     }
 
-    public String getArtifactRoot(String jobName, String buildNumber) {
+    public String getArtifactRoot(String jobName, String buildNumber, String buildFeature = null) {
         return [
-                this.getArtifactRootWithoutDistribution(jobName, buildNumber),
+                this.getArtifactRootWithoutDistribution(jobName, buildNumber, buildFeature),
                 this.build.distribution
         ].join('/')
     }
 
-    public String getIndexFileRoot(String jobName) {
+    public String getIndexFileRoot(String jobName, String buildFeature = null) {
         return [
                 jobName,
-                this.build.version,
+                buildFeature ?: this.build.version,
                 'index',
                 this.build.platform,
                 this.build.architecture,
@@ -128,41 +128,41 @@ class BuildManifest implements Serializable {
         ].join('/')
     }
 
-    public String getArtifactRootUrlWithoutDistribution(String publicArtifactUrl = 'https://ci.opensearch.org/ci/dbc', String jobName, String buildNumber) {
+    public String getArtifactRootUrlWithoutDistribution(String publicArtifactUrl = 'https://ci.opensearch.org/ci/dbc', String jobName, String buildNumber, String buildFeature = null) {
         return [
                 publicArtifactUrl,
-                this.getArtifactRootWithoutDistribution(jobName, buildNumber)
+                this.getArtifactRootWithoutDistribution(jobName, buildNumber, buildFeature)
         ].join('/')
     }
 
-    public String getArtifactRootUrl(String publicArtifactUrl = 'https://ci.opensearch.org/ci/dbc', String jobName, String buildNumber) {
+    public String getArtifactRootUrl(String publicArtifactUrl = 'https://ci.opensearch.org/ci/dbc', String jobName, String buildNumber, String buildFeature = null) {
         return [
-                this.getArtifactRootUrlWithoutDistribution(publicArtifactUrl, jobName, buildNumber),
+                this.getArtifactRootUrlWithoutDistribution(publicArtifactUrl, jobName, buildNumber, buildFeature),
                 this.build.distribution
         ].join('/')
     }
 
-    public String getUrl(String publicArtifactUrl = 'https://ci.opensearch.org/ci/dbc', String jobName, String buildNumber) {
+    public String getUrl(String publicArtifactUrl = 'https://ci.opensearch.org/ci/dbc', String jobName, String buildNumber, String buildFeature = null) {
         return [
-            this.getArtifactRootUrl(publicArtifactUrl, jobName, buildNumber),
+            this.getArtifactRootUrl(publicArtifactUrl, jobName, buildNumber, buildFeature),
             'builds',
             this.build.getFilename(),
             'manifest.yml'
         ].join('/')
     }
 
-    public String getBundleManifestUrl(String publicArtifactUrl = 'https://ci.opensearch.org/ci/dbc', String jobName, String buildNumber) {
+    public String getBundleManifestUrl(String publicArtifactUrl = 'https://ci.opensearch.org/ci/dbc', String jobName, String buildNumber, String buildFeature = null) {
         return [
-            this.getArtifactRootUrl(publicArtifactUrl, jobName, buildNumber),
+            this.getArtifactRootUrl(publicArtifactUrl, jobName, buildNumber, buildFeature),
             'dist',
             this.build.getFilename(),
             'manifest.yml'
         ].join('/')
     }
 
-    public String getArtifactUrl(String publicArtifactUrl = 'https://ci.opensearch.org/ci/dbc', String jobName, String buildNumber) {
+    public String getArtifactUrl(String publicArtifactUrl = 'https://ci.opensearch.org/ci/dbc', String jobName, String buildNumber, String buildFeature = null) {
         return [
-            this.getArtifactRootUrl(publicArtifactUrl, jobName, buildNumber),
+            this.getArtifactRootUrl(publicArtifactUrl, jobName, buildNumber, buildFeature),
             'dist',
             this.build.getFilename(),
             this.build.getFilenameWithExtension()
