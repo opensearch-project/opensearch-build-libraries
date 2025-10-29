@@ -24,7 +24,8 @@ class TestRunGradleCheck extends BuildPipelineTest {
         this.registerLibTester(new RunGradleCheckLibTester(
             'https://github.com/opensearch-project/OpenSearch',
             'main',
-            'false'
+            'false',
+            'server'
             )
         )
         super.setUp()
@@ -51,7 +52,7 @@ class TestRunGradleCheck extends BuildPipelineTest {
         def gradleCommands = getCommandExecutions('sh', 'gradle').findAll {
             shCommand -> shCommand.contains('gradle')
         }
-        assertThat(gradleCommands, hasItem(containsString("./gradlew clean && ./gradlew check -Dtests.coverage=true  --no-daemon --no-scan || GRADLE_CHECK_STATUS=1")
+        assertThat(gradleCommands, hasItem(containsString("./gradlew clean && ./gradlew :server:check -Dmoduletests.coverage=true  --no-daemon --no-scan || GRADLE_CHECK_STATUS=1")
         ))
     }
 
@@ -67,7 +68,7 @@ class TestRunGradleCheck extends BuildPipelineTest {
         def gradleCommands = getCommandExecutions('sh', 'gradle').findAll {
             shCommand -> shCommand.contains('gradle')
         }
-        assertThat(gradleCommands, hasItem(containsString("./gradlew clean && ./gradlew check -Dtests.coverage=true -Dbwc.checkout.align=true --no-daemon --no-scan || GRADLE_CHECK_STATUS=1")
+        assertThat(gradleCommands, hasItem(containsString("./gradlew clean && ./gradlew :server:check -Dmoduletests.coverage=true -Dbwc.checkout.align=true --no-daemon --no-scan || GRADLE_CHECK_STATUS=1")
         ))
     }
 
