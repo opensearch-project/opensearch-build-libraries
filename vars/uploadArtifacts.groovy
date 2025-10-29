@@ -6,6 +6,11 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
+
+/* args.buildFeature <Optional> - Replace build.version to a user-defined name on distribution path
+ *                                pre: my-workflow-name/3.4.0/11490/linux/x64/tar/builds/opensearch/......
+ *                                now: my-workflow-name/<buildFeature>/11490/linux/x64/tar/builds/opensearch/......
+ */
 void call(Map args = [:]) {
     def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
 
@@ -14,8 +19,9 @@ void call(Map args = [:]) {
     def productFilename = buildManifest.build.getFilename()
     def packageName = buildManifest.build.getPackageName()
     def distribution = buildManifest.build.distribution
+    def buildFeature = args.buildFeature ?: buildManifest.build.version
 
-    def artifactPath = buildManifest.getArtifactRoot("${JOB_NAME}", "${BUILD_NUMBER}")
+    def artifactPath = buildManifest.getArtifactRoot("${JOB_NAME}", "${BUILD_NUMBER}", buildFeature)
 
     def secret_artifacts = [
         [envVar: 'ARTIFACT_BUCKET_NAME', secretRef: 'op://opensearch-infra-secrets/aws-resource-arns/jenkins-artifact-bucket-name'],
@@ -47,7 +53,7 @@ void call(Map args = [:]) {
         }
     }
 
-    def baseUrl = buildManifest.getArtifactRootUrl("${PUBLIC_ARTIFACT_URL}", "${JOB_NAME}", "${BUILD_NUMBER}")
+    def baseUrl = buildManifest.getArtifactRootUrl("${PUBLIC_ARTIFACT_URL}", "${JOB_NAME}", "${BUILD_NUMBER}", buildFeature)
     lib.jenkins.Messages.new(this).add("${STAGE_NAME}", [
             "${baseUrl}/builds/${productFilename}/manifest.yml",
             "${baseUrl}/dist/${productFilename}/manifest.yml"
