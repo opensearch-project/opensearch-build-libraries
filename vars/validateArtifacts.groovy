@@ -31,7 +31,7 @@ void call(Map args = [:]) {
         System.exit(1)
     }
 
-    sh([
+    def validation_cmd = [
         './validation.sh',
         args.version ? "--version ${args.version}" : "",
         args.file_path ? "--file-path ${args.file_path}" : "",
@@ -45,5 +45,14 @@ void call(Map args = [:]) {
         args.artifact_type ? "--artifact-type ${args.artifact_type}" : "",
         args.allow_http ? '--allow-http' : "",
         args.docker_args ? "--${args.docker_args}" : "",
-    ].join(' ').trim())
+    ].join(' ').trim()
+
+    if (isUnix()) {
+      echo("In Unix")
+      sh(validation_cmd)
+    }
+    else {
+      echo("In Windows")
+      bat("bash -c \"${validation_cmd}\"")
+    }
 }
