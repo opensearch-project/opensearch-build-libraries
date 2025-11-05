@@ -48,11 +48,9 @@ void call(Map args = [:]) {
     ].join(' ').trim()
 
     if (isUnix()) {
-      echo("In Unix")
       sh(validation_cmd)
     }
     else {
-      echo("In Windows")
       bat("bash -c \"${validation_cmd}\"")
     }
 }

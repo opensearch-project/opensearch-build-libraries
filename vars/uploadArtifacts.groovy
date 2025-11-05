@@ -19,6 +19,7 @@ void call(Map args = [:]) {
     def productFilename = buildManifest.build.getFilename()
     def packageName = buildManifest.build.getPackageName()
     def distribution = buildManifest.build.distribution
+    def buildVersion = buildManifest.build.version
     def buildFeature = args.buildFeature ?: buildManifest.build.version
 
     def artifactPath = buildManifest.getArtifactRoot("${JOB_NAME}", "${BUILD_NUMBER}", buildFeature)
@@ -45,11 +46,16 @@ void call(Map args = [:]) {
                 path: "${artifactPath}/dist"
         )
 
-        echo "Uploading to s3://${ARTIFACT_PRODUCTION_BUCKET_NAME}/${artifactPath}"
+        if (buildFeature == buildVersion) {
+            echo "Uploading to s3://${ARTIFACT_PRODUCTION_BUCKET_NAME}/${artifactPath}"
 
-        withAWS(role: "${ARTIFACT_PROMOTION_ROLE_NAME}", roleAccount: "${AWS_ACCOUNT_ARTIFACT}", duration: 900, roleSessionName: 'jenkins-session') {
-            s3Upload(file: "${distribution}/builds/${productFilename}/${minArtifactPath}", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "release-candidates/core/${productFilename}/${buildManifest.build.version}/")
-            s3Upload(file: "${distribution}/dist/${productFilename}/${packageName}", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "release-candidates/bundle/${productFilename}/${buildManifest.build.version}/")
+            withAWS(role: "${ARTIFACT_PROMOTION_ROLE_NAME}", roleAccount: "${AWS_ACCOUNT_ARTIFACT}", duration: 900, roleSessionName: 'jenkins-session') {
+                s3Upload(file: "${distribution}/builds/${productFilename}/${minArtifactPath}", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "release-candidates/core/${productFilename}/${buildManifest.build.version}/")
+                s3Upload(file: "${distribution}/dist/${productFilename}/${packageName}", bucket: "${ARTIFACT_PRODUCTION_BUCKET_NAME}", path: "release-candidates/bundle/${productFilename}/${buildManifest.build.version}/")
+            }
+        }
+        else {
+            echo "Feature builds, skip publishing to release candidate bucket"
         }
     }
 
