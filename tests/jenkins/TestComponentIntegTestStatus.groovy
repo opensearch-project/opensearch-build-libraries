@@ -281,6 +281,7 @@ class TestComponentIntegTestStatus {
                         }
                         """
             }
+            return ""
         }
         def expectedOutput = JsonOutput.toJson([
                 size: 100,
@@ -403,8 +404,9 @@ class TestComponentIntegTestStatus {
                                 ]
                             }
                         }
-                        """
+            """
             }
+            return ""
         }
 
         def expectedOutputOsd = JsonOutput.toJson([
@@ -491,11 +493,11 @@ class TestComponentIntegTestStatus {
             if (args.containsKey("script")) {
                 return """
                     {
-                    "took": 5,
+                    "took": 9,
                     "timed_out": false,
                     "_shards": {
-                        "total": 20,
-                        "successful": 20,
+                        "total": 85,
+                        "successful": 85,
                         "skipped": 0,
                         "failed": 0
                     },
@@ -504,33 +506,91 @@ class TestComponentIntegTestStatus {
                         "value": 2,
                         "relation": "eq"
                         },
-                        "max_score": 0,
-                        "hits": [
-                        {
-                            "_index": "opensearch-integration-test-results-10-2024",
-                            "_id": "wArzVZIB2OP_jOaCFPPY",
-                            "_score": 0,
-                            "_source": {
-                            "test_report_manifest_yml": "https://ci.opensearch.org/ci/dbc/integ-test-opensearch-dashboards/2.18.0/7984/linux/x64/tar/test-results/6561/integ-test/test-report.yml",
-                            "integ_test_build_url": "https://build.ci.opensearch.org/job/integ-test-opensearch-dashboards/6561/display/redirect",
-                            "distribution": "tar",
+                        "max_score": null,
+                        "hits": []
+                    },
+                    "aggregations": {
+                        "unique_combinations": {
+                        "after_key": {
                             "platform": "linux",
-                            "architecture": "x64"
-                            }
+                            "architecture": "x64",
+                            "distribution": "tar"
                         },
-                        {
-                            "_index": "opensearch-integration-test-results-10-2024",
-                            "_id": "jVsOVpIBIpIPk1eDrdI3",
-                            "_score": 0,
-                            "_source": {
-                            "test_report_manifest_yml": "https://ci.opensearch.org/ci/dbc/integ-test-opensearch-dashboards/2.18.0/7984/linux/arm64/tar/test-results/6560/integ-test/test-report.yml",
-                            "integ_test_build_url": "https://build.ci.opensearch.org/job/integ-test-opensearch-dashboards/6560/display/redirect",
-                            "distribution": "tar",
-                            "platform": "linux",
-                            "architecture": "arm64"
+                        "buckets": [
+                            {
+                            "key": {
+                                "platform": "linux",
+                                "architecture": "arm64",
+                                "distribution": "tar"
+                            },
+                            "doc_count": 1,
+                            "latest_doc": {
+                                "hits": {
+                                "total": {
+                                    "value": 1,
+                                    "relation": "eq"
+                                },
+                                "max_score": null,
+                                "hits": [
+                                    {
+                                    "_index": "opensearch-integration-test-results-10-2025",
+                                    "_id": "1CJ3OJoBYWWe66x5m-Yq",
+                                    "_score": null,
+                                    "_source": {
+                                        "rc_number": 0,
+                                        "component_build_result": "passed",
+                                        "test_report_manifest_yml": "https://ci.opensearch.org/ci/dbc/integ-test-opensearch-dashboards/3.4.0/8696/linux/arm64/tar/test-results/8043/integ-test/test-report.yml",
+                                        "integ_test_build_url": "https://build.ci.opensearch.org/job/integ-test-opensearch-dashboards/8043/display/redirect",
+                                        "distribution": "tar",
+                                        "platform": "linux",
+                                        "architecture": "arm64"
+                                    },
+                                    "sort": [
+                                        8043
+                                    ]
+                                    }
+                                ]
+                                }
                             }
-                        }
+                            },
+                            {
+                            "key": {
+                                "platform": "linux",
+                                "architecture": "x64",
+                                "distribution": "tar"
+                            },
+                            "doc_count": 1,
+                            "latest_doc": {
+                                "hits": {
+                                "total": {
+                                    "value": 1,
+                                    "relation": "eq"
+                                },
+                                "max_score": null,
+                                "hits": [
+                                    {
+                                    "_index": "opensearch-integration-test-results-10-2025",
+                                    "_id": "RQ10OJoBEyoOHamxAKpN",
+                                    "_score": null,
+                                    "_source": {
+                                        "rc_number": 0,
+                                        "component_build_result": "failed",
+                                        "test_report_manifest_yml": "https://ci.opensearch.org/ci/dbc/integ-test-opensearch-dashboards/3.4.0/8696/linux/x64/tar/test-results/8044/integ-test/test-report.yml",
+                                        "integ_test_build_url": "https://build.ci.opensearch.org/job/integ-test-opensearch-dashboards/8044/display/redirect",
+                                        "distribution": "tar",
+                                        "platform": "linux",
+                                        "architecture": "x64"
+                                    },
+                                    "sort": [
+                                        8044
+                                    ]
+                                    }
+                                ]
+                                }
+                            }
+                            }
                         ]
+                        }
                     }
                     }
                 """
@@ -538,55 +598,10 @@ class TestComponentIntegTestStatus {
             return ""
         }
         componentIntegTestStatus = new ComponentIntegTestStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, product, version, qualifier, distributionBuildNumber, script)
-        def componentData = '''
-                    {
-                    "took": 5,
-                    "timed_out": false,
-                    "_shards": {
-                        "total": 20,
-                        "successful": 20,
-                        "skipped": 0,
-                        "failed": 0
-                    },
-                    "hits": {
-                        "total": {
-                        "value": 2,
-                        "relation": "eq"
-                        },
-                        "max_score": 0,
-                        "hits": [
-                        {
-                            "_index": "opensearch-integration-test-results-10-2024",
-                            "_id": "wArzVZIB2OP_jOaCFPPY",
-                            "_score": 0,
-                            "_source": {
-                            "test_report_manifest_yml": "https://ci.opensearch.org/ci/dbc/integ-test-opensearch-dashboards/2.18.0/7984/linux/x64/tar/test-results/6561/integ-test/test-report.yml",
-                            "integ_test_build_url": "https://build.ci.opensearch.org/job/integ-test-opensearch-dashboards/6561/display/redirect",
-                            "distribution": "tar",
-                            "platform": "linux",
-                            "architecture": "x64"
-                            }
-                        },
-                        {
-                            "_index": "opensearch-integration-test-results-10-2024",
-                            "_id": "jVsOVpIBIpIPk1eDrdI3",
-                            "_score": 0,
-                            "_source": {
-                            "test_report_manifest_yml": "https://ci.opensearch.org/ci/dbc/integ-test-opensearch-dashboards/2.18.0/7984/linux/arm64/tar/test-results/6560/integ-test/test-report.yml",
-                            "integ_test_build_url": "https://build.ci.opensearch.org/job/integ-test-opensearch-dashboards/6560/display/redirect",
-                            "distribution": "tar",
-                            "platform": "linux",
-                            "architecture": "arm64"
-                            }
-                        }
-                        ]
-                    }
-                    }
-        '''
-        def expectedOutput = new JsonSlurper().parseText(componentData)
+        def componentData = "[[_index:opensearch-integration-test-results-10-2025, _source:[rc_number:0, component_build_result:failed, test_report_manifest_yml:https://ci.opensearch.org/ci/dbc/integ-test-opensearch-dashboards/3.4.0/8696/linux/x64/tar/test-results/8044/integ-test/test-report.yml, integ_test_build_url:https://build.ci.opensearch.org/job/integ-test-opensearch-dashboards/8044/display/redirect, distribution:tar, platform:linux, architecture:x64], _id:RQ10OJoBEyoOHamxAKpN, sort:[8044], _score:null]]"
+        // def expectedOutput = new JsonSlurper().parseText(componentData)
         def result = componentIntegTestStatus.getComponentIntegTestFailedData('observabilityDashboards')
-
-        assert result == expectedOutput
+        assert result.toString() == componentData
     }
 
 }
