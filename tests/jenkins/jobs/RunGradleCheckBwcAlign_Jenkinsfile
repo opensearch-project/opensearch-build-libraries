@@ -16,7 +16,8 @@ pipeline {
                     runGradleCheck(
                         gitRepoUrl: "https://github.com/opensearch-project/OpenSearch",
                         gitReference: "main",
-                        bwcCheckoutAlign: "true"
+                        bwcCheckoutAlign: "true",
+                        scope: "server"
                     )
                 }
             }
