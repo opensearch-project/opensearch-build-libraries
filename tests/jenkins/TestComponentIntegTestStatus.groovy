@@ -599,7 +599,6 @@ class TestComponentIntegTestStatus {
         }
         componentIntegTestStatus = new ComponentIntegTestStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, product, version, qualifier, distributionBuildNumber, script)
         def componentData = "[[_index:opensearch-integration-test-results-10-2025, _source:[rc_number:0, component_build_result:failed, test_report_manifest_yml:https://ci.opensearch.org/ci/dbc/integ-test-opensearch-dashboards/3.4.0/8696/linux/x64/tar/test-results/8044/integ-test/test-report.yml, integ_test_build_url:https://build.ci.opensearch.org/job/integ-test-opensearch-dashboards/8044/display/redirect, distribution:tar, platform:linux, architecture:x64], _id:RQ10OJoBEyoOHamxAKpN, sort:[8044], _score:null]]"
-        // def expectedOutput = new JsonSlurper().parseText(componentData)
         def result = componentIntegTestStatus.getComponentIntegTestFailedData('observabilityDashboards')
         assert result.toString() == componentData
     }
