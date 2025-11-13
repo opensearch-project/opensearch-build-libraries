@@ -602,5 +602,53 @@ class TestComponentIntegTestStatus {
         def result = componentIntegTestStatus.getComponentIntegTestFailedData('observabilityDashboards')
         assert result.toString() == componentData
     }
+    @Test
+    void testGetComponentIntegTestWithNoFailedData() {
+        script = new Expando()
+        script.sh = { Map args ->
+            if (args.containsKey("script")) {
+                return """
+                    {
+                    "took": 12,
+                    "timed_out": false,
+                    "_shards": {
+                        "total": 85,
+                        "successful": 85,
+                        "skipped": 0,
+                        "failed": 0
+                    },
+                    "hits": {
+                        "total": {
+                        "value": 0,
+                        "relation": "eq"
+                        },
+                        "max_score": null,
+                        "hits": []
+                    },
+                    "aggregations": {
+                        "unique_combinations": {
+                        "buckets": []
+                        }
+                    }
+                    }
+                """
+            }
+            return ""
+        }
+        componentIntegTestStatus = new ComponentIntegTestStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, product, version, qualifier, distributionBuildNumber, script)
+        def result = componentIntegTestStatus.getComponentIntegTestFailedData('observabilityDashboards')
+        assert result == null
+    }
 
+    @Test
+    void testGetComponentIntegTestWithException() {
+        script = new Expando()
+        script.error = { message ->
+            // Mock implementation for error
+            throw new Exception(message)
+        }
+        componentIntegTestStatus = new ComponentIntegTestStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, product, version, qualifier, distributionBuildNumber, script)
+        def result = componentIntegTestStatus.getComponentIntegTestFailedData('observabilityDashboards')
+        assert result == null
+    }
 }
