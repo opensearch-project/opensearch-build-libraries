@@ -32,12 +32,17 @@ void call(Map args = [:]) {
     List<String> failedComponents = []
     List<String> passedComponents = []
 
+    def componentRepoMap = [:]
+    inputManifest.components.each { comp ->
+        componentRepoMap[comp.name] = comp.repository
+    }
+
     def secret_metrics_cluster = [
         [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-infra-secrets/aws-accounts/jenkins-health-metrics-account-number'],
         [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-infra-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
     ]
 
-    withSecrets(secrets: secret_metrics_cluster){
+    withSecrets(secrets: secret_metrics_cluster) {
         withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
             def metricsUrl = env.METRICS_HOST_URL
             def awsAccessKey = env.AWS_ACCESS_KEY_ID
@@ -55,45 +60,47 @@ void call(Map args = [:]) {
             println('Failed Components: ' + failedComponents)
             println('Passed Components: ' + passedComponents)
 
-            for (component in inputManifest.components) {
-                if (!failedComponents.isEmpty() && failedComponents.contains(component.name)) {
-                    println("Integration test failed for ${component.name}, creating github issue")
+            for (component in failedComponents) {
+                    println("Integration test failed for ${component}. Processing recent test results.")
                     def testData = []
-                    println('Retrieving failed component data for '+ component.name)
-                    def queryData = componentIntegTestStatus.getComponentIntegTestFailedData(component.name)
-                    def totalHits = queryData.hits.hits.collect { it._source }
-                    totalHits.each { hit ->
-                        String metricsVisualizationUrl = getMetricsVisualizationUrl(hit.distribution, hit.architecture, version, component.name)
-                        def rowData = [
-                                platform                 : hit.platform,
-                                distribution             : hit.distribution,
-                                architecture             : hit.architecture,
-                                test_report_manifest_yml : hit.test_report_manifest_yml,
-                                integ_test_build_url     : hit.integ_test_build_url,
-                                distribution_build_number: distributionBuildNumber,
-                                rc_number                : hit.rc_number,
-                                metrics_visualization_url: metricsVisualizationUrl
-                            ]
-                        testData << rowData
+                    def queryData = componentIntegTestStatus.getComponentIntegTestFailedData(component)
+                    if (queryData != null && !queryData.isEmpty()) {
+                        def totalHits = queryData.collect { it._source }
+                        totalHits.each { hit ->
+                            String metricsVisualizationUrl = getMetricsVisualizationUrl(hit.distribution, hit.architecture, version, component)
+                            def rowData = [
+                                    platform                 : hit.platform,
+                                    distribution             : hit.distribution,
+                                    architecture             : hit.architecture,
+                                    test_report_manifest_yml : hit.test_report_manifest_yml,
+                                    integ_test_build_url     : hit.integ_test_build_url,
+                                    distribution_build_number: distributionBuildNumber,
+                                    rc_number                : hit.rc_number,
+                                    metrics_visualization_url: metricsVisualizationUrl
+                                ]
+                            testData << rowData
+                        }
+                        List releaseOwners = releaseMetricsData.getReleaseOwners(component)
+                        def markdownContent = new CreateIntegTestMarkDownTable(version).create(testData, releaseOwners)
+                        createGithubIssue(
+                                repoUrl: componentRepoMap[component].toString(),
+                                issueTitle: "[AUTOCUT] Integration Test Failed for ${component}-${version}",
+                                issueBody: markdownContent,
+                                label: "autocut,v${version}",
+                                issueEdit: true
+                        )
+                        sleep(time: 3, unit: 'SECONDS')
+                    } else {
+                        println("Warning: Latest test run passed for ${component} but found previous failures indicating flakiness. Skipping issue update.")
                     }
-                    println('Retrieving release owner(s) for '+ component.name)
-                    List releaseOwners = releaseMetricsData.getReleaseOwners(component.name)
-                    def markdownContent = new CreateIntegTestMarkDownTable(version).create(testData, releaseOwners)
-                    createGithubIssue(
-                            repoUrl: component.repository,
-                            issueTitle: "[AUTOCUT] Integration Test Failed for ${component.name}-${version}",
-                            issueBody: markdownContent,
-                            label: "autocut,v${version}",
-                            issueEdit: true
-                    )
-                    sleep(time: 3, unit: 'SECONDS')
-                }
-                if (!passedComponents.isEmpty() && passedComponents.contains(component.name) && !failedComponents.contains(component.name)) {
-                    println("Integration tests passed for ${component.name}, closing github issue")
-                    ghIssueBody = """Closing the issue as the integration tests for ${component.name} passed for version: **${version}**.""".stripIndent()
+            }
+            for (component in passedComponents) {
+                if (!passedComponents.isEmpty() && passedComponents.contains(component) && !failedComponents.contains(component)) {
+                    println("Integration tests passed for ${component}, closing github issue")
+                    ghIssueBody = """Closing the issue as the integration tests for ${component} passed for version: **${version}**.""".stripIndent()
                     closeGithubIssue(
-                            repoUrl: component.repository,
-                            issueTitle: "[AUTOCUT] Integration Test Failed for ${component.name}-${version}",
+                            repoUrl: componentRepoMap[component].toString(),
+                            issueTitle: "[AUTOCUT] Integration Test Failed for ${component}-${version}",
                             closeComment: ghIssueBody
                     )
                     sleep(time: 3, unit: 'SECONDS')
@@ -126,6 +133,6 @@ def getMetricsVisualizationUrl(String distribution, String architecture, String 
         return baseUrl + queryParams + "expandedPanelId:${expandedPanelId}," + filterTemplate
     } else {
         println("Unknown ${distribution}_${architecture}")
-        return 'null'
+        return null
     }
 }

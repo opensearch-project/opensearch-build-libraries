@@ -140,51 +140,107 @@ class TestUpdateIntegTestFailureIssues extends BuildPipelineTest {
                 }
         '''
         def failedTestDataResponse = '''
+        {
+            "took": 9,
+            "timed_out": false,
+            "_shards": {
+                "total": 85,
+                "successful": 85,
+                "skipped": 0,
+                "failed": 0
+            },
+            "hits": {
+                "total": {
+                "value": 2,
+                "relation": "eq"
+                },
+                "max_score": null,
+                "hits": []
+            },
+            "aggregations": {
+                "unique_combinations": {
+                "after_key": {
+                    "platform": "linux",
+                    "architecture": "x64",
+                    "distribution": "tar"
+                },
+                "buckets": [
                     {
-                    "took": 5,
-                    "timed_out": false,
-                    "_shards": {
-                        "total": 20,
-                        "successful": 20,
-                        "skipped": 0,
-                        "failed": 0
+                    "key": {
+                        "platform": "linux",
+                        "architecture": "arm64",
+                        "distribution": "tar"
                     },
-                    "hits": {
+                    "doc_count": 1,
+                    "latest_doc": {
+                        "hits": {
                         "total": {
-                        "value": 2,
-                        "relation": "eq"
+                            "value": 1,
+                            "relation": "eq"
                         },
-                        "max_score": 0,
+                        "max_score": null,
                         "hits": [
-                        {
-                            "_index": "opensearch-integration-test-results-10-2024",
-                            "_id": "wArzVZIB2OP_jOaCFPPY",
-                            "_score": 0,
+                            {
+                            "_index": "opensearch-integration-test-results-10-2025",
+                            "_id": "2yJ3OJoBYWWe66x5m-Yq",
+                            "_score": null,
                             "_source": {
-                            "test_report_manifest_yml": "https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/x64/tar/test-results/6561/integ-test/test-report.yml",
-                            "integ_test_build_url": "https://build.ci.opensearch.org/job/integ-test/6561/display/redirect",
-                            "distribution": "tar",
-                            "platform": "linux",
-                            "architecture": "x64",
-                            "rc_number": 0
+                                "rc_number": 0,
+                                "component_build_result": "failed",
+                                "test_report_manifest_yml": "https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/arm64/tar/test-results/6561/integ-test/test-report.yml",
+                                "integ_test_build_url": "https://build.ci.opensearch.org/job/integ-test/6561/display/redirect",
+                                "distribution": "tar",
+                                "platform": "linux",
+                                "architecture": "arm64"
+                            },
+                            "sort": [
+                                8043
+                            ]
                             }
-                        },
-                        {
-                            "_index": "opensearch-integration-test-results-10-2024",
-                            "_id": "jVsOVpIBIpIPk1eDrdI3",
-                            "_score": 0,
-                            "_source": {
-                            "test_report_manifest_yml": "https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/arm64/tar/test-results/6560/integ-test/test-report.yml",
-                            "integ_test_build_url": "https://build.ci.opensearch.org/job/integ-test/6560/display/redirect",
-                            "distribution": "tar",
-                            "platform": "linux",
-                            "architecture": "arm64",
-                            "rc_number": 0
-                            }
-                        }
                         ]
+                        }
+                    }
+                    },
+                    {
+                    "key": {
+                        "platform": "linux",
+                        "architecture": "x64",
+                        "distribution": "tar"
+                    },
+                    "doc_count": 1,
+                    "latest_doc": {
+                        "hits": {
+                        "total": {
+                            "value": 1,
+                            "relation": "eq"
+                        },
+                        "max_score": null,
+                        "hits": [
+                            {
+                            "_index": "opensearch-integration-test-results-10-2025",
+                            "_id": "TA10OJoBEyoOHamxAKpN",
+                            "_score": null,
+                            "_source": {
+                                "rc_number": 0,
+                                "component_build_result": "failed",
+                                "test_report_manifest_yml": "https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/x64/tar/test-results/6561/integ-test/test-report.yml",
+                                "integ_test_build_url": "https://build.ci.opensearch.org/job/integ-test/6561/display/redirect",
+                                "distribution": "tar",
+                                "platform": "linux",
+                                "architecture": "x64"
+                            },
+                            "sort": [
+                                8044
+                            ]
+                            }
+                        ]
+                        }
                     }
                     }
+                ]
+                }
+            }
+            }
         '''
 
         def latestDistributionBuildNumberResponse = '''
@@ -217,7 +273,7 @@ class TestUpdateIntegTestFailureIssues extends BuildPipelineTest {
                         }
                         ]
                     }
-                    }
+                }
         '''
 
         def unformattedResponseForReleaseOwners = '''
@@ -295,10 +351,10 @@ class TestUpdateIntegTestFailureIssues extends BuildPipelineTest {
         helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-integration-test-results/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"size\\":50,\\"_source\\":[\\"component\\"],\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"version\\":\\"2.2.0\\"}},{\\"match_phrase\\":{\\"component_category\\":\\"OpenSearch\\"}},{\\"match_phrase\\":{\\"distribution_build_number\\":\\"4891\\"}},{\\"match_phrase\\":{\\"component_build_result\\":\\"failed\\"}}]}}}\" | jq '.'\n        """) { script ->
             return [stdout: unformattedResponseForFail, exitValue: 0]
         }
-        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-integration-test-results/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"_source\\":[\\"platform\\",\\"architecture\\",\\"distribution\\",\\"test_report_manifest_yml\\",\\"integ_test_build_url\\",\\"rc_number\\"],\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"component\\":\\"geospatial\\"}},{\\"match_phrase\\":{\\"version\\":\\"2.2.0\\"}},{\\"match_phrase\\":{\\"distribution_build_number\\":\\"4891\\"}}]}}}\" | jq '.'\n        """) { script ->
+        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-integration-test-results/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"size\\":0,\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"component\\":\\"geospatial\\"}},{\\"match_phrase\\":{\\"version\\":\\"2.2.0\\"}},{\\"match_phrase\\":{\\"distribution_build_number\\":\\"4891\\"}}]}},\\"aggs\\":{\\"unique_combinations\\":{\\"composite\\":{\\"size\\":100,\\"sources\\":[{\\"platform\\":{\\"terms\\":{\\"field\\":\\"platform\\"}}},{\\"architecture\\":{\\"terms\\":{\\"field\\":\\"architecture\\"}}},{\\"distribution\\":{\\"terms\\":{\\"field\\":\\"distribution\\"}}}]},\\"aggs\\":{\\"latest_doc\\":{\\"top_hits\\":{\\"size\\":1,\\"sort\\":[{\\"integ_test_build_number\\":{\\"order\\":\\"desc\\"}}],\\"_source\\":[\\"platform\\",\\"architecture\\",\\"distribution\\",\\"test_report_manifest_yml\\",\\"integ_test_build_url\\",\\"rc_number\\",\\"component_build_result\\"]}}}}}}\" | jq '.'\n        """) { script ->
             return [stdout: failedTestDataResponse, exitValue: 0]
         }
-        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-integration-test-results/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"_source\\":[\\"platform\\",\\"architecture\\",\\"distribution\\",\\"test_report_manifest_yml\\",\\"integ_test_build_url\\",\\"rc_number\\"],\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"component\\":\\"k-NN\\"}},{\\"match_phrase\\":{\\"version\\":\\"2.2.0\\"}},{\\"match_phrase\\":{\\"distribution_build_number\\":\\"4891\\"}}]}}}\" | jq '.'\n        """) { script ->
+        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-integration-test-results/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"size\\":0,\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"component\\":\\"k-NN\\"}},{\\"match_phrase\\":{\\"version\\":\\"2.2.0\\"}},{\\"match_phrase\\":{\\"distribution_build_number\\":\\"4891\\"}}]}},\\"aggs\\":{\\"unique_combinations\\":{\\"composite\\":{\\"size\\":100,\\"sources\\":[{\\"platform\\":{\\"terms\\":{\\"field\\":\\"platform\\"}}},{\\"architecture\\":{\\"terms\\":{\\"field\\":\\"architecture\\"}}},{\\"distribution\\":{\\"terms\\":{\\"field\\":\\"distribution\\"}}}]},\\"aggs\\":{\\"latest_doc\\":{\\"top_hits\\":{\\"size\\":1,\\"sort\\":[{\\"integ_test_build_number\\":{\\"order\\":\\"desc\\"}}],\\"_source\\":[\\"platform\\",\\"architecture\\",\\"distribution\\",\\"test_report_manifest_yml\\",\\"integ_test_build_url\\",\\"rc_number\\",\\"component_build_result\\"]}}}}}}\" | jq '.'\n        """) { script ->
             return [stdout: failedTestDataResponse, exitValue: 0]
         }
         helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-distribution-build-results/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"size\\":1,\\"_source\\":[\\"distribution_build_number\\"],\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"component_category\\":\\"OpenSearch\\"}},{\\"match_phrase\\":{\\"version\\":\\"2.2.0\\"}}]}},\\"sort\\":[{\\"build_start_time\\":{\\"order\\":\\"desc\\"}}]}\" | jq '.'\n        """) { script ->
@@ -322,8 +378,8 @@ class TestUpdateIntegTestFailureIssues extends BuildPipelineTest {
             return [stdout: "", exitValue: 0]
         }
         super.testPipeline('tests/jenkins/jobs/UpdateIntegTestFailureIssues_Jenkinsfile')
-        assertThat(getCommands('println', ''), hasItem('Integration test failed for k-NN, creating github issue'))
-        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue edit bbb\nccc --repo https://github.com/opensearch-project/k-NN.git --body \"\n### Integration Test Failed for version 2.2.0. See the specifications below:\n\n#### Details\n\n| Platform | Dist | Arch | Dist Build No. | RC | Test Report | Workflow Run | Failing tests |\n|----------|------|------|----------------|----|-------------|--------------|---------------|\n| linux | tar | x64 | 4891 | 0 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/x64/tar/test-results/6561/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6561/display/redirect | [Check metrics](https://metrics.opensearch.org/_dashboards/app/dashboards?security_tenant=global#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-30d,to:now))&_a=(description:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',expandedPanelId:ddafb9c5-2d35-482a-9c61-1ba78b67f406,filters:!(('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:version,negate:!f,params:(query:'2.2.0'),type:phrase),query:(match_phrase:(version:'2.2.0'))),('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:component,negate:!f,params:(query:k-NN),type:phrase),query:(match_phrase:(component:k-NN)))),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),query:(language:kuery,query:''),timeRestore:!t,title:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',viewMode:view)) |\n| linux | tar | arm64 | 4891 | 0 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/arm64/tar/test-results/6560/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6560/display/redirect | [Check metrics](https://metrics.opensearch.org/_dashboards/app/dashboards?security_tenant=global#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-30d,to:now))&_a=(description:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',expandedPanelId:c570bdfd-3122-4e31-a02d-2130d797d9fc,filters:!(('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:version,negate:!f,params:(query:'2.2.0'),type:phrase),query:(match_phrase:(version:'2.2.0'))),('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:component,negate:!f,params:(query:k-NN),type:phrase),query:(match_phrase:(component:k-NN)))),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),query:(language:kuery,query:''),timeRestore:!t,title:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',viewMode:view)) |\n\nCheck out test report manifest linked above for steps to reproduce, cluster and integration test failure logs. For additional information checkout the [wiki](https://github.com/opensearch-project/opensearch-build/wiki/Testing-the-Distribution) and [OpenSearch Metrics Dashboard](https://metrics.opensearch.org/_dashboards/app/dashboards#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa).\n\nTagging the release owners to take a look @foo @bar\", returnStdout=true}"))
+        assertThat(getCommands('println', ''), hasItem('Integration test failed for k-NN. Processing recent test results.'))
+        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue edit bbb\nccc --repo https://github.com/opensearch-project/k-NN.git --body \"\n### Integration Test Failed for version 2.2.0. See the specifications below:\n\n#### Details\n\n| Platform | Dist | Arch | Dist Build No. | RC | Test Report | Workflow Run | Failing tests |\n|----------|------|------|----------------|----|-------------|--------------|---------------|\n| linux | tar | arm64 | 4891 | 0 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/arm64/tar/test-results/6561/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6561/display/redirect | [Check metrics](https://metrics.opensearch.org/_dashboards/app/dashboards?security_tenant=global#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-30d,to:now))&_a=(description:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',expandedPanelId:c570bdfd-3122-4e31-a02d-2130d797d9fc,filters:!(('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:version,negate:!f,params:(query:'2.2.0'),type:phrase),query:(match_phrase:(version:'2.2.0'))),('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:component,negate:!f,params:(query:k-NN),type:phrase),query:(match_phrase:(component:k-NN)))),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),query:(language:kuery,query:''),timeRestore:!t,title:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',viewMode:view)) |\n| linux | tar | x64 | 4891 | 0 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/x64/tar/test-results/6561/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6561/display/redirect | [Check metrics](https://metrics.opensearch.org/_dashboards/app/dashboards?security_tenant=global#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-30d,to:now))&_a=(description:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',expandedPanelId:ddafb9c5-2d35-482a-9c61-1ba78b67f406,filters:!(('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:version,negate:!f,params:(query:'2.2.0'),type:phrase),query:(match_phrase:(version:'2.2.0'))),('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:component,negate:!f,params:(query:k-NN),type:phrase),query:(match_phrase:(component:k-NN)))),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),query:(language:kuery,query:''),timeRestore:!t,title:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',viewMode:view)) |\n\nCheck out test report manifest linked above for steps to reproduce, cluster and integration test failure logs. For additional information checkout the [wiki](https://github.com/opensearch-project/opensearch-build/wiki/Testing-the-Distribution) and [OpenSearch Metrics Dashboard](https://metrics.opensearch.org/_dashboards/app/dashboards#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa).\n\nTagging the release owners to take a look @foo @bar\", returnStdout=true}"))
     }
 
     @Test
@@ -337,7 +393,7 @@ class TestUpdateIntegTestFailureIssues extends BuildPipelineTest {
         }
         runScript('tests/jenkins/jobs/UpdateIntegTestFailureIssues_Jenkinsfile')
         assertThat(getCommands('println', ''), hasItem('Issue already exists, editing the issue body'))
-        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue edit bbb\nccc --repo https://github.com/opensearch-project/geospatial.git --body \"\n### Integration Test Failed for version 2.2.0. See the specifications below:\n\n#### Details\n\n| Platform | Dist | Arch | Dist Build No. | RC | Test Report | Workflow Run | Failing tests |\n|----------|------|------|----------------|----|-------------|--------------|---------------|\n| linux | tar | x64 | 4891 | 0 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/x64/tar/test-results/6561/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6561/display/redirect | [Check metrics](https://metrics.opensearch.org/_dashboards/app/dashboards?security_tenant=global#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-30d,to:now))&_a=(description:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',expandedPanelId:ddafb9c5-2d35-482a-9c61-1ba78b67f406,filters:!(('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:version,negate:!f,params:(query:'2.2.0'),type:phrase),query:(match_phrase:(version:'2.2.0'))),('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:component,negate:!f,params:(query:geospatial),type:phrase),query:(match_phrase:(component:geospatial)))),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),query:(language:kuery,query:''),timeRestore:!t,title:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',viewMode:view)) |\n| linux | tar | arm64 | 4891 | 0 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/arm64/tar/test-results/6560/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6560/display/redirect | [Check metrics](https://metrics.opensearch.org/_dashboards/app/dashboards?security_tenant=global#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-30d,to:now))&_a=(description:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',expandedPanelId:c570bdfd-3122-4e31-a02d-2130d797d9fc,filters:!(('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:version,negate:!f,params:(query:'2.2.0'),type:phrase),query:(match_phrase:(version:'2.2.0'))),('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:component,negate:!f,params:(query:geospatial),type:phrase),query:(match_phrase:(component:geospatial)))),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),query:(language:kuery,query:''),timeRestore:!t,title:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',viewMode:view)) |\n\nCheck out test report manifest linked above for steps to reproduce, cluster and integration test failure logs. For additional information checkout the [wiki](https://github.com/opensearch-project/opensearch-build/wiki/Testing-the-Distribution) and [OpenSearch Metrics Dashboard](https://metrics.opensearch.org/_dashboards/app/dashboards#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa).\n\", returnStdout=true}"))
+        assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue edit bbb\nccc --repo https://github.com/opensearch-project/geospatial.git --body \"\n### Integration Test Failed for version 2.2.0. See the specifications below:\n\n#### Details\n\n| Platform | Dist | Arch | Dist Build No. | RC | Test Report | Workflow Run | Failing tests |\n|----------|------|------|----------------|----|-------------|--------------|---------------|\n| linux | tar | arm64 | 4891 | 0 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/arm64/tar/test-results/6561/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6561/display/redirect | [Check metrics](https://metrics.opensearch.org/_dashboards/app/dashboards?security_tenant=global#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-30d,to:now))&_a=(description:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',expandedPanelId:c570bdfd-3122-4e31-a02d-2130d797d9fc,filters:!(('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:version,negate:!f,params:(query:'2.2.0'),type:phrase),query:(match_phrase:(version:'2.2.0'))),('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:component,negate:!f,params:(query:geospatial),type:phrase),query:(match_phrase:(component:geospatial)))),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),query:(language:kuery,query:''),timeRestore:!t,title:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',viewMode:view)) |\n| linux | tar | x64 | 4891 | 0 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/x64/tar/test-results/6561/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6561/display/redirect | [Check metrics](https://metrics.opensearch.org/_dashboards/app/dashboards?security_tenant=global#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-30d,to:now))&_a=(description:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',expandedPanelId:ddafb9c5-2d35-482a-9c61-1ba78b67f406,filters:!(('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:version,negate:!f,params:(query:'2.2.0'),type:phrase),query:(match_phrase:(version:'2.2.0'))),('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:component,negate:!f,params:(query:geospatial),type:phrase),query:(match_phrase:(component:geospatial)))),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),query:(language:kuery,query:''),timeRestore:!t,title:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',viewMode:view)) |\n\nCheck out test report manifest linked above for steps to reproduce, cluster and integration test failure logs. For additional information checkout the [wiki](https://github.com/opensearch-project/opensearch-build/wiki/Testing-the-Distribution) and [OpenSearch Metrics Dashboard](https://metrics.opensearch.org/_dashboards/app/dashboards#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa).\n\", returnStdout=true}"))
     }
 
    @Test
@@ -365,7 +421,7 @@ class TestUpdateIntegTestFailureIssues extends BuildPipelineTest {
        }
        runScript('tests/jenkins/jobs/UpdateIntegTestFailureIssues_Jenkinsfile')
        assertThat(getCommands('sh', 'k-NN'), not(hasItem("{script=gh issue close bbb\nccc -R opensearch-project/k-NN --comment \"Closing the issue as the integration tests for k-NN passed for version: **2.2.0**.\", returnStdout=true}")))
-      assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue edit bbb\nccc --repo https://github.com/opensearch-project/geospatial.git --body \"\n### Integration Test Failed for version 2.2.0. See the specifications below:\n\n#### Details\n\n| Platform | Dist | Arch | Dist Build No. | RC | Test Report | Workflow Run | Failing tests |\n|----------|------|------|----------------|----|-------------|--------------|---------------|\n| linux | tar | x64 | 4891 | 0 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/x64/tar/test-results/6561/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6561/display/redirect | [Check metrics](https://metrics.opensearch.org/_dashboards/app/dashboards?security_tenant=global#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-30d,to:now))&_a=(description:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',expandedPanelId:ddafb9c5-2d35-482a-9c61-1ba78b67f406,filters:!(('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:version,negate:!f,params:(query:'2.2.0'),type:phrase),query:(match_phrase:(version:'2.2.0'))),('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:component,negate:!f,params:(query:geospatial),type:phrase),query:(match_phrase:(component:geospatial)))),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),query:(language:kuery,query:''),timeRestore:!t,title:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',viewMode:view)) |\n| linux | tar | arm64 | 4891 | 0 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/arm64/tar/test-results/6560/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6560/display/redirect | [Check metrics](https://metrics.opensearch.org/_dashboards/app/dashboards?security_tenant=global#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-30d,to:now))&_a=(description:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',expandedPanelId:c570bdfd-3122-4e31-a02d-2130d797d9fc,filters:!(('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:version,negate:!f,params:(query:'2.2.0'),type:phrase),query:(match_phrase:(version:'2.2.0'))),('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:component,negate:!f,params:(query:geospatial),type:phrase),query:(match_phrase:(component:geospatial)))),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),query:(language:kuery,query:''),timeRestore:!t,title:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',viewMode:view)) |\n\nCheck out test report manifest linked above for steps to reproduce, cluster and integration test failure logs. For additional information checkout the [wiki](https://github.com/opensearch-project/opensearch-build/wiki/Testing-the-Distribution) and [OpenSearch Metrics Dashboard](https://metrics.opensearch.org/_dashboards/app/dashboards#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa).\n\", returnStdout=true}"))
+      assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue edit bbb\nccc --repo https://github.com/opensearch-project/geospatial.git --body \"\n### Integration Test Failed for version 2.2.0. See the specifications below:\n\n#### Details\n\n| Platform | Dist | Arch | Dist Build No. | RC | Test Report | Workflow Run | Failing tests |\n|----------|------|------|----------------|----|-------------|--------------|---------------|\n| linux | tar | arm64 | 4891 | 0 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/arm64/tar/test-results/6561/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6561/display/redirect | [Check metrics](https://metrics.opensearch.org/_dashboards/app/dashboards?security_tenant=global#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-30d,to:now))&_a=(description:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',expandedPanelId:c570bdfd-3122-4e31-a02d-2130d797d9fc,filters:!(('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:version,negate:!f,params:(query:'2.2.0'),type:phrase),query:(match_phrase:(version:'2.2.0'))),('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:component,negate:!f,params:(query:geospatial),type:phrase),query:(match_phrase:(component:geospatial)))),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),query:(language:kuery,query:''),timeRestore:!t,title:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',viewMode:view)) |\n| linux | tar | x64 | 4891 | 0 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/x64/tar/test-results/6561/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6561/display/redirect | [Check metrics](https://metrics.opensearch.org/_dashboards/app/dashboards?security_tenant=global#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-30d,to:now))&_a=(description:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',expandedPanelId:ddafb9c5-2d35-482a-9c61-1ba78b67f406,filters:!(('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:version,negate:!f,params:(query:'2.2.0'),type:phrase),query:(match_phrase:(version:'2.2.0'))),('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:component,negate:!f,params:(query:geospatial),type:phrase),query:(match_phrase:(component:geospatial)))),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),query:(language:kuery,query:''),timeRestore:!t,title:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',viewMode:view)) |\n\nCheck out test report manifest linked above for steps to reproduce, cluster and integration test failure logs. For additional information checkout the [wiki](https://github.com/opensearch-project/opensearch-build/wiki/Testing-the-Distribution) and [OpenSearch Metrics Dashboard](https://metrics.opensearch.org/_dashboards/app/dashboards#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa).\n\", returnStdout=true}"))
    }
 
    @Test
@@ -378,8 +434,8 @@ class TestUpdateIntegTestFailureIssues extends BuildPipelineTest {
            return [stdout: "", exitValue: 0]
        }
        super.testPipeline('tests/jenkins/jobs/UpdateBuildFailureIssue_without_distributionID_Jenkinsfile')
-       assertThat(getCommands('println', ''), hasItem('Integration test failed for k-NN, creating github issue'))
-       assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue edit bbb\nccc --repo https://github.com/opensearch-project/k-NN.git --body \"\n### Integration Test Failed for version 2.2.0. See the specifications below:\n\n#### Details\n\n| Platform | Dist | Arch | Dist Build No. | RC | Test Report | Workflow Run | Failing tests |\n|----------|------|------|----------------|----|-------------|--------------|---------------|\n| linux | tar | x64 | 4891 | 0 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/x64/tar/test-results/6561/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6561/display/redirect | [Check metrics](https://metrics.opensearch.org/_dashboards/app/dashboards?security_tenant=global#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-30d,to:now))&_a=(description:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',expandedPanelId:ddafb9c5-2d35-482a-9c61-1ba78b67f406,filters:!(('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:version,negate:!f,params:(query:'2.2.0'),type:phrase),query:(match_phrase:(version:'2.2.0'))),('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:component,negate:!f,params:(query:k-NN),type:phrase),query:(match_phrase:(component:k-NN)))),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),query:(language:kuery,query:''),timeRestore:!t,title:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',viewMode:view)) |\n| linux | tar | arm64 | 4891 | 0 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/arm64/tar/test-results/6560/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6560/display/redirect | [Check metrics](https://metrics.opensearch.org/_dashboards/app/dashboards?security_tenant=global#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-30d,to:now))&_a=(description:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',expandedPanelId:c570bdfd-3122-4e31-a02d-2130d797d9fc,filters:!(('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:version,negate:!f,params:(query:'2.2.0'),type:phrase),query:(match_phrase:(version:'2.2.0'))),('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:component,negate:!f,params:(query:k-NN),type:phrase),query:(match_phrase:(component:k-NN)))),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),query:(language:kuery,query:''),timeRestore:!t,title:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',viewMode:view)) |\n\nCheck out test report manifest linked above for steps to reproduce, cluster and integration test failure logs. For additional information checkout the [wiki](https://github.com/opensearch-project/opensearch-build/wiki/Testing-the-Distribution) and [OpenSearch Metrics Dashboard](https://metrics.opensearch.org/_dashboards/app/dashboards#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa).\n\nTagging the release owners to take a look @foo @bar\", returnStdout=true}"))
+       assertThat(getCommands('println', ''), hasItem('Integration test failed for k-NN. Processing recent test results.'))
+       assertThat(getCommands('sh', 'script'), hasItem("{script=gh issue edit bbb\nccc --repo https://github.com/opensearch-project/k-NN.git --body \"\n### Integration Test Failed for version 2.2.0. See the specifications below:\n\n#### Details\n\n| Platform | Dist | Arch | Dist Build No. | RC | Test Report | Workflow Run | Failing tests |\n|----------|------|------|----------------|----|-------------|--------------|---------------|\n| linux | tar | arm64 | 4891 | 0 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/arm64/tar/test-results/6561/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6561/display/redirect | [Check metrics](https://metrics.opensearch.org/_dashboards/app/dashboards?security_tenant=global#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-30d,to:now))&_a=(description:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',expandedPanelId:c570bdfd-3122-4e31-a02d-2130d797d9fc,filters:!(('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:version,negate:!f,params:(query:'2.2.0'),type:phrase),query:(match_phrase:(version:'2.2.0'))),('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:component,negate:!f,params:(query:k-NN),type:phrase),query:(match_phrase:(component:k-NN)))),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),query:(language:kuery,query:''),timeRestore:!t,title:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',viewMode:view)) |\n| linux | tar | x64 | 4891 | 0 | https://ci.opensearch.org/ci/dbc/integ-test/2.2.0/7984/linux/x64/tar/test-results/6561/integ-test/test-report.yml | https://build.ci.opensearch.org/job/integ-test/6561/display/redirect | [Check metrics](https://metrics.opensearch.org/_dashboards/app/dashboards?security_tenant=global#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-30d,to:now))&_a=(description:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',expandedPanelId:ddafb9c5-2d35-482a-9c61-1ba78b67f406,filters:!(('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:version,negate:!f,params:(query:'2.2.0'),type:phrase),query:(match_phrase:(version:'2.2.0'))),('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:component,negate:!f,params:(query:k-NN),type:phrase),query:(match_phrase:(component:k-NN)))),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),query:(language:kuery,query:''),timeRestore:!t,title:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',viewMode:view)) |\n\nCheck out test report manifest linked above for steps to reproduce, cluster and integration test failure logs. For additional information checkout the [wiki](https://github.com/opensearch-project/opensearch-build/wiki/Testing-the-Distribution) and [OpenSearch Metrics Dashboard](https://metrics.opensearch.org/_dashboards/app/dashboards#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa).\n\nTagging the release owners to take a look @foo @bar\", returnStdout=true}"))
    }
 
    @Test
@@ -410,7 +466,7 @@ class TestUpdateIntegTestFailureIssues extends BuildPipelineTest {
     assert windows_x64 == "https://metrics.opensearch.org/_dashboards/app/dashboards?security_tenant=global#/view/21aad140-49f6-11ef-bbdd-39a9b324a5aa?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-30d,to:now))&_a=(description:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',expandedPanelId:a57afb35-8d97-4641-9b07-64ff614dab00,filters:!(('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:version,negate:!f,params:(query:'2.18.0'),type:phrase),query:(match_phrase:(version:'2.18.0'))),('\$state':(store:appState),meta:(alias:!n,disabled:!f,index:d90d2ba0-8fe0-11ef-a168-f19b1bbc360c,key:component,negate:!f,params:(query:security),type:phrase),query:(match_phrase:(component:security)))),fullScreenMode:!f,options:(hidePanelTitles:!f,useMargins:!t),query:(language:kuery,query:''),timeRestore:!t,title:'OpenSearch%20Release%20Build%20and%20Integration%20Test%20Results',viewMode:view)"
 
     def unknown_dist = script.getMetricsVisualizationUrl('de', 'x64', version, component)
-    assert unknown_dist == "null"
+    assert unknown_dist == null
 
    }
 
