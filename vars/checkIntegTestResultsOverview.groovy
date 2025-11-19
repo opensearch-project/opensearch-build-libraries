@@ -15,7 +15,7 @@ import jenkins.ReleaseCandidateStatus
  * @param args.inputManifest <required> - Input manifest file(s) eg: [manifests/2.0.0/opensearch-2.0.0.yml, manifests/2.0.0/opensearch-dashboards-2.0.0.yml] .
  */
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@11.2.1', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@11.3.0', retriever: legacySCM(scm))
 
     def secret_metrics_cluster = [
         [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-infra-secrets/aws-accounts/jenkins-health-metrics-account-number'],
