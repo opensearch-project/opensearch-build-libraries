@@ -114,7 +114,13 @@ class TestPublishDistributionBuildResults extends BuildPipelineTest {
                         "type": "keyword"
                     },
                     "overall_build_result": {
-                        "type": "keyword"
+                        "type": "text",
+                        "fields": {
+                            "keyword": {
+                                "type": "keyword",
+                                "ignore_above": 256
+                            }
+                        }
                     }
                 }
             }
