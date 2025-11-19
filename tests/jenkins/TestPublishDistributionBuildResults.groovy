@@ -23,6 +23,7 @@ class TestPublishDistributionBuildResults extends BuildPipelineTest {
         binding.setVariable('currentBuild', [
             number: 123,
             startTimeInMillis: System.currentTimeMillis(),
+            result: 'SUCCESS'
         ])
         binding.setVariable('env', [
             RUN_DISPLAY_URL: 'http://example.com/build/123'
@@ -111,6 +112,9 @@ class TestPublishDistributionBuildResults extends BuildPipelineTest {
                     },
                     "component_build_result": {
                         "type": "keyword"
+                    },
+                    "overall_build_result": {
+                        "type": "keyword"
                     }
                 }
             }
@@ -176,7 +180,8 @@ class TestPublishDistributionBuildResults extends BuildPipelineTest {
             rc: 'rc1',
             rc_number: 1,
             component_category: 'test-category',
-            component_build_result: 'failed'
+            component_build_result: 'failed',
+            overall_build_result:'SUCCESS'
         ]
 
         // Remove the dynamic field for comparison
@@ -221,7 +226,8 @@ class TestPublishDistributionBuildResults extends BuildPipelineTest {
             rc: rc,
             rc_number: rcNumber,
             component_category: componentCategory,
-            component_build_result: status
+            component_build_result: status,
+            overall_build_result:'SUCCESS'
         ])
         assert result == expectedJson
 
@@ -239,7 +245,8 @@ class TestPublishDistributionBuildResults extends BuildPipelineTest {
             rc: null,
             rc_number: null,
             component_category: null,
-            component_build_result: null
+            component_build_result: null,
+            overall_build_result:'SUCCESS'
         ])
         assert result == expectedJson
     }
