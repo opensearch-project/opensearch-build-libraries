@@ -55,7 +55,8 @@
 
                 echo "Start gradlecheck"
                 GRADLE_CHECK_STATUS=0
-                ./gradlew clean && ./gradlew check -Dtests.coverage=true -Dbwc.checkout.align=true --no-daemon --no-scan || GRADLE_CHECK_STATUS=1
+                ./gradlew clean && ./gradlew check -Dbwc.checkout.align=true --no-daemon --no-scan || GRADLE_CHECK_STATUS=1
+                ./gradlew jacocoTestReport
 
                 if [ "$GRADLE_CHECK_STATUS" != 0 ]; then
                     echo Gradle Check Failed!
