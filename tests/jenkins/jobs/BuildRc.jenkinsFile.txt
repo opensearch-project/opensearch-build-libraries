@@ -22,7 +22,7 @@
             set +x
             curl -s -XGET "sample.url/opensearch-distribution-build-results/_search" --aws-sigv4 "aws:amz:us-east-1:es" --user "abc:xyz" -H "x-amz-security-token:sampleToken" -H 'Content-Type: application/json' -d "{\"_source\":\"rc_number\",\"sort\":[{\"distribution_build_number\":{\"order\":\"desc\"},\"rc_number\":{\"order\":\"desc\"}}],\"size\":1,\"query\":{\"bool\":{\"filter\":[{\"match_phrase\":{\"component\":\"OpenSearch-Dashboards\"}},{\"match_phrase\":{\"rc\":\"true\"}},{\"match_phrase\":{\"version\":\"2.19.0\"}},{\"match_phrase\":{\"overall_build_result\":\"SUCCESS\"}}]}}}" | jq '.'
         , returnStdout=true})
-                  buildRC.echo(Current RC numbers: OpenSearch - 5, OpenSearch-Dashboards - 5)
+                  buildRC.echo(Retrieved Current RC numbers: OpenSearch - 5, OpenSearch-Dashboards - 5)
                   buildRC.echo(Triggering both OpenSearch and OpenSearch-Dashboards builds with RC numbers: 6, 6 respectively)
                   buildRC.parallel({opensearch=groovy.lang.Closure, opensearchDashboards=groovy.lang.Closure})
                      buildRC.string({name=INPUT_MANIFEST, value=2.19.0/opensearch-2.19.0.yml})

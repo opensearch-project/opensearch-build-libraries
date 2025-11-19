@@ -143,7 +143,7 @@ class TestBuildRc extends BuildPipelineTest {
         assertCallStack().contains('buildRC.booleanParam({name=CONTINUE_ON_ERROR, value=false})')
         assertCallStack().contains('buildRC.booleanParam({name=UPDATE_GITHUB_ISSUE, value=true})')
         assertCallStack().contains('buildRC.build({job=distribution-build-opensearch-dashboards, parameters=[null, null, null, null, null, null, null, null, null, null], wait=false, propagate=false})')
-        assertThat(getCommands('echo', 'Current'), hasItem('Current RC numbers: OpenSearch - 5, OpenSearch-Dashboards - 5'))
+        assertThat(getCommands('echo', 'Current'), hasItem('Retrieved Current RC numbers: OpenSearch - 5, OpenSearch-Dashboards - 5'))
         assertThat(getCommands('echo', 'Triggering'), hasItem('Triggering both OpenSearch and OpenSearch-Dashboards builds with RC numbers: 6, 6 respectively'))
     }
 
@@ -153,7 +153,7 @@ class TestBuildRc extends BuildPipelineTest {
         this.registerLibTester(new BuildRcLibTester('2.19.0', 'opensearch'))
         runScript('tests/jenkins/jobs/BuildRc.jenkinsFile')
         def callStack = helper.getCallStack()
-        assertThat(getCommands('echo', 'Current'), hasItem('Current RC numbers: OpenSearch - 5, OpenSearch-Dashboards - 5'))
+        assertThat(getCommands('echo', 'Current'), hasItem('Retrieved Current RC numbers: OpenSearch - 5, OpenSearch-Dashboards - 5'))
         assertThat(getCommands('echo', 'triggering'), hasItem('Only triggering OpenSearch build with RC number: 6'))
         assertCallStack().contains('BuildRc.buildRC({version=2.19.0, product=opensearch})')
         assertCallStack().contains('buildRC.string({name=INPUT_MANIFEST, value=2.19.0/opensearch-2.19.0.yml})')
@@ -175,7 +175,7 @@ class TestBuildRc extends BuildPipelineTest {
         this.registerLibTester(new BuildRcLibTester('2.19.0', 'opensearch-dashboards'))
         runScript('tests/jenkins/jobs/BuildRc.jenkinsFile')
         def callStack = helper.getCallStack()
-        assertThat(getCommands('echo', 'Current'), hasItem('Current RC numbers: OpenSearch - 5, OpenSearch-Dashboards - 5'))
+        assertThat(getCommands('echo', 'Current'), hasItem('Retrieved Current RC numbers: OpenSearch - 5, OpenSearch-Dashboards - 5'))
         assertThat(getCommands('echo', 'triggering'), hasItem('Only triggering OpenSearch-Dashboards build with RC number: 6'))
         assertCallStack().contains('buildRC.string({name=INPUT_MANIFEST, value=2.19.0/opensearch-dashboards-2.19.0.yml})')
         assertCallStack().contains('buildRC.string({name=TEST_MANIFEST, value=2.19.0/opensearch-dashboards-2.19.0-test.yml})')
@@ -252,7 +252,7 @@ class TestBuildRc extends BuildPipelineTest {
             return [stdout: osdLatestRcResponse, exitValue: 0]
         }
         runScript('tests/jenkins/jobs/BuildRc.jenkinsFile')
-        assertThat(getCommands('echo', 'Current'), hasItem('Current RC numbers: OpenSearch - 0, OpenSearch-Dashboards - 0'))
+        assertThat(getCommands('echo', 'Current'), hasItem('Retrieved Current RC numbers: OpenSearch - 0, OpenSearch-Dashboards - 0'))
         assertThat(getCommands('echo', 'Triggering'), hasItem('Triggering both OpenSearch and OpenSearch-Dashboards builds with RC numbers: 1, 1 respectively'))
         }
 
