@@ -106,10 +106,10 @@ class TestBuildRc extends BuildPipelineTest {
                     }
                     '''
 
-        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-distribution-build-results/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"_source\\":\\"rc_number\\",\\"sort\\":[{\\"distribution_build_number\\":{\\"order\\":\\"desc\\"},\\"rc_number\\":{\\"order\\":\\"desc\\"}}],\\"size\\":1,\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"component\\":\\"OpenSearch\\"}},{\\"match_phrase\\":{\\"rc\\":\\"true\\"}},{\\"match_phrase\\":{\\"version\\":\\"2.19.0\\"}}]}}}\" | jq '.'\n        """) { script ->
+        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-distribution-build-results/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"_source\\":\\"rc_number\\",\\"sort\\":[{\\"distribution_build_number\\":{\\"order\\":\\"desc\\"},\\"rc_number\\":{\\"order\\":\\"desc\\"}}],\\"size\\":1,\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"component\\":\\"OpenSearch\\"}},{\\"match_phrase\\":{\\"rc\\":\\"true\\"}},{\\"match_phrase\\":{\\"version\\":\\"2.19.0\\"}},{\\"match_phrase\\":{\\"overall_build_result\\":\\"SUCCESS\\"}}]}}}\" | jq '.'\n        """) { script ->
             return [stdout: osLatestRcResponse, exitValue: 0]
         }
-        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-distribution-build-results/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"_source\\":\\"rc_number\\",\\"sort\\":[{\\"distribution_build_number\\":{\\"order\\":\\"desc\\"},\\"rc_number\\":{\\"order\\":\\"desc\\"}}],\\"size\\":1,\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"component\\":\\"OpenSearch-Dashboards\\"}},{\\"match_phrase\\":{\\"rc\\":\\"true\\"}},{\\"match_phrase\\":{\\"version\\":\\"2.19.0\\"}}]}}}\" | jq '.'\n        """) { script ->
+        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-distribution-build-results/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"_source\\":\\"rc_number\\",\\"sort\\":[{\\"distribution_build_number\\":{\\"order\\":\\"desc\\"},\\"rc_number\\":{\\"order\\":\\"desc\\"}}],\\"size\\":1,\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"component\\":\\"OpenSearch-Dashboards\\"}},{\\"match_phrase\\":{\\"rc\\":\\"true\\"}},{\\"match_phrase\\":{\\"version\\":\\"2.19.0\\"}},{\\"match_phrase\\":{\\"overall_build_result\\":\\"SUCCESS\\"}}]}}}\" | jq '.'\n        """) { script ->
             return [stdout: osdLatestRcResponse, exitValue: 0]
         }
     }
@@ -196,6 +196,77 @@ class TestBuildRc extends BuildPipelineTest {
         this.registerLibTester(new BuildRcLibTester('2.19.0', 'opensearch-dashboard'))
         runScript('tests/jenkins/jobs/BuildRc.jenkinsFile')
         assertThat(getCommands('error', ''), hasItem("Invalid product 'opensearch-dashboard'. Valid values: opensearch, opensearch-dashboards, both"))
+        assertJobStatusFailure()
+    }
+
+    @Test
+    void testFirstRC() {
+        addParam('PRODUCT', 'both')
+        this.registerLibTester(new BuildRcLibTester('2.19.0'))
+        def osLatestRcResponse = '''
+                    {
+                      "took": 16,
+                      "timed_out": false,
+                      "_shards": {
+                        "total": 40,
+                        "successful": 40,
+                        "skipped": 0,
+                        "failed": 0
+                      },
+                      "hits": {
+                        "total": {
+                          "value": 0,
+                          "relation": "eq"
+                        },
+                        "max_score": null,
+                        "hits": []
+                      }
+                    }
+                    '''
+
+        def osdLatestRcResponse = '''
+                    {
+                      "took": 16,
+                      "timed_out": false,
+                      "_shards": {
+                        "total": 40,
+                        "successful": 40,
+                        "skipped": 0,
+                        "failed": 0
+                      },
+                      "hits": {
+                        "total": {
+                          "value": 0,
+                          "relation": "eq"
+                        },
+                        "max_score": null,
+                        "hits": []
+                      }
+                    }
+                    '''
+
+        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-distribution-build-results/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"_source\\":\\"rc_number\\",\\"sort\\":[{\\"distribution_build_number\\":{\\"order\\":\\"desc\\"},\\"rc_number\\":{\\"order\\":\\"desc\\"}}],\\"size\\":1,\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"component\\":\\"OpenSearch\\"}},{\\"match_phrase\\":{\\"rc\\":\\"true\\"}},{\\"match_phrase\\":{\\"version\\":\\"2.19.0\\"}},{\\"match_phrase\\":{\\"overall_build_result\\":\\"SUCCESS\\"}}]}}}\" | jq '.'\n        """) { script ->
+            return [stdout: osLatestRcResponse, exitValue: 0]
+        }
+        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-distribution-build-results/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"_source\\":\\"rc_number\\",\\"sort\\":[{\\"distribution_build_number\\":{\\"order\\":\\"desc\\"},\\"rc_number\\":{\\"order\\":\\"desc\\"}}],\\"size\\":1,\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"component\\":\\"OpenSearch-Dashboards\\"}},{\\"match_phrase\\":{\\"rc\\":\\"true\\"}},{\\"match_phrase\\":{\\"version\\":\\"2.19.0\\"}},{\\"match_phrase\\":{\\"overall_build_result\\":\\"SUCCESS\\"}}]}}}\" | jq '.'\n        """) { script ->
+            return [stdout: osdLatestRcResponse, exitValue: 0]
+        }
+        runScript('tests/jenkins/jobs/BuildRc.jenkinsFile')
+        assertThat(getCommands('echo', 'Current'), hasItem('Current RC numbers: OpenSearch - 0, OpenSearch-Dashboards - 0'))
+        assertThat(getCommands('echo', 'Triggering'), hasItem('Triggering both OpenSearch and OpenSearch-Dashboards builds with RC numbers: 1, 1 respectively'))
+        }
+
+    @Test
+    void testNullResponse() {
+        addParam('PRODUCT', 'opensearch-dashboard')
+        this.registerLibTester(new BuildRcLibTester('2.19.0', 'opensearch-dashboards'))
+        def osdLatestRcResponse = 'Access issue'
+
+        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-distribution-build-results/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"_source\\":\\"rc_number\\",\\"sort\\":[{\\"distribution_build_number\\":{\\"order\\":\\"desc\\"},\\"rc_number\\":{\\"order\\":\\"desc\\"}}],\\"size\\":1,\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"component\\":\\"OpenSearch-Dashboards\\"}},{\\"match_phrase\\":{\\"rc\\":\\"true\\"}},{\\"match_phrase\\":{\\"version\\":\\"2.19.0\\"}},{\\"match_phrase\\":{\\"overall_build_result\\":\\"SUCCESS\\"}}]}}}\" | jq '.'\n        """) { script ->
+            return [stdout: osdLatestRcResponse, exitValue: 0]
+        }
+        runScript('tests/jenkins/jobs/BuildRc.jenkinsFile')
+        assertThat(getCommands('error', ''), hasItem("Unable to fetch latest RC number from metrics. Received null value."))
         assertJobStatusFailure()
     }
 

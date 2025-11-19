@@ -44,8 +44,8 @@ void call(Map args = [:]) {
         }
     }
 
-    if (isNullOrEmpty(opensearchRcNumber.toString()) || isNullOrEmpty(opensearchDashboardsRcNumber.toString())) {
-        error("Unable to fetch latest RC number from metrics")
+    if (opensearchRcNumber == null || opensearchDashboardsRcNumber == null) {
+        error("Unable to fetch latest RC number from metrics. Received null value.")
     }
     else {
         echo("Current RC numbers: OpenSearch - ${opensearchRcNumber}, OpenSearch-Dashboards - ${opensearchDashboardsRcNumber}")

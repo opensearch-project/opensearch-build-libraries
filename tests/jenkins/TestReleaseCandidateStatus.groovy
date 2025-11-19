@@ -145,6 +145,11 @@ class TestReleaseCandidateStatus {
                                                 match_phrase: [
                                                         version: "${this.version}"
                                                 ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        overall_build_result: "SUCCESS"
+                                        ]
                                         ]
                                 ]
                         ]
@@ -186,6 +191,11 @@ class TestReleaseCandidateStatus {
                                                 match_phrase: [
                                                         version: "${this.version}"
                                                 ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        overall_build_result: "SUCCESS"
+                                        ]
                                         ],
                                         [
                                                 match_phrase: [
@@ -291,6 +301,41 @@ class TestReleaseCandidateStatus {
         }
         ReleaseCandidateStatus releaseCandidateStatusOb = new ReleaseCandidateStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, buildIndexName, version, qualifier, script)
         def expectedOutput = 5
+        def result = releaseCandidateStatusOb.getLatestRcNumber('OpenSearch')
+        assert result == expectedOutput
+
+    }
+    
+    @Test
+    void testGetLatestFirstRcNumber() {
+        def responseText = """
+                {
+                  "took": 15,
+                  "timed_out": false,
+                  "_shards": {
+                    "total": 40,
+                    "successful": 40,
+                    "skipped": 0,
+                    "failed": 0
+                  },
+                  "hits": {
+                    "total": {
+                      "value": 0,
+                      "relation": "eq"
+                    },
+                    "max_score": null,
+                    "hits": []
+                  }
+                }
+                """
+        script = new Expando()
+        script.sh = { Map args ->
+            if (args.containsKey("script")) {
+                return responseText
+            }
+        }
+        ReleaseCandidateStatus releaseCandidateStatusOb = new ReleaseCandidateStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, buildIndexName, version, qualifier, script)
+        def expectedOutput = 0
         def result = releaseCandidateStatusOb.getLatestRcNumber('OpenSearch')
         assert result == expectedOutput
 
