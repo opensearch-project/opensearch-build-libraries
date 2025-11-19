@@ -258,7 +258,7 @@ class TestBuildRc extends BuildPipelineTest {
 
     @Test
     void testNullResponse() {
-        addParam('PRODUCT', 'opensearch-dashboard')
+        addParam('PRODUCT', 'opensearch-dashboards')
         this.registerLibTester(new BuildRcLibTester('2.19.0', 'opensearch-dashboards'))
         def osdLatestRcResponse = 'Access issue'
 
