@@ -10,6 +10,7 @@
 package jenkins
 
 import groovy.json.JsonOutput
+import groovy.json.JsonSlurperClassic
 import utils.OpenSearchMetricsQuery
 
 class ComponentIntegTestStatus {
@@ -138,6 +139,97 @@ class ComponentIntegTestStatus {
         return query.replace('"', '\\"')
     }
 
+    def componentIntegTestTopResultsQuery(String component) {
+                def queryMap = [
+                        size: 0,
+                        query: [
+                                bool: [
+                                        filter: [
+                                                [
+                                                        match_phrase: [
+                                                                component: "${component}"
+                                                        ]
+                                                ],
+                                                [
+                                                        match_phrase: [
+                                                                version: "${this.version}"
+                                                        ]
+                                                ],
+                                                [
+                                                        match_phrase: [
+                                                                distribution_build_number: "${this.distributionBuildNumber}"
+                                                        ]
+                                                ]
+                                        ]
+                                ]
+                        ],
+                        aggs: [
+                                unique_combinations: [
+                                        composite: [
+                                                size: 100,
+                                                sources: [
+                                                        [
+                                                                platform: [
+                                                                        terms: [
+                                                                                field: "platform"
+                                                                        ]
+                                                                ]
+                                                        ],
+                                                        [
+                                                                architecture: [
+                                                                        terms: [
+                                                                                field: "architecture"
+                                                                        ]
+                                                                ]
+                                                        ],
+                                                        [
+                                                                distribution: [
+                                                                        terms: [
+                                                                                field: "distribution"
+                                                                        ]
+                                                                ]
+                                                        ]
+                                                ]
+                                        ],
+                                        aggs: [
+                                                latest_doc: [
+                                                        top_hits: [
+                                                                size: 1,
+                                                                sort: [
+                                                                        [
+                                                                                integ_test_build_number: [
+                                                                                        order: "desc"
+                                                                                ]
+                                                                        ]
+                                                                ],
+                                                                _source: [
+                                                                        "platform",
+                                                                        "architecture", 
+                                                                        "distribution",
+                                                                        "test_report_manifest_yml",
+                                                                        "integ_test_build_url",
+                                                                        "rc_number",
+                                                                        "component_build_result"
+                                                                ]
+                                                        ]
+                                                ]
+                                        ]
+                                ]
+                        ]
+                ]
+                        
+        if (!isNullOrEmpty(this.qualifier)) {
+                queryMap.query.bool.filter.add([
+                        match_phrase: [
+                                qualifier: "${this.qualifier}"
+                                ]
+                        ])
+        }
+
+        def query = JsonOutput.toJson(queryMap)
+        return query.replace('"', '\\"')
+    }
+
     def termsQueryForComponents(Integer rcNumber, String distribution, String architecture, def components) {
         def queryMap = [
                 size: 100,
@@ -226,10 +318,29 @@ class ComponentIntegTestStatus {
         return components
     }
 
-    def getComponentIntegTestFailedData(String component) {
-        def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(componentIntegTestFailedDataQuery(component))
-        return jsonResponse
-    }
+def getComponentIntegTestFailedData(String component) {
+        try {
+                def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(componentIntegTestTopResultsQuery(component))
+
+                if (jsonResponse.hits.total.value == 0) {
+                        this.script.println("No integration test failed data found for component: ${component}")
+                        return null
+                }
+                else {
+                        def failedBuilds = []
+                        jsonResponse.aggregations.unique_combinations.buckets.each { bucket ->
+                                def hit = bucket.latest_doc.hits.hits[0]
+                                if (hit._source.component_build_result == "failed") {
+                                        failedBuilds.add(hit)
+                                }
+                        }
+                        return new JsonSlurperClassic().parseText(JsonOutput.toJson(failedBuilds))
+                }
+        } catch (Exception e) {
+                this.script.println("Error getting component integration test failed data for ${component}: ${e.message}")
+                return null
+        }
+}
 
     def getAllFailedComponents(Integer rcNumber, String distribution, String architecture, def components) {
         def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(
