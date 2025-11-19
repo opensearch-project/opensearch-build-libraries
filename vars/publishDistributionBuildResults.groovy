@@ -121,6 +121,15 @@ void indexFailedTestData(indexName, testRecordsFile) {
                             },
                             "component_build_result": {
                                 "type": "keyword"
+                            },
+                            "overall_build_result": {
+                                "type": "text",
+                                "fields": {
+                                    "keyword": {
+                                        "type": "keyword",
+                                        "ignore_above": 256
+                                    }
+                                }
                             }
                         }
                     }
@@ -180,6 +189,7 @@ def generateJson(component, componentRepo, componentRepoUrl, componentRef, versi
         rc_number: rcNumber,
         component_category: componentCategory,
         component_build_result: componentResult,
+        overall_build_result: currentBuild.result
     ]
     return JsonOutput.toJson(json)
 }
