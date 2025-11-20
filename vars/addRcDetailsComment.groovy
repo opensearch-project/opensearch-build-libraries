@@ -41,7 +41,7 @@ void call(Map args = [:]) {
     def opensearchDashboardsRcBuildNumber
     String releaseIssueUrl
 
-    withSecrets(secrets: secret_metrics_cluster){
+    withSecrets(secrets: secret_metrics_cluster) {
         withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
             def metricsUrl = env.METRICS_HOST_URL
             def awsAccessKey = env.AWS_ACCESS_KEY_ID
@@ -54,8 +54,13 @@ void call(Map args = [:]) {
             releaseIssueUrl = releaseMetricsData.getReleaseIssue('opensearch-build')
             opensearchRcNumber = args.opensearchRcNumber ?: releaseCandidateStatus.getLatestRcNumber('OpenSearch')
             opensearchDashboardsRcNumber = args.opensearchDashboardsRcNumber ?: releaseCandidateStatus.getLatestRcNumber('OpenSearch-Dashboards')
-            opensearchRcBuildNumber = releaseCandidateStatus.getRcDistributionNumber(opensearchRcNumber, 'OpenSearch').toString()
-            opensearchDashboardsRcBuildNumber = releaseCandidateStatus.getRcDistributionNumber(opensearchDashboardsRcNumber, 'OpenSearch-Dashboards').toString()
+            println("Retrieved RC numbers: OpenSearch - ${opensearchRcNumber}, OpenSearch-Dashboards - ${opensearchDashboardsRcNumber}")
+            if (opensearchRcNumber == null || opensearchDashboardsRcNumber == null || opensearchRcNumber == 0 || opensearchDashboardsRcNumber == 0) {
+                    error("Unable to fetch latest RC number from metrics. Received null or 0 value.")
+            } else {
+                opensearchRcBuildNumber = releaseCandidateStatus.getRcDistributionNumber(opensearchRcNumber, 'OpenSearch').toString()
+                opensearchDashboardsRcBuildNumber = releaseCandidateStatus.getRcDistributionNumber(opensearchDashboardsRcNumber, 'OpenSearch-Dashboards').toString()
+            }
         }
     }
 

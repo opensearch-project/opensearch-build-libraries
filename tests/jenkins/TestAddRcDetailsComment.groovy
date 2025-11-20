@@ -216,10 +216,10 @@ class TestAddRcDetailsComment extends BuildPipelineTest {
         helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch_release_metrics/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"size\\":1,\\"_source\\":\\"release_issue\\",\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"version\\":\\"2.19.0\\"}},{\\"match_phrase\\":{\\"repository.keyword\\":\\"opensearch-build\\"}}]}},\\"sort\\":[{\\"current_date\\":{\\"order\\":\\"desc\\"}}]}\" | jq '.'\n        """) { script ->
             return [stdout: releaseIssueResponse, exitValue: 0]
         }
-        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-distribution-build-results/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"_source\\":\\"rc_number\\",\\"sort\\":[{\\"distribution_build_number\\":{\\"order\\":\\"desc\\"},\\"rc_number\\":{\\"order\\":\\"desc\\"}}],\\"size\\":1,\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"component\\":\\"OpenSearch\\"}},{\\"match_phrase\\":{\\"rc\\":\\"true\\"}},{\\"match_phrase\\":{\\"version\\":\\"2.19.0\\"}}]}}}\" | jq '.'\n        """) { script ->
+        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-distribution-build-results/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"_source\\":\\"rc_number\\",\\"sort\\":[{\\"distribution_build_number\\":{\\"order\\":\\"desc\\"},\\"rc_number\\":{\\"order\\":\\"desc\\"}}],\\"size\\":1,\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"component\\":\\"OpenSearch\\"}},{\\"match_phrase\\":{\\"rc\\":\\"true\\"}},{\\"match_phrase\\":{\\"version\\":\\"2.19.0\\"}},{\\"match_phrase\\":{\\"overall_build_result\\":\\"SUCCESS\\"}}]}}}\" | jq '.'\n        """) { script ->
             return [stdout: osLatestRcResponse, exitValue: 0]
         }
-        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-distribution-build-results/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"_source\\":\\"rc_number\\",\\"sort\\":[{\\"distribution_build_number\\":{\\"order\\":\\"desc\\"},\\"rc_number\\":{\\"order\\":\\"desc\\"}}],\\"size\\":1,\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"component\\":\\"OpenSearch-Dashboards\\"}},{\\"match_phrase\\":{\\"rc\\":\\"true\\"}},{\\"match_phrase\\":{\\"version\\":\\"2.19.0\\"}}]}}}\" | jq '.'\n        """) { script ->
+        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-distribution-build-results/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"_source\\":\\"rc_number\\",\\"sort\\":[{\\"distribution_build_number\\":{\\"order\\":\\"desc\\"},\\"rc_number\\":{\\"order\\":\\"desc\\"}}],\\"size\\":1,\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"component\\":\\"OpenSearch-Dashboards\\"}},{\\"match_phrase\\":{\\"rc\\":\\"true\\"}},{\\"match_phrase\\":{\\"version\\":\\"2.19.0\\"}},{\\"match_phrase\\":{\\"overall_build_result\\":\\"SUCCESS\\"}}]}}}\" | jq '.'\n        """) { script ->
             return [stdout: osdLatestRcResponse, exitValue: 0]
         }
         helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-distribution-build-results/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"_source\\":\\"distribution_build_number\\",\\"sort\\":[{\\"distribution_build_number\\":{\\"order\\":\\"desc\\"}}],\\"size\\":1,\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"component\\":\\"OpenSearch\\"}},{\\"match_phrase\\":{\\"rc\\":\\"true\\"}},{\\"match_phrase\\":{\\"version\\":\\"2.19.0\\"}},{\\"match_phrase\\":{\\"rc_number\\":\\"5\\"}}]}}}\" | jq '.'\n        """) { script ->
@@ -279,8 +279,38 @@ class TestAddRcDetailsComment extends BuildPipelineTest {
         assertThat(fileContent, containsString("image: opensearchstaging/opensearch:2.19.0.1078"))
         assertThat(fileContent, containsString("image: opensearchstaging/opensearch-dashboards:2.19.0.8260"))
         assertThat(fileContent, containsString("[Unable to get docker scan results for OpenSearch, RC build number: 10787]"))
-    }    
+    } 
 
+    @Test
+    void testNullResponse() {
+        def osdLatestRcResponse = '''
+                    {
+                      "took": 16,
+                      "timed_out": false,
+                      "_shards": {
+                        "total": 40,
+                        "successful": 40,
+                        "skipped": 0,
+                        "failed": 0
+                      },
+                      "hits": {
+                        "total": {
+                          "value": 0,
+                          "relation": "eq"
+                        },
+                        "max_score": null,
+                        "hits": []
+                      }
+                    }
+                    '''
+        helper.addShMock("""\n            set -e\n            set +x\n            curl -s -XGET \"sample.url/opensearch-distribution-build-results/_search\" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"abc:xyz\" -H \"x-amz-security-token:sampleToken\" -H 'Content-Type: application/json' -d \"{\\"_source\\":\\"rc_number\\",\\"sort\\":[{\\"distribution_build_number\\":{\\"order\\":\\"desc\\"},\\"rc_number\\":{\\"order\\":\\"desc\\"}}],\\"size\\":1,\\"query\\":{\\"bool\\":{\\"filter\\":[{\\"match_phrase\\":{\\"component\\":\\"OpenSearch-Dashboards\\"}},{\\"match_phrase\\":{\\"rc\\":\\"true\\"}},{\\"match_phrase\\":{\\"version\\":\\"2.19.0\\"}},{\\"match_phrase\\":{\\"overall_build_result\\":\\"SUCCESS\\"}}]}}}\" | jq '.'\n        """) { script ->
+            return [stdout: osdLatestRcResponse, exitValue: 0]
+        }
+        this.registerLibTester(new AddRcDetailsCommentLibTester('2.19.0'))
+        runScript('tests/jenkins/jobs/AddRcDetailsComment.jenkinsFile')
+        assertThat(getCommands('error', ''), hasItem("Unable to fetch latest RC number from metrics. Received null or 0 value."))
+        assertJobStatusFailure()
+    }
     def getCommands(method, text) {
         def shCommands = helper.callStack.findAll { call ->
             call.methodName == method
