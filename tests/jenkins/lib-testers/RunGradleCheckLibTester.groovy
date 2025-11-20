@@ -17,11 +17,13 @@ class RunGradleCheckLibTester extends LibFunctionTester {
     private String gitRepoUrl
     private String gitReference
     private String bwcCheckoutAlign
+    private String scope
 
-    public RunGradleCheckLibTester(gitRepoUrl, gitReference, bwcCheckoutAlign){
+    public RunGradleCheckLibTester(gitRepoUrl, gitReference, bwcCheckoutAlign, scope){
         this.gitRepoUrl = gitRepoUrl
         this.gitReference = gitReference
         this.bwcCheckoutAlign = bwcCheckoutAlign
+        this.scope = scope
     }
 
     void configure(helper, binding) {
@@ -32,6 +34,7 @@ class RunGradleCheckLibTester extends LibFunctionTester {
         assertThat(call.args.gitRepoUrl.first(), notNullValue())
         assertThat(call.args.gitReference.first(), notNullValue())
         assertThat(call.args.bwcCheckoutAlign.first(), notNullValue())
+        assertThat(call.args.scope.first(), notNullValue())
     }
 
     boolean expectedParametersMatcher(call) {

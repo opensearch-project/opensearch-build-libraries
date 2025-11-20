@@ -6,26 +6,50 @@
  * this file be licensed under the Apache-2.0 license or a
  * compatible open source license.
  */
+
+ /** Library to run Gradle Check Tasks in OpenSearch repo
+ *  The library triggers gradle check task from a Pull Request or through Timer (cron based runs)
+ *  @param Map args = [:] args A map of the following parameters
+ *  @param args.gitRepoUrl <required> - Github repo url generally - https://github.com/opensearch-project/OpenSearch.git  is cloned and checks tasks are executed in it.
+ *  @param args.gitReference <optional> - The git commit or branch that needs to be checked in OpenSearch repo to run check tasks defaults to main.
+ *  @param args.bwcCheckoutAlign <optional> - Used to set the value of bwc.checkout.align, can be either true or false
+ *  @param args.module_name <optional> - Defines module scope which has check tasks running and reported against it.
+ **/
+
 void call(Map args = [:]) {
     def lib = library(identifier: 'jenkins@11.3.0', retriever: legacySCM(scm))
     def git_repo_url = args.gitRepoUrl ?: 'null'
     def git_reference = args.gitReference ?: 'null'
+    def module_name = args.scope ?: 'null'
     def bwc_checkout_align = args.bwcCheckoutAlign ?: 'false'
     def bwc_checkout_align_param = ''
-
+    def command
     println("Git Repo: ${git_repo_url}")
     println("Git Reference: ${git_reference}")
     println("Bwc Checkout Align: ${bwc_checkout_align}")
+    println("Module Scope: ${module_name}")
 
     if (Boolean.parseBoolean(bwc_checkout_align)) {
         bwc_checkout_align_param = '-Dbwc.checkout.align=true'
     }
 
-    if (git_repo_url.equals('null') || git_reference.equals('null')) {
-        println("No git repo url or git reference to checkout the commit, exit 1")
+    if (git_repo_url.equals('null') || git_reference.equals('null') || module_name.equals('null')) {
+        println("git repo url or git reference or module_name aren't specified to checkout the commit and run gradle check task, exit 1")
         System.exit(1)
     }
     else {
+        switch (args.scope) {
+            case 'server':
+                command = ':server:check -Dmoduletests.coverage=true'
+                break
+            case 'non-server':
+                command = 'check -x :server:check -Dtests.coverage=true'
+                break
+            default:
+                command = 'check -Dtests.coverage=true'
+                break
+        }
+
         def secret_s3 = [
             [envVar: 'amazon_s3_access_key', secretRef: 'op://opensearch-infra-secrets/gradle-check/jenkins-gradle-check-s3-aws-access-key'],
             [envVar: 'amazon_s3_secret_key', secretRef: 'op://opensearch-infra-secrets/gradle-check/jenkins-gradle-check-s3-aws-secret-key'],
@@ -83,7 +107,7 @@ void call(Map args = [:]) {
 
                 echo "Start gradlecheck"
                 GRADLE_CHECK_STATUS=0
-                ./gradlew clean && ./gradlew check -Dtests.coverage=true ${bwc_checkout_align_param} --no-daemon --no-scan || GRADLE_CHECK_STATUS=1
+                ./gradlew clean && ./gradlew ${command} ${bwc_checkout_align_param} --no-daemon --no-scan || GRADLE_CHECK_STATUS=1
 
                 if [ "\$GRADLE_CHECK_STATUS" != 0 ]; then
                     echo Gradle Check Failed!
