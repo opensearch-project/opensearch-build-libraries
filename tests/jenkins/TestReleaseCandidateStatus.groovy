@@ -340,4 +340,19 @@ class TestReleaseCandidateStatus {
         assert result == expectedOutput
 
     }
+
+    @Test
+    void testNullResponse() {
+        def responseText = """Error"""
+        script = new Expando()
+        script.sh = { Map args ->
+            if (args.containsKey("script")) {
+                return responseText
+            }
+        }
+        ReleaseCandidateStatus releaseCandidateStatusOb = new ReleaseCandidateStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, buildIndexName, version, qualifier, script)
+        def result = releaseCandidateStatusOb.getLatestRcNumber('OpenSearch')
+        assert result == null
+
+    }
 }
