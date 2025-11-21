@@ -123,6 +123,11 @@ class ReleaseCandidateStatus {
                                                 match_phrase: [
                                                         version: "${this.version}"
                                                 ]
+                                        ],
+                                        [
+                                            match_phrase: [
+                                                overall_build_result: "SUCCESS"
+                                        ]
                                         ]
                                 ]
                         ]
@@ -146,9 +151,21 @@ class ReleaseCandidateStatus {
     }
 
     def getLatestRcNumber(String componentName) {
-        def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(getLatestRcNumberQuery(componentName))
-        def rcNumber = jsonResponse.hits.hits[0]._source.rc_number
-        return rcNumber
+        try {
+                def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(getLatestRcNumberQuery(componentName))
+
+                if (jsonResponse.hits.total.value == 0) {
+                        this.script.println("No successful RC builds found for component: ${componentName}, returning latest RC number as 0")
+                        return 0
+                }
+                else {
+                        def rcNumber = jsonResponse.hits.hits[0]._source.rc_number
+                        return rcNumber
+                }
+        } catch (Exception e) {
+                this.script.println("Error retrieving RC number for ${componentName}: ${e.message}")
+                return null
+        }
     }
 
     private boolean isNullOrEmpty(String str) {

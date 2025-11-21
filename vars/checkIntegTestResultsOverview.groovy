@@ -62,19 +62,23 @@ void call(Map args = [:]) {
             def opensearchRcNumber = releaseCandidateStatus.getLatestRcNumber('OpenSearch')
             def opensearchDashboardsRcNumber = releaseCandidateStatus.getLatestRcNumber('OpenSearch-Dashboards')
 
-            archDistMap.each {arch, distributions ->
-                distributions.each { dist ->
-                    def osFailedComponents = componentIntegTestStatus.getAllFailedComponents(opensearchRcNumber, dist, arch, openSearchComponents)
-                    def osdFailedComponents = componentIntegTestStatus.getAllFailedComponents(opensearchDashboardsRcNumber, dist, arch, openSearchDashboardsComponents)
-                    failingComponents["${dist}_${arch}"] = osFailedComponents + osdFailedComponents
+            if (opensearchRcNumber == null || opensearchDashboardsRcNumber == null || opensearchRcNumber == 0 || opensearchDashboardsRcNumber == 0) {
+                    error("Unable to fetch latest RC number from metrics. Received null or 0 value.")
+            } else {
+                archDistMap.each {arch, distributions ->
+                    distributions.each { dist ->
+                        def osFailedComponents = componentIntegTestStatus.getAllFailedComponents(opensearchRcNumber, dist, arch, openSearchComponents)
+                        def osdFailedComponents = componentIntegTestStatus.getAllFailedComponents(opensearchDashboardsRcNumber, dist, arch, openSearchDashboardsComponents)
+                        failingComponents["${dist}_${arch}"] = osFailedComponents + osdFailedComponents
+                    }
                 }
+                def formattedOutput = failingComponents.collect { key, value ->
+                    "${key}: ${value}"
+                }.join('\n')
+                echo "Components failing integration tests:\n${formattedOutput}"
             }
         }
     }
-    def formattedOutput = failingComponents.collect { key, value ->
-        "${key}: ${value}"
-    }.join('\n')
-    echo "Components failing integration tests:\n${formattedOutput}"
 }
 
 

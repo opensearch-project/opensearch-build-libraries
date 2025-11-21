@@ -44,23 +44,33 @@ void call(Map args = [:]) {
         }
     }
 
-    if (isNullOrEmpty(opensearchRcNumber.toString()) || isNullOrEmpty(opensearchDashboardsRcNumber.toString())) {
-        error("Unable to fetch latest RC number from metrics")
-    }
-    else {
-        echo("Current RC numbers: OpenSearch - ${opensearchRcNumber}, OpenSearch-Dashboards - ${opensearchDashboardsRcNumber}")
-        opensearchRcNumber = (opensearchRcNumber as Integer) + 1
-        opensearchDashboardsRcNumber = (opensearchDashboardsRcNumber as Integer) + 1
-        switch (args.product) {
-            case ("opensearch"):
+    echo("Retrieved Current RC numbers: OpenSearch - ${opensearchRcNumber}, OpenSearch-Dashboards - ${opensearchDashboardsRcNumber}")
+    switch (args.product) {
+        case ("opensearch"):
+            if (opensearchRcNumber == null) {
+                error("Unable to fetch latest RC number from metrics. Received null value.")
+            } else {
+                opensearchRcNumber = (opensearchRcNumber as Integer) + 1
                 echo("Only triggering OpenSearch build with RC number: ${opensearchRcNumber}")
                 triggerBuildWorkflow(args.version, 'opensearch', opensearchRcNumber.toString())
-                break
-            case ("opensearch-dashboards"):
+            }
+            break
+        case ("opensearch-dashboards"):
+            if (opensearchDashboardsRcNumber == null) {
+                error("Unable to fetch latest RC number from metrics. Received null value.")
+            } else {
+                opensearchDashboardsRcNumber = (opensearchDashboardsRcNumber as Integer) + 1
                 echo("Only triggering OpenSearch-Dashboards build with RC number: ${opensearchDashboardsRcNumber}")
                 triggerBuildWorkflow(args.version, 'opensearch-dashboards', opensearchDashboardsRcNumber.toString())
-                break
-            case ("both"):
+            }
+            break
+        case ("both"):
+            if (opensearchRcNumber == null || opensearchDashboardsRcNumber == null) {
+                error("Unable to fetch latest RC number from metrics. Received null value.")
+            }
+            else {
+                opensearchRcNumber = (opensearchRcNumber as Integer) + 1
+                opensearchDashboardsRcNumber = (opensearchDashboardsRcNumber as Integer) + 1
                 echo("Triggering both OpenSearch and OpenSearch-Dashboards builds with RC numbers: ${opensearchRcNumber}, ${opensearchDashboardsRcNumber} respectively")
                 parallel(
                     opensearch: {
@@ -70,9 +80,9 @@ void call(Map args = [:]) {
                         triggerBuildWorkflow(args.version, 'opensearch-dashboards', opensearchDashboardsRcNumber.toString())
                     }
                 )
-                break
+            }
+            break
         }
-    }
 }
 
 /**
