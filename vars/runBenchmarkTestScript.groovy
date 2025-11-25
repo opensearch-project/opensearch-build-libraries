@@ -123,7 +123,7 @@ void call(Map args = [:]) {
             isNullOrEmpty(args.password) ? "" : "--password ${args.password}",
             args.singleNode?.toBoolean() ? "--single-node" : "",
             args.minDistribution?.toBoolean() ? "--min-distribution" : "",
-            isNullOrEmpty(args.heapSizeInGb) ? "" : "--heap-size-in-gb ${args.heapSizeInGb}"
+            isNullOrEmpty(args.heapSizeInGb) ? "" : "--heap-size-in-gb ${args.heapSizeInGb}",
             args.use50PercentHeap?.toBoolean() ? "--use-50-percent-heap" : "",
             args.enableRemoteStore?.toBoolean() ? "--enable-remote-store" : "",
             args.captureNodeStat?.toBoolean() ? "--capture-node-stat" : "",
