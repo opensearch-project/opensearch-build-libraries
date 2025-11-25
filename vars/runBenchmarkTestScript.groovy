@@ -12,6 +12,7 @@
  * @param args.command <required> - Name of command to run. 'execute-test' or 'compare'.
  * @param args.bundleManifest <optional> - OpenSearch bundle manifest url.
  * @param args.distributionUrl <optional> - Download link for the OpenSearch bundle tarball.
+ * @param args.pluginUrl <optional> - Download link for an opensearch plugin installation
  * @param args.distributionVersion <optional> - Provide OpenSearch version if using distributionUrl param
  * @param args.endpoint <optional> - Endpoint to the cluster.
  * @param args.insecure <optional> - Force the security of the cluster to be disabled, default is false.
@@ -21,6 +22,7 @@
  * @param args.workload <required> - Name of the workload that OpenSearch Benchmark should run, default is nyc_taxis.
  * @param args.singleNode <optional> - Create single node OS cluster, default is true.
  * @param args.minDistribution <optional> - Use min distribution of OpenSearch for cluster, default is false.
+ * @param args.heapSizeInGb <optional> - GB value with which to override the physical memory value. Default is 50% of total heap size.
  * @param args.use50PercentHeap <optional> - Use 50 percent of physical memory as heap, default is false.
  * @param args.captureNodeStat <optional> - Make opensearch-benchmark to capture node stats during run, default is false
  * @param args.captureSegmentReplicationStat <optional> - Enable opensearch-benchmark to capture segment_replication stat metrics such as replication lag., default is false
@@ -106,6 +108,7 @@ void call(Map args = [:]) {
             args.command,
             isNullOrEmpty(args.bundleManifest) ? "" : "--bundle-manifest ${args.bundleManifest}",
             isNullOrEmpty(args.distributionUrl) ? "" : "--distribution-url ${args.distributionUrl}",
+            isNullOrEmpty(args.pluginUrl) ? "" : "--plugin-url ${args.pluginUrl}",
             isNullOrEmpty(args.distributionVersion) ? "" : "--distribution-version ${args.distributionVersion}",
             isNullOrEmpty(args.endpoint) ? "" : "--cluster-endpoint ${args.endpoint}",
             isNullOrEmpty(args.endpoint) ? "--config ${WORKSPACE}/config.yml" : "",
@@ -120,6 +123,7 @@ void call(Map args = [:]) {
             isNullOrEmpty(args.password) ? "" : "--password ${args.password}",
             args.singleNode?.toBoolean() ? "--single-node" : "",
             args.minDistribution?.toBoolean() ? "--min-distribution" : "",
+            isNullOrEmpty(args.heapSizeInGb) ? "" : "--heap-size-in-gb ${args.heapSizeInGb}"
             args.use50PercentHeap?.toBoolean() ? "--use-50-percent-heap" : "",
             args.enableRemoteStore?.toBoolean() ? "--enable-remote-store" : "",
             args.captureNodeStat?.toBoolean() ? "--capture-node-stat" : "",
