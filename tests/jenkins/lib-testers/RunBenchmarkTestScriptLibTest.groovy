@@ -47,17 +47,17 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
     private String telemetryParams
     private String sigv4 = 'false'
 
-    public RunBenchmarkTestScriptLibTester(command, bundleManifest, distributionUrl, distributionVersion, pluginUrl, heapSizeInGb, insecure, workload,
+    public RunBenchmarkTestScriptLibTester(command, bundleManifest, distributionUrl, distributionVersion, insecure, workload,
                                            singleNode, minDistribution, use50PercentHeap, enableRemoteStore, managerNodeCount,
                                            dataNodeCount, dataInstanceType, userTag, workloadParams, testProcedure, excludeTasks,
                                            includeTasks, additionalConfig, captureNodeStat, captureSegmentReplicationStat, telemetryParams,
-                                            enableInstanceStorage, sigv4){
+                                            enableInstanceStorage, sigv4, pluginUrl, heapSizeInGb){
         this.command = command
         this.bundleManifest = bundleManifest
         this.distributionUrl = distributionUrl
         this.distributionVersion = distributionVersion
-        this.pluginUrl = pluginUrl ?: ''
-        this.heapSizeInGb = heapSizeInGb ?: ''
+        this.pluginUrl = pluginUrl
+        this.heapSizeInGb = heapSizeInGb
         this.insecure = insecure
         this.workload = workload
         this.singleNode = singleNode

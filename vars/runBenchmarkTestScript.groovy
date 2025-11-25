@@ -23,7 +23,6 @@
  * @param args.singleNode <optional> - Create single node OS cluster, default is true.
  * @param args.minDistribution <optional> - Use min distribution of OpenSearch for cluster, default is false.
  * @param args.heapSizeInGb <optional> - GB value with which to override the physical memory value. Default is 50% of total heap size.
- * @param args.use50PercentHeap <optional> - Use 50 percent of physical memory as heap, default is false.
  * @param args.captureNodeStat <optional> - Make opensearch-benchmark to capture node stats during run, default is false
  * @param args.captureSegmentReplicationStat <optional> - Enable opensearch-benchmark to capture segment_replication stat metrics such as replication lag., default is false
  * @param args.suffix <optional> - Suffix to be added to stack name for benchmark test.
@@ -124,7 +123,6 @@ void call(Map args = [:]) {
             args.singleNode?.toBoolean() ? "--single-node" : "",
             args.minDistribution?.toBoolean() ? "--min-distribution" : "",
             isNullOrEmpty(args.heapSizeInGb) ? "" : "--heap-size-in-gb ${args.heapSizeInGb}",
-            args.use50PercentHeap?.toBoolean() ? "--use-50-percent-heap" : "",
             args.enableRemoteStore?.toBoolean() ? "--enable-remote-store" : "",
             args.captureNodeStat?.toBoolean() ? "--capture-node-stat" : "",
             args.enableInstanceStorage?.toBoolean() ? "--enable-instance-storage" : "",
