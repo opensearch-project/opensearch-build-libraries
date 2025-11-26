@@ -165,11 +165,16 @@ void call(Map args = [:]) {
         [envVar: 'PERF_TEST_ACCOUNT_ID', secretRef: 'op://opensearch-infra-secrets/aws-accounts/perf-test-account-id']
     ]
 
-    withSecrets(secrets: secret_perf_account) {
-        withAWS(role: 'opensearch-full-access-nightlies', roleAccount: "${PERF_TEST_ACCOUNT_ID}", duration: 43200, roleSessionName: 'jenkins-session') {
-            sh """set +x && ${command}"""
+    if (sigv4) {
+        withSecrets(secrets: secret_perf_account) {
+            withAWS(role: 'opensearch-full-access-nightlies', roleAccount: "${PERF_TEST_ACCOUNT_ID}", duration: 43200, roleSessionName: 'jenkins-session') {
+                sh """set +x && ${command}"""
+            }
         }
     }
+    else {
+            sh """set +x && ${command}"""
+        }
 }
 
 void editBenchmarkConfig(String config_file) {
