@@ -17,6 +17,8 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
     private String bundleManifest
     private String distributionUrl
     private String distributionVersion
+    private String pluginUrl
+    private String heapSizeInGb
     private String insecure
     private String workload
     private String singleNode
@@ -49,11 +51,13 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
                                            singleNode, minDistribution, use50PercentHeap, enableRemoteStore, managerNodeCount,
                                            dataNodeCount, dataInstanceType, userTag, workloadParams, testProcedure, excludeTasks,
                                            includeTasks, additionalConfig, captureNodeStat, captureSegmentReplicationStat, telemetryParams,
-                                            enableInstanceStorage, sigv4){
+                                            enableInstanceStorage, sigv4, pluginUrl, heapSizeInGb){
         this.command = command
         this.bundleManifest = bundleManifest
         this.distributionUrl = distributionUrl
         this.distributionVersion = distributionVersion
+        this.pluginUrl = pluginUrl
+        this.heapSizeInGb = heapSizeInGb
         this.insecure = insecure
         this.workload = workload
         this.singleNode = singleNode
@@ -138,6 +142,8 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
         binding.setVariable('BUNDLE_MANIFEST', bundleManifest)
         binding.setVariable('DISTRIBUTION_URL', distributionUrl)
         binding.setVariable('DISTRIBUTION_VERSION', distributionVersion)
+        binding.setVariable('PLUGIN_URL', pluginUrl)
+        binding.setVariable('HEAP_SIZE_IN_GB', heapSizeInGb)
         binding.setVariable('BUNDLE_MANIFEST_URL', 'test://artifact.url')
         binding.setVariable('GITHUB_BOT_TOKEN_NAME', 'bot_token_name')
         binding.setVariable('GITHUB_USER', 'test_user')

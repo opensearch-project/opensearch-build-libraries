@@ -60,7 +60,7 @@ class TestRunBenchmarkTestScriptWithEndpoint extends BuildPipelineTest {
 
         assertThat(testScriptCommands.size(), equalTo(1))
         assertThat(testScriptCommands, hasItem(
-                "set +x && ./test.sh benchmark-test execute-test    --cluster-endpoint opensearch-ABCxdfdfhyfk.com  --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag true,security-enabled:true  --sigv4"
+                "set +x && ./test.sh benchmark-test execute-test     --cluster-endpoint opensearch-ABCxdfdfhyfk.com  --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag true,security-enabled:true  --sigv4"
         ))
     }
 
