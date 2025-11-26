@@ -12,7 +12,7 @@
  *                                now: my-workflow-name/<buildFeature>/11490/linux/x64/tar/builds/opensearch/......
  */
 void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@11.3.0', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@11.4.0', retriever: legacySCM(scm))
 
     def buildManifest = lib.jenkins.BuildManifest.new(readYaml(file: args.buildManifest))
     def minArtifactPath = buildManifest.getMinArtifact()

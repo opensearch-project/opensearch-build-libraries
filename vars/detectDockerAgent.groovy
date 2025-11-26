@@ -16,7 +16,7 @@
  * @param args.platform <optional> The platform name, default to "linux"
  */
 Map call(Map args = [:]) {
-    def lib = library(identifier: "jenkins@11.3.0", retriever: legacySCM(scm))
+    def lib = library(identifier: "jenkins@11.4.0", retriever: legacySCM(scm))
     String manifest = args.manifest ?: "manifests/${INPUT_MANIFEST}"
     String distribution = args.distribution ?: "tar"
     String platform = args.platform ?: "linux"
