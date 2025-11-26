@@ -24,7 +24,7 @@ pipeline {
                             distributionVersion: DISTRIBUTION_VERSION,
                             workload: TEST_WORKLOAD,
                             insecure: "false",
-                            sigv4: "true",
+                            sigv4: "false",
                             region: "",
                             service: "",
                             singleNode: SINGLE_NODE_CLUSTER,

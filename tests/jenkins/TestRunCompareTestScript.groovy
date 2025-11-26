@@ -48,7 +48,7 @@ class TestRunCompareTestScript extends BuildPipelineTest {
         super.testPipeline("tests/jenkins/jobs/CompareTest_Jenkinsfile")
     }
 
-    @Test 
+    @Test
     void testRunCompareTestScript_verifyScriptExecutionSingleNode() {
         runScript("tests/jenkins/jobs/CompareTest_Jenkinsfile")
 
