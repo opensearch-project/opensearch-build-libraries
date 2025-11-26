@@ -17,7 +17,7 @@
  **/
 
 void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@11.3.0', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@11.4.0', retriever: legacySCM(scm))
     def git_repo_url = args.gitRepoUrl ?: 'null'
     def git_reference = args.gitReference ?: 'null'
     def module_name = args.scope ?: 'null'

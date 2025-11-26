@@ -18,7 +18,7 @@ Library to build Docker Image with different Build Options
 @param Map[buildDate] <Optional> - Date on which the artifacts were built.
 */
 void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@11.3.0', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@11.4.0', retriever: legacySCM(scm))
     def inputManifest = lib.jenkins.InputManifest.new(readYaml(file: args.inputManifest))
     def build_version = inputManifest.build.version
     def build_qualifier = inputManifest.build.qualifier
