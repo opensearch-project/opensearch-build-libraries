@@ -44,7 +44,9 @@ class TestRunBenchmarkTestScriptNoManifest extends BuildPipelineTest {
                 'true',
                 '',
                 'true',
-                'false'
+                'false',
+                'www.example.com/plugin.zip',
+                '4'
         ))
         super.setUp()
         helper.registerAllowedMethod("withSecrets", [Map, Closure], { args, closure ->
@@ -71,10 +73,10 @@ class TestRunBenchmarkTestScriptNoManifest extends BuildPipelineTest {
 
         assertThat(testScriptCommands.size(), equalTo(2))
         assertThat(testScriptCommands, hasItem(
-                "set +x && ./test.sh benchmark-test execute-test  --distribution-url https://www.example.com/example.tar.gz --distribution-version 3.0.0  --config /tmp/workspace/config.yml --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag security-enabled:true       --single-node  --use-50-percent-heap   --enable-instance-storage --capture-segment-replication-stat --suffix 307-secure      --data-instance-type r5.8xlarge  --test-procedure custom-test-procedure   --additional-config cluster.indices.replication.strategy:SEGMENT --data-node-storage 200 --ml-node-storage 200"
+                "set +x && ./test.sh benchmark-test execute-test  --distribution-url https://www.example.com/example.tar.gz --plugin-url www.example.com/plugin.zip --distribution-version 3.0.0  --config /tmp/workspace/config.yml --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag security-enabled:true       --single-node  --heap-size-in-gb 4   --enable-instance-storage --capture-segment-replication-stat --suffix 307-secure      --data-instance-type r5.8xlarge  --test-procedure custom-test-procedure   --additional-config cluster.indices.replication.strategy:SEGMENT --data-node-storage 200 --ml-node-storage 200"
         ))
         assertThat(testScriptCommands, hasItem(
-                "set +x && ./test.sh benchmark-test execute-test  --distribution-url https://www.example.com/example.tar.gz --distribution-version 3.0.0  --config /tmp/workspace/config.yml --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag security-enabled:false --without-security      --single-node  --use-50-percent-heap   --enable-instance-storage --capture-segment-replication-stat --suffix 307      --data-instance-type r5.8xlarge  --test-procedure custom-test-procedure   --additional-config cluster.indices.replication.strategy:SEGMENT --data-node-storage 200 --ml-node-storage 200"
+                "set +x && ./test.sh benchmark-test execute-test  --distribution-url https://www.example.com/example.tar.gz --plugin-url www.example.com/plugin.zip --distribution-version 3.0.0  --config /tmp/workspace/config.yml --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag security-enabled:false --without-security      --single-node  --heap-size-in-gb 4   --enable-instance-storage --capture-segment-replication-stat --suffix 307      --data-instance-type r5.8xlarge  --test-procedure custom-test-procedure   --additional-config cluster.indices.replication.strategy:SEGMENT --data-node-storage 200 --ml-node-storage 200"
         ))
     }
 
