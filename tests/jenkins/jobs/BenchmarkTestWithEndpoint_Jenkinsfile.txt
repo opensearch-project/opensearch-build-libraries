@@ -14,4 +14,4 @@
                      runBenchmarkTestScript.writeFile({file=/tmp/workspace/benchmark.ini, text=})
                   runBenchmarkTestScript.withSecrets({secrets=[{envVar=PERF_TEST_ACCOUNT_ID, secretRef=op://opensearch-infra-secrets/aws-accounts/perf-test-account-id}]}, groovy.lang.Closure)
                      runBenchmarkTestScript.withAWS({role=opensearch-full-access-nightlies, roleAccount=PERF_TEST_ACCOUNT_ID, duration=43200, roleSessionName=jenkins-session}, groovy.lang.Closure)
-                        runBenchmarkTestScript.sh(set +x && ./test.sh benchmark-test execute-test    --cluster-endpoint opensearch-ABCxdfdfhyfk.com  --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag true,security-enabled:true  --sigv4)
+                        runBenchmarkTestScript.sh(set +x && ./test.sh benchmark-test execute-test     --cluster-endpoint opensearch-ABCxdfdfhyfk.com  --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag true,security-enabled:true  --sigv4)
