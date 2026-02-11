@@ -49,6 +49,7 @@
  * @param args.results_numbers_align <optional> - Defines the column number alignment for when the compare command outputs results. Default is right.
  * @param args.results_file <optional> - When provided a file path, writes the compare results to the file indicated in the path.
  * @param args.show_in_results <optional> - Determines whether or not to include the comparison in the results file.
+ * @param args.preserveCluster <optional> - Determines whether or not to destroy the OpenSearch cluster after benchmark run has finished.
  */
 void call(Map args = [:]) {
 
@@ -142,7 +143,8 @@ void call(Map args = [:]) {
             isNullOrEmpty(args.dataStorageSize) ? "" : "--data-node-storage ${args.dataStorageSize}",
             isNullOrEmpty(args.mlStorageSize) ? "" : "--ml-node-storage ${args.mlStorageSize}",
             isNullOrEmpty(args.jvmSysProps) ? "" : "--jvm-sys-props ${args.jvmSysProps}",
-            isNullOrEmpty(args.telemetryParams) ? "" : "--telemetry-params '${args.telemetryParams}'"
+            isNullOrEmpty(args.telemetryParams) ? "" : "--telemetry-params '${args.telemetryParams}'",
+            args.preserveCluster?.toBoolean() ? "--preserve-cluster" : ""
         ].join(' ').trim()
 
     } else if(args.command == 'compare') {

@@ -46,12 +46,13 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
     private String captureSegmentReplicationStat
     private String telemetryParams
     private String sigv4 = 'false'
+    private String preserveCluster = 'false'
 
     public RunBenchmarkTestScriptLibTester(command, bundleManifest, distributionUrl, distributionVersion, insecure, workload,
                                            singleNode, minDistribution, use50PercentHeap, enableRemoteStore, managerNodeCount,
                                            dataNodeCount, dataInstanceType, userTag, workloadParams, testProcedure, excludeTasks,
                                            includeTasks, additionalConfig, captureNodeStat, captureSegmentReplicationStat, telemetryParams,
-                                            enableInstanceStorage, sigv4, pluginUrl, heapSizeInGb){
+                                            enableInstanceStorage, sigv4, pluginUrl, heapSizeInGb, preserveCluster='false') {
         this.command = command
         this.bundleManifest = bundleManifest
         this.distributionUrl = distributionUrl
@@ -78,6 +79,7 @@ class RunBenchmarkTestScriptLibTester extends LibFunctionTester{
         this.telemetryParams = telemetryParams
         this.enableInstanceStorage = enableInstanceStorage
         this.sigv4 = sigv4
+        this.preserveCluster = preserveCluster
     }
 
 
