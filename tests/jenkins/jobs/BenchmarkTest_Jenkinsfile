@@ -51,7 +51,8 @@ pipeline {
                             jvmSysProps: JVM_SYS_PROPS,
                             captureNodeStat: CAPTURE_NODE_STAT,
                             captureSegmentReplicationStat: CAPTURE_SEGMENT_REPLICATION_STAT,
-                            telemetryParams: TELEMETRY_PARAMS
+                            telemetryParams: TELEMETRY_PARAMS,
+                            preserveCluster: "true"
                             )
                         }
                     }
@@ -96,7 +97,8 @@ pipeline {
                             jvmSysProps: JVM_SYS_PROPS,
                             captureNodeStat: CAPTURE_NODE_STAT,
                             captureSegmentReplicationStat: CAPTURE_SEGMENT_REPLICATION_STAT,
-                            telemetryParams: TELEMETRY_PARAMS
+                            telemetryParams: TELEMETRY_PARAMS,
+                            preserveCluster: "true"
                             )
                         }
                     }
