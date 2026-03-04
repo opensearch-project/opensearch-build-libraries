@@ -39,17 +39,42 @@ void call(Map args = [:]) {
 
     def test_docs = getFailedTestRecords(buildNumber, prNumber, invokeType, prOwner, prTitle, gitReference, buildResult, buildDuration, buildStartTime)
 
-    if (test_docs) {
-        for (doc in test_docs) {
-            def jsonDoc = JsonOutput.toJson(doc)
-            finalJsonDoc += "{\"index\": {\"_index\": \"${indexName}\"}}\n" + "${jsonDoc}\n"
-        }
-        writeFile file: "failed-test-records.json", text: finalJsonDoc
-
-        def fileContents = readFile(file: "failed-test-records.json").trim()
-        println("File Content is:\n${fileContents}")
-        indexFailedTestData()
+    for (doc in test_docs) {
+        def jsonDoc = JsonOutput.toJson(doc)
+        finalJsonDoc += "{\"index\": {\"_index\": \"${indexName}\"}}\n" + "${jsonDoc}\n"
     }
+
+    def buildSummaryDoc = [
+        'build_number': buildNumber,
+        'pull_request': prNumber,
+        'pull_request_owner': prOwner,
+        'invoke_type': invokeType,
+        'pull_request_title': prTitle,
+        'git_reference': gitReference,
+        'test_status': 'BUILD_SUMMARY',
+        'build_result': buildResult,
+        'build_duration': buildDuration,
+        'build_start_time': buildStartTime
+    ]
+
+    AbstractTestResultAction testResultAction = currentBuild.rawBuild.getAction(AbstractTestResultAction.class)
+    if (testResultAction != null) {
+        def testsTotal = testResultAction.totalCount
+        def testsFailed = testResultAction.failCount
+        def testsSkipped = testResultAction.skipCount
+        buildSummaryDoc['test_fail_count'] = testsFailed
+        buildSummaryDoc['test_skipped_count'] = testsSkipped
+        buildSummaryDoc['test_passed_count'] = testsTotal - testsFailed - testsSkipped
+    }
+
+    def summaryJson = JsonOutput.toJson(buildSummaryDoc)
+    finalJsonDoc += "{\"index\": {\"_index\": \"${indexName}\"}}\n" + "${summaryJson}\n"
+
+    writeFile file: "failed-test-records.json", text: finalJsonDoc
+
+    def fileContents = readFile(file: "failed-test-records.json").trim()
+    println("File Content is:\n${fileContents}")
+    indexFailedTestData()
 }
 
 List<Map<String, String>> getFailedTestRecords(buildNumber, prNumber, invokeType, prOwner, prTitle, gitReference, buildResult, buildDuration, buildStartTime) {
