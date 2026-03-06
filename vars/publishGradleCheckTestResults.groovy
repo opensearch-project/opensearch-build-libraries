@@ -57,15 +57,7 @@ void call(Map args = [:]) {
         'build_start_time': buildStartTime
     ]
 
-    AbstractTestResultAction testResultAction = currentBuild.rawBuild.getAction(AbstractTestResultAction.class)
-    if (testResultAction != null) {
-        def testsTotal = testResultAction.totalCount
-        def testsFailed = testResultAction.failCount
-        def testsSkipped = testResultAction.skipCount
-        buildSummaryDoc['test_fail_count'] = testsFailed
-        buildSummaryDoc['test_skipped_count'] = testsSkipped
-        buildSummaryDoc['test_passed_count'] = testsTotal - testsFailed - testsSkipped
-    }
+    populateTestCounts(buildSummaryDoc)
 
     def summaryJson = JsonOutput.toJson(buildSummaryDoc)
     finalJsonDoc += "{\"index\": {\"_index\": \"${indexName}\"}}\n" + "${summaryJson}\n"
@@ -75,6 +67,18 @@ void call(Map args = [:]) {
     def fileContents = readFile(file: "failed-test-records.json").trim()
     println("File Content is:\n${fileContents}")
     indexFailedTestData()
+}
+
+void populateTestCounts(Map buildSummaryDoc) {
+    AbstractTestResultAction testResultAction = currentBuild.rawBuild.getAction(AbstractTestResultAction.class)
+    if (testResultAction != null) {
+        def testsTotal = testResultAction.totalCount
+        def testsFailed = testResultAction.failCount
+        def testsSkipped = testResultAction.skipCount
+        buildSummaryDoc['test_fail_count'] = testsFailed
+        buildSummaryDoc['test_skipped_count'] = testsSkipped
+        buildSummaryDoc['test_passed_count'] = testsTotal - testsFailed - testsSkipped
+    }
 }
 
 List<Map<String, String>> getFailedTestRecords(buildNumber, prNumber, invokeType, prOwner, prTitle, gitReference, buildResult, buildDuration, buildStartTime) {
