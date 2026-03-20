@@ -55,7 +55,7 @@
 
                 echo "Start gradlecheck"
                 GRADLE_CHECK_STATUS=0
-                ./gradlew clean && ./gradlew :server:check -Dmoduletests.coverage=true -Dbwc.checkout.align=true --no-daemon --no-scan || GRADLE_CHECK_STATUS=1
+                ./gradlew clean && ./gradlew :server:check -Dmoduletests.coverage=true -Dbwc.checkout.align=true  --no-daemon --no-scan || GRADLE_CHECK_STATUS=1
 
                 if [ "$GRADLE_CHECK_STATUS" != 0 ]; then
                     echo Gradle Check Failed!
