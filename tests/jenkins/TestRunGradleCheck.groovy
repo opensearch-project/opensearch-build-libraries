@@ -72,6 +72,30 @@ class TestRunGradleCheck extends BuildPipelineTest {
         ))
     }
 
+    @Test
+    void testRunGradleCheckExcludeTasks() {
+        helper.registerAllowedMethod("fileExists", [String], { path -> path == 'gradle-check-excludes.txt' })
+        helper.registerAllowedMethod("readFile", [String], { path ->
+            if (path == 'gradle-check-excludes.txt') {
+                return "plugins:repository-azure:check\nplugins:repository-gcs:check"
+            }
+            return ''
+        })
+        this.registerLibTester(new RunGradleCheckLibTester(
+            'https://github.com/opensearch-project/OpenSearch',
+            'main',
+            'false',
+            'server',
+            'gradle-check-excludes.txt'
+        ))
+        runScript("tests/jenkins/jobs/RunGradleCheckExcludeTasks_Jenkinsfile")
+
+        def gradleCommands = getCommandExecutions('sh', 'gradle').findAll {
+            shCommand -> shCommand.contains('gradle')
+        }
+        assertThat(gradleCommands, hasItem(containsString("-x plugins:repository-azure:check -x plugins:repository-gcs:check")))
+    }
+
     def getCommandExecutions(methodName, command) {
         def shCommands = helper.callStack.findAll {
             call ->

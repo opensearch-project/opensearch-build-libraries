@@ -18,12 +18,14 @@ class RunGradleCheckLibTester extends LibFunctionTester {
     private String gitReference
     private String bwcCheckoutAlign
     private String scope
+    private String excludeTasksFilePath
 
-    public RunGradleCheckLibTester(gitRepoUrl, gitReference, bwcCheckoutAlign, scope){
+    public RunGradleCheckLibTester(gitRepoUrl, gitReference, bwcCheckoutAlign, scope, excludeTasksFilePath = ''){
         this.gitRepoUrl = gitRepoUrl
         this.gitReference = gitReference
         this.bwcCheckoutAlign = bwcCheckoutAlign
         this.scope = scope
+        this.excludeTasksFilePath = excludeTasksFilePath
     }
 
     void configure(helper, binding) {
