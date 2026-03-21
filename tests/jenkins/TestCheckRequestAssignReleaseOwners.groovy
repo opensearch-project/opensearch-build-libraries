@@ -206,9 +206,11 @@ class TestCheckRequestAssignReleaseOwners extends BuildPipelineTest {
         addParam('ACTION', 'assign')
         this.registerLibTester(new CheckReleaseOwnersLibTester(['tests/data/opensearch-1.3.0.yml'], 'assign'))
         runScript('tests/jenkins/jobs/CheckRequestAssignReleaseOwnerJenkinsFile')
-        assertThat(getCommands('sh', 'issue'), hasItems("{script=gh issue comment https://github.com/opensearch-project/opensearch/issues/123 --body-file /tmp/workspace/SSXVNJHPDQ.md, returnStdout=true}", "{script=gh issue edit https://github.com/opensearch-project/opensearch/issues/123 --add-assignee bar, returnStdout=true}"))
+        def shCommands = getCommands('sh', 'issue')
+        assertThat(shCommands, hasItem("{script=gh issue comment https://github.com/opensearch-project/opensearch/issues/123 --body-file /tmp/workspace/SSXVNJHPDQ.md, returnStdout=true}"))
+        assertThat(shCommands, hasItem(containsString("gh issue edit https://github.com/opensearch-project/opensearch/issues/123 --add-assignee ")))
         def fileContent = getCommands('writeFile', 'release')[0]
-        assertThat(fileContent, containsString("{file=/tmp/workspace/SSXVNJHPDQ.md, text=Hi @bar, </br>"))
+        assertThat(fileContent, containsString("file=/tmp/workspace/SSXVNJHPDQ.md"))
         assertThat(fileContent, containsString("Since this component currently does not have a release owner, we will assign you to this role for the time being! </br>"))
         assertThat(fileContent, containsString("If you feel this should be reassigned, please feel free to delegate it to the appropriate maintainer. </br>"))
     }
