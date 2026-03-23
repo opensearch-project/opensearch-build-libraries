@@ -72,6 +72,16 @@ class TestRunGradleCheck extends BuildPipelineTest {
         ))
     }
 
+    @Test
+    void testExcludeTasksInGradleCommand() {
+        runScript("tests/jenkins/jobs/RunGradleCheckExcludeTasks_Jenkinsfile")
+
+        def gradleCommands = getCommandExecutions('sh', 'gradle').findAll {
+            shCommand -> shCommand.contains('gradle')
+        }
+        assertThat(gradleCommands, hasItem(containsString("-x :plugins:repository-azure:check -x :plugins:repository-gcs:check")))
+    }
+
     def getCommandExecutions(methodName, command) {
         def shCommands = helper.callStack.findAll {
             call ->

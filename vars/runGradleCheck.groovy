@@ -14,6 +14,7 @@
  *  @param args.gitReference <optional> - The git commit or branch that needs to be checked in OpenSearch repo to run check tasks defaults to main.
  *  @param args.bwcCheckoutAlign <optional> - Used to set the value of bwc.checkout.align, can be either true or false
  *  @param args.module_name <optional> - Defines module scope which has check tasks running and reported against it.
+ *  @param args.excludeTasks <optional> - Comma-separated list of gradle tasks to exclude, e.g. ":plugins:repository-azure:check,:plugins:repository-gcs:check"
  **/
 
 void call(Map args = [:]) {
@@ -23,6 +24,7 @@ void call(Map args = [:]) {
     def module_name = args.scope ?: 'null'
     def bwc_checkout_align = args.bwcCheckoutAlign ?: 'false'
     def bwc_checkout_align_param = ''
+    def exclude_tasks_param = ''
     def command
     println("Git Repo: ${git_repo_url}")
     println("Git Reference: ${git_reference}")
@@ -31,6 +33,10 @@ void call(Map args = [:]) {
 
     if (Boolean.parseBoolean(bwc_checkout_align)) {
         bwc_checkout_align_param = '-Dbwc.checkout.align=true'
+    }
+
+    if (args.excludeTasks) {
+        exclude_tasks_param = args.excludeTasks.split(',').collect { "-x ${it.trim()}" }.join(' ')
     }
 
     if (git_repo_url.equals('null') || git_reference.equals('null') || module_name.equals('null')) {
@@ -107,7 +113,7 @@ void call(Map args = [:]) {
 
                 echo "Start gradlecheck"
                 GRADLE_CHECK_STATUS=0
-                ./gradlew clean && ./gradlew ${command} ${bwc_checkout_align_param} --no-daemon --no-scan || GRADLE_CHECK_STATUS=1
+                ./gradlew clean && ./gradlew ${command} ${bwc_checkout_align_param} ${exclude_tasks_param} --no-daemon --no-scan || GRADLE_CHECK_STATUS=1
 
                 if [ "\$GRADLE_CHECK_STATUS" != 0 ]; then
                     echo Gradle Check Failed!
