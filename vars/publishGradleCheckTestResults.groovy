@@ -12,6 +12,7 @@
  * @param Map args = [:] args A map of the following parameters
  * @param args.prNumber <required> - The pull_request number that triggered the gradle-check run. If Null then use post_merge_action string.
  * @param args.prDescription <required> - The subject of the pull_request. If prNumber is null then it signifies push action on branch.
+ * @param args.command <optional> - The Gradle command that was executed (e.g. 'check', ':server:check'). Recorded in index documents to distinguish parallel job slices.
  */
 
 import hudson.tasks.test.AbstractTestResultAction
@@ -32,12 +33,13 @@ void call(Map args = [:]) {
     def prOwner = args.prOwner.toString()
     def prTitle = args.prTitle.toString()
     def gitReference = args.gitReference.toString()
+    def gradleCommand = args.command ?: null
     def currentDate = new Date()
     def formattedDate = new SimpleDateFormat("MM-yyyy").format(currentDate)
 
     def indexName = "gradle-check-${formattedDate}"
 
-    def test_docs = getFailedTestRecords(buildNumber, prNumber, invokeType, prOwner, prTitle, gitReference, buildResult, buildDuration, buildStartTime)
+    def test_docs = getFailedTestRecords(buildNumber, prNumber, invokeType, prOwner, prTitle, gitReference, buildResult, buildDuration, buildStartTime, gradleCommand)
 
     for (doc in test_docs) {
         def jsonDoc = JsonOutput.toJson(doc)
@@ -56,6 +58,10 @@ void call(Map args = [:]) {
         'build_duration': buildDuration,
         'build_start_time': buildStartTime
     ]
+
+    if (gradleCommand) {
+        buildSummaryDoc['gradle_command'] = gradleCommand
+    }
 
     populateTestCounts(buildSummaryDoc)
 
@@ -81,7 +87,7 @@ void populateTestCounts(Map buildSummaryDoc) {
     }
 }
 
-List<Map<String, String>> getFailedTestRecords(buildNumber, prNumber, invokeType, prOwner, prTitle, gitReference, buildResult, buildDuration, buildStartTime) {
+List<Map<String, String>> getFailedTestRecords(buildNumber, prNumber, invokeType, prOwner, prTitle, gitReference, buildResult, buildDuration, buildStartTime, gradleCommand) {
     def testResults = []
     AbstractTestResultAction testResultAction = currentBuild.rawBuild.getAction(AbstractTestResultAction.class)
     if (testResultAction != null) {
@@ -94,6 +100,9 @@ List<Map<String, String>> getFailedTestRecords(buildNumber, prNumber, invokeType
         if (failedTests){
             for (test in failedTests) {
                 def failDocument = ['build_number': buildNumber, 'pull_request': prNumber, 'pull_request_owner': prOwner , 'invoke_type': invokeType, 'pull_request_title': prTitle, 'git_reference': gitReference, 'test_class': test.getParent().getName(), 'test_name': test.fullName, 'test_status': 'FAILED', 'build_result': buildResult, 'test_fail_count': testsFailed, 'test_skipped_count': testsSkipped, 'test_passed_count': testsPassed, 'build_duration': buildDuration, 'build_start_time': buildStartTime]
+                if (gradleCommand) {
+                    failDocument['gradle_command'] = gradleCommand
+                }
                 testResults.add(failDocument)
             }
         } else {
@@ -191,6 +200,9 @@ void indexFailedTestData() {
                                 "type": "integer"
                             },
                             "test_status": {
+                                "type": "keyword"
+                            },
+                            "gradle_command": {
                                 "type": "keyword"
                             }
                         }
