@@ -46,14 +46,13 @@ class TestTemplateProcessor {
 
     @Test
     void testProcessor() {
-        Random.metaClass.nextInt = { int max -> 1 }
         def bindings = [
                 BRANCH: 'main',
                 VERSION: '3.0'
         ]
         def templateProcessor = new TemplateProcessor(script)
         def result  = templateProcessor.process("release/missing-code-coverage.md", bindings, '/tmp/workspace')
-        assertEquals (result, "/tmp/workspace/BBBBBBBBBB.md")
+        assertEquals ("/tmp/workspace/SSXVNJHPDQ.md", result)
         assertEquals(writtenFiles["Content"].toString(),"[This is a test template checking values for main and 3.0]" )
     }
 

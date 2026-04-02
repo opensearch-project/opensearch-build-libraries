@@ -32,9 +32,9 @@ class TemplateProcessor implements Serializable {
         }
     }
 
-    private static getRandomName(){
-        def random = new Random()
-        def randomName = (1..10).collect { ('A'..'Z')[random.nextInt(26)] }.join("")
-        return randomName
+    private static String getRandomName() {
+        def seedProp = System.getProperty('templateProcessor.randomSeed')
+        def random = seedProp != null ? new Random(seedProp.toLong()) : new Random()
+        return (1..10).collect { ('A'..'Z')[random.nextInt(26)] }.join('')
     }
 }
