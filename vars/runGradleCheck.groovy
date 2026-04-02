@@ -13,31 +13,34 @@
  *  @param args.gitRepoUrl <required> - Github repo url generally - https://github.com/opensearch-project/OpenSearch.git  is cloned and checks tasks are executed in it.
  *  @param args.gitReference <optional> - The git commit or branch that needs to be checked in OpenSearch repo to run check tasks defaults to main.
  *  @param args.bwcCheckoutAlign <optional> - Used to set the value of bwc.checkout.align, can be either true or false
- *  @param args.module_name <optional> - Defines module scope which has check tasks running and reported against it.
+ *  @param args.scope <optional> - Defines module scope which has check tasks running and reported against it. Cannot be used with args.command.
+ *  @param args.command <optional> - Sets the Gradle command directly, bypassing scope-based selection. Cannot be used with args.scope.
  **/
 
 void call(Map args = [:]) {
     def lib = library(identifier: 'jenkins@11.5.2', retriever: legacySCM(scm))
     def git_repo_url = args.gitRepoUrl ?: 'null'
     def git_reference = args.gitReference ?: 'null'
-    def module_name = args.scope ?: 'null'
     def bwc_checkout_align = args.bwcCheckoutAlign ?: 'false'
     def bwc_checkout_align_param = ''
     def command
     println("Git Repo: ${git_repo_url}")
     println("Git Reference: ${git_reference}")
     println("Bwc Checkout Align: ${bwc_checkout_align}")
-    println("Module Scope: ${module_name}")
+
+    if (args.scope && args.command) {
+        error("Cannot specify both 'scope' and 'command' parameters. Use one or the other.")
+    }
 
     if (Boolean.parseBoolean(bwc_checkout_align)) {
         bwc_checkout_align_param = '-Dbwc.checkout.align=true'
     }
 
-    if (git_repo_url.equals('null') || git_reference.equals('null') || module_name.equals('null')) {
-        println("git repo url or git reference or module_name aren't specified to checkout the commit and run gradle check task, exit 1")
-        System.exit(1)
-    }
-    else {
+    if (args.command) {
+        command = args.command
+        println("Command (explicit): ${command}")
+    } else if (args.scope) {
+        println("Module Scope: ${args.scope}")
         switch (args.scope) {
             case 'server':
                 command = ':server:check -Dmoduletests.coverage=true'
@@ -49,6 +52,14 @@ void call(Map args = [:]) {
                 command = 'check -Dtests.coverage=true'
                 break
         }
+    } else {
+        error("Either 'scope' or 'command' parameter must be specified.")
+    }
+
+    if (git_repo_url.equals('null') || git_reference.equals('null')) {
+        error("git repo url or git reference aren't specified to checkout the commit and run gradle check task.")
+    }
+    else {
 
         def secret_s3 = [
             [envVar: 'amazon_s3_access_key', secretRef: 'op://opensearch-infra-secrets/gradle-check/jenkins-gradle-check-s3-aws-access-key'],
