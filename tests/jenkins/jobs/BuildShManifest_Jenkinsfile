@@ -32,6 +32,13 @@ pipeline {
                         lock: true,
                         snapshot: true
                     )
+                    buildManifest(
+                        inputManifest: "tests/data/opensearch-2.0.0.yml",
+                        distribution: "tar",
+                        snapshot: true,
+                        continueOnError: true,
+                        skipArtifactCheck: true
+                    )
                 }
             }
         }
