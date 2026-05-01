@@ -16,6 +16,7 @@
  @param args.snapshot <optional> - Boolean value. Defaults to null.
  @param args.lock <optional> - Generate a stable reference manifest. Defaults to null.
  @param args.continueOnError <optional> - Do not fail the distribution build on any plugin component failure. Defaults to null
+ @param args.skipArtifactCheck <optional> - Skip artifact check when building component and plugin.
  @param args.incremental <optional> - Boolean value to enable incremental build.
  */
 void call(Map args = [:]) {
@@ -112,6 +113,7 @@ void call(Map args = [:]) {
             args.snapshot ? '--snapshot' : null,
             args.lock ? '--lock' : null,
             args.continueOnError ? '--continue-on-error' : null,
+            args.skipArtifactCheck ? '--skip-artifact-check' : null,
             incremental_enabled ? '--incremental' : null
         ] - null).join(' '))
     } else {
@@ -127,6 +129,7 @@ void call(Map args = [:]) {
             args.snapshot ? '--snapshot' : null,
             args.lock ? '--lock' : null,
             args.continueOnError ? '--continue-on-error' : null,
+            args.skipArtifactCheck ? '--skip-artifact-check' : null,
             incremental_enabled ? '--incremental' : null
         ] - null).join(' '))
     }

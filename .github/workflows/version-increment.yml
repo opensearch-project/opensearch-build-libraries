@@ -16,7 +16,9 @@ jobs:
     name: version-increment
     steps:
       - name: Check out OpenSearch repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: Run gradle task
         id: gradle
         run: |
@@ -30,7 +32,7 @@ jobs:
           installation_id: 22958780
       - name: Create Pull Request
         id: cpr
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ steps.github_app_token.outputs.token }}
           base: '11.x'
