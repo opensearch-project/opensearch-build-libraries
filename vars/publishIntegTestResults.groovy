@@ -21,6 +21,7 @@ import java.util.Date
 
 void call(Map args = [:]) {
 
+    echo("publishIntegTestResults: Starting with args - distributionBuildUrl: ${args.distributionBuildUrl}, testReportManifestYml: ${args.testReportManifestYml}, jobName: ${args.jobName}")
 
     // To ensure the test TestOpenSearchIntegTest from opensearch-build repo passes.
     def isNullOrEmpty = { str ->
@@ -28,6 +29,7 @@ void call(Map args = [:]) {
     }
     // Check if any args is equals to null or it is a test run
     if (isNullOrEmpty(args.distributionBuildUrl) || isNullOrEmpty(args.testReportManifestYml) || isNullOrEmpty(args.jobName) || args.jobName.equals('dummy_job')) {
+        echo("publishIntegTestResults: Skipping - one or more required args is null/empty or is a test run.")
         return null
     }
 
@@ -83,6 +85,7 @@ void call(Map args = [:]) {
         processFailedTests(withoutSecurityFailedTests, componentName, componentRepo, componentRepoUrl, version, qualifier, integTestBuildNumber,
                    integTestBuildUrl, distributionBuildNumber, distributionBuildUrl, buildStartTime, rc, rcNumber,
                    platform, architecture, distribution, componentCategory, "without-security", testFailuresindexName)
+        echo("publishIntegTestResults: Generating JSON Content")
         def jsonContent = generateJson(
                                         componentName, componentRepo, componentRepoUrl, version, qualifier, integTestBuildNumber,
                                         integTestBuildUrl, distributionBuildNumber, distributionBuildUrl,
@@ -96,8 +99,10 @@ void call(Map args = [:]) {
                                     )
         finalJsonDoc += "{\"index\": {\"_index\": \"${indexName}\"}}\n" + "${jsonContent}\n"
     }
+    echo("publishIntegTestResults: Generated JSON data for indexing. Writing to test-records.json")
     writeFile file: "test-records.json", text: finalJsonDoc
     def fileContents = readFile(file: "test-records.json").trim()
+    echo("publishIntegTestResults: Written test-records.json, indexing to ${indexName}")
     indexFailedTestData(indexName, "test-records.json")
 }
 
@@ -147,6 +152,7 @@ def processFailedTests(failedTests, componentName, componentRepo, componentRepoU
 boolean argCheck(String str) { return (str == null || str.allWhitespace || str.isEmpty()) }
 
 void indexTestFailuresData(testFailuresindexName, testFailuresFile) {
+    echo("publishIntegTestResults: indexTestFailuresData called with indexName=${testFailuresindexName}, file=${testFailuresFile}")
     def secret_metrics_cluster = [
         [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-infra-secrets/aws-accounts/jenkins-health-metrics-account-number'],
         [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-infra-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
@@ -160,7 +166,7 @@ void indexTestFailuresData(testFailuresindexName, testFailuresFile) {
                 sh """
                     set +e
                     set +x
-                    echo "INDEX NAME IS ${testFailuresindexName}"
+                    echo "publishIntegTestResults: INDEX NAME IS ${testFailuresindexName}"
                     INDEX_MAPPING='{
                         "mappings": {
                             "properties": {
@@ -255,10 +261,14 @@ void indexTestFailuresData(testFailuresindexName, testFailuresFile) {
                         fi
                     fi
                     if [ -s ${testFailuresFile} ]; then
-                        echo "File Exists, indexing failed tests."
-                        curl -XPOST "${METRICS_HOST_URL}/$testFailuresindexName/_bulk" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" -H "Content-Type: application/x-ndjson" --data-binary "@${testFailuresFile}"
+                        echo "publishIntegTestResults: File ${testFailuresFile} exists with size \$(wc -c < ${testFailuresFile}) bytes and \$(wc -l < ${testFailuresFile}) lines."
+                        bulk_http_code=\$(curl -s -o /dev/null -w "%{http_code}" -XPOST "${METRICS_HOST_URL}/$testFailuresindexName/_bulk" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" -H "Content-Type: application/x-ndjson" --data-binary "@${testFailuresFile}")
+                        echo "publishIntegTestResults: Bulk indexing response code: \$bulk_http_code"
+                        if [ "\$bulk_http_code" -lt 200 ] || [ "\$bulk_http_code" -gt 299 ]; then
+                            echo "publishIntegTestResults: ERROR - Bulk indexing failed with HTTP \$bulk_http_code"
+                        fi
                     else
-                        echo "File Does not exist. No tests records to process."
+                        echo "publishIntegTestResults: WARNING - File ${testFailuresFile} does not exist or is empty. No records to index."
                     fi
             """
             }
@@ -266,6 +276,7 @@ void indexTestFailuresData(testFailuresindexName, testFailuresFile) {
     }
 
 void indexFailedTestData(indexName, testRecordsFile) {
+    echo("publishIntegTestResults: indexFailedTestData called with indexName=${indexName}, file=${testRecordsFile}")
     def secret_metrics_cluster = [
         [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-infra-secrets/aws-accounts/jenkins-health-metrics-account-number'],
         [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-infra-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
@@ -279,7 +290,7 @@ void indexFailedTestData(indexName, testRecordsFile) {
             sh """
                 set +e
                 set +x
-                echo "INDEX NAME IS ${indexName}"
+                echo "publishIntegTestResults: INDEX NAME IS ${indexName}"
                 INDEX_MAPPING='{
                     "mappings": {
                         "properties": {
@@ -407,10 +418,14 @@ void indexFailedTestData(indexName, testRecordsFile) {
                     fi
                 fi
                 if [ -s ${testRecordsFile} ]; then
-                    echo "File Exists, indexing results."
-                    curl -XPOST "${METRICS_HOST_URL}/$indexName/_bulk" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" -H "Content-Type: application/x-ndjson" --data-binary "@${testRecordsFile}"
+                    echo "publishIntegTestResults: File ${testRecordsFile} exists with size \$(wc -c < ${testRecordsFile}) bytes and \$(wc -l < ${testRecordsFile}) lines."
+                    bulk_http_code=\$(curl -s -o /dev/null -w "%{http_code}" -XPOST "${METRICS_HOST_URL}/$indexName/_bulk" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" -H "Content-Type: application/x-ndjson" --data-binary "@${testRecordsFile}")
+                    echo "publishIntegTestResults: Bulk indexing response code: \$bulk_http_code"
+                    if [ "\$bulk_http_code" -lt 200 ] || [ "\$bulk_http_code" -gt 299 ]; then
+                        echo "publishIntegTestResults: ERROR - Bulk indexing failed with HTTP \$bulk_http_code"
+                    fi
                 else
-                    echo "File Does not exist. No tests records to process."
+                    echo "publishIntegTestResults: WARNING - File ${testRecordsFile} does not exist or is empty. No records to index."
                 fi
         """
         }

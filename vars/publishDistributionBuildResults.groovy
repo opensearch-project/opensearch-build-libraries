@@ -23,6 +23,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 void call(Map args = [:]) {
+    echo("publishDistributionBuildResults: Starting with args - inputManifestPath: ${args.inputManifestPath}, componentCategory: ${args.componentCategory}, rc: ${args.rc}, rcNumber: ${args.rcNumber}")
+    echo("publishDistributionBuildResults: failureMessages count: ${args.failureMessages?.size() ?: 0}, passMessages count: ${args.passMessages?.size() ?: 0}")
+
     def distributionBuildNumber = currentBuild.number
     def distributionBuildUrl = env.RUN_DISPLAY_URL
     def buildStartTime = currentBuild.startTimeInMillis
@@ -40,9 +43,13 @@ void call(Map args = [:]) {
     if (inputManifest.build.qualifier) {
         qualifier = inputManifest.build.qualifier
     }
+    echo("publishDistributionBuildResults: version=${version}, qualifier=${qualifier}, indexName=${indexName}, distributionBuildNumber=${distributionBuildNumber}")
+
     def finalJsonDoc = ""
     List<String> failedComponents = extractComponents(failureMessages, /(?<=\bError building\s).*/, 0)
     List<String> passedComponents = extractComponents(passMessages, /(?<=\bSuccessfully built\s).*/, 0)
+
+    def recordCount = 0
     inputManifest.components.each { component ->
         if (failedComponents.contains(component.name)) {
             def jsonData = generateAndAppendJson(component.name, component.repository.split('/')[-1].replace('.git', ''), component.repository.substring(component.repository.indexOf("github.com")).replace(".git", ""), component.ref,
@@ -50,21 +57,26 @@ void call(Map args = [:]) {
                                 buildStartTime, rc, rcNumber, componentCategory, "failed"
                                 )
             finalJsonDoc += "{\"index\": {\"_index\": \"${indexName}\"}}\n${jsonData}\n"
+            recordCount++
         } else if (passedComponents.contains(component.name)) {
             def jsonData = generateAndAppendJson(component.name, component.repository.split('/')[-1].replace('.git', ''), component.repository.substring(component.repository.indexOf("github.com")).replace(".git", ""), component.ref,
                                 version, qualifier, distributionBuildNumber, distributionBuildUrl,
                                 buildStartTime, rc, rcNumber, componentCategory, "passed"
                                 )
             finalJsonDoc += "{\"index\": {\"_index\": \"${indexName}\"}}\n${jsonData}\n"
+            recordCount++
         }
     }
+    echo("publishDistributionBuildResults: Generated ${recordCount} records for indexing. Writing to file test-records.json")
     writeFile file: "test-records.json", text: finalJsonDoc
     def fileContents = readFile(file: "test-records.json").trim()
+    echo("publishDistributionBuildResults: Written test-records.json, file size: ${fileContents.length()} bytes")
     indexFailedTestData(indexName, "test-records.json")
 
 }
 
 void indexFailedTestData(indexName, testRecordsFile) {
+    echo("publishDistributionBuildResults: indexFailedTestData called with indexName=${indexName}, testRecordsFile=${testRecordsFile}")
     def secret_metrics_cluster = [
         [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-infra-secrets/aws-accounts/jenkins-health-metrics-account-number'],
         [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-infra-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
@@ -78,7 +90,7 @@ void indexFailedTestData(indexName, testRecordsFile) {
             sh """
                 set +e
                 set +x
-                echo "INDEX NAME IS ${indexName}"
+                echo "publishDistributionBuildResults: INDEX NAME IS ${indexName}"
                 INDEX_MAPPING='{
                     "mappings": {
                         "properties": {
@@ -164,10 +176,14 @@ void indexFailedTestData(indexName, testRecordsFile) {
                     fi
                 fi
                 if [ -s ${testRecordsFile} ]; then
-                    echo "File Exists, indexing results."
-                    curl -XPOST "${METRICS_HOST_URL}/$indexName/_bulk" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" -H "Content-Type: application/x-ndjson" --data-binary "@${testRecordsFile}"
+                    echo "publishDistributionBuildResults: File ${testRecordsFile} exists with size \$(wc -c < ${testRecordsFile}) bytes and \$(wc -l < ${testRecordsFile}) lines."
+                    bulk_http_code=\$(curl -s -o /dev/null -w "%{http_code}" -XPOST "${METRICS_HOST_URL}/$indexName/_bulk" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" -H "Content-Type: application/x-ndjson" --data-binary "@${testRecordsFile}")
+                    echo "publishDistributionBuildResults: Bulk indexing response code: \$bulk_http_code"
+                    if [ "\$bulk_http_code" -lt 200 ] || [ "\$bulk_http_code" -gt 299 ]; then
+                        echo "publishDistributionBuildResults: ERROR - Bulk indexing failed with HTTP \$bulk_http_code"
+                    fi
                 else
-                    echo "File Does not exist. No tests records to process."
+                    echo "publishDistributionBuildResults: WARNING - File ${testRecordsFile} does not exist or is empty. No records to index."
                 fi
         """
         }
