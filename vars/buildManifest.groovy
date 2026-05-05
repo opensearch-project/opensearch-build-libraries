@@ -70,7 +70,7 @@ void call(Map args = [:]) {
                 ).trim()
             } else {
                 DISTRIBUTION_BUILD_NUMBER = bat(
-                        script:  "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\"",
+                        script:  "@curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index/${DISTRIBUTION_PLATFORM}/${DISTRIBUTION_ARCHITECTURE}/${distribution}/index.json | jq -r \".latest\"",
                         returnStdout: true
                 ).trim()
             }
@@ -83,7 +83,7 @@ void call(Map args = [:]) {
                 ).trim()
             } else {
                 DISTRIBUTION_BUILD_NUMBER = bat(
-                        script: "curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index.json | jq -r \".latest\"",
+                        script: "@curl -sL ${PUBLIC_ARTIFACT_URL}/${DISTRIBUTION_JOB_NAME}/${revision}/index.json | jq -r \".latest\"",
                         returnStdout: true
                 ).trim()
             }
