@@ -68,7 +68,7 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
 
         def expectedCommandBlock = '''set +e
         set +x
-        echo "INDEX NAME IS test-index"
+        echo "publishIntegTestResults: INDEX NAME IS test-index"
                 INDEX_MAPPING='{
                     "mappings": {
                         "properties": {
@@ -196,10 +196,14 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
             fi
         fi
         if [ -s test-records.ndjson ]; then
-            echo "File Exists, indexing results."
-            curl -XPOST "METRICS_HOST_URL/test-index/_bulk" --aws-sigv4 "aws:amz:us-east-1:es" --user "null:null" -H "x-amz-security-token:null" -H "Content-Type: application/x-ndjson" --data-binary "@test-records.ndjson"
+            echo "publishIntegTestResults: File test-records.ndjson exists with size $(wc -c < test-records.ndjson) bytes and $(wc -l < test-records.ndjson) lines."
+            bulk_http_code=$(curl -s -o /dev/null -w "%{http_code}" -XPOST "METRICS_HOST_URL/test-index/_bulk" --aws-sigv4 "aws:amz:us-east-1:es" --user "null:null" -H "x-amz-security-token:null" -H "Content-Type: application/x-ndjson" --data-binary "@test-records.ndjson")
+            echo "publishIntegTestResults: Bulk indexing response code: $bulk_http_code"
+            if [ "$bulk_http_code" -lt 200 ] || [ "$bulk_http_code" -gt 299 ]; then
+                echo "publishIntegTestResults: ERROR - Bulk indexing failed with HTTP $bulk_http_code"
+            fi
         else
-            echo "File Does not exist. No tests records to process."
+            echo "publishIntegTestResults: WARNING - File test-records.ndjson does not exist or is empty. No records to index."
         fi'''
         assert calledCommands.size() == 1
         assert normalizeString(calledCommands[0]) == normalizeString(expectedCommandBlock)
@@ -230,7 +234,7 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
 
         def expectedCommandBlock = '''set +e
     set +x
-    echo "INDEX NAME IS opensearch-integration-test-failures-test-index"
+    echo "publishIntegTestResults: INDEX NAME IS opensearch-integration-test-failures-test-index"
     INDEX_MAPPING='{
         "mappings": {
             "properties": {
@@ -325,10 +329,14 @@ class TestPublishIntegTestResults extends BuildPipelineTest {
         fi
     fi
     if [ -s test-failures.json ]; then
-        echo "File Exists, indexing failed tests."
-        curl -XPOST "METRICS_HOST_URL/opensearch-integration-test-failures-test-index/_bulk" --aws-sigv4 "aws:amz:us-east-1:es" --user "null:null" -H "x-amz-security-token:null" -H "Content-Type: application/x-ndjson" --data-binary "@test-failures.json"
+        echo "publishIntegTestResults: File test-failures.json exists with size $(wc -c < test-failures.json) bytes and $(wc -l < test-failures.json) lines."
+        bulk_http_code=$(curl -s -o /dev/null -w "%{http_code}" -XPOST "METRICS_HOST_URL/opensearch-integration-test-failures-test-index/_bulk" --aws-sigv4 "aws:amz:us-east-1:es" --user "null:null" -H "x-amz-security-token:null" -H "Content-Type: application/x-ndjson" --data-binary "@test-failures.json")
+        echo "publishIntegTestResults: Bulk indexing response code: $bulk_http_code"
+        if [ "$bulk_http_code" -lt 200 ] || [ "$bulk_http_code" -gt 299 ]; then
+            echo "publishIntegTestResults: ERROR - Bulk indexing failed with HTTP $bulk_http_code"
+        fi
     else
-        echo "File Does not exist. No tests records to process."
+        echo "publishIntegTestResults: WARNING - File test-failures.json does not exist or is empty. No records to index."
     fi'''
 
         assert calledCommands.size() == 1
