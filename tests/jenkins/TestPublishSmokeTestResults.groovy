@@ -67,7 +67,7 @@ class TestPublishSmokeTestResults extends BuildPipelineTest {
 
         def expectedCommandBlock = '''set +e
         set +x
-        echo "INDEX NAME IS test-index"
+        echo "publishSmokeTestResults: INDEX NAME IS test-index"
                 INDEX_MAPPING='{
                     "mappings": {
                         "properties": {
@@ -177,10 +177,14 @@ class TestPublishSmokeTestResults extends BuildPipelineTest {
             fi
         fi
         if [ -s test-records.ndjson ]; then
-            echo "File Exists, indexing results."
-            curl -XPOST "METRICS_HOST_URL/test-index/_bulk" --aws-sigv4 "aws:amz:us-east-1:es" --user "null:null" -H "x-amz-security-token:null" -H "Content-Type: application/x-ndjson" --data-binary "@test-records.ndjson"
+            echo "publishSmokeTestResults: File test-records.ndjson exists with size $(wc -c < test-records.ndjson) bytes and $(wc -l < test-records.ndjson) lines."
+            bulk_http_code=$(curl -s -o /dev/null -w "%{http_code}" -XPOST "METRICS_HOST_URL/test-index/_bulk" --aws-sigv4 "aws:amz:us-east-1:es" --user "null:null" -H "x-amz-security-token:null" -H "Content-Type: application/x-ndjson" --data-binary "@test-records.ndjson")
+            echo "publishSmokeTestResults: Bulk indexing response code: $bulk_http_code"
+            if [ "$bulk_http_code" -lt 200 ] || [ "$bulk_http_code" -gt 299 ]; then
+                echo "publishSmokeTestResults: ERROR - Bulk indexing failed with HTTP $bulk_http_code"
+            fi
         else
-            echo "File Does not exist. No tests records to process."
+            echo "publishSmokeTestResults: WARNING - File test-records.ndjson does not exist or is empty. No records to index."
         fi'''
         assert calledCommands.size() == 1
         assert normalizeString(calledCommands[0]) == normalizeString(expectedCommandBlock)

@@ -21,11 +21,14 @@ import java.util.Date
 
 void call(Map args = [:]) {
 
+    echo("publishSmokeTestResults: Starting with args - distributionBuildUrl: ${args.distributionBuildUrl}, testReportManifestYml: ${args.testReportManifestYml}, jobName: ${args.jobName}")
+
     def isNullOrEmpty = { str ->
         str == null || (str instanceof String && str.trim().isEmpty())
     }
     // Check if any args is equals to null or it is a test run
     if (isNullOrEmpty(args.distributionBuildUrl) || isNullOrEmpty(args.testReportManifestYml) || isNullOrEmpty(args.jobName) || args.jobName.equals('dummy_job')) {
+        echo("publishSmokeTestResults: Skipping - one or more required args is null/empty or is a test run.")
         return null
     }
 
@@ -80,14 +83,17 @@ void call(Map args = [:]) {
             }
         }
     }
+    echo("publishSmokeTestResults: Generated records for ${manifest.components.size()} components. JSON document size: ${finalJsonDoc.length()} bytes")
     writeFile file: "test-records.json", text: finalJsonDoc
     def fileContents = readFile(file: "test-records.json").trim()
+    echo("publishSmokeTestResults: Written test-records.json, indexing to ${indexName}")
     indexSmokeTestData(indexName, "test-records.json")
 }
 
 boolean argCheck(String str) { return (str == null || str.allWhitespace || str.isEmpty()) }
 
 void indexSmokeTestData(indexName, testRecordsFile) {
+    echo("publishSmokeTestResults: indexSmokeTestData called with indexName=${indexName}, file=${testRecordsFile}")
     def secret_metrics_cluster = [
         [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-infra-secrets/aws-accounts/jenkins-health-metrics-account-number'],
         [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-infra-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
@@ -101,7 +107,7 @@ void indexSmokeTestData(indexName, testRecordsFile) {
             sh """
                 set +e
                 set +x
-                echo "INDEX NAME IS ${indexName}"
+                echo "publishSmokeTestResults: INDEX NAME IS ${indexName}"
                 INDEX_MAPPING='{
                     "mappings": {
                         "properties": {
@@ -211,10 +217,14 @@ void indexSmokeTestData(indexName, testRecordsFile) {
                     fi
                 fi
                 if [ -s ${testRecordsFile} ]; then
-                    echo "File Exists, indexing results."
-                    curl -XPOST "${METRICS_HOST_URL}/$indexName/_bulk" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" -H "Content-Type: application/x-ndjson" --data-binary "@${testRecordsFile}"
+                    echo "publishSmokeTestResults: File ${testRecordsFile} exists with size \$(wc -c < ${testRecordsFile}) bytes and \$(wc -l < ${testRecordsFile}) lines."
+                    bulk_http_code=\$(curl -s -o /dev/null -w "%{http_code}" -XPOST "${METRICS_HOST_URL}/$indexName/_bulk" --aws-sigv4 \"aws:amz:us-east-1:es\" --user \"${awsAccessKey}:${awsSecretKey}\" -H \"x-amz-security-token:${awsSessionToken}\" -H "Content-Type: application/x-ndjson" --data-binary "@${testRecordsFile}")
+                    echo "publishSmokeTestResults: Bulk indexing response code: \$bulk_http_code"
+                    if [ "\$bulk_http_code" -lt 200 ] || [ "\$bulk_http_code" -gt 299 ]; then
+                        echo "publishSmokeTestResults: ERROR - Bulk indexing failed with HTTP \$bulk_http_code"
+                    fi
                 else
-                    echo "File Does not exist. No tests records to process."
+                    echo "publishSmokeTestResults: WARNING - File ${testRecordsFile} does not exist or is empty. No records to index."
                 fi
         """
         }
