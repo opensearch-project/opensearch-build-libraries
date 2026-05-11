@@ -19,6 +19,7 @@ class BuildManifestLibTester extends LibFunctionTester {
     private Boolean snapshot = false
     private Boolean lock = false
     private Boolean continueOnError = false
+    private Integer parallel = 4
 
     public BuildManifestLibTester(String inputManifestPath){
         this.inputManifestPath = inputManifestPath
@@ -35,6 +36,14 @@ class BuildManifestLibTester extends LibFunctionTester {
         this.distribution = distribution
         this.componentName = componentName
         this.snapshot = snapshot
+    }
+
+    public BuildManifestLibTester(String inputManifestPath, String distribution, String componentName, Boolean snapshot, Integer parallel){
+        this.inputManifestPath = inputManifestPath
+        this.distribution = distribution
+        this.componentName = componentName
+        this.snapshot = snapshot
+        this.parallel = parallel
     }
 
     public BuildManifestLibTester(String inputManifestPath, String distribution, Boolean snapshot, Boolean continueOnError){
