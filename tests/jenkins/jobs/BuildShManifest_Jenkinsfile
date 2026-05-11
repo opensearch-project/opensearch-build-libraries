@@ -37,7 +37,16 @@ pipeline {
                         distribution: "tar",
                         snapshot: true,
                         continueOnError: true,
-                        skipArtifactCheck: true
+                        skipArtifactCheck: true,
+                        parallel: 4
+                    )
+                    buildManifest(
+                        inputManifest: "tests/data/opensearch-2.0.0.yml",
+                        distribution: "tar",
+                        snapshot: true,
+                        continueOnError: true,
+                        skipArtifactCheck: true,
+                        parallel: 0
                     )
                 }
             }

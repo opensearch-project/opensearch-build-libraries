@@ -18,11 +18,12 @@
  @param args.continueOnError <optional> - Do not fail the distribution build on any plugin component failure. Defaults to null
  @param args.skipArtifactCheck <optional> - Skip artifact check when building component and plugin.
  @param args.incremental <optional> - Boolean value to enable incremental build.
+ @param args.parallel <optional> - Number of parallel workers for component builds. Set to 0 or empty to disable. Defaults to null.
  */
 void call(Map args = [:]) {
     boolean incremental_enabled = args.incremental != null && args.incremental
 
-    def lib = library(identifier: 'jenkins@11.6.2', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@11.6.3', retriever: legacySCM(scm))
     def inputManifestObj = lib.jenkins.InputManifest.new(readYaml(file: args.inputManifest))
 
     def DISTRIBUTION_JOB_NAME = args.jobName ?: "${JOB_NAME}"
@@ -114,7 +115,8 @@ void call(Map args = [:]) {
             args.lock ? '--lock' : null,
             args.continueOnError ? '--continue-on-error' : null,
             args.skipArtifactCheck ? '--skip-artifact-check' : null,
-            incremental_enabled ? '--incremental' : null
+            incremental_enabled ? '--incremental' : null,
+            args.parallel && args.parallel.toString() != '0' ? "--parallel ${args.parallel}" : null
         ] - null).join(' '))
     } else {
         // On Windows, use Git Bash or WSL to run the shell script
@@ -130,7 +132,8 @@ void call(Map args = [:]) {
             args.lock ? '--lock' : null,
             args.continueOnError ? '--continue-on-error' : null,
             args.skipArtifactCheck ? '--skip-artifact-check' : null,
-            incremental_enabled ? '--incremental' : null
+            incremental_enabled ? '--incremental' : null,
+            args.parallel && args.parallel.toString() != '0' ? "--parallel ${args.parallel}" : null
         ] - null).join(' '))
     }
 }
