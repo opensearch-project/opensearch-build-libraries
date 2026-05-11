@@ -68,6 +68,22 @@ class TestbuildManifestVar extends BuildPipelineTest {
         assertThat(shCommands, hasItems('./build.sh tests/data/opensearch-input-2.12.0.yml -d tar -p linux -a x64 --incremental'))
     }
 
+    @Test
+    void testbuildManifestForParallelBuild() {
+        this.registerLibTester(new BuildManifestLibTester('tests/data/opensearch-2.0.0.yml', 'tar', 'job-scheduler', true, 4))
+        super.testPipeline('tests/jenkins/jobs/BuildShManifest_Jenkinsfile')
+        def shCommands = getCommands('sh', 'build.sh')
+        assertThat(shCommands, hasItems('./build.sh tests/data/opensearch-2.0.0.yml -d tar --snapshot --continue-on-error --skip-artifact-check --parallel 4'))
+    }
+
+    @Test
+    void testbuildManifestForDiabledParallelBuild() {
+        this.registerLibTester(new BuildManifestLibTester('tests/data/opensearch-2.0.0.yml', 'tar', 'job-scheduler', true, 0))
+        super.testPipeline('tests/jenkins/jobs/BuildShManifest_Jenkinsfile')
+        def shCommands = getCommands('sh', 'build.sh')
+        assertThat(shCommands, hasItems('./build.sh tests/data/opensearch-2.0.0.yml -d tar --snapshot --continue-on-error --skip-artifact-check'))
+    }
+
     def getCommands(method, text) {
         def shCommands = helper.callStack.findAll { call ->
             call.methodName == method
