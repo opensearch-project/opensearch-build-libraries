@@ -69,7 +69,7 @@ ccc
 ccc}, /tmp/workspace)
                      TemplateProcessor.getRandomName()
                      addRcDetailsComment.libraryResource(release/rc-details-template.md)
-                     addRcDetailsComment.writeFile({file=/tmp/workspace/BBBBBBBBBB.md, text=## See OpenSearch RC 5 and OpenSearch-Dashboards RC 5 details
+                     addRcDetailsComment.writeFile({file=/tmp/workspace/SSXVNJHPDQ.md, text=## See OpenSearch RC 5 and OpenSearch-Dashboards RC 5 details
 <details><summary>OpenSearch 5 and OpenSearch-Dashboards 5 details</summary>
 <p>
  ## OpenSearch 10787 and OpenSearch-Dashboards 8260 is ready for your test.
@@ -233,7 +233,7 @@ ccc
 </p>
 </details>
 })
-                     addRcDetailsComment.println(Wrote file to /tmp/workspace/BBBBBBBBBB.md)
+                     addRcDetailsComment.println(Wrote file to /tmp/workspace/SSXVNJHPDQ.md)
                   addRcDetailsComment.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-token}]}, groovy.lang.Closure)
                      addRcDetailsComment.println(Adding RC details to the release issue as a comment.)
-                     addRcDetailsComment.sh({script=gh issue comment https://github.com/opensearch-project/opensearch-build/issues/5152 --body-file /tmp/workspace/BBBBBBBBBB.md, returnStdout=true})
+                     addRcDetailsComment.sh({script=gh issue comment https://github.com/opensearch-project/opensearch-build/issues/5152 --body-file /tmp/workspace/SSXVNJHPDQ.md, returnStdout=true})

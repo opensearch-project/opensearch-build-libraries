@@ -22,15 +22,15 @@
                         TemplateProcessor.process(release/missing-release-notes.md, {BRANCH=[main]}, /tmp/workspace)
                            TemplateProcessor.getRandomName()
                            checkReleaseNotes.libraryResource(release/missing-release-notes.md)
-                           checkReleaseNotes.writeFile({file=/tmp/workspace/CCCCCCCCCC.md, text=Hi, </br>
+                           checkReleaseNotes.writeFile({file=/tmp/workspace/SSXVNJHPDQ.md, text=Hi, </br>
 
 This component is missing release notes at [main] ref. Please add them on priority in order to meet the entrance criteria for the release. </br>
 Please check out the [guidelines](https://github.com/opensearch-project/opensearch-plugins/blob/main/RELEASE_NOTES.md) for the release notes. </br>
 
 Thank you!
 })
-                           checkReleaseNotes.println(Wrote file to /tmp/workspace/CCCCCCCCCC.md)
+                           checkReleaseNotes.println(Wrote file to /tmp/workspace/SSXVNJHPDQ.md)
                         checkReleaseNotes.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-infra-secrets/github-bot/ci-bot-token}]}, groovy.lang.Closure)
-                           checkReleaseNotes.sh({script=gh issue comment https://github.com/opensearch-project/opensearch/issues/123 --body-file /tmp/workspace/CCCCCCCCCC.md, returnStdout=true})
+                           checkReleaseNotes.sh({script=gh issue comment https://github.com/opensearch-project/opensearch/issues/123 --body-file /tmp/workspace/SSXVNJHPDQ.md, returnStdout=true})
                   checkReleaseNotes.withSecrets({secrets=[{envVar=METRICS_HOST_ACCOUNT, secretRef=op://opensearch-infra-secrets/aws-accounts/jenkins-health-metrics-account-number}, {envVar=METRICS_HOST_URL, secretRef=op://opensearch-infra-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint}]}, groovy.lang.Closure)
                      checkReleaseNotes.withAWS({role=OpenSearchJenkinsAccessRole, roleAccount=METRICS_HOST_ACCOUNT, duration=900, roleSessionName=jenkins-session}, groovy.lang.Closure)

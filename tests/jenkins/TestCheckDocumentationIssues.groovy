@@ -31,7 +31,6 @@ class TestCheckDocumentationIssues extends BuildPipelineTest {
             return [stdout: "22\n23", exitValue: 0]
         }
         addParam('VERSION', '3.0.0')
-        Random.metaClass.nextInt = { int max -> 2 }
         binding.setVariable('GITHUB_USER', "GITHUB_USER")
         binding.setVariable('GITHUB_TOKEN', "GITHUB_TOKEN")
     }
@@ -44,10 +43,10 @@ class TestCheckDocumentationIssues extends BuildPipelineTest {
         }
         this.registerLibTester(new CheckDocumentationIssuesLibTester('3.0.0', 'notify'))
         super.testPipeline('tests/jenkins/jobs/CheckDocumentationIssues_Jenkinsfile')
-        assertThat(getCommands('sh', 'issue'), hasItem("{script=gh issue comment 22 --repo opensearch-project/documentation-website --body-file /tmp/workspace/CCCCCCCCCC.md, returnStdout=true}"))
+        assertThat(getCommands('sh', 'issue'), hasItem("{script=gh issue comment 22 --repo opensearch-project/documentation-website --body-file /tmp/workspace/SSXVNJHPDQ.md, returnStdout=true}"))
         def fileContent = getCommands('writeFile', 'documentation')[0]
         assertThat(fileContent, allOf(
-                containsString("{file=/tmp/workspace/CCCCCCCCCC.md, text=Hi @foo, </br>"),
+                containsString("{file=/tmp/workspace/SSXVNJHPDQ.md, text=Hi @foo, </br>"),
                 containsString("As part of the [entrance criteria](https://github.com/opensearch-project/.github/blob/main/RELEASING.md#entrance-criteria-to-start-release-window), all the documentation pull requests need to be drafted and in technical review. </br>"),
                 containsString("**Since there is no pull request linked to this issue, please take one of the following actions:** </br>"),
                 containsString("* Create the pull request and [link it](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue) to this issue. </br>"),
@@ -96,9 +95,9 @@ class TestCheckDocumentationIssues extends BuildPipelineTest {
         }
         this.registerLibTester(new CheckDocumentationIssuesLibTester('3.0.0', 'notify'))
         runScript('tests/jenkins/jobs/CheckDocumentationIssues_Jenkinsfile')
-        assertThat(getCommands('sh', 'issue'), hasItem("{script=gh issue comment 22 --repo opensearch-project/documentation-website --body-file /tmp/workspace/CCCCCCCCCC.md, returnStdout=true}"))
+        assertThat(getCommands('sh', 'issue'), hasItem("{script=gh issue comment 22 --repo opensearch-project/documentation-website --body-file /tmp/workspace/SSXVNJHPDQ.md, returnStdout=true}"))
         def fileContent = getCommands('writeFile', 'documentation')[0]
-        assertThat(fileContent, containsString("{file=/tmp/workspace/CCCCCCCCCC.md, text=Hi @bar, </br>"))
+        assertThat(fileContent, containsString("{file=/tmp/workspace/SSXVNJHPDQ.md, text=Hi @bar, </br>"))
     }
 
     def getCommands(method, text) {

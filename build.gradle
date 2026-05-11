@@ -91,6 +91,7 @@ test {
     if (project.hasProperty('pipeline.stack.write')) {
         systemProperty 'pipeline.stack.write', project.getProperty('pipeline.stack.write')
     }
+    systemProperty 'templateProcessor.randomSeed', '0'
 
     jacoco {
         classDumpDir = file("$buildDir/jacoco/classpathdumps")
