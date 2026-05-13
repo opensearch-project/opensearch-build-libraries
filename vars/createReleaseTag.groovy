@@ -12,7 +12,7 @@ def call(Map args = [:]) {
         [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-release-secrets/github-bot/ci-bot-token']
     ]
 
-    def lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@12.0.0', retriever: legacySCM(scm))
     def bundleManifestObj = lib.jenkins.BundleManifest.new(readYaml(file: args.distManifest))
 
     def componentsName = bundleManifestObj.getNames()
