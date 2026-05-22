@@ -9,8 +9,8 @@ jobs:
     env:
       PYTHON_VERSION: 3.7
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
       - name: yaml-lint
-        uses: ibiqlik/action-yamllint@v3
+        uses: ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c # v3
         with:
           config_file: .yamllint.yml

@@ -16,7 +16,7 @@ jobs:
     name: version-increment
     steps:
       - name: Check out OpenSearch repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
       - name: Run gradle task
@@ -25,14 +25,14 @@ jobs:
           ./gradlew updateVersion
       - name: GitHub App token
         id: github_app_token
-        uses: tibdex/github-app-token@v1.6.0
+        uses: tibdex/github-app-token@f717b5ecd4534d3c4df4ce9b5c1c2214f0f7cd06 # v1.6.0
         with:
           app_id: ${{ secrets.APP_ID }}
           private_key: ${{ secrets.APP_PRIVATE_KEY }}
           installation_id: 22958780
       - name: Create Pull Request
         id: cpr
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7
         with:
           token: ${{ steps.github_app_token.outputs.token }}
           base: '12.x'
