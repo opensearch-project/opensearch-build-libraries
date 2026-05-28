@@ -24,6 +24,7 @@ Note: These parameters are mutually exclusive. Provide either of 'version' or  '
 @param Map[artifact_type] <Optional> - Select the artifact type among [staging and production].
 @param Map[allow_http] <Optional> - Supports validation of artifacts in which security plugin is absent.architecture.
 @param Map[docker_args] <Optional> - Select either of [using-staging-artifact-only', 'validate-digest-only] for docker validation.
+@param Map[skip_core_plugins] <Optional> - Skip native/core plugin validation.
 */
 void call(Map args = [:]) {
     if (!fileExists("$WORKSPACE/validation.sh")) {
@@ -45,6 +46,7 @@ void call(Map args = [:]) {
         args.artifact_type ? "--artifact-type ${args.artifact_type}" : "",
         args.allow_http ? '--allow-http' : "",
         args.docker_args ? "--${args.docker_args}" : "",
+        args.skip_core_plugins ? '--skip-core-plugins' : "",
     ].join(' ').trim()
 
     if (isUnix()) {
