@@ -132,9 +132,11 @@ def processFailedTests(failedTests, componentName, componentRepo, componentRepoU
             failedTests.collect { failedTest ->
                 def match = failedTest.split("#")
                 if (match) {
+                    def testClass = match[0].trim()
+                    def testName = match.length > 1 ? match[1].trim() : testClass
                     def testResultJsonContent = generateFailedTestJson(componentName, componentRepo, componentRepoUrl, version, qualifier, integTestBuildNumber,
                         integTestBuildUrl, distributionBuildNumber, distributionBuildUrl, buildStartTime, rc, rcNumber,
-                        platform, architecture, distribution, componentCategory, securityType, match[0].trim(), match[1].trim())
+                        platform, architecture, distribution, componentCategory, securityType, testClass, testName)
                     finalFailedTestsJsonDoc += "{\"index\": {\"_index\": \"${testFailuresindexName}\"}}\n${testResultJsonContent}\n"
                 }
             }
