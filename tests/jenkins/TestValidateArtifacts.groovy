@@ -22,6 +22,9 @@ class TestValidateArtifacts extends BuildPipelineTest {
     void setUp() {
 
         this.registerLibTester(new ValidateArtifactsLibTester('1.0.0', 'tar', 'x64', 'linux', 'opensearch'))
+        this.registerLibTester(new ValidateArtifactsLibTester('1.0.0', 'tar', 'x64', 'linux', 'opensearch', 'None'))
+        this.registerLibTester(new ValidateArtifactsLibTester('1.0.0', 'tar', 'x64', 'linux', 'opensearch', ''))
+        this.registerLibTester(new ValidateArtifactsLibTester('1.0.0', 'tar', 'x64', 'linux', 'opensearch', 'arrow-base,arrow-flight-rpc'))
 
         super.setUp()
         helper.registerAllowedMethod('isUnix', [], { true })
