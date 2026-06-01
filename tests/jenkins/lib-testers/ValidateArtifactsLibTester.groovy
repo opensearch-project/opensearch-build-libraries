@@ -18,14 +18,15 @@ class ValidateArtifactsLibTester extends LibFunctionTester {
     private String arch
     private String platform
     private String projects
+    private String skip_core_plugins
 
-    public ValidateArtifactsLibTester(version, distribution, arch, platform, projects) {
+    public ValidateArtifactsLibTester(version, distribution, arch, platform, projects, skip_core_plugins = 'None') {
         this.version = version
         this.distribution = distribution
         this.arch = arch
         this.platform = platform
         this.projects = projects
-
+        this.skip_core_plugins = skip_core_plugins
     }
 
     void configure(helper, binding) {
