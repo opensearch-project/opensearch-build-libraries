@@ -46,7 +46,7 @@ void call(Map args = [:]) {
         args.artifact_type ? "--artifact-type ${args.artifact_type}" : "",
         args.allow_http ? '--allow-http' : "",
         args.docker_args ? "--${args.docker_args}" : "",
-        args.skip_core_plugins ? '--skip-core-plugins' : "",
+        args.skip_core_plugins != null && args.skip_core_plugins != 'None' ? "--skip-core-plugins ${args.skip_core_plugins.replaceAll(',', ' ')}".trim() : "",
     ].join(' ').trim()
 
     if (isUnix()) {
