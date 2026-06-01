@@ -8,7 +8,7 @@
  */
 
 void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@12.0.2', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@12.1.0', retriever: legacySCM(scm))
 
     def secret_artifacts = [
         [envVar: 'AWS_ACCOUNT_PUBLIC', secretRef: 'op://opensearch-release-secrets/aws-accounts/jenkins-aws-account-public'],

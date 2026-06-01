@@ -23,5 +23,47 @@ pipeline {
                 }
             }
         }
+        stage('validate_skip_core_plugins_none') {
+            steps {
+                script {
+                    validateArtifacts(
+                            version: '1.0.0',
+                            distribution: 'tar',
+                            arch: 'x64',
+                            platform: 'linux',
+                            projects: 'opensearch',
+                            skip_core_plugins: 'None'
+                    )
+                }
+            }
+        }
+        stage('validate_skip_core_plugins_all') {
+            steps {
+                script {
+                    validateArtifacts(
+                            version: '1.0.0',
+                            distribution: 'tar',
+                            arch: 'x64',
+                            platform: 'linux',
+                            projects: 'opensearch',
+                            skip_core_plugins: ''
+                    )
+                }
+            }
+        }
+        stage('validate_skip_core_plugins_with_list') {
+            steps {
+                script {
+                    validateArtifacts(
+                            version: '1.0.0',
+                            distribution: 'tar',
+                            arch: 'x64',
+                            platform: 'linux',
+                            projects: 'opensearch',
+                            skip_core_plugins: 'arrow-base,arrow-flight-rpc'
+                    )
+                }
+            }
+        }
     }
 }

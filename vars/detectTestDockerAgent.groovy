@@ -17,7 +17,7 @@
  */
 
 Map call(Map args = [:]) {
-    def lib = library(identifier: "jenkins@12.0.2", retriever: legacySCM(scm))
+    def lib = library(identifier: "jenkins@12.1.0", retriever: legacySCM(scm))
     String manifest = args.testManifest ?: "manifests/${TEST_MANIFEST}"
     String distribution = args.distribution ?: "tar"
     String platform = args.platform ?: "linux"
