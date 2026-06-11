@@ -52,6 +52,11 @@ class PublishNotificationLibTester extends LibFunctionTester {
         binding.setVariable('BUILD_NUMBER', '123')
         binding.setVariable('BUILD_URL', 'htth://BUILD_URL_dummy.com')
         binding.setVariable('WEBHOOK_URL', 'htth://WEBHOOK_URL_dummy.com')
+        binding.setVariable('env', [
+                'JOB_NAME'    : 'dummy_job',
+                'BUILD_NUMBER': '123',
+                'BUILD_URL'   : 'htth://BUILD_URL_dummy.com'
+        ])
         helper.registerAllowedMethod("withCredentials", [Map])
     }
 }
