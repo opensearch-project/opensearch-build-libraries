@@ -3,23 +3,43 @@
          standardReleasePipelineWithGenericTrigger.pipeline(groovy.lang.Closure)
             standardReleasePipelineWithGenericTrigger.timeout({time=1, unit=HOURS})
             standardReleasePipelineWithGenericTrigger.echo(Executing on agent [docker:[image:centos:7, reuseNode:false, stages:[:], args:-e JAVA_HOME=/opt/java/openjdk-17, alwaysPull:true, containerPerStageRoot:false, label:AL2-X64]])
-            standardReleasePipelineWithGenericTrigger.GenericTrigger({genericVariables=[{key=ref, value=$.release.tag_name}, {key=repository, value=$.repository.html_url}, {key=action, value=$.action}, {key=isDraft, value=$.release.draft}, {key=release_url, value=$.release.url}, {key=assets_url, value=$.release.assets_url}], tokenCredentialId=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, printContributedVariables=false, printPostContent=false, regexpFilterText=$isDraft $action, regexpFilterExpression=^true created$})
+            standardReleasePipelineWithGenericTrigger.GenericTrigger({genericVariables=[{key=ref, value=$.release.tag_name}, {key=repository, value=$.repository.html_url}, {key=action, value=$.action}, {key=isPreRelease, value=$.release.prerelease}, {key=release_url, value=$.release.url}, {key=release_html_url, value=$.release.html_url}, {key=assets_url, value=$.release.assets_url}], tokenCredentialId=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, printContributedVariables=false, printPostContent=false, regexpFilterText=$isPreRelease $action, regexpFilterExpression=^true published$})
             standardReleasePipelineWithGenericTrigger.stage(Download artifacts, groovy.lang.Closure)
                standardReleasePipelineWithGenericTrigger.script(groovy.lang.Closure)
                   standardReleasePipelineWithGenericTrigger.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-release-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-release-secrets/github-bot/ci-bot-token}]}, groovy.lang.Closure)
-                     standardReleasePipelineWithGenericTrigger.sh({script=curl -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/owner/name/releases/1234/assets, returnStdout=true})
+                     standardReleasePipelineWithGenericTrigger.sh({script=curl -s --fail -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/owner/name/releases/1234/assets, returnStdout=true})
                      standardReleasePipelineWithGenericTrigger.readJSON({text=
 bbb
 ccc
 })
                      standardReleasePipelineWithGenericTrigger.echo(Downloading artifacts from https://api.github.com/repos/owner/reponame/releases/assets/123456)
-                     standardReleasePipelineWithGenericTrigger.sh(curl -J -L -H 'Accept: application/octet-stream' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/owner/reponame/releases/assets/123456 -o artifacts.tar.gz && tar -xvf artifacts.tar.gz)
+                     standardReleasePipelineWithGenericTrigger.sh(curl -s --fail -J -L -H 'Accept: application/octet-stream' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/owner/reponame/releases/assets/123456 -o artifacts.tar.gz && tar -xvf artifacts.tar.gz)
             standardReleasePipelineWithGenericTrigger.stage(Release, groovy.lang.Closure)
                standardReleasePipelineWithGenericTrigger.script(groovy.lang.Closure)
                   StandardReleasePipelineWithGenericTriggers_Jenkinsfile.echo(fakePublishToMaven [mavenArtifactsPath:/maven, autoPublish:true])
             standardReleasePipelineWithGenericTrigger.script(groovy.lang.Closure)
+               standardReleasePipelineWithGenericTrigger.publishNotification({icon=:white_check_mark:, message=Release 1.0.0 completed successfully, extra=REPOSITORY: https://github.com/Codertocat/Hello-World
+TAG: 1.0.0, credentialsId=opensearch-release-notification-webhook})
+                  publishNotification.withSecrets({secrets=[{envVar=WEBHOOK_URL, secretRef=op://opensearch-release-secrets/webhook/opensearch-release-notification-webhook}]}, groovy.lang.Closure)
+                     publishNotification.sh(curl -XPOST --header "Content-Type: application/json" --data '{"result_text":":white_check_mark:
+JOB_NAME=dummy_release_job
+BUILD_NUMBER=[100]
+MESSAGE=Release 1.0.0 completed successfully
+BUILD_URL: https://build.ci.opensearch.org/job/dummy_release_job/100/
+REPOSITORY: https://github.com/Codertocat/Hello-World
+TAG: 1.0.0"}' "https://webhook.example.com")
                standardReleasePipelineWithGenericTrigger.postCleanup()
                   postCleanup.cleanWs({disableDeferredWipeout=true, deleteDirs=true})
             standardReleasePipelineWithGenericTrigger.script(groovy.lang.Closure)
                standardReleasePipelineWithGenericTrigger.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-release-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-release-secrets/github-bot/ci-bot-token}]}, groovy.lang.Closure)
-                  standardReleasePipelineWithGenericTrigger.sh(curl -X PATCH -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/Codertocat/Hello-World/releases/17372790 -d '{"tag_name":"1.0.0","draft":false,"prerelease":false}')
+                  standardReleasePipelineWithGenericTrigger.sh({script=gh api repos/Codertocat/Hello-World/contents/.github/CODEOWNERS --jq '.content' 2>/dev/null | tr -d '\n' | base64 -d | grep -oP '@[\w/-]+' | sort -u | tr '\n' ' ' || echo '', returnStdout=true})
+                  standardReleasePipelineWithGenericTrigger.sh(gh issue create --title "[Release - Action Required] Publish release for tag 1.0.0" --body "The release workflow for tag `1.0.0` completed successfully.
+
+Build: https://build.ci.opensearch.org/job/dummy_release_job/100/
+
+Please publish the release on GitHub by converting the pre-release to a full release.
+
+Release: https://github.com/Codertocat/Hello-World/releases/tag/1.0.0
+
+cc: bbb
+ccc" --repo https://github.com/Codertocat/Hello-World)

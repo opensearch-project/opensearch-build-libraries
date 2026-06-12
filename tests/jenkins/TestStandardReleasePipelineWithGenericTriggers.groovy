@@ -60,6 +60,8 @@ class TestStandardReleasePipelineWithGenericTriggers extends BuildPipelineTest {
         helper.registerAllowedMethod("GenericTrigger", [Map.class], null)
         binding.setVariable('tag', '1.0.0')
         binding.setVariable('release_url', 'https://api.github.com/repos/Codertocat/Hello-World/releases/17372790')
+        binding.setVariable('release_html_url', 'https://github.com/Codertocat/Hello-World/releases/tag/1.0.0')
+        binding.setVariable('repository', 'https://github.com/Codertocat/Hello-World')
         binding.setVariable('assets_url', 'https://api.github.com/repos/owner/name/releases/1234/assets')
         helper.registerAllowedMethod('readJSON', [Map], { Map parameters ->
             return new JsonSlurper().parseText(json)
@@ -70,7 +72,17 @@ class TestStandardReleasePipelineWithGenericTriggers extends BuildPipelineTest {
         })
         binding.setVariable('GITHUB_USER', "GITHUB_USER")
         binding.setVariable('GITHUB_TOKEN', "GITHUB_TOKEN")
+        binding.setVariable('JOB_NAME', 'dummy_release_job')
+        binding.setVariable('BUILD_NUMBER', '100')
+        binding.setVariable('BUILD_URL', 'https://build.ci.opensearch.org/job/dummy_release_job/100/')
+        binding.setVariable('WEBHOOK_URL', 'https://webhook.example.com')
+        binding.setVariable('currentBuild', [currentResult: 'SUCCESS'])
         super.setUp()
+        binding.setVariable('env', [
+                'JOB_NAME'    : 'dummy_release_job',
+                'BUILD_NUMBER': '100',
+                'BUILD_URL'   : 'https://build.ci.opensearch.org/job/dummy_release_job/100/'
+        ])
     }
 
 
@@ -102,17 +114,17 @@ class TestStandardReleasePipelineWithGenericTriggers extends BuildPipelineTest {
             c -> c.contains('generic')
         }
         assertThat(cmd.size(), equalTo(1))
-        assertThat(cmd, hasItem('{genericVariables=[{key=ref, value=$.release.tag_name}, {key=repository, value=$.repository.html_url}, {key=action, value=$.action}, {key=isDraft, value=$.release.draft}, {key=release_url, value=$.release.url}, {key=assets_url, value=$.release.assets_url}], tokenCredentialId=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, printContributedVariables=false, printPostContent=false, regexpFilterText=$isDraft $action, regexpFilterExpression=^true created$}'))
+        assertThat(cmd, hasItem('{genericVariables=[{key=ref, value=$.release.tag_name}, {key=repository, value=$.repository.html_url}, {key=action, value=$.action}, {key=isPreRelease, value=$.release.prerelease}, {key=release_url, value=$.release.url}, {key=release_html_url, value=$.release.html_url}, {key=assets_url, value=$.release.assets_url}], tokenCredentialId=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, printContributedVariables=false, printPostContent=false, regexpFilterText=$isPreRelease $action, regexpFilterExpression=^true published$}'))
     }
 
     @Test
-    void 'validate release is published'(){
+    void 'validate github issue is created'(){
         runScript("tests/jenkins/jobs/StandardReleasePipelineWithGenericTriggers_Jenkinsfile")
         def cmd = getCommands('sh').findAll{
-            c -> c.contains('curl')
+            c -> c.contains('gh issue create')
         }
-        assertThat(cmd, hasItem("curl -X PATCH -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/Codertocat/Hello-World/releases/17372790 -d '{\"tag_name\":\"1.0.0\",\"draft\":false,\"prerelease\":false}'"))
-
+        assertThat(cmd.size(), equalTo(1))
+        assertThat(cmd, hasItem("""gh issue create --title \"[Release - Action Required] Publish release for tag 1.0.0\" --body \"The release workflow for tag `1.0.0` completed successfully.\n\nBuild: https://build.ci.opensearch.org/job/dummy_release_job/100/\n\nPlease publish the release on GitHub by converting the pre-release to a full release.\n\nRelease: https://github.com/Codertocat/Hello-World/releases/tag/1.0.0\n\ncc: bbb\nccc\" --repo https://github.com/Codertocat/Hello-World"""))
     }
 
    @Test
@@ -121,8 +133,8 @@ class TestStandardReleasePipelineWithGenericTriggers extends BuildPipelineTest {
         def cmd = getCommands('sh').findAll{
             c -> c.contains('curl')
         }
-        assertThat(cmd, hasItem("curl -J -L -H 'Accept: application/octet-stream' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/owner/reponame/releases/assets/123456 -o artifacts.tar.gz && tar -xvf artifacts.tar.gz"))
-        assertThat(cmd, hasItem("{script=curl -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/owner/name/releases/1234/assets, returnStdout=true}"))
+        assertThat(cmd, hasItem("curl -s --fail -J -L -H 'Accept: application/octet-stream' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/owner/reponame/releases/assets/123456 -o artifacts.tar.gz && tar -xvf artifacts.tar.gz"))
+        assertThat(cmd, hasItem("{script=curl -s --fail -H 'Accept: application/vnd.github+json' -H 'Authorization: Bearer GITHUB_TOKEN' https://api.github.com/repos/owner/name/releases/1234/assets, returnStdout=true}"))
     }
 
     @Test
@@ -143,7 +155,7 @@ class TestStandardReleasePipelineWithGenericTriggers extends BuildPipelineTest {
             c -> c.contains('generic')
         }
         assertThat(cmd.size(), equalTo(1))
-        assertThat(cmd, hasItem('{genericVariables=[{key=ref, value=.ref}, {key=repository, value=$.repository.html_url}, {key=action, value=$.action}, {key=isDraft, value=$.release.draft}, {key=release_url, value=$.release.url}, {key=assets_url, value=$.release.assets_url}], tokenCredentialId=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, printContributedVariables=false, printPostContent=false, regexpFilterText=$ref, regexpFilterExpression=^refs/tags/.*}'))
+        assertThat(cmd, hasItem('{genericVariables=[{key=ref, value=.ref}, {key=repository, value=$.repository.html_url}, {key=action, value=$.action}, {key=isPreRelease, value=$.release.prerelease}, {key=release_url, value=$.release.url}, {key=release_html_url, value=$.release.html_url}, {key=assets_url, value=$.release.assets_url}], tokenCredentialId=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, printContributedVariables=false, printPostContent=false, regexpFilterText=$ref, regexpFilterExpression=^refs/tags/.*}'))
     }
 
     @Test
@@ -156,12 +168,12 @@ class TestStandardReleasePipelineWithGenericTriggers extends BuildPipelineTest {
     }
 
     @Test
-    void 'validate release is not published'(){
+    void 'validate github issue is created for tag trigger'(){
         runScript("tests/jenkins/jobs/StandardReleasePipelineWithGenericTriggersTag_Jenkinsfile")
         def cmd = getCommands('sh').findAll{
-            c -> c.contains('curl')
+            c -> c.contains('gh issue create')
         }
-        assertThat(cmd.size(), equalTo(0))
+        assertThat(cmd.size(), equalTo(1))
     }
 
     def getCommands(String method) {

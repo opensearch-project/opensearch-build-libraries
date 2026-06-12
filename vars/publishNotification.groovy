@@ -7,15 +7,18 @@
  * compatible open source license.
  */
 void call(Map args = [:]) {
-    text = ([
+    def parts = [
         "${args.icon}",
-        "JOB_NAME=${JOB_NAME}",
-        "BUILD_NUMBER=[${BUILD_NUMBER}]",
+        "JOB_NAME=${env.JOB_NAME}",
+        "BUILD_NUMBER=[${env.BUILD_NUMBER}]",
         "MESSAGE=${args.message}",
-        "BUILD_URL: ${BUILD_URL}",
-        "MANIFEST: ${args.manifest}",
-        args.extra
-    ] - null).join("\n")
+        "BUILD_URL: ${env.BUILD_URL}",
+    ]
+    if (args.manifest) {
+        parts.add("MANIFEST: ${args.manifest}")
+    }
+    parts.add(args.extra)
+    text = (parts - null).join("\n")
 
     def secret_webhook = [
         [envVar: 'WEBHOOK_URL', secretRef: "op://opensearch-release-secrets/webhook/${args.credentialsId}"]
