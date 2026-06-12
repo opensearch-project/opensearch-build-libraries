@@ -48,7 +48,6 @@ void call(Map arguments = [:], Closure body) {
                     [key: 'action', value: '$.action'],
                     [key: 'isPreRelease', value: '$.release.prerelease'],
                     [key: 'release_url', value: '$.release.url'],
-                    [key: 'release_html_url', value: '$.release.html_url'],
                     [key: 'assets_url', value: '$.release.assets_url']
                 ],
                 tokenCredentialId: arguments.tokenIdCredential,
@@ -116,7 +115,7 @@ void call(Map arguments = [:], Closure body) {
                             script: "gh api repos/${repository.replaceAll('https://github.com/', '')}/contents/.github/CODEOWNERS --jq '.content' 2>/dev/null | tr -d '\\n' | base64 -d | grep -oP '@[\\w/-]+' | sort -u | tr '\\n' ' ' || echo ''",
                             returnStdout: true
                         ).trim()
-                        def issueBody = "The release workflow for tag `${tag}` completed successfully.\n\nBuild: ${env.BUILD_URL}\n\nPlease publish the release on GitHub by converting the pre-release to a full release.\n\nRelease: ${release_html_url}\n\ncc: ${codeOwners}"
+                        def issueBody = "The release workflow for tag `${tag}` completed successfully.\n\nBuild: ${env.BUILD_URL}\n\nPlease publish the release on GitHub by converting the pre-release to a full release.\n\nRelease: ${repository}/releases/tag/${tag}\n\ncc: ${codeOwners}"
                         sh """gh issue create --title \"[Release - Action Required] Publish release for tag ${tag}\" --body \"${issueBody}\" --repo ${repository}"""
                     }
                 }
@@ -128,7 +127,7 @@ void call(Map arguments = [:], Closure body) {
                             script: "gh api repos/${repository.replaceAll('https://github.com/', '')}/contents/.github/CODEOWNERS --jq '.content' 2>/dev/null | tr -d '\\n' | base64 -d | grep -oP '@[\\w/-]+' | sort -u | tr '\\n' ' ' || echo ''",
                             returnStdout: true
                         ).trim()
-                        def issueBody = "The release workflow for tag `${tag}` failed.\n\nPlease investigate the failure and retry the release.\n\nRelease: ${release_html_url}\n\ncc: ${codeOwners} @opensearch-project/engineering-effectiveness"
+                        def issueBody = "The release workflow for tag `${tag}` failed.\n\nPlease investigate the failure and retry the release.\n\nRelease: ${repository}/releases/tag/${tag}\n\ncc: ${codeOwners} @opensearch-project/engineering-effectiveness"
                         sh """gh issue create --title \"[RELEASE] Failed: release for tag ${tag}\" --body \"${issueBody}\" --repo ${repository}"""
                     }
                 }
