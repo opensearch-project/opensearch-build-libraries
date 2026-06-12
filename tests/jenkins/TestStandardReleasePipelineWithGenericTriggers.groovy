@@ -60,7 +60,6 @@ class TestStandardReleasePipelineWithGenericTriggers extends BuildPipelineTest {
         helper.registerAllowedMethod("GenericTrigger", [Map.class], null)
         binding.setVariable('tag', '1.0.0')
         binding.setVariable('release_url', 'https://api.github.com/repos/Codertocat/Hello-World/releases/17372790')
-        binding.setVariable('release_html_url', 'https://github.com/Codertocat/Hello-World/releases/tag/1.0.0')
         binding.setVariable('repository', 'https://github.com/Codertocat/Hello-World')
         binding.setVariable('assets_url', 'https://api.github.com/repos/owner/name/releases/1234/assets')
         helper.registerAllowedMethod('readJSON', [Map], { Map parameters ->
@@ -114,7 +113,7 @@ class TestStandardReleasePipelineWithGenericTriggers extends BuildPipelineTest {
             c -> c.contains('generic')
         }
         assertThat(cmd.size(), equalTo(1))
-        assertThat(cmd, hasItem('{genericVariables=[{key=ref, value=$.release.tag_name}, {key=repository, value=$.repository.html_url}, {key=action, value=$.action}, {key=isPreRelease, value=$.release.prerelease}, {key=release_url, value=$.release.url}, {key=release_html_url, value=$.release.html_url}, {key=assets_url, value=$.release.assets_url}], tokenCredentialId=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, printContributedVariables=false, printPostContent=false, regexpFilterText=$isPreRelease $action, regexpFilterExpression=^true published$}'))
+        assertThat(cmd, hasItem('{genericVariables=[{key=ref, value=$.release.tag_name}, {key=repository, value=$.repository.html_url}, {key=action, value=$.action}, {key=isPreRelease, value=$.release.prerelease}, {key=release_url, value=$.release.url}, {key=assets_url, value=$.release.assets_url}], tokenCredentialId=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, printContributedVariables=false, printPostContent=false, regexpFilterText=$isPreRelease $action, regexpFilterExpression=^true published$}'))
     }
 
     @Test
@@ -155,7 +154,7 @@ class TestStandardReleasePipelineWithGenericTriggers extends BuildPipelineTest {
             c -> c.contains('generic')
         }
         assertThat(cmd.size(), equalTo(1))
-        assertThat(cmd, hasItem('{genericVariables=[{key=ref, value=.ref}, {key=repository, value=$.repository.html_url}, {key=action, value=$.action}, {key=isPreRelease, value=$.release.prerelease}, {key=release_url, value=$.release.url}, {key=release_html_url, value=$.release.html_url}, {key=assets_url, value=$.release.assets_url}], tokenCredentialId=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, printContributedVariables=false, printPostContent=false, regexpFilterText=$ref, regexpFilterExpression=^refs/tags/.*}'))
+        assertThat(cmd, hasItem('{genericVariables=[{key=ref, value=.ref}, {key=repository, value=$.repository.html_url}, {key=action, value=$.action}, {key=isPreRelease, value=$.release.prerelease}, {key=release_url, value=$.release.url}, {key=assets_url, value=$.release.assets_url}], tokenCredentialId=opensearch-ci-webhook-trigger-token, causeString=A tag was cut on opensearch-ci repo, printContributedVariables=false, printPostContent=false, regexpFilterText=$ref, regexpFilterExpression=^refs/tags/.*}'))
     }
 
     @Test
