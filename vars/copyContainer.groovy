@@ -27,6 +27,7 @@ void call(Map args = [:]) {
         [envVar: 'DOCKER_PASSWORD', secretRef: 'op://opensearch-release-secrets/dockerhub-production-credentials/password']
     ]
 
+    // TODO: MIGRATION - pending removal
     def secret_ecr_production = [
         [envVar: 'ARTIFACT_PROMOTION_ROLE_NAME', secretRef: 'op://opensearch-release-secrets/aws-iam-roles/jenkins-artifact-promotion-role'],
         [envVar: 'AWS_ACCOUNT_ARTIFACT', secretRef: 'op://opensearch-release-secrets/aws-accounts/jenkins-aws-production-account']
@@ -41,27 +42,38 @@ void call(Map args = [:]) {
     destination_registry = args.destinationRegistry
 
     if (source_registry == 'opensearchstaging' || destination_registry == 'opensearchstaging') {
+        echo "Login Docker Staging"
         withSecrets(secrets: secret_dockerhub_staging){
             sh("set +x && echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin")
         }
     }
 
-    if (source_registry == 'opensearchproject' || destination_registry == 'opensearchproject') {
+    if (destination_registry == 'opensearchproject') {
+        echo "Login Docker Production"
         withSecrets(secrets: secret_dockerhub_production){
             sh("set +x && echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin")
         }
     }
 
+    // TODO: MIGRATION - pending removal
     if (source_registry == 'public.ecr.aws/opensearchstaging' || destination_registry == 'public.ecr.aws/opensearchstaging') {
+        echo "Login ECR Staging"
         sh("set +x && aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${destination_registry}")
     }
 
-    if (source_registry == 'public.ecr.aws/opensearchproject' || destination_registry == 'public.ecr.aws/opensearchproject') {
+    // TODO: MIGRATION - pending removal
+    if (destination_registry == 'public.ecr.aws/opensearchproject') {
+        echo "Login ECR Production"
         withSecrets(secrets: secret_ecr_production){
-                withAWS(role: "${ARTIFACT_PROMOTION_ROLE_NAME}", roleAccount: "${AWS_ACCOUNT_ARTIFACT}", duration: 900, roleSessionName: 'jenkins-session') {
-                    sh("set +x && aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${destination_registry}")
-                }
+            withAWS(role: "${ARTIFACT_PROMOTION_ROLE_NAME}", roleAccount: "${AWS_ACCOUNT_ARTIFACT}", duration: 900, roleSessionName: 'jenkins-session') {
+                sh("set +x && aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${destination_registry}")
             }
+        }
+    }
+
+    if (destination_registry == 'public.ecr.aws/opensearchorg') {
+        echo "Login ECR LF"
+        sh("set +x && aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${destination_registry}")
     }
 
     craneCopy()
