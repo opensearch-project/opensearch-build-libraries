@@ -6,6 +6,7 @@ on:
 
 jobs:
   backport:
+    if: github.repository == 'opensearch-project/opensearch-build-libraries'
     uses: opensearch-project/opensearch-build/.github/workflows/backport-pr.yml@main
     secrets:
       OPENSEARCH_CI_BOT_TOKEN: ${{ secrets.OPENSEARCH_CI_BOT_TOKEN }}
