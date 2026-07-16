@@ -68,7 +68,7 @@ class OpenSearchMetricsQuery {
     }
 
     /**
-     * Creates an index with the given mapping. Throws if the cluster does not return 200.
+     * Creates an index with the given mapping. Throws if the cluster does not return 200 or 201.
      * @param targetIndex the index name to create
      * @param mapping a Map representing the index body (e.g. [mappings: [properties: [...]]])
      */
@@ -81,7 +81,7 @@ class OpenSearchMetricsQuery {
             """,
             returnStdout: true
         ).trim()
-        if (httpCode != '200') {
+        if (httpCode != '200' && httpCode != '201') {
             throw new RuntimeException("Failed to create index ${targetIndex}. HTTP status: ${httpCode}")
         }
     }
