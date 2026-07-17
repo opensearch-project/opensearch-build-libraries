@@ -14,6 +14,9 @@ import org.junit.Before
 import org.junit.Test
 import utils.OpenSearchMetricsQuery
 import static org.junit.Assert.assertEquals
+import static org.junit.Assert.assertTrue
+import static org.junit.Assert.assertFalse
+import static org.junit.Assert.fail
 
 class TestOpenSearchMetricsQuery {
     def script
@@ -61,6 +64,57 @@ class TestOpenSearchMetricsQuery {
         def result  = metricsQuery.fetchMetrics(query)
         assertEquals(result, new JsonSlurperClassic().parseText(response))
         assertEquals(expectedScript.trim(), scriptArgs.script.trim())
+    }
+
+    @Test
+    void testIndexExistsReturnsTrueOn200() {
+        script.sh = { Map args ->
+            scriptArgs = args
+            return '200'
+        }
+        def metricsQuery = new OpenSearchMetricsQuery("metricsUrl", "awsAccessKey", "awsSecretKey", "awsSessionToken", this.script)
+        assertTrue(metricsQuery.indexExists("sampleIndex"))
+        assertTrue(scriptArgs.script.contains('-I "metricsUrl/sampleIndex"'))
+        assertTrue(scriptArgs.script.contains('--aws-sigv4 "aws:amz:us-east-1:es"'))
+    }
+
+    @Test
+    void testIndexExistsReturnsFalseOnNon200() {
+        script.sh = { Map args ->
+            scriptArgs = args
+            return '404'
+        }
+        def metricsQuery = new OpenSearchMetricsQuery("metricsUrl", "awsAccessKey", "awsSecretKey", "awsSessionToken", this.script)
+        assertFalse(metricsQuery.indexExists("missingIndex"))
+    }
+
+    @Test
+    void testCreateIndexSendsMappingAsJson() {
+        script.sh = { Map args ->
+            scriptArgs = args
+            return '200'
+        }
+        def metricsQuery = new OpenSearchMetricsQuery("metricsUrl", "awsAccessKey", "awsSecretKey", "awsSessionToken", this.script)
+        metricsQuery.createIndex("sampleIndex", [mappings: [properties: [version: [type: 'keyword']]]])
+        assertTrue(scriptArgs.script.contains('-XPUT "metricsUrl/sampleIndex"'))
+        // Map is serialized to JSON in the request body
+        assertTrue(scriptArgs.script.contains('{"mappings":{"properties":{"version":{"type":"keyword"}}}}'))
+    }
+
+    @Test
+    void testCreateIndexThrowsOnNon200() {
+        script.sh = { Map args ->
+            scriptArgs = args
+            return '400'
+        }
+        def metricsQuery = new OpenSearchMetricsQuery("metricsUrl", "awsAccessKey", "awsSecretKey", "awsSessionToken", this.script)
+        try {
+            metricsQuery.createIndex("sampleIndex", [mappings: [properties: [:]]])
+            fail("Expected RuntimeException when cluster returns non-200")
+        } catch (RuntimeException e) {
+            assertTrue(e.message.contains("Failed to create index sampleIndex"))
+            assertTrue(e.message.contains("400"))
+        }
     }
 }
 
