@@ -7,7 +7,7 @@
  * compatible open source license.
  */
 def call(Map args = [:]) {
-   def lib = library(identifier: "jenkins@13.2.0", retriever: legacySCM(scm))
+   def lib = library(identifier: "jenkins@13.3.0", retriever: legacySCM(scm))
 
    if (isUnix()) {
        sh "mkdir -p \$(dirname \"${args.path}\")"
