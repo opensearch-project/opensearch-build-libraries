@@ -87,6 +87,26 @@ class OpenSearchMetricsQuery {
     }
 
     /**
+     * Indexes a single document into the given index (append; a new document is created each call).
+     * Throws if the cluster does not return 200 or 201.
+     * @param targetIndex the index to write to
+     * @param document a Map representing the document body
+     */
+    void indexDocument(String targetIndex, Map document) {
+        String body = JsonOutput.toJson(document)
+        String httpCode = script.sh(
+            script: """
+                set +x
+                curl -s -o /dev/null -w '%{http_code}' -XPOST "${metricsUrl}/${targetIndex}/_doc" ${curlAuthArgs()} -H 'Content-Type: application/json' -d '${body}'
+            """,
+            returnStdout: true
+        ).trim()
+        if (httpCode != '200' && httpCode != '201') {
+            throw new RuntimeException("Failed to index document into ${targetIndex}. HTTP status: ${httpCode}")
+        }
+    }
+
+    /**
      * Common SigV4 authentication arguments shared by every cluster request.
      * Keeping this private ensures credentials and the signing region are defined once.
      */
