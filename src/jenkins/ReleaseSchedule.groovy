@@ -9,13 +9,15 @@
 
 package jenkins
 
+import utils.ArgumentValidator
+
 /**
  * A release schedule record for the opensearch_release_schedule index (one per version).
  * Validates its enum-like fields on construction so a malformed schedule never reaches the cluster.
  */
 class ReleaseSchedule {
 
-    static final List<String> VALID_STATUSES = ['active', 'released', 'cancelled']
+    static final List<String> VALID_STATUSES = ['inactive', 'active', 'released', 'cancelled']
 
     String version
     String rcDate
@@ -26,11 +28,11 @@ class ReleaseSchedule {
     String registeredBy
 
     ReleaseSchedule(Map args) {
-        this.version = required(args, 'version')
-        this.status = args.status ?: 'active'
-        if (!VALID_STATUSES.contains(this.status)) {
-            throw new IllegalArgumentException("ReleaseSchedule: 'status' must be one of ${VALID_STATUSES}, got '${this.status}'.")
-        }
+        String context = this.class.simpleName
+        this.version = ArgumentValidator.required(args, 'version', context)
+        // status defaults to 'inactive' when absent, then must be one of the allowed values.
+        // A release stays 'inactive' until ~1 month before its RC date, when it is flipped to 'active'.
+        this.status = ArgumentValidator.requireOneOf([status: args.status ?: 'inactive'], 'status', VALID_STATUSES, context)
         this.rcDate = args.rcDate
         this.releaseDate = args.releaseDate
         this.releaseIssue = args.releaseIssue
@@ -52,12 +54,5 @@ class ReleaseSchedule {
             registered_at  : timestamp,
             registered_by  : registeredBy
         ]
-    }
-
-    private static String required(Map args, String key) {
-        if (!args[key]) {
-            throw new IllegalArgumentException("ReleaseSchedule: '${key}' is required.")
-        }
-        return args[key]
     }
 }

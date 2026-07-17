@@ -116,7 +116,7 @@ class TestReleaseStateDocuments {
     // ---- ReleaseSchedule ----
 
     @Test
-    void testScheduleToDocumentMapsSnakeCaseAndDefaultsStatus() {
+    void testScheduleToDocumentMapsSnakeCaseAndDefaultsStatusToInactive() {
         def doc = new ReleaseSchedule([
                 version       : '3.8.0',
                 rcDate        : '2026-08-01',
@@ -130,14 +130,15 @@ class TestReleaseStateDocuments {
         assert doc.release_date == '2026-08-12'
         assert doc.release_manager == 'test-rm'
         assert doc.registered_by == 'release-schedule-job #5'
-        assert doc.status == 'active'
+        // A newly registered release is inactive until ~1 month before its RC date.
+        assert doc.status == 'inactive'
         assert doc.registered_at == TS
     }
 
     @Test
     void testScheduleHonorsExplicitStatus() {
-        def doc = new ReleaseSchedule([version: '3.8.0', status: 'released']).toDocument(TS)
-        assert doc.status == 'released'
+        assert new ReleaseSchedule([version: '3.8.0', status: 'active']).toDocument(TS).status == 'active'
+        assert new ReleaseSchedule([version: '3.8.0', status: 'released']).toDocument(TS).status == 'released'
     }
 
     @Test(expected = IllegalArgumentException)

@@ -9,6 +9,8 @@
 
 package jenkins
 
+import utils.ArgumentValidator
+
 /**
  * A single per-criterion release readiness record for the opensearch_release_state index.
  * Validates its enum-like fields on construction so a malformed criterion never reaches the cluster.
@@ -34,12 +36,13 @@ class ReleaseCriterion {
     String checkedBy
 
     ReleaseCriterion(Map args) {
-        this.version = required(args, 'version')
-        this.criterionType = requireOneOf(args, 'criterionType', VALID_TYPES)
-        this.criterionName = required(args, 'criterionName')
-        this.status = requireOneOf(args, 'status', VALID_STATUSES)
-        this.product = optionalOneOf(args, 'product', VALID_PRODUCTS)
-        this.source = optionalOneOf(args, 'source', VALID_SOURCES)
+        String context = this.class.simpleName
+        this.version = ArgumentValidator.required(args, 'version', context)
+        this.criterionType = ArgumentValidator.requireOneOf(args, 'criterionType', VALID_TYPES, context)
+        this.criterionName = ArgumentValidator.required(args, 'criterionName', context)
+        this.status = ArgumentValidator.requireOneOf(args, 'status', VALID_STATUSES, context)
+        this.product = ArgumentValidator.optionalOneOf(args, 'product', VALID_PRODUCTS, context)
+        this.source = ArgumentValidator.optionalOneOf(args, 'source', VALID_SOURCES, context)
         this.releaseDate = args.releaseDate
         this.daysToRelease = args.daysToRelease
         this.details = args.details
@@ -68,28 +71,5 @@ class ReleaseCriterion {
             checked_by         : checkedBy,
             last_checked       : timestamp
         ]
-    }
-
-    private static String required(Map args, String key) {
-        if (!args[key]) {
-            throw new IllegalArgumentException("ReleaseCriterion: '${key}' is required.")
-        }
-        return args[key]
-    }
-
-    private static String requireOneOf(Map args, String key, List<String> allowed) {
-        String value = required(args, key)
-        if (!allowed.contains(value)) {
-            throw new IllegalArgumentException("ReleaseCriterion: '${key}' must be one of ${allowed}, got '${value}'.")
-        }
-        return value
-    }
-
-    private static String optionalOneOf(Map args, String key, List<String> allowed) {
-        String value = args[key]
-        if (value != null && !allowed.contains(value)) {
-            throw new IllegalArgumentException("ReleaseCriterion: '${key}' must be one of ${allowed}, got '${value}'.")
-        }
-        return value
     }
 }

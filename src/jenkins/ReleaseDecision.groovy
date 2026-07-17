@@ -9,6 +9,8 @@
 
 package jenkins
 
+import utils.ArgumentValidator
+
 /**
  * A Go/No-Go decision record for the opensearch_release_state index.
  * Validates its enum-like fields on construction so a malformed decision never reaches the cluster.
@@ -28,10 +30,11 @@ class ReleaseDecision {
     String notes
 
     ReleaseDecision(Map args) {
-        this.version = required(args, 'version')
-        this.decidedBy = required(args, 'decidedBy')
-        this.decision = requireOneOf(args, 'decision', VALID_DECISIONS)
-        this.oscarRecommendation = optionalOneOf(args, 'oscarRecommendation', VALID_RECOMMENDATIONS)
+        String context = this.class.simpleName
+        this.version = ArgumentValidator.required(args, 'version', context)
+        this.decidedBy = ArgumentValidator.required(args, 'decidedBy', context)
+        this.decision = ArgumentValidator.requireOneOf(args, 'decision', VALID_DECISIONS, context)
+        this.oscarRecommendation = ArgumentValidator.optionalOneOf(args, 'oscarRecommendation', VALID_RECOMMENDATIONS, context)
         this.agreedWithOscar = args.agreedWithOscar
         this.criteriaSnapshot = args.criteriaSnapshot ?: [:]
         this.releaseIssue = args.releaseIssue
@@ -54,28 +57,5 @@ class ReleaseDecision {
             release_issue       : releaseIssue,
             notes               : notes
         ]
-    }
-
-    private static String required(Map args, String key) {
-        if (!args[key]) {
-            throw new IllegalArgumentException("ReleaseDecision: '${key}' is required.")
-        }
-        return args[key]
-    }
-
-    private static String requireOneOf(Map args, String key, List<String> allowed) {
-        String value = required(args, key)
-        if (!allowed.contains(value)) {
-            throw new IllegalArgumentException("ReleaseDecision: '${key}' must be one of ${allowed}, got '${value}'.")
-        }
-        return value
-    }
-
-    private static String optionalOneOf(Map args, String key, List<String> allowed) {
-        String value = args[key]
-        if (value != null && !allowed.contains(value)) {
-            throw new IllegalArgumentException("ReleaseDecision: '${key}' must be one of ${allowed}, got '${value}'.")
-        }
-        return value
     }
 }
