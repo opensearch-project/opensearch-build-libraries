@@ -73,14 +73,7 @@ class OpenSearchMetricsQuery {
      * @param mapping a Map representing the index body (e.g. [mappings: [properties: [...]]])
      */
     void createIndex(String targetIndex, Map mapping) {
-        String body = JsonOutput.toJson(mapping)
-        String httpCode = script.sh(
-            script: """
-                set +x
-                curl -s -o /dev/null -w '%{http_code}' -XPUT "${metricsUrl}/${targetIndex}" ${curlAuthArgs()} -H 'Content-Type: application/json' -d '${body}'
-            """,
-            returnStdout: true
-        ).trim()
+        String httpCode = sendJson('PUT', "${metricsUrl}/${targetIndex}", mapping)
         if (httpCode != '200' && httpCode != '201') {
             throw new RuntimeException("Failed to create index ${targetIndex}. HTTP status: ${httpCode}")
         }
@@ -93,16 +86,36 @@ class OpenSearchMetricsQuery {
      * @param document a Map representing the document body
      */
     void indexDocument(String targetIndex, Map document) {
-        String body = JsonOutput.toJson(document)
-        String httpCode = script.sh(
-            script: """
-                set +x
-                curl -s -o /dev/null -w '%{http_code}' -XPOST "${metricsUrl}/${targetIndex}/_doc" ${curlAuthArgs()} -H 'Content-Type: application/json' -d '${body}'
-            """,
-            returnStdout: true
-        ).trim()
+        String httpCode = sendJson('POST', "${metricsUrl}/${targetIndex}/_doc", document)
         if (httpCode != '200' && httpCode != '201') {
             throw new RuntimeException("Failed to index document into ${targetIndex}. HTTP status: ${httpCode}")
+        }
+    }
+
+    /**
+     * Sends a JSON body to the cluster and returns the HTTP status code.
+     *
+     * The body is written to a temp file and passed via `curl -d @file` rather than inlined into
+     * the shell command, so free-text fields containing quotes or shell metacharacters cannot break
+     * the command or inject shell (the body never touches the shell parser).
+     *
+     * @param method HTTP method (PUT, POST, ...)
+     * @param url full request URL
+     * @param body a Map serialized to JSON as the request body
+     */
+    private String sendJson(String method, String url, Map body) {
+        String bodyFile = "os-metrics-request-${UUID.randomUUID().toString()}.json"
+        script.writeFile(file: bodyFile, text: JsonOutput.toJson(body))
+        try {
+            return script.sh(
+                script: """
+                    set +x
+                    curl -s -o /dev/null -w '%{http_code}' -X${method} "${url}" ${curlAuthArgs()} -H 'Content-Type: application/json' -d @${bodyFile}
+                """,
+                returnStdout: true
+            ).trim()
+        } finally {
+            script.sh(script: "rm -f ${bodyFile}", returnStatus: true)
         }
     }
 

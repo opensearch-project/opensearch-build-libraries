@@ -30,15 +30,21 @@ class TestReleaseStateData {
     private List<Map> indexedDocs
     private String responseCode
 
+    // Holds the body written by the most recent writeFile call, to pair with the following POST.
+    private String pendingBody
+
     @Before
     void setUp() {
         indexedDocs = []
+        pendingBody = null
         responseCode = '201'
         script = new Expando()
+        // The body is written to a temp file first, then the POST curl references it.
+        script.writeFile = { Map args -> pendingBody = args.text }
         script.sh = { Map args ->
             String s = args.script
             if (s.contains('-XPOST')) {
-                indexedDocs.add([index: extractIndex(s), doc: extractBody(s)])
+                indexedDocs.add([index: extractIndex(s), doc: new JsonSlurper().parseText(pendingBody)])
             }
             return responseCode
         }
@@ -48,11 +54,6 @@ class TestReleaseStateData {
     private String extractIndex(String shScript) {
         def matcher = (shScript =~ /${metricsUrl}\/([^\/]+)\/_doc/)
         return matcher ? matcher[0][1] : null
-    }
-
-    private Map extractBody(String shScript) {
-        def matcher = (shScript =~ /-d '(\{.*\})'/)
-        return matcher ? new JsonSlurper().parseText(matcher[0][1]) : [:]
     }
 
     @Test
