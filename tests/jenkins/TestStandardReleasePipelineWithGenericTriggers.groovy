@@ -123,7 +123,7 @@ class TestStandardReleasePipelineWithGenericTriggers extends BuildPipelineTest {
             c -> c.contains('gh issue create')
         }
         assertThat(cmd.size(), equalTo(1))
-        assertThat(cmd, hasItem("""gh issue create --title \"[Release - Action Required] Publish release for tag 1.0.0\" --body \"The release workflow for tag `1.0.0` completed successfully.\n\nBuild: https://build.ci.opensearch.org/job/dummy_release_job/100/\n\nPlease publish the release on GitHub by converting the pre-release to a full release.\n\nRelease: https://github.com/Codertocat/Hello-World/releases/tag/1.0.0\n\ncc: bbb\nccc\" --repo https://github.com/Codertocat/Hello-World"""))
+        assertThat(cmd, hasItem("""gh issue create --title \"[Release - Action Required] Publish release for tag 1.0.0\" --body \"The release workflow for tag 1.0.0 completed successfully.\n\nBuild: https://build.ci.opensearch.org/job/dummy_release_job/100/\n\nPlease publish the release on GitHub by converting the pre-release to a full release.\n\nRelease: https://github.com/Codertocat/Hello-World/releases/tag/1.0.0\n\ncc: bbb\nccc\" --repo https://github.com/Codertocat/Hello-World"""))
     }
 
    @Test
