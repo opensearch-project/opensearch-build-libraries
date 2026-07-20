@@ -33,7 +33,7 @@ TAG: 1.0.0"}' "https://webhook.example.com")
             standardReleasePipelineWithGenericTrigger.script(groovy.lang.Closure)
                standardReleasePipelineWithGenericTrigger.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-release-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-release-secrets/github-bot/ci-bot-token}]}, groovy.lang.Closure)
                   standardReleasePipelineWithGenericTrigger.sh({script=gh api repos/Codertocat/Hello-World/contents/.github/CODEOWNERS --jq '.content' 2>/dev/null | tr -d '\n' | base64 -d | grep -oP '@[\w/-]+' | sort -u | tr '\n' ' ' || echo '', returnStdout=true})
-                  standardReleasePipelineWithGenericTrigger.sh(gh issue create --title "[Release - Action Required] Publish release for tag 1.0.0" --body "The release workflow for tag `1.0.0` completed successfully.
+                  standardReleasePipelineWithGenericTrigger.sh(gh issue create --title "[Release - Action Required] Publish release for tag 1.0.0" --body "The release workflow for tag '1.0.0' completed successfully.
 
 Build: https://build.ci.opensearch.org/job/dummy_release_job/100/
 
