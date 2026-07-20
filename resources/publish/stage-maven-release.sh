@@ -99,6 +99,14 @@ function create_maven_settings() {
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
                             http://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <mirrors>
+    <mirror>
+      <id>opensearch-maven-mirror</id>
+      <name>OpenSearch CI Maven Mirror</name>
+      <url>https://ci.opensearch.org/maven2/</url>
+      <mirrorOf>central</mirrorOf>
+    </mirror>
+  </mirrors>
   <servers>
     <server>
       <id>central</id>
