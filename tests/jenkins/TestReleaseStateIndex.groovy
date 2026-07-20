@@ -32,6 +32,8 @@ class TestReleaseStateIndex {
         shScripts = []
         script = new Expando()
         script.echo = { String message -> echoedMessages.add(message) }
+        // createIndex writes the mapping to a temp file before issuing the PUT.
+        script.writeFile = { Map args -> }
         releaseStateIndex = new ReleaseStateIndex(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, script)
     }
 
@@ -39,6 +41,7 @@ class TestReleaseStateIndex {
      * Stubs script.sh to return HTTP codes keyed by curl verb:
      *  - HEAD (-I)   -> existsCode  (index existence check)
      *  - PUT (-XPUT) -> createCode  (index creation)
+     * The temp-file cleanup 'rm' call is ignored.
      */
     private void stubClusterResponses(String existsCode, String createCode) {
         script.sh = { Map args ->
