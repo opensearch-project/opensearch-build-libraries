@@ -116,19 +116,21 @@ echo "==========================================="
 echo "Deploying artifacts under ${ARTIFACT_DIRECTORY} to Staging Repository."
 echo "==========================================="
 
-deployment=$(mvn --settings="${mvn_settings}" \
+deployment_log="${workdir}/deployment.log"
+
+mvn --settings="${mvn_settings}" \
   org.sonatype.plugins:nexus-staging-maven-plugin:1.7.0:deploy-staged-repository \
   -DrepositoryDirectory="${ARTIFACT_DIRECTORY}" \
   -DnexusUrl="https://ossrh-staging-api.central.sonatype.com" \
   -DserverId=central \
   -DautoReleaseAfterClose=false \
   -DstagingProgressTimeoutMinutes=30 \
-  -DstagingProfileId="${STAGING_PROFILE_ID}")
+  -DstagingProfileId="${STAGING_PROFILE_ID}" > "${deployment_log}" 2>&1 || echo "Maven command failed with exit code: $?"
 
-echo $deployment
+cat "${deployment_log}"
 
-if echo "$deployment" | grep "BUILD SUCCESS"; then
-  DEPLOYED_STAGING_REPO_ID=$(grep "Closing staging repository with ID" <<< "$deployment" | grep -o "\"[^\"]*\"" | tr -d '"')
+if grep -q "BUILD SUCCESS" "${deployment_log}"; then
+  DEPLOYED_STAGING_REPO_ID=$(grep "Closing staging repository with ID" "${deployment_log}" | grep -o "\"[^\"]*\"" | tr -d '"')
   echo "Successfully staged and validated artifacts. Staging repository ID: ${DEPLOYED_STAGING_REPO_ID}"
 else
   echo "Deployment failed!! Please check the logs above for details or check the Sonatype portal https://central.sonatype.com/publishing."
