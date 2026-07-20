@@ -22,6 +22,10 @@ class TestOpenSearchMetricsQuery {
     def script
     def scriptArgs
     String response
+    // Captures the JSON body written to the temp file by sendJson()
+    String writtenBody
+    // Captures the curl sh script specifically (sendJson also issues an 'rm' cleanup call)
+    String curlScript
 
     @Before
     void setUp() {
@@ -45,6 +49,9 @@ class TestOpenSearchMetricsQuery {
                 return response
             }
         }
+
+        // Captures the request body that sendJson writes before issuing the curl.
+        script.writeFile = { Map args -> writtenBody = args.text }
 
         script.println = { message ->
             // Mock implementation for println
@@ -89,23 +96,28 @@ class TestOpenSearchMetricsQuery {
     }
 
     @Test
-    void testCreateIndexSendsMappingAsJson() {
+    void testCreateIndexSendsMappingAsJsonViaFile() {
+        // The curl call returns the status; the cleanup 'rm' call returns anything.
         script.sh = { Map args ->
-            scriptArgs = args
-            return '200'
+            if (args.script.contains('curl')) {
+                curlScript = args.script
+                return '200'
+            }
+            return 0
         }
         def metricsQuery = new OpenSearchMetricsQuery("metricsUrl", "awsAccessKey", "awsSecretKey", "awsSessionToken", this.script)
         metricsQuery.createIndex("sampleIndex", [mappings: [properties: [version: [type: 'keyword']]]])
-        assertTrue(scriptArgs.script.contains('-XPUT "metricsUrl/sampleIndex"'))
-        // Map is serialized to JSON in the request body
-        assertTrue(scriptArgs.script.contains('{"mappings":{"properties":{"version":{"type":"keyword"}}}}'))
+        // PUT to the index, body passed via file (-d @...), and the mapping serialized into that file.
+        assertTrue(curlScript.contains('-XPUT "metricsUrl/sampleIndex"'))
+        assertTrue(curlScript.contains('-d @'))
+        assertEquals('{"mappings":{"properties":{"version":{"type":"keyword"}}}}', writtenBody)
     }
 
     @Test
     void testCreateIndexThrowsOnNon200() {
         script.sh = { Map args ->
             scriptArgs = args
-            return '400'
+            return args.script.contains('curl') ? '400' : 0
         }
         def metricsQuery = new OpenSearchMetricsQuery("metricsUrl", "awsAccessKey", "awsSecretKey", "awsSessionToken", this.script)
         try {
@@ -114,6 +126,50 @@ class TestOpenSearchMetricsQuery {
         } catch (RuntimeException e) {
             assertTrue(e.message.contains("Failed to create index sampleIndex"))
             assertTrue(e.message.contains("400"))
+        }
+    }
+
+    @Test
+    void testIndexDocumentSendsBodyAsJsonViaFile() {
+        script.sh = { Map args ->
+            if (args.script.contains('curl')) {
+                curlScript = args.script
+                return '201'
+            }
+            return 0
+        }
+        def metricsQuery = new OpenSearchMetricsQuery("metricsUrl", "awsAccessKey", "awsSecretKey", "awsSessionToken", this.script)
+        metricsQuery.indexDocument("sampleIndex", [doc_type: 'criterion', version: '3.8.0'])
+        assertTrue(curlScript.contains('-XPOST "metricsUrl/sampleIndex/_doc"'))
+        assertTrue(curlScript.contains('-d @'))
+        assertEquals('{"doc_type":"criterion","version":"3.8.0"}', writtenBody)
+    }
+
+    @Test
+    void testIndexDocumentEscapesFieldsWithQuotes() {
+        // A field containing a single quote must not corrupt the request: it goes through
+        // writeFile verbatim (no shell interpolation), proving the injection fix.
+        script.sh = { Map args ->
+            scriptArgs = args
+            return args.script.contains('curl') ? '201' : 0
+        }
+        def metricsQuery = new OpenSearchMetricsQuery("metricsUrl", "awsAccessKey", "awsSecretKey", "awsSessionToken", this.script)
+        metricsQuery.indexDocument("sampleIndex", [details: "5 issues don't have PR linked"])
+        assertEquals('{"details":"5 issues don\'t have PR linked"}', writtenBody)
+    }
+
+    @Test
+    void testIndexDocumentThrowsOnErrorStatus() {
+        script.sh = { Map args ->
+            scriptArgs = args
+            return args.script.contains('curl') ? '404' : 0
+        }
+        def metricsQuery = new OpenSearchMetricsQuery("metricsUrl", "awsAccessKey", "awsSecretKey", "awsSessionToken", this.script)
+        try {
+            metricsQuery.indexDocument("sampleIndex", [version: '3.8.0'])
+            fail("Expected RuntimeException when cluster returns a non-2xx status")
+        } catch (RuntimeException e) {
+            assertTrue(e.message.contains("Failed to index document into sampleIndex"))
         }
     }
 }
