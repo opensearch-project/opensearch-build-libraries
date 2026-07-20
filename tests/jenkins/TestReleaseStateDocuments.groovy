@@ -10,6 +10,7 @@
 package jenkins.tests
 
 import org.junit.Test
+import java.time.LocalDate
 import jenkins.ReleaseCriterion
 import jenkins.ReleaseDecision
 import jenkins.ReleaseSchedule
@@ -116,29 +117,78 @@ class TestReleaseStateDocuments {
     // ---- ReleaseSchedule ----
 
     @Test
-    void testScheduleToDocumentMapsSnakeCaseAndDefaultsStatusToInactive() {
+    void testScheduleToDocumentMapsSnakeCaseFields() {
+        // status is passed explicitly so this test stays focused on field mapping (not date-derived status).
         def doc = new ReleaseSchedule([
                 version       : '3.8.0',
                 rcDate        : '2026-08-01',
                 releaseDate   : '2026-08-12',
                 releaseManager: 'test-rm',
+                status        : 'inactive',
                 registeredBy  : 'release-schedule-job #5'
         ]).toDocument(TS)
 
         assert doc.version == '3.8.0'
         assert doc.rc_date == '2026-08-01'
         assert doc.release_date == '2026-08-12'
-        assert doc.release_manager == 'test-rm'
+        // A single manager handle is normalized to a one-element list.
+        assert doc.release_manager == ['test-rm']
         assert doc.registered_by == 'release-schedule-job #5'
-        // A newly registered release is inactive until ~1 month before its RC date.
         assert doc.status == 'inactive'
         assert doc.registered_at == TS
     }
 
     @Test
+    void testScheduleAcceptsMultipleReleaseManagers() {
+        def doc = new ReleaseSchedule([version: '3.8.0', releaseManager: ['Alice', 'Bob'], status: 'active']).toDocument(TS)
+        assert doc.release_manager == ['Alice', 'Bob']
+    }
+
+    @Test
+    void testScheduleNormalizesNullReleaseManagerToEmptyList() {
+        def doc = new ReleaseSchedule([version: '3.8.0', status: 'active']).toDocument(TS)
+        assert doc.release_manager == []
+    }
+
+    @Test
     void testScheduleHonorsExplicitStatus() {
+        // An explicit status always wins, even when the RC date would derive a different value.
         assert new ReleaseSchedule([version: '3.8.0', status: 'active']).toDocument(TS).status == 'active'
         assert new ReleaseSchedule([version: '3.8.0', status: 'released']).toDocument(TS).status == 'released'
+    }
+
+    @Test
+    void testScheduleDefaultsToInactiveWhenNoRcDateOrStatus() {
+        // No rcDate and no explicit status -> cannot derive -> safe default 'inactive'.
+        assert new ReleaseSchedule([version: '3.8.0']).toDocument(TS).status == 'inactive'
+    }
+
+    @Test
+    void testDeriveStatusActiveWithinWindow() {
+        def today = LocalDate.of(2026, 7, 22)
+        assert ReleaseSchedule.deriveStatus('2026-08-01', today) == 'active'   // 10 days before RC
+        assert ReleaseSchedule.deriveStatus('2026-08-21', today) == 'active'   // exactly 30 days before RC
+    }
+
+    @Test
+    void testDeriveStatusInactiveBeyondWindow() {
+        def today = LocalDate.of(2026, 7, 22)
+        assert ReleaseSchedule.deriveStatus('2026-08-22', today) == 'inactive' // 31 days before RC
+        assert ReleaseSchedule.deriveStatus('2026-12-01', today) == 'inactive' // far out
+    }
+
+    @Test
+    void testDeriveStatusActiveWhenRcDatePassed() {
+        def today = LocalDate.of(2026, 8, 15)
+        assert ReleaseSchedule.deriveStatus('2026-08-01', today) == 'active'   // RC already passed
+    }
+
+    @Test
+    void testDeriveStatusInactiveWhenRcDateMissingOrInvalid() {
+        def today = LocalDate.of(2026, 7, 22)
+        assert ReleaseSchedule.deriveStatus(null, today) == 'inactive'
+        assert ReleaseSchedule.deriveStatus('', today) == 'inactive'
+        assert ReleaseSchedule.deriveStatus('not-a-date', today) == 'inactive'
     }
 
     @Test(expected = IllegalArgumentException)
