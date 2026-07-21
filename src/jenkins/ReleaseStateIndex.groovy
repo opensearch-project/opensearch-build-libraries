@@ -24,8 +24,8 @@ import utils.OpenSearchMetricsQuery
  */
 class ReleaseStateIndex {
 
-    public static final String SCHEDULE_INDEX = 'opensearch_release_schedule'
-    public static final String STATE_INDEX = 'opensearch_release_state'
+    public static final String SCHEDULE_INDEX = ReleaseIndices.SCHEDULE
+    public static final String STATE_INDEX = ReleaseIndices.STATE
 
     def script
     OpenSearchMetricsQuery metricsQuery

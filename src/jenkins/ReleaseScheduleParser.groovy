@@ -37,7 +37,6 @@ import java.util.Locale
  */
 class ReleaseScheduleParser {
 
-    static final String SCHEDULE_TABLE_CLASS = 'desktop-release-schedule-table'
     private static final String STRIKETHROUGH_PATTERN = /(?s)<(strike|s|del)[^>]*>.*?<\/\1>/
 
     String html
@@ -55,13 +54,15 @@ class ReleaseScheduleParser {
             return []
         }
         List<Map> schedules = []
-        def rows = (table =~ /(?s)<tr>(.*?)<\/tr>/)
-        rows.each { match ->
-            String rowHtml = match[1]
-            def cells = (rowHtml =~ /(?s)<td>(.*?)<\/td>/).collect { it[1] }
+        // Use explicit Matcher.find() loops (not Matcher.each/.collect) to stay safe under the
+        // Jenkins pipeline runtime, which does not handle iterating a Matcher well.
+        def rowMatcher = (table =~ /(?s)<tr>(.*?)<\/tr>/)
+        while (rowMatcher.find()) {
+            String rowHtml = rowMatcher.group(1)
+            List<String> cells = extractCells(rowHtml)
             // Skip the header row (uses <th>) and any malformed row.
             if (cells.size() < 5) {
-                return
+                continue
             }
             Map row = parseRow(cells)
             if (row) {
@@ -69,6 +70,15 @@ class ReleaseScheduleParser {
             }
         }
         return schedules
+    }
+
+    private static List<String> extractCells(String rowHtml) {
+        List<String> cells = []
+        def cellMatcher = (rowHtml =~ /(?s)<td>(.*?)<\/td>/)
+        while (cellMatcher.find()) {
+            cells.add(cellMatcher.group(1))
+        }
+        return cells
     }
 
     private Map parseRow(List cells) {
@@ -91,8 +101,9 @@ class ReleaseScheduleParser {
     }
 
     private static String extractScheduleTable(String html) {
-        def matcher = (html =~ /(?s)<table class="${SCHEDULE_TABLE_CLASS}".*?<\/table>/)
-        return matcher ? matcher[0] : null
+        // Matches the release schedule table on opensearch.org/releases.html by its CSS class.
+        def matcher = (html =~ /(?s)<table class="desktop-release-schedule-table".*?<\/table>/)
+        return matcher.find() ? matcher.group() : null
     }
 
     /**
@@ -124,11 +135,12 @@ class ReleaseScheduleParser {
         }
         String live = cell.replaceAll(STRIKETHROUGH_PATTERN, '')
         // Prefer anchor texts when present (one manager per <a>).
-        def anchors = (live =~ /(?s)<a[^>]*>(.*?)<\/a>/).collect { stripTags(it[1]).trim() }
-        List<String> names
-        if (anchors) {
-            names = anchors
-        } else {
+        List<String> names = []
+        def anchorMatcher = (live =~ /(?s)<a[^>]*>(.*?)<\/a>/)
+        while (anchorMatcher.find()) {
+            names.add(stripTags(anchorMatcher.group(1)).trim())
+        }
+        if (names.isEmpty()) {
             // No anchors: treat as comma-separated plain text.
             names = stripTags(live).split(',').collect { it.trim() }
         }
@@ -142,7 +154,7 @@ class ReleaseScheduleParser {
         }
         String live = cell.replaceAll(STRIKETHROUGH_PATTERN, '')
         def matcher = (live =~ /<a[^>]*href="([^"]*)"/)
-        return matcher ? matcher[0][1] : null
+        return matcher.find() ? matcher.group(1) : null
     }
 
     /**
