@@ -42,15 +42,15 @@ class ReleaseStateData {
     }
 
     void registerSchedule(ReleaseSchedule schedule) {
-        metricsQuery.indexDocument(ReleaseStateIndex.SCHEDULE_INDEX, schedule.toDocument(nowIso()))
+        metricsQuery.indexDocument(ReleaseIndices.SCHEDULE, schedule.toDocument(nowIso()))
     }
 
     void indexCriterion(ReleaseCriterion criterion) {
-        metricsQuery.indexDocument(ReleaseStateIndex.STATE_INDEX, criterion.toDocument(nowIso()))
+        metricsQuery.indexDocument(ReleaseIndices.STATE, criterion.toDocument(nowIso()))
     }
 
     void indexDecision(ReleaseDecision decision) {
-        metricsQuery.indexDocument(ReleaseStateIndex.STATE_INDEX, decision.toDocument(nowIso()))
+        metricsQuery.indexDocument(ReleaseIndices.STATE, decision.toDocument(nowIso()))
     }
 
     /**
