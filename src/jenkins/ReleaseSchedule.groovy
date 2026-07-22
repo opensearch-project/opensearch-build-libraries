@@ -9,6 +9,7 @@
 
 package jenkins
 
+import com.cloudbees.groovy.cps.NonCPS
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import utils.ArgumentValidator
@@ -48,6 +49,7 @@ class ReleaseSchedule {
         this.registeredBy = args.registeredBy
     }
 
+    @NonCPS
     private static List<String> normalizeManagers(managers) {
         if (managers == null) {
             return []
@@ -65,6 +67,7 @@ class ReleaseSchedule {
      * @param releaseDate release date in yyyy-MM-dd, or null
      * @param today reference date; defaults to LocalDate.now(). Overridable for testing.
      */
+    @NonCPS
     static String deriveStatus(String rcDate, String releaseDate, LocalDate today = LocalDate.now()) {
         LocalDate release = parseOrNull(releaseDate)
         if (release != null && today.isAfter(release)) {
@@ -78,6 +81,7 @@ class ReleaseSchedule {
         return (daysUntilRc <= ACTIVATION_WINDOW_DAYS) ? 'active' : 'inactive'
     }
 
+    @NonCPS
     private static LocalDate parseOrNull(String date) {
         if (!date) {
             return null
