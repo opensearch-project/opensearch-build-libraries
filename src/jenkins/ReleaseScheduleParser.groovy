@@ -56,7 +56,9 @@ class ReleaseScheduleParser {
         List<Map> schedules = []
         // Use explicit Matcher.find() loops (not Matcher.each/.collect) to stay safe under the
         // Jenkins pipeline runtime, which does not handle iterating a Matcher well.
-        def rowMatcher = (table =~ /(?s)<tr>(.*?)<\/tr>/)
+        // Tag patterns tolerate attributes and case (e.g. <tr class="...">, <TD>) so markup
+        // changes on the scraped page don't silently drop rows/cells.
+        def rowMatcher = (table =~ /(?si)<tr\b[^>]*>(.*?)<\/tr>/)
         while (rowMatcher.find()) {
             String rowHtml = rowMatcher.group(1)
             List<String> cells = extractCells(rowHtml)
@@ -74,7 +76,7 @@ class ReleaseScheduleParser {
 
     private static List<String> extractCells(String rowHtml) {
         List<String> cells = []
-        def cellMatcher = (rowHtml =~ /(?s)<td>(.*?)<\/td>/)
+        def cellMatcher = (rowHtml =~ /(?si)<td\b[^>]*>(.*?)<\/td>/)
         while (cellMatcher.find()) {
             cells.add(cellMatcher.group(1))
         }

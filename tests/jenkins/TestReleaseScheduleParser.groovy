@@ -30,14 +30,14 @@ class TestReleaseScheduleParser {
 <td>3.5.0</td>
 <td>January 27th, 2026</td>
 <td>February 10th, 2026</td>
-<td><a href="https://github.com/rishabh6788">Rishabh Singh</a></td>
+<td><a href="https://github.com/foo">Foo</a></td>
 <td><a href="https://github.com/opensearch-project/opensearch-build/issues/5897">5897</a></td>
 </tr>
 <tr>
 <td>2.19.6</td>
 <td>June 23rd, 2026</td>
 <td><strike>June 30th, 2026</strike> July 2nd, 2026</td>
-<td><a href="https://github.com/Divyaasm/">Divya Madala</a></td>
+<td><a href="https://github.com/bar/">Bar</a></td>
 <td><a href="https://github.com/opensearch-project/opensearch-build/issues/6050">6050</a></td>
 </tr>
 <tr>
@@ -70,7 +70,7 @@ class TestReleaseScheduleParser {
         def row = new ReleaseScheduleParser(SAMPLE_HTML).parseSchedule().find { it.version == '3.5.0' }
         assert row.rcDate == '2026-01-27'
         assert row.releaseDate == '2026-02-10'
-        assert row.releaseManager == ['Rishabh Singh']
+        assert row.releaseManager == ['Foo']
         assert row.releaseIssue == 'https://github.com/opensearch-project/opensearch-build/issues/5897'
     }
 

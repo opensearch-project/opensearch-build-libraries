@@ -34,10 +34,11 @@ class ReleaseSchedule {
     ReleaseSchedule(Map args) {
         String context = this.class.simpleName
         this.version = ArgumentValidator.required(args, 'version', context)
-        // An explicit status is honored (manual override, e.g. released/cancelled/forced active).
-        // Otherwise the status is derived from the RC date: 'active' within the activation window,
-        // 'inactive' before it. Re-running registration recomputes this as the RC date approaches.
-        String resolvedStatus = args.status ?: deriveStatus(args.rcDate)
+        // An explicit status is honored (manual override, e.g. cancelled/forced active).
+        // Otherwise the status is derived from the dates: 'inactive' until the activation window,
+        // 'active' within ACTIVATION_WINDOW_DAYS of the RC date, and 'released' once the release
+        // date has passed. Re-running registration recomputes this as the dates approach.
+        String resolvedStatus = args.status ?: deriveStatus(args.rcDate, args.releaseDate)
         this.status = ArgumentValidator.requireOneOf([status: resolvedStatus], 'status', VALID_STATUSES, context)
         this.rcDate = args.rcDate
         this.releaseDate = args.releaseDate
@@ -55,25 +56,37 @@ class ReleaseSchedule {
     }
 
     /**
-     * Derives the schedule status from the RC date relative to today:
-     *  - 'active' when today is within ACTIVATION_WINDOW_DAYS of the RC date (or the RC date has passed)
-     *  - 'inactive' when the RC date is further out, or is absent/unparseable (safe default)
+     * Derives the schedule status from the RC and release dates relative to today:
+     *  - 'released' once the release date has passed
+     *  - 'active' when today is within ACTIVATION_WINDOW_DAYS of the RC date (up to the release date)
+     *  - 'inactive' when the RC date is further out, or the RC date is absent/unparseable (safe default)
      *
      * @param rcDate RC date in yyyy-MM-dd, or null
+     * @param releaseDate release date in yyyy-MM-dd, or null
      * @param today reference date; defaults to LocalDate.now(). Overridable for testing.
      */
-    static String deriveStatus(String rcDate, LocalDate today = LocalDate.now()) {
-        if (!rcDate) {
-            return 'inactive'
+    static String deriveStatus(String rcDate, String releaseDate, LocalDate today = LocalDate.now()) {
+        LocalDate release = parseOrNull(releaseDate)
+        if (release != null && today.isAfter(release)) {
+            return 'released'
         }
-        LocalDate rc
-        try {
-            rc = LocalDate.parse(rcDate)
-        } catch (Exception ignored) {
+        LocalDate rc = parseOrNull(rcDate)
+        if (rc == null) {
             return 'inactive'
         }
         long daysUntilRc = ChronoUnit.DAYS.between(today, rc)
         return (daysUntilRc <= ACTIVATION_WINDOW_DAYS) ? 'active' : 'inactive'
+    }
+
+    private static LocalDate parseOrNull(String date) {
+        if (!date) {
+            return null
+        }
+        try {
+            return LocalDate.parse(date)
+        } catch (Exception ignored) {
+            return null
+        }
     }
 
     /**

@@ -166,29 +166,37 @@ class TestReleaseStateDocuments {
     @Test
     void testDeriveStatusActiveWithinWindow() {
         def today = LocalDate.of(2026, 7, 22)
-        assert ReleaseSchedule.deriveStatus('2026-08-01', today) == 'active'   // 10 days before RC
-        assert ReleaseSchedule.deriveStatus('2026-08-21', today) == 'active'   // exactly 30 days before RC
+        // rc 10 days out / exactly 30 days out, release still in the future -> active
+        assert ReleaseSchedule.deriveStatus('2026-08-01', '2026-08-12', today) == 'active'
+        assert ReleaseSchedule.deriveStatus('2026-08-21', '2026-09-01', today) == 'active'
     }
 
     @Test
     void testDeriveStatusInactiveBeyondWindow() {
         def today = LocalDate.of(2026, 7, 22)
-        assert ReleaseSchedule.deriveStatus('2026-08-22', today) == 'inactive' // 31 days before RC
-        assert ReleaseSchedule.deriveStatus('2026-12-01', today) == 'inactive' // far out
+        assert ReleaseSchedule.deriveStatus('2026-08-22', '2026-09-01', today) == 'inactive' // 31 days before RC
+        assert ReleaseSchedule.deriveStatus('2026-12-01', '2026-12-15', today) == 'inactive' // far out
     }
 
     @Test
-    void testDeriveStatusActiveWhenRcDatePassed() {
+    void testDeriveStatusActiveBetweenRcAndReleaseDate() {
+        // RC passed but release not yet reached -> still active
+        def today = LocalDate.of(2026, 8, 5)
+        assert ReleaseSchedule.deriveStatus('2026-08-01', '2026-08-12', today) == 'active'
+    }
+
+    @Test
+    void testDeriveStatusReleasedAfterReleaseDate() {
         def today = LocalDate.of(2026, 8, 15)
-        assert ReleaseSchedule.deriveStatus('2026-08-01', today) == 'active'   // RC already passed
+        assert ReleaseSchedule.deriveStatus('2026-08-01', '2026-08-12', today) == 'released'
     }
 
     @Test
     void testDeriveStatusInactiveWhenRcDateMissingOrInvalid() {
         def today = LocalDate.of(2026, 7, 22)
-        assert ReleaseSchedule.deriveStatus(null, today) == 'inactive'
-        assert ReleaseSchedule.deriveStatus('', today) == 'inactive'
-        assert ReleaseSchedule.deriveStatus('not-a-date', today) == 'inactive'
+        assert ReleaseSchedule.deriveStatus(null, null, today) == 'inactive'
+        assert ReleaseSchedule.deriveStatus('', '', today) == 'inactive'
+        assert ReleaseSchedule.deriveStatus('not-a-date', null, today) == 'inactive'
     }
 
     @Test(expected = IllegalArgumentException)
