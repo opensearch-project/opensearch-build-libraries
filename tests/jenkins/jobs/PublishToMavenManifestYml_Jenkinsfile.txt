@@ -109,6 +109,14 @@ function create_maven_settings() {
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
                             http://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <mirrors>
+    <mirror>
+      <id>opensearch-maven-mirror</id>
+      <name>OpenSearch CI Maven Mirror</name>
+      <url>https://ci.opensearch.org/maven2/</url>
+      <mirrorOf>central</mirrorOf>
+    </mirror>
+  </mirrors>
   <servers>
     <server>
       <id>central</id>
@@ -126,19 +134,21 @@ echo "==========================================="
 echo "Deploying artifacts under ${ARTIFACT_DIRECTORY} to Staging Repository."
 echo "==========================================="
 
-deployment=$(mvn --settings="${mvn_settings}" \
+deployment_log="${workdir}/deployment.log"
+
+mvn --settings="${mvn_settings}" \
   org.sonatype.plugins:nexus-staging-maven-plugin:1.7.0:deploy-staged-repository \
   -DrepositoryDirectory="${ARTIFACT_DIRECTORY}" \
   -DnexusUrl="https://ossrh-staging-api.central.sonatype.com" \
   -DserverId=central \
   -DautoReleaseAfterClose=false \
   -DstagingProgressTimeoutMinutes=30 \
-  -DstagingProfileId="${STAGING_PROFILE_ID}")
+  -DstagingProfileId="${STAGING_PROFILE_ID}" > "${deployment_log}" 2>&1 || echo "Maven command failed with exit code: $?"
 
-echo $deployment
+cat "${deployment_log}"
 
-if echo "$deployment" | grep "BUILD SUCCESS"; then
-  DEPLOYED_STAGING_REPO_ID=$(grep "Closing staging repository with ID" <<< "$deployment" | grep -o "\"[^\"]*\"" | tr -d '"')
+if grep -q "BUILD SUCCESS" "${deployment_log}"; then
+  DEPLOYED_STAGING_REPO_ID=$(grep "Closing staging repository with ID" "${deployment_log}" | grep -o "\"[^\"]*\"" | tr -d '"')
   echo "Successfully staged and validated artifacts. Staging repository ID: ${DEPLOYED_STAGING_REPO_ID}"
 else
   echo "Deployment failed!! Please check the logs above for details or check the Sonatype portal https://central.sonatype.com/publishing."
