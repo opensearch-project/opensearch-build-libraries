@@ -79,6 +79,38 @@ class ReleaseMetricsData {
         return query.replace('"', '\\"')
     }
 
+    String getReleaseNotesStatusQuery(String component) {
+        def queryMap = [
+                size   : 1,
+                _source: "release_notes",
+                query  : [
+                        bool: [
+                                filter: [
+                                        [
+                                                match_phrase: [
+                                                        version: "${this.version}"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        "component.keyword": "${component}"
+                                                ]
+                                        ]
+                                ]
+                        ]
+                ],
+                sort   : [
+                        [
+                                current_date: [
+                                        order: "desc"
+                                ]
+                        ]
+                ]
+        ]
+        String query = JsonOutput.toJson(queryMap)
+        return query.replace('"', '\\"')
+    }
+
     String getReleaseIssueQuery(String repository, String changedMatchPhraseKey = "repository.keyword") {
         def queryMap = [
                 size   : 1,
@@ -118,6 +150,17 @@ ArrayList getReleaseOwners(String component) {
                 return releaseOwners
         } catch (Exception e) {
                 this.script.println("Error fetching release owners: ${e.message}")
+                return null
+        }
+}
+
+def getReleaseNotesStatus(String component) {
+        try {
+                def jsonResponse = this.openSearchMetricsQuery.fetchMetrics(getReleaseNotesStatusQuery(component))
+                def releaseNotes = jsonResponse.hits.hits[0]._source.release_notes
+                return releaseNotes
+        } catch (Exception e) {
+                this.script.println("Error fetching release notes status: ${e.message}")
                 return null
         }
 }
