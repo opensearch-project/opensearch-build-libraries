@@ -27,13 +27,12 @@ List<String> call(Map args = [:]) {
     def inputManifest = args.inputManifest
     // Parameter check
     validateParameters(args, action)
-    def manifestYaml = readYaml(file: inputManifest[0])
-    def version = manifestYaml.build.version.tokenize('-')[0]
 
     List<String> componentsMissingReleaseNotes = []
 
     inputManifest.each { inputManifestFile ->
         def inputManifestObj = readYaml(file: inputManifestFile)
+        def version = inputManifestObj.build.version.tokenize('-')[0]
         withSecrets(secrets: secret_metrics_cluster){
             withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
                 def metricsUrl = env.METRICS_HOST_URL
@@ -44,7 +43,9 @@ List<String> call(Map args = [:]) {
                 ReleaseMetricsData releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, this)
                 inputManifestObj.components.each { component ->
                     def releaseNotesExist = releaseMetricsData.getReleaseNotesStatus(component.name)
-                    if (releaseNotesExist == false) {
+                    // Conservative gate: only a confirmed `true` clears a component. A missing metrics doc
+                    // or a query failure returns null and is flagged as missing so releases never pass silently.
+                    if (releaseNotesExist != true) {
                         componentsMissingReleaseNotes.add(component.name)
                         if (action == 'notify') {
                             notifyReleaseOwners(releaseMetricsData, component.name)
