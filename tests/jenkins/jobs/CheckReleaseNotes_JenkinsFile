@@ -21,8 +21,7 @@ pipeline {
             steps {
                 script {
                     checkReleaseNotes(
-                        version: '2.19.0',
-                        dataTable: 'tests/data/release-notes-check.md',
+                        inputManifest: ['tests/data/opensearch-1.3.0.yml'],
                         action: "${params.ACTION}"
                     )
                 }
