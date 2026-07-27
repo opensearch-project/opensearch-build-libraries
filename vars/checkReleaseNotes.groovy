@@ -7,44 +7,70 @@
  * compatible open source license.
  */
 import jenkins.ReleaseMetricsData
-import jenkins.ParseReleaseNotesMarkdownTable
 import utils.TemplateProcessor
 /**
  * Library to check and notify missing release notes.
+ * The release notes status is sourced from the opensearch_release_metrics index (release_notes boolean
+ * per component), the same index that backs the other release chores, instead of parsing a markdown table.
  * @param Map args = [:] args A map of the following parameters
- * @param args.version <required> - Release version. eg: 3.0.0
- * @param args.dataTable <required> - Markdown data table file in the format: https://github.com/opensearch-project/opensearch-build/issues/3747#issuecomment-2704366641 eg: ./table.md
+ * @param args.inputManifest <required> - Input manifest file(s) eg: [manifests/2.0.0/opensearch-2.0.0.yml, manifests/2.0.0/opensearch-dashboards-2.0.0.yml] .
  * @param args.action <optional> - Action to perform. Default is 'check'. Acceptable values are 'check' and 'notify'.
+ * @return List of component names missing release notes (empty when all components are ready).
  */
-void call(Map args = [:]) {
+List<String> call(Map args = [:]) {
+    def secret_metrics_cluster = [
+        [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-release-secrets/aws-accounts/jenkins-health-metrics-account-number'],
+        [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-release-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
+    ]
+
     String action = args.action ?: 'check'
+    def inputManifest = args.inputManifest
     // Parameter check
     validateParameters(args, action)
-    def version = args.version.tokenize('-')[0]
 
-    def parsedContent = new ParseReleaseNotesMarkdownTable(readFile(args.dataTable)).parseReleaseNotesMarkdownTableRows()
-    def componentsWithFalseStatus = parsedContent.findAll { it['Status'] == 'False' }
-    echo("Components missing release notes: " + componentsWithFalseStatus.collect { it['Component'] })
+    List<String> componentsMissingReleaseNotes = []
 
-    if (action == 'notify' && !componentsWithFalseStatus.isEmpty()) {
-        echo "Notifying all the components with missing release notes."
-        notifyReleaseOwners(version, componentsWithFalseStatus)
+    inputManifest.each { inputManifestFile ->
+        def inputManifestObj = readYaml(file: inputManifestFile)
+        def version = inputManifestObj.build.version.tokenize('-')[0]
+        withSecrets(secrets: secret_metrics_cluster){
+            withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
+                def metricsUrl = env.METRICS_HOST_URL
+                def awsAccessKey = env.AWS_ACCESS_KEY_ID
+                def awsSecretKey = env.AWS_SECRET_ACCESS_KEY
+                def awsSessionToken = env.AWS_SESSION_TOKEN
+
+                ReleaseMetricsData releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, this)
+                inputManifestObj.components.each { component ->
+                    def releaseNotesExist = releaseMetricsData.getReleaseNotesStatus(component.name)
+                    // Conservative gate: only a confirmed `true` clears a component. A missing metrics doc
+                    // or a query failure returns null and is flagged as missing so releases never pass silently.
+                    if (releaseNotesExist != true) {
+                        componentsMissingReleaseNotes.add(component.name)
+                        if (action == 'notify') {
+                            notifyReleaseOwners(releaseMetricsData, component.name)
+                        }
+                    }
+                }
+            }
+        }
     }
+
+    echo("Components missing release notes: ${componentsMissingReleaseNotes}")
+    return componentsMissingReleaseNotes
 }
 
 /**
  * Validates input parameters
  */
 private void validateParameters(Map args, String action) {
-    if (!args.version) {
-        error "Version parameter is required."
-    }
-
-    if (!args.dataTable || args.dataTable.isEmpty()) {
-        error "dataTable is required to get the content."
+    if (!args.inputManifest || args.inputManifest.isEmpty()) {
+        error "inputManifest parameter is required."
     } else {
-        if (!fileExists(args.dataTable)) {
-            error("Invalid path.Data Table file does not exist at ${args.dataTable}")
+        args.inputManifest.each { inputManifestFile ->
+            if (!fileExists(inputManifestFile)) {
+                error("Invalid path. Input manifest file does not exist at ${inputManifestFile}")
+            }
         }
     }
 
@@ -55,36 +81,18 @@ private void validateParameters(Map args, String action) {
 }
 
 /**
- * Notify components regarding the missing release notes by adding a comment to the release issue.
- * @param version: Release version.
- * @param componentsWithFalseStatus: Parsed content with status as False.
+ * Notify a component regarding the missing release notes by adding a comment to its release issue.
+ * @param releaseMetricsData: Data accessor used to look up the component's release issue.
+ * @param componentName: Component missing release notes.
  */
-private void notifyReleaseOwners(String version,def componentsWithFalseStatus) {
-    def secret_metrics_cluster = [
-        [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-release-secrets/aws-accounts/jenkins-health-metrics-account-number'],
-        [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-release-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
-    ]
-    componentsWithFalseStatus.each { component ->
-        withSecrets(secrets: secret_metrics_cluster){
-            withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
-                def metricsUrl = env.METRICS_HOST_URL
-                def awsAccessKey = env.AWS_ACCESS_KEY_ID
-                def awsSecretKey = env.AWS_SECRET_ACCESS_KEY
-                def awsSessionToken = env.AWS_SESSION_TOKEN
-
-                ReleaseMetricsData releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, this)
-                def componentName = component["Component"]
-                if(componentName != 'functionalTestDashboards') {
-                    def releaseIssueUrl = releaseMetricsData.getReleaseIssue("${componentName}", "component.keyword")
-                    def bindings = [
-                            BRANCH: component["Branch"]
-                    ]
-                    def ghCommentContent = new TemplateProcessor(this).process("release/missing-release-notes.md", bindings, "${WORKSPACE}")
-                    addComment(releaseIssueUrl, ghCommentContent)
-                }
-            }
-        }
+private void notifyReleaseOwners(ReleaseMetricsData releaseMetricsData, String componentName) {
+    def releaseIssueUrl = releaseMetricsData.getReleaseIssue(componentName, "component.keyword")
+    if (releaseIssueUrl == null || releaseIssueUrl == 'null') {
+        echo("No release issue found for ${componentName}. Skipping notification.")
+        return
     }
+    def ghCommentContent = new TemplateProcessor(this).process("release/missing-release-notes.md", [:], "${WORKSPACE}")
+    addComment(releaseIssueUrl, ghCommentContent)
 }
 
 /**
