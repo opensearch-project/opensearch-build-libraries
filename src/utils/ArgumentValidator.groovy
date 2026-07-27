@@ -9,6 +9,8 @@
 
 package utils
 
+import com.cloudbees.groovy.cps.NonCPS
+
 /**
  * Generic validation helpers for named-argument (Map) inputs.
  *
@@ -21,6 +23,7 @@ class ArgumentValidator {
     /**
      * Returns args[key], throwing IllegalArgumentException if it is null or empty.
      */
+    @NonCPS
     static Object required(Map args, String key, String context = 'ArgumentValidator') {
         def value = args[key]
         if (!value) {
@@ -32,6 +35,7 @@ class ArgumentValidator {
     /**
      * Returns a required args[key], throwing if it is missing or not in the allowed list.
      */
+    @NonCPS
     static Object requireOneOf(Map args, String key, List allowed, String context = 'ArgumentValidator') {
         def value = required(args, key, context)
         if (!allowed.contains(value)) {
@@ -44,6 +48,7 @@ class ArgumentValidator {
      * Returns args[key] if present, throwing only when a non-null value is not in the allowed list.
      * Returns null when the key is absent.
      */
+    @NonCPS
     static Object optionalOneOf(Map args, String key, List allowed, String context = 'ArgumentValidator') {
         def value = args[key]
         if (value != null && !allowed.contains(value)) {
