@@ -116,6 +116,99 @@ class TestReleaseMetricsData {
     }
 
     @Test
+    void testGetReleaseNotesStatusQuery(){
+        String expectedOutput = JsonOutput.toJson([
+                size   : 1,
+                _source: "release_notes",
+                query  : [
+                        bool: [
+                                filter: [
+                                        [
+                                                match_phrase: [
+                                                        version: "2.18.0"
+                                                ]
+                                        ],
+                                        [
+                                                match_phrase: [
+                                                        "component.keyword": "sql"
+                                                ]
+                                        ]
+                                ]
+                        ]
+                ],
+                sort   : [
+                        [
+                                current_date: [
+                                        order: "desc"
+                                ]
+                        ]
+                ]
+        ]).replace('"', '\\"')
+        def result = releaseMetricsData.getReleaseNotesStatusQuery('sql')
+        assert result == expectedOutput
+    }
+
+    @Test
+    void testGetReleaseNotesStatus() {
+        def responseText = """
+                    {
+                      "took": 4,
+                      "timed_out": false,
+                      "_shards": {
+                        "total": 5,
+                        "successful": 5,
+                        "skipped": 0,
+                        "failed": 0
+                      },
+                      "hits": {
+                        "total": {
+                          "value": 1,
+                          "relation": "eq"
+                        },
+                        "max_score": null,
+                        "hits": [
+                          {
+                            "_index": "opensearch_release_metrics",
+                            "_id": "86739a31-40db-320f-b52c-d38d50e179bc",
+                            "_score": null,
+                            "_source": {
+                              "release_notes": false
+                            },
+                            "sort": [
+                              1738963520807
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                """
+        script = new Expando()
+        script.sh = { Map args ->
+            if (args.containsKey("script")) {
+                return responseText
+            }
+        }
+        releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, script)
+        assert releaseMetricsData.getReleaseNotesStatus('sql') == false
+    }
+
+    @Test
+    void testGetReleaseNotesStatusException() {
+        script = new Expando()
+        script.println = { String message ->
+            assert message.startsWith("Error fetching release notes status:")
+        }
+        releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, script)
+        releaseMetricsData.openSearchMetricsQuery = [
+                fetchMetrics: { query ->
+                    throw new RuntimeException("Test exception")
+                }
+        ]
+        def result = releaseMetricsData.getReleaseNotesStatus('sql')
+        assert result == null
+    }
+
+    @Test
     void testGetReleaseIssueQuery(){
         String expectedOutput = JsonOutput.toJson([
                 size   : 1,
