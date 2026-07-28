@@ -10,8 +10,9 @@
  * Library to check documentation pull requests per release.
  * @param Map args = [:] args A map of the following parameters
  * @param args.version <required> - Release version to track the documentation PRs for.
+ * @return List of open documentation pull request URLs pending merge (empty when none are open).
  */
-void call(Map args = [:]) {
+List<String> call(Map args = [:]) {
     def secret_github_bot = [
         [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-release-secrets/github-bot/ci-bot-username'],
         [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-release-secrets/github-bot/ci-bot-token']
@@ -23,17 +24,21 @@ void call(Map args = [:]) {
     // Qualifiers are not a part of the labels in GitHub. Ignoring it.
     def version = versionTokenize[0]
 
+    List<String> openDocumentationPullRequests = []
     withSecrets(secrets: secret_github_bot){
         def openPRs = sh(
                 script: "gh pr list --repo opensearch-project/documentation-website --state open --label v${version} -S \"-label:\\\"6 - Done but waiting to merge\\\"\" --json url --jq '.[].url'",
                 returnStdout: true
         )
         if (openPRs) {
+            openDocumentationPullRequests = openPRs.trim().split('\n').findAll { it }.collect { it.trim() }
             echo("Documentation pull requests pending to be merged: \n${openPRs}")
         } else {
             echo("No open pull requests found!")
         }
     }
+
+    return openDocumentationPullRequests
 }
 
 /**
