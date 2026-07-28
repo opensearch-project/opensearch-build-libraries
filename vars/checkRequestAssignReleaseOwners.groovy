@@ -15,8 +15,9 @@ import utils.TemplateProcessor
  * @param Map args = [:] args A map of the following parameters
  * @param args.inputManifest <required> - Input manifest file(s) eg: [manifests/2.0.0/opensearch-2.0.0.yml, manifests/2.0.0/opensearch-dashboards-2.0.0.yml] .
  * @param args.action <optional> - Action to be performed. Default is 'check'. Acceptable values are 'check', 'request' and 'assign'.
+ * @return List of component names missing a release owner (empty when all components have one assigned).
  */
-void call(Map args = [:]) {
+List<String> call(Map args = [:]) {
     def secret_metrics_cluster = [
         [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-release-secrets/aws-accounts/jenkins-health-metrics-account-number'],
         [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-release-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
@@ -61,6 +62,8 @@ void call(Map args = [:]) {
     } else {
         echo('All components have release owner assigned.')
     }
+
+    return componentsMissingReleaseOwners
 }
 
 /**

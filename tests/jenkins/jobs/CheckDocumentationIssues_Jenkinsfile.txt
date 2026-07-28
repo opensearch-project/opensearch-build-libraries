@@ -5,9 +5,9 @@
             CheckDocumentationIssues_Jenkinsfile.script(groovy.lang.Closure)
                CheckDocumentationIssues_Jenkinsfile.checkDocumentationIssues({version=3.0.0, action=notify})
                   checkDocumentationIssues.withSecrets({secrets=[{envVar=GITHUB_USER, secretRef=op://opensearch-release-secrets/github-bot/ci-bot-username}, {envVar=GITHUB_TOKEN, secretRef=op://opensearch-release-secrets/github-bot/ci-bot-token}]}, groovy.lang.Closure)
-                     checkDocumentationIssues.sh({script=gh issue list --repo opensearch-project/documentation-website --state open --label v3.0.0 -S "-linked:pr" --json number --jq '.[].number', returnStdout=true})
-                     checkDocumentationIssues.echo(Open documentation issues found. Issue numbers: [22, 23])
-                     checkDocumentationIssues.sh({script=gh issue view 22 --repo opensearch-project/documentation-website --json assignees --jq '.assignees[0].login', returnStdout=true})
+                     checkDocumentationIssues.sh({script=gh issue list --repo opensearch-project/documentation-website --state open --label v3.0.0 -S "-linked:pr" --json url --jq '.[].url', returnStdout=true})
+                     checkDocumentationIssues.echo(Open documentation issues found. Issue URLs: [https://github.com/opensearch-project/documentation-website/issues/22, https://github.com/opensearch-project/documentation-website/issues/23])
+                     checkDocumentationIssues.sh({script=gh issue view https://github.com/opensearch-project/documentation-website/issues/22 --repo opensearch-project/documentation-website --json assignees --jq '.assignees[0].login', returnStdout=true})
                      TemplateProcessor.process(release/documentation-issues-template.md, {OWNER=foo}, /tmp/workspace)
                         TemplateProcessor.getRandomName()
                         checkDocumentationIssues.libraryResource(release/documentation-issues-template.md)
@@ -23,18 +23,14 @@ Please note: Missing documentation can block the release and cause delays in the
 Thank you!
 })
                         checkDocumentationIssues.println(Wrote file to /tmp/workspace/CCCCCCCCCC.md)
-                     checkDocumentationIssues.sh({script=gh issue comment 22 --repo opensearch-project/documentation-website --body-file /tmp/workspace/CCCCCCCCCC.md, returnStdout=true})
-                     checkDocumentationIssues.sh({script=gh issue view 23 --repo opensearch-project/documentation-website --json assignees --jq '.assignees[0].login', returnStdout=true})
-                     TemplateProcessor.process(release/documentation-issues-template.md, {OWNER=
-bbb
-ccc
-}, /tmp/workspace)
+                     checkDocumentationIssues.sh({script=gh issue comment https://github.com/opensearch-project/documentation-website/issues/22 --repo opensearch-project/documentation-website --body-file /tmp/workspace/CCCCCCCCCC.md, returnStdout=true})
+                     checkDocumentationIssues.sh({script=gh issue view https://github.com/opensearch-project/documentation-website/issues/23 --repo opensearch-project/documentation-website --json assignees --jq '.assignees[0].login', returnStdout=true})
+                     TemplateProcessor.process(release/documentation-issues-template.md, {OWNER=bbb
+ccc}, /tmp/workspace)
                         TemplateProcessor.getRandomName()
                         checkDocumentationIssues.libraryResource(release/documentation-issues-template.md)
-                        checkDocumentationIssues.writeFile({file=/tmp/workspace/CCCCCCCCCC.md, text=Hi @
-bbb
-ccc
-, </br>
+                        checkDocumentationIssues.writeFile({file=/tmp/workspace/CCCCCCCCCC.md, text=Hi @bbb
+ccc, </br>
 
 As part of the [entrance criteria](https://github.com/opensearch-project/.github/blob/main/RELEASING.md#entrance-criteria-to-start-release-window), all the documentation pull requests need to be drafted and in technical review. </br>
 **Since there is no pull request linked to this issue, please take one of the following actions:** </br>
@@ -46,4 +42,4 @@ Please note: Missing documentation can block the release and cause delays in the
 Thank you!
 })
                         checkDocumentationIssues.println(Wrote file to /tmp/workspace/CCCCCCCCCC.md)
-                     checkDocumentationIssues.sh({script=gh issue comment 23 --repo opensearch-project/documentation-website --body-file /tmp/workspace/CCCCCCCCCC.md, returnStdout=true})
+                     checkDocumentationIssues.sh({script=gh issue comment https://github.com/opensearch-project/documentation-website/issues/23 --repo opensearch-project/documentation-website --body-file /tmp/workspace/CCCCCCCCCC.md, returnStdout=true})
