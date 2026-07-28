@@ -162,7 +162,7 @@ class TestComponentRepoData {
                                 filter: [
                                         [
                                                 match_phrase: [
-                                                        "repository.keyword": "OpenSearch"
+                                                        "component.keyword": "OpenSearch"
                                                 ]
                                         ],
                                         [
@@ -237,6 +237,39 @@ class TestComponentRepoData {
         ]
         def result = componentRepoData.getCodeCoverage('OpenSearch', 'opensearch-code-coverage-metrics')
         assert  result == expectedOutput
+    }
+
+    @Test
+    void testGetCodeCoverageNoHits() {
+        script = new Expando()
+        script.sh = { Map args ->
+            if (args.containsKey("script")) {
+                return """
+                    {
+                      "took": 2,
+                      "timed_out": false,
+                      "_shards": {
+                        "total": 5,
+                        "successful": 5,
+                        "skipped": 0,
+                        "failed": 0
+                      },
+                      "hits": {
+                        "total": {
+                          "value": 0,
+                          "relation": "eq"
+                        },
+                        "max_score": null,
+                        "hits": []
+                      }
+                    }
+                """
+            }
+            return ""
+        }
+        componentRepoData = new ComponentRepoData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, script)
+        def result = componentRepoData.getCodeCoverage('OpenSearch', 'opensearch-code-coverage-metrics')
+        assert result == [:]
     }
 
     @Test
