@@ -13,8 +13,9 @@ import utils.TemplateProcessor
  * @param Map args = [:] args A map of the following parameters
  * @param args.version <required> - Release version to track the documentation PRs for.
  * @param args.action <optional> - Action to be performed. Default is 'check'. Acceptable values are 'check' and 'notify'.
+ * @return List of open documentation issue URLs without a linked PR (empty when none are open).
  */
-void call(Map args = [:]) {
+List<String> call(Map args = [:]) {
     def secret_github_bot = [
         [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-release-secrets/github-bot/ci-bot-username'],
         [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-release-secrets/github-bot/ci-bot-token']
@@ -27,14 +28,15 @@ void call(Map args = [:]) {
     // Qualifiers are not a part of the labels in GitHub. Ignoring it.
     def version = versionTokenize[0]
 
+    List<String> openIssuesList = []
     withSecrets(secrets: secret_github_bot){
         def openIssues = sh(
-                script: "gh issue list --repo opensearch-project/documentation-website --state open --label v${version} -S \"-linked:pr\" --json number --jq '.[].number'",
+                script: "gh issue list --repo opensearch-project/documentation-website --state open --label v${version} -S \"-linked:pr\" --json url --jq '.[].url'",
                 returnStdout: true
         )
         if (openIssues) {
-            def openIssuesList = openIssues.readLines()
-            echo("Open documentation issues found. Issue numbers: ${openIssuesList}")
+            openIssuesList = openIssues.readLines()
+            echo("Open documentation issues found. Issue URLs: ${openIssuesList}")
             if(action == 'notify') {
                 notifyTheOwners(openIssuesList)
             }
@@ -42,6 +44,8 @@ void call(Map args = [:]) {
             echo("No open documentation issues found without a linked PR!")
         }
     }
+
+    return openIssuesList
 }
 
 /**
@@ -59,26 +63,26 @@ private void validateParameters(Map args) {
 
 /**
  * Get author or assignee of the issue
- * @param issueNumber
+ * @param issueUrl
  * @return assignee or author
  */
-private String getAuthorOrAssignee(String issueNumber) {
+private String getAuthorOrAssignee(String issueUrl) {
     try {
         def assignee = sh(
-                script: "gh issue view ${issueNumber} --repo opensearch-project/documentation-website --json assignees --jq '.assignees[0].login'",
+                script: "gh issue view ${issueUrl} --repo opensearch-project/documentation-website --json assignees --jq '.assignees[0].login'",
                 returnStdout: true
-        )
+        ).trim()
         if (!isNullOrEmpty(assignee)) {
             return assignee
         } else {
             def author = sh(
-                    script: "gh issue view ${issueNumber} --repo opensearch-project/documentation-website --json author --jq '.author.login'",
+                    script: "gh issue view ${issueUrl} --repo opensearch-project/documentation-website --json author --jq '.author.login'",
                     returnStdout: true
-            )
+            ).trim()
             return author
         }
     } catch (Exception e) {
-        error "Failed to get author or assignee for issue number ${issueNumber}: ${e.getMessage()}"
+        error "Failed to get author or assignee for issue ${issueUrl}: ${e.getMessage()}"
     }
 }
 
@@ -88,14 +92,14 @@ private String getAuthorOrAssignee(String issueNumber) {
  * @return
  */
 private void notifyTheOwners(ArrayList openIssuesList) {
-    openIssuesList.each { issueNumber ->
-        def owner = getAuthorOrAssignee(issueNumber.toString())
+    openIssuesList.each { issueUrl ->
+        def owner = getAuthorOrAssignee(issueUrl.toString())
         def bindings = [
                 OWNER: owner
         ]
         def githubCommentBody = new TemplateProcessor(this).process("release/documentation-issues-template.md", bindings, "${WORKSPACE}")
         sh(
-                script: "gh issue comment ${issueNumber} --repo opensearch-project/documentation-website --body-file ${githubCommentBody}",
+                script: "gh issue comment ${issueUrl} --repo opensearch-project/documentation-website --body-file ${githubCommentBody}",
                 returnStdout: true
         )
     }
