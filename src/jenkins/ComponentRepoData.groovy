@@ -64,7 +64,7 @@ class ComponentRepoData {
         return query.replace('"', '\\"')
     }
 
-    String getCodeCoverageQuery(String repository) {
+    String getCodeCoverageQuery(String component) {
         def queryMap = [
                 size   : 1,
                 _source: [
@@ -78,7 +78,7 @@ class ComponentRepoData {
                                 filter: [
                                         [
                                                 match_phrase: [
-                                                        "repository.keyword": "${repository}"
+                                                        "component.keyword": "${component}"
                                                 ]
                                         ],
                                         [
@@ -113,10 +113,13 @@ class ComponentRepoData {
         }
     }
 
-    def getCodeCoverage(String repository, String indexName) {
+    def getCodeCoverage(String component, String indexName) {
         try {
             def openSearchMetricsQuery = new OpenSearchMetricsQuery(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, indexName, script)
-            def jsonResponse = openSearchMetricsQuery.fetchMetrics(getCodeCoverageQuery(repository))
+            def jsonResponse = openSearchMetricsQuery.fetchMetrics(getCodeCoverageQuery(component))
+            if (!jsonResponse?.hits?.hits) {
+                return [:]
+            }
             return [
                     coverage: jsonResponse.hits.hits[0]._source.coverage,
                     state: jsonResponse.hits.hits[0]._source.state,
@@ -124,7 +127,7 @@ class ComponentRepoData {
                     url: jsonResponse.hits.hits[0]._source.url
             ]
         } catch (Exception e) {
-            this.script.println("Error fetching code coverage metrics for ${repository}: ${e.message}")
+            this.script.println("Error fetching code coverage metrics for ${component}: ${e.message}")
             return null
         }
     }

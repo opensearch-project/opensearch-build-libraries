@@ -15,8 +15,9 @@ import utils.TemplateProcessor
  * @param Map args = [:] args A map of the following parameters
  * @param args.inputManifest <required> - Array of input manifest(s). eg: ["manifests/2.0.0/opensearch-2.0.0.yml", "manifests/2.0.0/opensearch-dashboards-2.0.0.yml"]
  * @param args.action <optional> - Action to perform. Default is 'check'. Acceptable values are 'check' and 'notify'.
+ * @return List of component names missing code coverage (empty when all components are reporting coverage).
  */
-void call(Map args = [:]) {
+List<String> call(Map args = [:]) {
     def secret_metrics_cluster = [
         [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-release-secrets/aws-accounts/jenkins-health-metrics-account-number'],
         [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-release-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
@@ -47,11 +48,15 @@ void call(Map args = [:]) {
                 def releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, this)
                 inputManifestObj.components.each { component ->
                     String repoName = component.repository.toString().split('/')[-1].replace('.git', '')
-                    def codeCoverage = componentRepoData.getCodeCoverage(repoName, codeCoverageIndex)
+                    def codeCoverage = componentRepoData.getCodeCoverage(component.name, codeCoverageIndex)
                     def releaseIssue = releaseMetricsData.getReleaseIssue(repoName)
-                    if (codeCoverage != null && !codeCoverage.isEmpty() && codeCoverage.state == "no-coverage") { // Also equivalent to codeCoverage.coverage == 0
-                        componentsMissingCodeCoverageWithUrl[component.name] = codeCoverage.url
-                        if (args.action == 'notify') {
+                    // Conservative gate: a component clears only when coverage is confirmed reporting.
+                    // A null/empty result (query failure or no metrics doc) or an explicit "no-coverage"
+                    // state (equivalent to codeCoverage.coverage == 0) flags the component as missing so
+                    // releases never pass silently.
+                    if (codeCoverage == null || codeCoverage.isEmpty() || codeCoverage.state == "no-coverage") {
+                        componentsMissingCodeCoverageWithUrl[component.name] = codeCoverage?.url
+                        if (args.action == 'notify' && codeCoverage?.state == "no-coverage") {
                             notifyReleaseOwners(component.name, codeCoverage, releaseIssue)
                         }
                     }
@@ -65,6 +70,8 @@ void call(Map args = [:]) {
     } else {
         echo('All components are reporting code coverage.')
     }
+
+    return componentsMissingCodeCoverageWithUrl.keySet().toList()
 }
 
 /**
