@@ -13,8 +13,9 @@ import jenkins.ReleaseCandidateStatus
  * Attaches an html document in the Jenkins job with the results.
  * @param Map args = [:] args A map of the following parameters
  * @param args.inputManifest <required> - Input manifest file(s) eg: [manifests/2.0.0/opensearch-2.0.0.yml, manifests/2.0.0/opensearch-dashboards-2.0.0.yml] .
+ * @return Map of "${distribution}_${architecture}" to the list of components failing integration tests (empty lists when all pass).
  */
-void call(Map args = [:]) {
+Map<String, List> call(Map args = [:]) {
     lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
 
     def secret_metrics_cluster = [
@@ -79,6 +80,8 @@ void call(Map args = [:]) {
             }
         }
     }
+
+    return failingComponents
 }
 
 
