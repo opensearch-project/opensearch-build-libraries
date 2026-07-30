@@ -146,6 +146,23 @@ class TestOpenSearchMetricsQuery {
     }
 
     @Test
+    void testIndexDocumentWithIdUpsertsViaPut() {
+        // When a document id is supplied, the write is an idempotent upsert: PUT /_doc/<id>.
+        script.sh = { Map args ->
+            if (args.script.contains('curl')) {
+                curlScript = args.script
+                return '200'
+            }
+            return 0
+        }
+        def metricsQuery = new OpenSearchMetricsQuery("metricsUrl", "awsAccessKey", "awsSecretKey", "awsSessionToken", this.script)
+        metricsQuery.indexDocument("sampleIndex", [version: '3.8.0'], "doc-id-123")
+        assertTrue(curlScript.contains('-XPUT "metricsUrl/sampleIndex/_doc/doc-id-123"'))
+        assertTrue(curlScript.contains('-d @'))
+        assertEquals('{"version":"3.8.0"}', writtenBody)
+    }
+
+    @Test
     void testIndexDocumentEscapesFieldsWithQuotes() {
         // A field containing a single quote must not corrupt the request: it goes through
         // writeFile verbatim (no shell interpolation), proving the injection fix.
