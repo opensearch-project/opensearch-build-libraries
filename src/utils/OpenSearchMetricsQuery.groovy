@@ -80,13 +80,21 @@ class OpenSearchMetricsQuery {
     }
 
     /**
-     * Indexes a single document into the given index (append; a new document is created each call).
-     * Throws if the cluster does not return 200 or 201.
+     * Indexes a single document into the given index. Throws if the cluster does not return 200 or 201.
+     *
+     * When {@code documentId} is null (the default), the document is appended with a server-assigned
+     * id (POST /_doc); every call creates a new document, preserving history. When {@code documentId}
+     * is provided, the document is upserted at that id (PUT /_doc/{id}); repeated calls overwrite the
+     * same document, so the index holds exactly one current record for that id.
+     *
      * @param targetIndex the index to write to
      * @param document a Map representing the document body
+     * @param documentId optional deterministic document id for idempotent upsert
      */
-    void indexDocument(String targetIndex, Map document) {
-        String httpCode = sendJson('POST', "${metricsUrl}/${targetIndex}/_doc", document)
+    void indexDocument(String targetIndex, Map document, String documentId = null) {
+        String method = documentId ? 'PUT' : 'POST'
+        String url = documentId ? "${metricsUrl}/${targetIndex}/_doc/${documentId}" : "${metricsUrl}/${targetIndex}/_doc"
+        String httpCode = sendJson(method, url, document)
         if (httpCode != '200' && httpCode != '201') {
             throw new RuntimeException("Failed to index document into ${targetIndex}. HTTP status: ${httpCode}")
         }
