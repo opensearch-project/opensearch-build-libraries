@@ -41,8 +41,21 @@ class ReleaseStateData {
         this.metricsQuery = new OpenSearchMetricsQuery(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, script)
     }
 
+    /**
+     * Upserts the schedule doc for a version. The document id is derived from the version so that
+     * re-registering a release (e.g. to recompute status as its dates approach) overwrites the same
+     * doc rather than appending a duplicate; the schedule index holds exactly one row per version.
+     */
     void registerSchedule(ReleaseSchedule schedule) {
-        metricsQuery.indexDocument(ReleaseIndices.SCHEDULE, schedule.toDocument(nowIso()))
+        metricsQuery.indexDocument(ReleaseIndices.SCHEDULE, schedule.toDocument(nowIso()), scheduleDocumentId(schedule.version))
+    }
+
+    /**
+     * Deterministic document id for a version's schedule doc: a UUID derived from the version, so the
+     * same version always maps to the same id (idempotent upsert).
+     */
+    private static String scheduleDocumentId(String version) {
+        return UUID.nameUUIDFromBytes("release-schedule-${version}".getBytes('UTF-8')).toString()
     }
 
     void indexCriterion(ReleaseCriterion criterion) {
