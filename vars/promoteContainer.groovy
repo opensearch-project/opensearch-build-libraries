@@ -31,7 +31,7 @@ void call(Map args = [:]) {
 
     def sourceReg = (imageProduct == 'data-prepper') ? "${DATA_PREPPER_STAGING_CONTAINER_REPOSITORY}" : "opensearchstaging"
     def dockerProduction = "opensearchproject"
-    def ecrProduction = "public.ecr.aws/opensearchproject"
+    def ecrProduction = "public.ecr.aws/opensearchorg/opensearchproject"
 
     //Promoting docker images
     if (dockerPromote.toBoolean()) {
