@@ -144,6 +144,39 @@ class TestSecurityAdvisoryData {
     }
 
     @Test
+    void testGetOpenVulnerabilitiesByProjectSkipsHitsWithoutProjectNameAndVulnsWithoutId() {
+        // A scan hit with no project.name is skipped, and a vulnerability with no id is ignored
+        // (only the well-formed CVE on the named project survives).
+        responses = ['''
+            {
+              "hits": {
+                "hits": [
+                  {
+                    "_source": {
+                      "vulnerabilities": [
+                        {"id": "CVE-9", "excluded": false}
+                      ]
+                    }
+                  },
+                  {
+                    "_source": {
+                      "project": {"name": "Alerting"},
+                      "vulnerabilities": [
+                        {"excluded": false},
+                        {"id": "CVE-1", "excluded": false}
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+        ''']
+        def byProject = advisoryData.getOpenVulnerabilitiesByProject('scans-000335', 'origin/3.8')
+        assertEquals(['Alerting'], byProject.keySet().toList())
+        assertEquals(['CVE-1'], byProject['Alerting'])
+    }
+
+    @Test
     void testGetOpenVulnerabilitiesByProjectOmitsProjectsWithNoOpenCves() {
         // A project whose only vulnerability is excluded is left out of the map entirely.
         responses = ['''
@@ -187,6 +220,23 @@ class TestSecurityAdvisoryData {
         assertTrue(queryBodies[0].contains('severity'))
         assertTrue(queryBodies[0].contains('timestamp.publish'))
         assertTrue(queryBodies[0].contains('2026-06-01T23:59:59.999Z'))
+    }
+
+    @Test
+    void testGetAgedMediumOrHigherAdvisoriesIgnoresAliasesOutsideTheQueriedBatch() {
+        // An advisory hit can carry extra aliases (e.g. GHSA ids) alongside the CVE we asked about;
+        // only aliases actually in the queried batch are kept, the rest are ignored.
+        responses = ['''
+            {
+              "hits": {
+                "hits": [
+                  {"_source": {"aliases": ["CVE-1", "GHSA-xxxx-yyyy-zzzz"]}}
+                ]
+              }
+            }
+        ''']
+        def aged = advisoryData.getAgedMediumOrHigherAdvisories(['CVE-1'], '2026-06-01T23:59:59.999Z')
+        assertEquals(['CVE-1'], aged)
     }
 
     @Test
