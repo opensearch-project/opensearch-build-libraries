@@ -128,8 +128,7 @@ jacocoTestReport {
     }
 }
 
-String version = '13.7.0'
-task updateVersion {
+String version = '13.7.0'task updateVersion {
     doLast {
         println "Setting version to ${version} in all libraries"
         ant.replaceregexp(match:'jenkins@main', replace: 'jenkins@' + version, flags: 'g') {
