@@ -22,8 +22,8 @@ def call(Map args = [:]) {
     lib = library(identifier: 'jenkins@main', retriever: legacySCM(scm))
 
     def secret_s3 = [
-        [envVar: 'ARTIFACT_BUCKET_NAME', secretRef: 'op://opensearch-release-secrets/aws-resource-arns/jenkins-artifact-bucket-name'],
-        [envVar: 'AWS_ACCOUNT_PUBLIC', secretRef: 'op://opensearch-release-secrets/aws-accounts/jenkins-aws-account-public']
+        [envVar: 'ARTIFACT_BUCKET_NAME', secretRef: 'op://opensearch-release-secrets/aws-resource-arns/jenkins-artifact-bucket-name-lf'],
+        [envVar: 'AWS_ACCOUNT_PUBLIC', secretRef: 'op://opensearch-release-secrets/aws-accounts/jenkins-aws-account-public-lf']
     ]
 
     if (!parameterCheck(args.testManifest, args.buildManifest, args.testRunID, args.testType)) return null

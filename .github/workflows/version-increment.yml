@@ -31,7 +31,7 @@ jobs:
         with:
           push-to-fork: opensearch-ci-bot/opensearch-build-libraries
           token: ${{ secrets.OPENSEARCH_CI_BOT_TOKEN }}
-          base: '13.x'
+          base: 'lf-jenkins'
           committer: opensearch-ci-bot <opensearch-infra@amazon.com>
           author: opensearch-ci-bot <opensearch-infra@amazon.com>
           commit-message: |
