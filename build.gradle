@@ -128,8 +128,7 @@ jacocoTestReport {
     }
 }
 
-String version = '13.5.0'
-
+String version = '13.7.0'
 task updateVersion {
     doLast {
         println "Setting version to ${version} in all libraries"
