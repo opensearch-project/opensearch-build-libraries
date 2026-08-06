@@ -29,6 +29,9 @@ class TestReleaseStateData {
     // Captures each POSTed doc as [index: <targetIndex>, doc: <parsed body>]
     private List<Map> indexedDocs
     private String responseCode
+    // Search response returned to -XGET calls, and the index the search targeted.
+    private String searchResponse
+    private String searchedIndex
 
     // Holds the body written by the most recent writeFile call, to pair with the following POST.
     private String pendingBody
@@ -38,7 +41,10 @@ class TestReleaseStateData {
         indexedDocs = []
         pendingBody = null
         responseCode = '201'
+        searchResponse = '{"hits":{"hits":[]}}'
+        searchedIndex = null
         script = new Expando()
+        script.println = { msg -> }
         // The body is written to a temp file first, then the POST curl references it.
         script.writeFile = { Map args -> pendingBody = args.text }
         script.sh = { Map args ->
@@ -47,6 +53,11 @@ class TestReleaseStateData {
             // PUT /_doc/<id>. Capture both, recording the id when the write targets a specific doc.
             if (s.contains('-XPOST') || s.contains('-XPUT')) {
                 indexedDocs.add([index: extractIndex(s), id: extractId(s), doc: new JsonSlurper().parseText(pendingBody)])
+                return responseCode
+            }
+            if (s.contains('-XGET')) {
+                searchedIndex = extractSearchIndex(s)
+                return searchResponse
             }
             return responseCode
         }
@@ -61,6 +72,11 @@ class TestReleaseStateData {
     // Returns the explicit document id when the write is PUT /_doc/<id>, or null for POST /_doc.
     private String extractId(String shScript) {
         def matcher = (shScript =~ /${metricsUrl}\/[^\/]+\/_doc\/([^"]+)/)
+        return matcher ? matcher[0][1] : null
+    }
+
+    private String extractSearchIndex(String shScript) {
+        def matcher = (shScript =~ /${metricsUrl}\/([^\/]+)\/_search/)
         return matcher ? matcher[0][1] : null
     }
 
@@ -132,5 +148,45 @@ class TestReleaseStateData {
         } catch (RuntimeException e) {
             assert e.message.contains('Failed to index document')
         }
+    }
+
+    @Test
+    void testGetActiveReleasesQueriesScheduleIndexAndMapsFields() {
+        searchResponse = '''
+            {
+              "hits": {
+                "hits": [
+                  {
+                    "_source": {
+                      "version": "3.8.0",
+                      "release_date": "2026-08-15",
+                      "release_issue": "https://github.com/opensearch-project/opensearch-build/issues/5152",
+                      "status": "active"
+                    }
+                  },
+                  {
+                    "_source": {
+                      "version": "2.19.7",
+                      "release_date": "2026-09-01",
+                      "release_issue": "https://github.com/opensearch-project/opensearch-build/issues/5200",
+                      "status": "active"
+                    }
+                  }
+                ]
+              }
+            }
+        '''
+        def active = releaseStateData.getActiveReleases()
+        // Reads the schedule index and filters on active status.
+        assert searchedIndex == ReleaseStateIndex.SCHEDULE_INDEX
+        assert active.size() == 2
+        assert active[0] == [version: '3.8.0', releaseDate: '2026-08-15', releaseIssue: 'https://github.com/opensearch-project/opensearch-build/issues/5152']
+        assert active[1].version == '2.19.7'
+    }
+
+    @Test
+    void testGetActiveReleasesReturnsEmptyWhenNoActiveReleases() {
+        searchResponse = '{"hits":{"hits":[]}}'
+        assert releaseStateData.getActiveReleases() == []
     }
 }

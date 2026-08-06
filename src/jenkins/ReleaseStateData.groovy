@@ -9,6 +9,7 @@
 
 package jenkins
 
+import groovy.json.JsonOutput
 import java.text.SimpleDateFormat
 import utils.OpenSearchMetricsQuery
 
@@ -64,6 +65,45 @@ class ReleaseStateData {
 
     void indexDecision(ReleaseDecision decision) {
         metricsQuery.indexDocument(ReleaseIndices.STATE, decision.toDocument(nowIso()))
+    }
+
+    /**
+     * Returns the currently active releases from the schedule index, one entry per version.
+     *
+     * Because the schedule index holds exactly one doc per version (upserted by version-derived id),
+     * a simple status filter is sufficient; no per-version dedup is needed. Each returned map carries
+     * the fields the state orchestrator needs to build criteria: version, release_date, release_issue.
+     *
+     * @return list of maps [version, releaseDate, releaseIssue]; empty when no releases are active.
+     */
+    List<Map> getActiveReleases() {
+        def response = metricsQuery.fetchMetricsFromIndex(ReleaseIndices.SCHEDULE, activeReleasesQuery())
+        def hits = response?.hits?.hits
+        if (!hits) {
+            return []
+        }
+        return hits.collect { hit ->
+            def doc = hit._source
+            [
+                version     : doc.version,
+                releaseDate : doc.release_date,
+                releaseIssue: doc.release_issue
+            ]
+        }
+    }
+
+    private String activeReleasesQuery() {
+        def queryMap = [
+            size : 100,
+            query: [
+                bool: [
+                    filter: [
+                        [match_phrase: [status: 'active']]
+                    ]
+                ]
+            ]
+        ]
+        return JsonOutput.toJson(queryMap).replace('"', '\\"')
     }
 
     /**
