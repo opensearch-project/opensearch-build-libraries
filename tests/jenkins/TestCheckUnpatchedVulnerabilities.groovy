@@ -93,6 +93,9 @@ class TestCheckUnpatchedVulnerabilities extends BuildPipelineTest {
             if (index == null || index.isEmpty()) {
                 return '{"hits":{"hits":[{"_index":"scans-000335"}]}}'
             }
+            if (index == 'ignored-advisories') {
+                return '{"hits":{"hits":[]}}'
+            }
             if (index.startsWith('scans-')) {
                 return scansResponse
             }

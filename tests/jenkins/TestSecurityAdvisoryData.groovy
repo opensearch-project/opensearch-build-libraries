@@ -28,21 +28,26 @@ class TestSecurityAdvisoryData {
     private List<String> searchedIndices
     private List<String> queryBodies
     private List<String> responses
+    private String ignoredAdvisoriesResponse
 
     @Before
     void setUp() {
         searchedIndices = []
         queryBodies = []
         responses = []
+        ignoredAdvisoriesResponse = '{"hits":{"hits":[]}}'
         script = new Expando()
         script.println = { msg -> }
         script.sh = { Map args ->
             String s = args.script
             def matcher = (s =~ /${advisoriesUrl}\/([^\/]*)\/?_search/)
-            searchedIndices.add(matcher ? matcher[0][1] : null)
+            String index = matcher ? matcher[0][1] : null
+            searchedIndices.add(index)
             def bodyMatcher = (s =~ /-d "(.*)" \| jq/)
             queryBodies.add(bodyMatcher ? bodyMatcher[0][1] : null)
-            // Hand back responses in FIFO order; default to empty hits if none queued.
+            if (index == SecurityAdvisoryData.IGNORED_ADVISORIES_INDEX) {
+                return ignoredAdvisoriesResponse
+            }
             return responses ? responses.remove(0) : '{"hits":{"hits":[]}}'
         }
         advisoryData = new SecurityAdvisoryData(advisoriesUrl, awsAccessKey, awsSecretKey, awsSessionToken, script)
@@ -113,9 +118,76 @@ class TestSecurityAdvisoryData {
         assertEquals(['CVE-1', 'CVE-2'], byProject['Alerting'])
         assertEquals(['CVE-3'], byProject['SQL'])
         // The scans index is searched, and the branch tag is filtered on project.tag.
-        assertEquals('scans-000335', searchedIndices[0])
-        assertTrue(queryBodies[0].contains('project.tag'))
-        assertTrue(queryBodies[0].contains('origin/3.8'))
+        int scansSearch = searchedIndices.indexOf('scans-000335')
+        assertTrue(scansSearch >= 0)
+        assertTrue(queryBodies[scansSearch].contains('project.tag'))
+        assertTrue(queryBodies[scansSearch].contains('origin/3.8'))
+        assertTrue(queryBodies[scansSearch].contains('timestamp.commit'))
+    }
+
+    @Test
+    void testGetOpenVulnerabilitiesByProjectCollectsAliasesAlongsideId() {
+        responses = ['''
+            {
+              "hits": {
+                "hits": [
+                  {
+                    "_source": {
+                      "project": {"name": "Alerting"},
+                      "vulnerabilities": [
+                        {"id": "CVE-1", "aliases": ["GHSA-xxxx-yyyy-zzzz"], "excluded": false}
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+        ''']
+        def byProject = advisoryData.getOpenVulnerabilitiesByProject('scans-000335', 'origin/3.8')
+        assertEquals(['CVE-1', 'GHSA-xxxx-yyyy-zzzz'], byProject['Alerting'])
+    }
+
+    @Test
+    void testGetOpenVulnerabilitiesByProjectHonorsLiveExemptionsForItsOwnProject() {
+        // Alerting has a live exemption for CVE-1 (added after the last scan, so still flagged in the
+        // scan); SQL shares that exemption alias but it must not suppress SQL's own CVE-1.
+        ignoredAdvisoriesResponse = '''
+            {
+              "hits": {
+                "hits": [
+                  {"_source": {"project": "Alerting", "tag": "origin/3.8", "aliases": ["CVE-1"]}}
+                ]
+              }
+            }
+        '''
+        responses = ['''
+            {
+              "hits": {
+                "hits": [
+                  {
+                    "_source": {
+                      "project": {"name": "Alerting"},
+                      "vulnerabilities": [
+                        {"id": "CVE-1", "excluded": false},
+                        {"id": "CVE-2", "excluded": false}
+                      ]
+                    }
+                  },
+                  {
+                    "_source": {
+                      "project": {"name": "SQL"},
+                      "vulnerabilities": [
+                        {"id": "CVE-1", "excluded": false}
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+        ''']
+        def byProject = advisoryData.getOpenVulnerabilitiesByProject('scans-000335', 'origin/3.8')
+        assertEquals(['CVE-2'], byProject['Alerting'])
+        assertEquals(['CVE-1'], byProject['SQL'])
     }
 
     @Test

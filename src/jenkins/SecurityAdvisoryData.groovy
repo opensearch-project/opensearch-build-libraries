@@ -38,6 +38,9 @@ class SecurityAdvisoryData {
     /** The advisories index (an alias pointing at the current advisories index). */
     static final String ADVISORIES_INDEX = 'advisories'
 
+    /** The index of project-scoped advisory exemptions, edited live ahead of the next scan. */
+    static final String IGNORED_ADVISORIES_INDEX = 'ignored-advisories'
+
     /**
      * Max CVE ids per advisories terms lookup. OpenSearch's default max_terms_count is 65536; a
      * conservative batch keeps payloads small and mirrors the security_advisories agent.
@@ -107,22 +110,26 @@ class SecurityAdvisoryData {
     }
 
     /**
-     * Returns the open (non-excluded) CVE ids scanned for the branch tag, keyed by project name so a
-     * blocking CVE is attributable to a component. Collapsing on project.name keeps each project's
-     * latest scan. Projects with no open vulnerabilities are omitted.
+     * Returns the open (non-excluded) vulnerability identifiers scanned for the branch tag, keyed by
+     * project name so a blocking vulnerability is attributable to a component. Collapsing on
+     * project.name keeps each project's latest scan (sorted by commit time so a re-scan of older code
+     * does not win). Every identifier a scan carries per vulnerability (id plus aliases) is collected
+     * so the join to advisory aliases survives CVE/GHSA re-keying. Live, project-scoped exemptions
+     * from ignored-advisories are applied on top of the scan's own excluded flag.
      *
      * @param scansIndex the concrete scans index (from getLatestScansIndex)
      * @param branchTag  the resolved project.tag (from resolveVersionTag)
-     * @return map of project name -> sorted list of its open CVE ids
+     * @return map of project name -> sorted list of its open vulnerability identifiers
      */
     Map<String, List<String>> getOpenVulnerabilitiesByProject(String scansIndex, String branchTag) {
+        Map<String, Set<String>> exemptedByProject = getExemptedAliasesByProject(branchTag)
         // project.name is carried through so results can be scoped to release components once that
         // filter lands upstream (security-advisories#132).
         def query = shellEscape([
             size    : QUERY_SIZE,
-            sort    : [['timestamp.scan': [order: 'desc']]],
+            sort    : [['timestamp.commit': [order: 'desc']], ['timestamp.scan': [order: 'desc']]],
             collapse: [field: 'project.name'],
-            _source : ['project.name', 'vulnerabilities.id', 'vulnerabilities.excluded'],
+            _source : ['project.name', 'vulnerabilities.id', 'vulnerabilities.aliases', 'vulnerabilities.excluded'],
             query   : [bool: [filter: [[term: ['project.tag': branchTag]]]]]
         ])
         def response = advisoriesQuery.search(scansIndex, query)
@@ -133,10 +140,17 @@ class SecurityAdvisoryData {
             if (!projectName) {
                 return
             }
+            Set<String> exemptedAliases = exemptedByProject[projectName] ?: ([] as Set)
             Set<String> openCves = [] as Set
             (hit._source?.vulnerabilities ?: []).each { vuln ->
-                if (!vuln.excluded && vuln.id) {
-                    openCves.add(vuln.id)
+                Set<String> identifiers = [] as Set
+                if (vuln.id) {
+                    identifiers.add(vuln.id)
+                }
+                (vuln.aliases ?: []).each { identifiers.add(it) }
+                boolean exempted = vuln.excluded || identifiers.any { exemptedAliases.contains(it) }
+                if (!exempted) {
+                    openCves.addAll(identifiers)
                 }
             }
             if (openCves) {
@@ -144,6 +158,36 @@ class SecurityAdvisoryData {
             }
         }
         return vulnerabilitiesByProject
+    }
+
+    /**
+     * Returns the exempted advisory aliases for the branch tag, keyed by project name, read live from
+     * ignored-advisories. An exemption applies when its tag matches the branch tag or it is a
+     * project-wide exemption (tag null or absent), matching the website's project/tag and project/*
+     * keys. Keying by project ensures an exemption on one component never suppresses another's.
+     */
+    private Map<String, Set<String>> getExemptedAliasesByProject(String branchTag) {
+        def query = shellEscape([
+            size   : QUERY_SIZE,
+            _source: ['aliases', 'project', 'tag'],
+            query  : [bool: [should: [
+                [term: [tag: branchTag]],
+                [bool: [must_not: [[exists: [field: 'tag']]]]]
+            ], minimum_should_match: 1]]
+        ])
+        def response = advisoriesQuery.search(IGNORED_ADVISORIES_INDEX, query)
+        def hits = response?.hits?.hits ?: []
+        Map<String, Set<String>> exemptedByProject = [:]
+        hits.each { hit ->
+            String projectName = hit._source?.project
+            String tag = hit._source?.tag
+            if (!projectName || (tag && tag != branchTag)) {
+                return
+            }
+            Set<String> aliases = exemptedByProject.get(projectName, [] as Set)
+            (hit._source?.aliases ?: []).each { aliases.add(it) }
+        }
+        return exemptedByProject
     }
 
     /**
