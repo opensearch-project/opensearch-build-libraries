@@ -17,9 +17,9 @@
   * @param args.allTags <optional>Copy all the tags of a sourceImage to destinationImage if 'true' and <IMAGE_TAG> is ignored in sourceImage/destinationImage, default to 'false'
  */
 void call(Map args = [:]) {
-    def secret_dockerhub_staging = [
-        [envVar: 'DOCKER_USERNAME', secretRef: 'op://opensearch-release-secrets/dockerhub-staging-credentials/username'],
-        [envVar: 'DOCKER_PASSWORD', secretRef: 'op://opensearch-release-secrets/dockerhub-staging-credentials/password']
+    def secret_dockerhub_readonly = [
+        [envVar: 'DOCKER_USERNAME', secretRef: 'op://opensearch-release-secrets/dockerhub-production-readonly-credentials/username'],
+        [envVar: 'DOCKER_PASSWORD', secretRef: 'op://opensearch-release-secrets/dockerhub-production-readonly-credentials/password']
     ]
 
     def secret_dockerhub_production = [
@@ -41,7 +41,7 @@ void call(Map args = [:]) {
     destination_registry = args.destinationRegistry
 
     if (source_registry == 'opensearchstaging' || destination_registry == 'opensearchstaging') {
-        withSecrets(secrets: secret_dockerhub_staging){
+        withSecrets(secrets: secret_dockerhub_readonly){
             sh("set +x && echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin")
         }
     }
