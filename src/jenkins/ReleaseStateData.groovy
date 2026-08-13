@@ -11,6 +11,7 @@ package jenkins
 
 import groovy.json.JsonOutput
 import java.text.SimpleDateFormat
+import java.util.regex.Pattern
 import utils.OpenSearchMetricsQuery
 import jenkins.ManualReleaseCriterion
 
@@ -137,8 +138,16 @@ class ReleaseStateData {
                     return []
                 }
                 List<String> cells = line.split('\\|')*.trim()
+                // A leading pipe (| a | b |) splits to an empty first cell; drop it so the Criteria
+                // and Status columns are at the same indices whether or not the row is pipe-bounded.
+                if (cells && cells[0].isEmpty()) {
+                    cells = cells.drop(1)
+                }
+                // Match the keyword against the Criteria cell only so prose in the Description or
+                // Comments columns can never produce a spurious criterion.
+                String criteriaCell = (cells ? cells[0] : '').toLowerCase()
                 String statusCell = cells.size() > 1 ? cells[1] : ''
-                criteria.findAll { line.toLowerCase().contains(it.keyword) }.collect { criterion ->
+                criteria.findAll { criteriaCell.contains(it.keyword) }.collect { criterion ->
                     [name: criterion.criterionName, type: table.type, product: table.product, status: statusFor(statusCell)]
                 }
             }
@@ -157,7 +166,7 @@ class ReleaseStateData {
         }
         String rest = body.substring(start.end())
         if (stopKeyword) {
-            def stop = (rest =~ /(?im)^#+.*${stopKeyword}/)
+            def stop = (rest =~ /(?im)^#+.*${Pattern.quote(stopKeyword)}/)
             if (stop.find()) {
                 return rest.substring(0, stop.start())
             }

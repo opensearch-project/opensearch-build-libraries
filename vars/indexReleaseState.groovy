@@ -241,7 +241,7 @@ private def runCheck(String name, Closure check) {
  * empty: checkIntegTestResultsOverview always returns a Map keyed by every arch/dist, with empty
  * lists when nothing fails, so the container is never empty even when the criterion is met.
  */
-private Map normalizeResult(Map check, def raw) {
+private def normalizeResult(Map check, def raw) {
     if (raw == null) {
         return null
     }

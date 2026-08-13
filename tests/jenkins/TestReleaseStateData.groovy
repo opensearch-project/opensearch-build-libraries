@@ -291,4 +291,32 @@ Sanity testing is done for all components |  |   |
     void testParseManualCriteriaReturnsEmptyWhenNoTables() {
         assert releaseStateData.parseManualCriteria('no criteria tables here') == []
     }
+
+    @Test
+    void testParseManualCriteriaHandlesLeadingPipeRows() {
+        // Pipe-bounded rows (| a | b |) must map the Criteria and Status columns to the same cells
+        // as the unbounded style, so the leading empty cell is dropped rather than shifting columns.
+        String body = '''
+### [Entrance Criteria](https://example.com)
+| Criteria | Status | Description | Comments |
+| -- | -- | -- | -- |
+| Sanity testing is done for all components | :green_circle: | | |
+| Roadmap is up-to-date | :red_circle: | | |
+'''
+        def byName = releaseStateData.parseManualCriteria(body).collectEntries { [it.name, it] }
+        assert byName['sanity_testing_done'].status == 'met'
+        assert byName['roadmap_up_to_date'].status == 'not_met'
+    }
+
+    @Test
+    void testParseManualCriteriaMatchesCriteriaCellNotOtherColumns() {
+        // A keyword appearing only in the Comments column must not produce a spurious criterion.
+        String body = '''
+### [Entrance Criteria](https://example.com)
+Criteria | Status | Description  | Comments
+-- | -- | -- | --
+Each component release issue has an assigned owner | :green_circle: |   | sanity testing is done later
+'''
+        assert releaseStateData.parseManualCriteria(body) == []
+    }
 }
