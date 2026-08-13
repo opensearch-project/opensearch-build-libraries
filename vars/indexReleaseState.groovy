@@ -154,6 +154,14 @@ private void indexManualCriteriaForRelease(ReleaseStateData releaseStateData, Ma
         return
     }
 
+    // The release issue is read from the schedule index as a full GitHub issue URL; resolve it to a
+    // bare issue number so a crafted value can never inject into the gh shell command.
+    def issueNumber = (release.releaseIssue =~ /\/issues\/(\d+)/)
+    if (!issueNumber.find()) {
+        echo("Release issue '${release.releaseIssue}' for version ${release.version} is not a valid issue URL; skipping manual criteria.")
+        return
+    }
+
     def secret_github_bot = [
         [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-release-secrets/github-bot/ci-bot-username'],
         [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-release-secrets/github-bot/ci-bot-token']
@@ -162,7 +170,7 @@ private void indexManualCriteriaForRelease(ReleaseStateData releaseStateData, Ma
     String issueBody
     withSecrets(secrets: secret_github_bot) {
         issueBody = sh(
-            script: "gh issue view ${release.releaseIssue} --repo opensearch-project/opensearch-build --json body --jq '.body'",
+            script: "gh issue view ${issueNumber.group(1)} --repo opensearch-project/opensearch-build --json body --jq '.body'",
             returnStdout: true
         )
     }
@@ -225,7 +233,7 @@ private def runCheck(String name, Closure check) {
 /**
  * Normalizes a check's raw result into an explicit [blockingComponents, details] contract so
  * indexCriterion never has to infer which axis of a Map is the component.
- *   - null (the check threw)      -> null, recorded as 'unknown'
+ *   - null (the check threw)       -> null, recorded as 'unknown'
  *   - checks with a render closure -> that closure derives components vs details
  *   - otherwise (a List<String>)   -> the list is the blocking components, no details
  *
