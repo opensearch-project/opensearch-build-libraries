@@ -55,6 +55,7 @@ void call(Map args = [:]) {
             releases.each { release ->
                 echo("Indexing release state for version ${release.version}.")
                 indexCriteriaForRelease(releaseStateData, release)
+                indexManualCriteriaForRelease(releaseStateData, release)
             }
         }
     }
@@ -80,7 +81,8 @@ private void indexCriteriaForRelease(ReleaseStateData releaseStateData, Map rele
     //   render  - optional closure that normalizes a keyed-map result into blocking_components + details
     //
     // Criteria not covered by an automated chore (sanity testing, roadmap, security reviews,
-    // performance tests, release blog) are manual and parsed elsewhere.
+    // performance tests, release blog) are manual and parsed from the release issue's tables by
+    // indexManualCriteriaForRelease.
     def checks = [
         [
             name   : 'release_owners_assigned',
@@ -138,6 +140,45 @@ private void indexCriteriaForRelease(ReleaseStateData releaseStateData, Map rele
         def raw = runCheck(check.name, check.run)
         def result = normalizeResult(check, raw)
         indexCriterion(releaseStateData, release, check, result)
+    }
+}
+
+/**
+ * Reads the manual criteria (no chore verifies them) from the release issue's criteria tables and
+ * indexes one criterion document for each. The issue body is fetched with the github-bot token and
+ * parsed by ReleaseStateData; each row's status circle is recorded as-is (source 'issue_table').
+ */
+private void indexManualCriteriaForRelease(ReleaseStateData releaseStateData, Map release) {
+    if (!release.releaseIssue) {
+        echo("No release issue for version ${release.version}; skipping manual criteria.")
+        return
+    }
+
+    def secret_github_bot = [
+        [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-release-secrets/github-bot/ci-bot-username'],
+        [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-release-secrets/github-bot/ci-bot-token']
+    ]
+
+    String issueBody
+    withSecrets(secrets: secret_github_bot) {
+        issueBody = sh(
+            script: "gh issue view ${release.releaseIssue} --repo opensearch-project/opensearch-build --json body --jq '.body'",
+            returnStdout: true
+        )
+    }
+
+    releaseStateData.parseManualCriteria(issueBody).each { criterion ->
+        releaseStateData.indexCriterion(new ReleaseCriterion([
+            version      : release.version,
+            releaseDate  : release.releaseDate,
+            product      : criterion.product,
+            criterionType: criterion.type,
+            criterionName: criterion.name,
+            status       : criterion.status,
+            source       : 'issue_table',
+            releaseIssue : release.releaseIssue,
+            checkedBy    : "${env.JOB_NAME} #${env.BUILD_NUMBER}"
+        ]))
     }
 }
 

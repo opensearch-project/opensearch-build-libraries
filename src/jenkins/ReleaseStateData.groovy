@@ -12,6 +12,7 @@ package jenkins
 import groovy.json.JsonOutput
 import java.text.SimpleDateFormat
 import utils.OpenSearchMetricsQuery
+import jenkins.ManualReleaseCriterion
 
 /**
  * Indexes release state documents on the OpenSearch metrics cluster.
@@ -104,6 +105,69 @@ class ReleaseStateData {
             ]
         ]
         return JsonOutput.toJson(queryMap).replace('"', '\\"')
+    }
+
+    private static final Map<String, String> CIRCLE_STATUS = [
+        green_circle : 'met',
+        yellow_circle: 'in_progress',
+        red_circle   : 'not_met'
+    ]
+
+    /**
+     * Reads the manual criteria (those no chore verifies) from the release issue's criteria tables.
+     *
+     * The issue holds three tables: an entrance table that applies to both products, and one exit
+     * table per product. A criterion's product is therefore the table it sits in, not the row itself.
+     * Manual rows are matched by a stable keyword from their prose (see ManualReleaseCriterion) and
+     * their status circle maps to a criterion status via CIRCLE_STATUS (unrecognised -> unknown).
+     *
+     * @param issueBody the raw markdown body of the release issue
+     * @return list of maps [name, type, product, status], one per manual row found
+     */
+    List<Map> parseManualCriteria(String issueBody) {
+        def tables = [
+            [type: 'entrance', product: 'both', start: /(?im)^#+.*entrance criteria/, stop: 'exit'],
+            [type: 'exit', product: 'opensearch', start: /(?im)^#+\s+opensearch\s+\S+\s+\[?exit criteria/, stop: 'dashboards'],
+            [type: 'exit', product: 'opensearch-dashboards', start: /(?im)^#+.*dashboards\s+\S+\s+\[?exit criteria/, stop: null]
+        ]
+        return tables.collectMany { table ->
+            def criteria = ManualReleaseCriterion.values().findAll { it.criterionType == table.type }
+            sectionBetween(issueBody, table.start, table.stop).readLines().collectMany { line ->
+                if (!line.contains('|')) {
+                    return []
+                }
+                List<String> cells = line.split('\\|')*.trim()
+                String statusCell = cells.size() > 1 ? cells[1] : ''
+                criteria.findAll { line.toLowerCase().contains(it.keyword) }.collect { criterion ->
+                    [name: criterion.criterionName, type: table.type, product: table.product, status: statusFor(statusCell)]
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the slice of the body from the heading matching startPattern up to the next heading
+     * whose text contains stopKeyword (or end of body when stopKeyword is null), so each criteria
+     * table is parsed in isolation.
+     */
+    private static String sectionBetween(String body, String startPattern, String stopKeyword) {
+        def start = (body =~ startPattern)
+        if (!start.find()) {
+            return ''
+        }
+        String rest = body.substring(start.end())
+        if (stopKeyword) {
+            def stop = (rest =~ /(?im)^#+.*${stopKeyword}/)
+            if (stop.find()) {
+                return rest.substring(0, stop.start())
+            }
+        }
+        return rest
+    }
+
+    private static String statusFor(String statusCell) {
+        def match = CIRCLE_STATUS.find { circle, status -> statusCell.contains(circle) }
+        return match ? match.value : 'unknown'
     }
 
     /**

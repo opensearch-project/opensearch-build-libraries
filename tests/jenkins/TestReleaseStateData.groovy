@@ -189,4 +189,106 @@ class TestReleaseStateData {
         searchResponse = '{"hits":{"hits":[]}}'
         assert releaseStateData.getActiveReleases() == []
     }
+
+    // A trimmed release issue body carrying all three criteria tables in their real markdown shape.
+    private static final String ISSUE_BODY = '''
+## Release OpenSearch and OpenSearch Dashboards 3.8.0
+
+I noticed that a manifest was automatically created in [manifests/3.8.0](/opensearch-project/opensearch-build/tree/main/manifests/3.8.0). Please follow the following checklist to make a release.
+
+<details><summary>How to use this issue</summary>
+<p>
+
+## This Release Issue
+
+This issue captures the state of the OpenSearch release, its assignee (Release Manager) is responsible for driving the release. Please contact them or @mention them on this issue for help. There are linked issues on components of the release where individual components can be tracked. For more information check the the [Release Process OpenSearch Guide](https://github.com/opensearch-project/opensearch-build/wiki/Releasing-the-Distribution).
+
+</p>
+</details>
+
+Please refer to the following link for the release version dates: [Release Schedule and Maintenance Policy](https://opensearch.org/releases.html).
+
+### [Entrance Criteria](https://github.com/opensearch-project/.github/blob/main/RELEASING.md#entrance-criteria-to-start-release-window)
+Criteria | Status | Description  | Comments
+-- | -- | -- | --
+Each component release issue has an assigned owner | :green_circle: |   |
+Documentation draft PRs are up and in tech review for all component changes | :green_circle: |   |
+Sanity testing is done for all components | :green_circle: |   |
+Code coverage has not decreased (all new code has tests) | :green_circle: |   |
+Release notes are ready and available for all components | :green_circle: |   |
+Roadmap is up-to-date (information is available to create release highlights) | :yellow_circle: |   |
+Release ticket is cut, and there's a forum post announcing the start of the window | :green_circle: |   |
+[Any necessary security reviews](https://github.com/opensearch-project/.github/blob/main/RELEASING.md#security-reviews) are complete | :red_circle: |   |
+
+### OpenSearch 3.8.0 [exit criteria](https://github.com/opensearch-project/.github/blob/main/RELEASING.md#exit-criteria-to-close-release-window) status:
+Criteria | Status | Description  | Comments
+-- | -- | -- | --
+Performance tests are run, results are posted to the release ticket and there no unexpected regressions | :green_circle: |   |
+No unpatched vulnerabilities of medium or higher severity that have been publicly known for more than 60 days | :green_circle: |   |
+Documentation has been fully reviewed and   signed off by the documentation community. | :green_circle: |   |
+All integration tests are passing |  :green_circle: |   |
+Release blog is ready | :yellow_circle: |   |
+
+### OpenSearch-Dashboards 3.8.0 [exit criteria](https://github.com/opensearch-project/.github/blob/main/RELEASING.md#exit-criteria-to-close-release-window) status:
+Criteria | Status | Description  | Comments
+-- | -- | -- | --
+Documentation has been fully reviewed and   signed off by the documentation community | :green_circle: |   |
+No unpatched vulnerabilities of medium or higher severity that have been publicly known for more than 60 days | :green_circle: |   |
+All integration tests are passing | :green_circle: |   |
+Release blog is ready | :red_circle: |   |
+
+</p>
+</details>
+'''
+
+    @Test
+    void testParseManualCriteriaMapsCirclesToStatuses() {
+        def byName = releaseStateData.parseManualCriteria(ISSUE_BODY).collectEntries { [it.name, it] }
+        assert byName['sanity_testing_done'].status == 'met'
+        assert byName['roadmap_up_to_date'].status == 'in_progress'
+        assert byName['security_reviews_complete'].status == 'not_met'
+    }
+
+    @Test
+    void testParseManualCriteriaAssignsProductFromTable() {
+        def criteria = releaseStateData.parseManualCriteria(ISSUE_BODY)
+        // Entrance rows apply to both products; the exit tables are per product.
+        assert criteria.find { it.name == 'sanity_testing_done' }.product == 'both'
+        assert criteria.find { it.name == 'sanity_testing_done' }.type == 'entrance'
+        assert criteria.find { it.name == 'performance_tests_posted' }.product == 'opensearch'
+        assert criteria.findAll { it.name == 'release_blog_ready' }*.product.sort() == ['opensearch', 'opensearch-dashboards']
+    }
+
+    @Test
+    void testParseManualCriteriaOnlyReturnsManualRows() {
+        // Rows covered by a chore (owners, integration tests) are not manual criteria and are skipped.
+        def names = releaseStateData.parseManualCriteria(ISSUE_BODY)*.name as Set
+        assert names == ['sanity_testing_done', 'roadmap_up_to_date', 'security_reviews_complete',
+                         'performance_tests_posted', 'release_blog_ready'] as Set
+    }
+
+    @Test
+    void testParseManualCriteriaPerformanceRowIsOpenSearchOnly() {
+        // The OSD exit table has no performance row, so performance_tests_posted appears exactly once.
+        def performance = releaseStateData.parseManualCriteria(ISSUE_BODY).findAll { it.name == 'performance_tests_posted' }
+        assert performance.size() == 1
+        assert performance[0].product == 'opensearch'
+    }
+
+    @Test
+    void testParseManualCriteriaUnrecognisedStatusIsUnknown() {
+        String body = '''
+### [Entrance Criteria](https://example.com)
+Criteria | Status | Description  | Comments
+-- | -- | -- | --
+Sanity testing is done for all components |  |   |
+'''
+        def sanity = releaseStateData.parseManualCriteria(body).find { it.name == 'sanity_testing_done' }
+        assert sanity.status == 'unknown'
+    }
+
+    @Test
+    void testParseManualCriteriaReturnsEmptyWhenNoTables() {
+        assert releaseStateData.parseManualCriteria('no criteria tables here') == []
+    }
 }
