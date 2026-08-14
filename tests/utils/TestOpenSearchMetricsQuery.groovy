@@ -74,6 +74,15 @@ class TestOpenSearchMetricsQuery {
     }
 
     @Test
+    void testFetchMetricsFromIndexSearchesExplicitIndex() {
+        // Callers built with the index-less constructor can search a named index.
+        def metricsQuery = new OpenSearchMetricsQuery("metricsUrl", "awsAccessKey", "awsSecretKey", "awsSessionToken", this.script)
+        def result = metricsQuery.fetchMetricsFromIndex("explicitIndex", "{\\\"query\\\":{}}")
+        assertEquals(result, new JsonSlurperClassic().parseText(response))
+        assertTrue(scriptArgs.script.contains('-XGET "metricsUrl/explicitIndex/_search"'))
+    }
+
+    @Test
     void testIndexExistsReturnsTrueOn200() {
         script.sh = { Map args ->
             scriptArgs = args
