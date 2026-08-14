@@ -41,12 +41,26 @@ class OpenSearchMetricsQuery {
     }
 
     def fetchMetrics(String query) {
+        return searchIndex(indexName, query)
+    }
+
+    /**
+     * Runs a search against an explicit index, for callers built with the index-less constructor
+     * (e.g. ReleaseStateData, which reads and writes across multiple indices).
+     * @param targetIndex the index to search
+     * @param query the SigV4-shell-escaped query body
+     */
+    def fetchMetricsFromIndex(String targetIndex, String query) {
+        return searchIndex(targetIndex, query)
+    }
+
+    private def searchIndex(String targetIndex, String query) {
         this.script.println('Running query: '+ query)
         def response = script.sh(
             script: """
             set -e
             set +x
-            curl -s -XGET "${metricsUrl}/${indexName}/_search" ${curlAuthArgs()} -H 'Content-Type: application/json' -d "${query}" | jq '.'
+            curl -s -XGET "${metricsUrl}/${targetIndex}/_search" ${curlAuthArgs()} -H 'Content-Type: application/json' -d "${query}" | jq '.'
         """,
         returnStdout: true
         ).trim()
