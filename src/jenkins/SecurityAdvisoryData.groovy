@@ -41,6 +41,9 @@ class SecurityAdvisoryData {
     /** The index of project-scoped advisory exemptions, edited live ahead of the next scan. */
     static final String IGNORED_ADVISORIES_INDEX = 'ignored-advisories'
 
+    /** The release_type of components shipped in the bundled distribution (security-advisories#135). */
+    static final String RELEASE_TYPE = 'bundle'
+
     /**
      * Max CVE ids per advisories terms lookup. OpenSearch's default max_terms_count is 65536; a
      * conservative batch keeps payloads small and mirrors the security_advisories agent.
@@ -123,14 +126,15 @@ class SecurityAdvisoryData {
      */
     Map<String, List<String>> getOpenVulnerabilitiesByProject(String scansIndex, String branchTag) {
         Map<String, Set<String>> exemptedByProject = getExemptedAliasesByProject(branchTag)
-        // project.name is carried through so results can be scoped to release components once that
-        // filter lands upstream (security-advisories#132).
         def query = shellEscape([
             size    : QUERY_SIZE,
             sort    : [['timestamp.commit': [order: 'desc']], ['timestamp.scan': [order: 'desc']]],
             collapse: [field: 'project.name'],
             _source : ['project.name', 'vulnerabilities.id', 'vulnerabilities.aliases', 'vulnerabilities.excluded'],
-            query   : [bool: [filter: [[term: ['project.tag': branchTag]]]]]
+            query   : [bool: [filter: [
+                [term: ['project.tag': branchTag]],
+                [term: ['release_type.keyword': RELEASE_TYPE]]
+            ]]]
         ])
         def response = advisoriesQuery.search(scansIndex, query)
         def hits = response?.hits?.hits ?: []

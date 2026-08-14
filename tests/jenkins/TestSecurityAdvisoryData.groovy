@@ -123,6 +123,8 @@ class TestSecurityAdvisoryData {
         assertTrue(queryBodies[scansSearch].contains('project.tag'))
         assertTrue(queryBodies[scansSearch].contains('origin/3.8'))
         assertTrue(queryBodies[scansSearch].contains('timestamp.commit'))
+        assertTrue(queryBodies[scansSearch].contains('release_type.keyword'))
+        assertTrue(queryBodies[scansSearch].contains('bundle'))
     }
 
     @Test
