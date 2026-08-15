@@ -13,7 +13,7 @@ import groovy.json.JsonOutput
 import java.text.SimpleDateFormat
 import java.util.regex.Pattern
 import utils.OpenSearchMetricsQuery
-import jenkins.ManualReleaseCriterion
+import jenkins.ReleaseCriterionCatalog
 
 /**
  * Indexes release state documents on the OpenSearch metrics cluster.
@@ -108,6 +108,48 @@ class ReleaseStateData {
         return JsonOutput.toJson(queryMap).replace('"', '\\"')
     }
 
+    /**
+     * Returns the latest chore-verified status for each criterion of a version, keyed by criterion
+     * name. The state index appends a new doc every run, so a criterion accumulates many docs over
+     * time; collapsing on criterion_name and sorting by last_checked descending keeps only the single
+     * most recent doc per criterion. Only chore_check docs are read; manual (issue_table) criteria
+     * are owned by the release manager and are never written back.
+     *
+     * @param version the release version to read statuses for
+     * @return map of criterion name -> latest status
+     */
+    Map<String, String> getLatestChoreStatuses(String version) {
+        def response = metricsQuery.fetchMetricsFromIndex(ReleaseIndices.STATE, latestChoreStatusesQuery(version))
+        def hits = response?.hits?.hits ?: []
+        Map<String, String> statusByCriterion = [:]
+        hits.each { hit ->
+            def doc = hit._source
+            if (doc?.criterion_name && doc?.status) {
+                statusByCriterion[doc.criterion_name] = doc.status
+            }
+        }
+        return statusByCriterion
+    }
+
+    private String latestChoreStatusesQuery(String version) {
+        def queryMap = [
+            size    : 100,
+            sort    : [['last_checked': [order: 'desc']]],
+            collapse: [field: 'criterion_name'],
+            _source : ['criterion_name', 'status'],
+            query   : [
+                bool: [
+                    filter: [
+                        [term: [doc_type: 'criterion']],
+                        [term: [version: version]],
+                        [term: [source: 'chore_check']]
+                    ]
+                ]
+            ]
+        ]
+        return JsonOutput.toJson(queryMap).replace('"', '\\"')
+    }
+
     private static final Map<String, String> CIRCLE_STATUS = [
         green_circle : 'met',
         yellow_circle: 'in_progress',
@@ -119,7 +161,7 @@ class ReleaseStateData {
      *
      * The issue holds three tables: an entrance table that applies to both products, and one exit
      * table per product. A criterion's product is therefore the table it sits in, not the row itself.
-     * Manual rows are matched by a stable keyword from their prose (see ManualReleaseCriterion) and
+     * Manual rows are matched by a stable keyword from their prose (see ReleaseCriterionCatalog) and
      * their status circle maps to a criterion status via CIRCLE_STATUS (unrecognised -> unknown).
      *
      * @param issueBody the raw markdown body of the release issue
@@ -132,7 +174,7 @@ class ReleaseStateData {
             [type: 'exit', product: 'opensearch-dashboards', start: /(?im)^#+.*dashboards\s+\S+\s+\[?exit criteria/, stop: null]
         ]
         return tables.collectMany { table ->
-            def criteria = ManualReleaseCriterion.values().findAll { it.criterionType == table.type }
+            def criteria = ReleaseCriterionCatalog.manualCriteria().findAll { it.criterionType == table.type }
             sectionBetween(issueBody, table.start, table.stop).readLines().collectMany { line ->
                 if (!line.contains('|')) {
                     return []

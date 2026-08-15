@@ -32,6 +32,7 @@ class TestReleaseStateData {
     // Search response returned to -XGET calls, and the index the search targeted.
     private String searchResponse
     private String searchedIndex
+    private String searchBody
 
     // Holds the body written by the most recent writeFile call, to pair with the following POST.
     private String pendingBody
@@ -57,6 +58,7 @@ class TestReleaseStateData {
             }
             if (s.contains('-XGET')) {
                 searchedIndex = extractSearchIndex(s)
+                searchBody = s
                 return searchResponse
             }
             return responseCode
@@ -188,6 +190,35 @@ class TestReleaseStateData {
     void testGetActiveReleasesReturnsEmptyWhenNoActiveReleases() {
         searchResponse = '{"hits":{"hits":[]}}'
         assert releaseStateData.getActiveReleases() == []
+    }
+
+    @Test
+    void testGetLatestChoreStatusesKeysStatusByCriterionAndCollapsesToLatest() {
+        searchResponse = '''
+            {
+              "hits": {
+                "hits": [
+                  {"_source": {"criterion_name": "release_owners_assigned", "status": "met"}},
+                  {"_source": {"criterion_name": "all_integration_tests_passing", "status": "not_met"}}
+                ]
+              }
+            }
+        '''
+        def statuses = releaseStateData.getLatestChoreStatuses('3.8.0')
+        assert statuses == [release_owners_assigned: 'met', all_integration_tests_passing: 'not_met']
+        assert searchedIndex == ReleaseStateIndex.STATE_INDEX
+        // Latest doc per criterion is kept by collapsing on criterion_name sorted by last_checked,
+        // scoped to this version's chore_check criterion docs.
+        assert searchBody.contains('criterion_name')
+        assert searchBody.contains('last_checked')
+        assert searchBody.contains('chore_check')
+        assert searchBody.contains('3.8.0')
+    }
+
+    @Test
+    void testGetLatestChoreStatusesReturnsEmptyWhenNoDocs() {
+        searchResponse = '{"hits":{"hits":[]}}'
+        assert releaseStateData.getLatestChoreStatuses('3.8.0') == [:]
     }
 
     // A trimmed release issue body carrying all three criteria tables in their real markdown shape.
