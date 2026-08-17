@@ -81,6 +81,13 @@ All integration tests are passing | :green_circle: |   |'''
     }
 
     @Test
+    void testApplyChoreCirclesPreservesLineTerminatorsWhenUnchanged() {
+        // A CRLF body with a trailing newline round-trips byte-for-byte when the circle already matches.
+        String body = "Each component release issue has an assigned owner | :green_circle: |   |\r\n"
+        assert script.applyChoreCircles(body, [release_owners_assigned: 'met']) == body
+    }
+
+    @Test
     void testApplyChoreCirclesLeavesUnknownStatusUntouched() {
         // A criterion with unknown (or unmapped) status keeps its existing circle rather than blanking.
         String updated = script.applyChoreCircles(ISSUE_BODY, [release_owners_assigned: 'unknown'])

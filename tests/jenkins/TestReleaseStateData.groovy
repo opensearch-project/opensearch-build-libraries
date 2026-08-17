@@ -221,6 +221,23 @@ class TestReleaseStateData {
         assert releaseStateData.getLatestChoreStatuses('3.8.0') == [:]
     }
 
+    @Test
+    void testGetLatestChoreStatusesSkipsHitsMissingNameOrStatus() {
+        // A hit without criterion_name or without status is skipped; only the well-formed one is kept.
+        searchResponse = '''
+            {
+              "hits": {
+                "hits": [
+                  {"_source": {"status": "met"}},
+                  {"_source": {"criterion_name": "release_notes_ready"}},
+                  {"_source": {"criterion_name": "release_owners_assigned", "status": "not_met"}}
+                ]
+              }
+            }
+        '''
+        assert releaseStateData.getLatestChoreStatuses('3.8.0') == [release_owners_assigned: 'not_met']
+    }
+
     // A trimmed release issue body carrying all three criteria tables in their real markdown shape.
     private static final String ISSUE_BODY = '''
 ## Release OpenSearch and OpenSearch Dashboards 3.8.0

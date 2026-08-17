@@ -118,7 +118,8 @@ private Map<String, String> readChoreStatuses(String version) {
  */
 private String applyChoreCircles(String issueBody, Map<String, String> statuses) {
     def choreByKeyword = ReleaseCriterionCatalog.choreCriteria()
-    return issueBody.readLines().collect { line ->
+    // Split after each newline so line terminators are preserved and an unchanged body round-trips.
+    return issueBody.split(/(?<=\n)/).collect { line ->
         if (!line.contains('|')) {
             return line
         }
@@ -131,6 +132,6 @@ private String applyChoreCircles(String issueBody, Map<String, String> statuses)
         if (!circle) {
             return line
         }
-        return line.replaceFirst(/:(green|yellow|red)_circle:/, circle)
-    }.join('\n')
+        return line.replaceFirst(/:(green|yellow|red)_circle:/, java.util.regex.Matcher.quoteReplacement(circle))
+    }.join('')
 }
