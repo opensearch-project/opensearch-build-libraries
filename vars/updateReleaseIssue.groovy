@@ -35,9 +35,9 @@ void call(Map args = [:]) {
         error('version and releaseIssue are required.')
     }
 
-    def issueNumber = (releaseIssue =~ /\/issues\/(\d+)/)
+    def issueNumber = (releaseIssue =~ /^https:\/\/github\.com\/opensearch-project\/opensearch-build\/issues\/(\d+)$/)
     if (!issueNumber.find()) {
-        error("Release issue '${releaseIssue}' is not a valid GitHub issue URL.")
+        error("Release issue '${releaseIssue}' is not a valid opensearch-build issue URL.")
     }
     String issueRef = issueNumber.group(1)
 
@@ -71,7 +71,7 @@ void call(Map args = [:]) {
         String issueBody = sh(
             script: "gh issue view ${issueRef} --repo opensearch-project/opensearch-build --json body --jq '.body'",
             returnStdout: true
-        )
+        ).replaceAll(/\n$/, '')
         String updatedBody = applyChoreCircles(issueBody, statuses)
         if (updatedBody == issueBody) {
             echo("Release issue ${issueRef} circles already match the indexed statuses; no edit needed.")
@@ -132,6 +132,6 @@ private String applyChoreCircles(String issueBody, Map<String, String> statuses)
         if (!circle) {
             return line
         }
-        return line.replaceFirst(/:(green|yellow|red)_circle:/, java.util.regex.Matcher.quoteReplacement(circle))
+        return line.replaceFirst(/^([^|]*\|[^|]*?):(green|yellow|red)_circle:/, '$1' + java.util.regex.Matcher.quoteReplacement(circle))
     }.join('')
 }

@@ -103,6 +103,14 @@ All integration tests are passing | :green_circle: |   |'''
     }
 
     @Test
+    void testApplyChoreCirclesIgnoresLaterColumnCircleWhenStatusCellBlank() {
+        // The status cell has no circle; a circle in the Comments column must stay untouched.
+        String body = 'Each component release issue has an assigned owner |  | see :red_circle: note |'
+        String updated = script.applyChoreCircles(body, [release_owners_assigned: 'met'])
+        assert updated == body
+    }
+
+    @Test
     void testUpdateCriteriaEditsIssueWithRewrittenBody() {
         statusHits = '{"hits":{"hits":[{"_source":{"criterion_name":"release_owners_assigned","status":"met"}}]}}'
         issueViewBody = ISSUE_BODY
@@ -154,7 +162,7 @@ All integration tests are passing | :green_circle: |   |'''
             script.call(version: '3.8.0', releaseIssue: 'not-a-url')
             assert false : 'Expected an error for an invalid issue URL'
         } catch (Exception e) {
-            assert e.message.contains('not a valid GitHub issue URL')
+            assert e.message.contains('not a valid opensearch-build issue URL')
         }
     }
 }
