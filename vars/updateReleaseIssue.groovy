@@ -7,8 +7,8 @@
  * compatible open source license.
  */
 
+import com.cloudbees.groovy.cps.NonCPS
 import jenkins.ReleaseStateData
-import jenkins.ReleaseCriterionCatalog
 
 /**
  * Writes release readiness back to the GitHub release issue.
@@ -35,11 +35,10 @@ void call(Map args = [:]) {
         error('version and releaseIssue are required.')
     }
 
-    def issueNumber = (releaseIssue =~ /^https:\/\/github\.com\/opensearch-project\/opensearch-build\/issues\/(\d+)$/)
-    if (!issueNumber.find()) {
+    String issueRef = extractIssueRef(releaseIssue)
+    if (!issueRef) {
         error("Release issue '${releaseIssue}' is not a valid opensearch-build issue URL.")
     }
-    String issueRef = issueNumber.group(1)
 
     // The oscar bot has write access to the release issue (edit body and comment).
     def secret_github_oscar_bot = [
@@ -61,7 +60,7 @@ void call(Map args = [:]) {
         error("Invalid action '${action}'. Valid values: update_criteria, comment")
     }
 
-    Map<String, String> statuses = readChoreStatuses(version)
+    Map<String, Map<String, String>> statuses = readChoreStatuses(version)
     if (statuses.isEmpty()) {
         echo("No chore-verified statuses indexed for version ${version}; nothing to write back.")
         return
@@ -72,7 +71,7 @@ void call(Map args = [:]) {
             script: "gh issue view ${issueRef} --repo opensearch-project/opensearch-build --json body --jq '.body'",
             returnStdout: true
         ).replaceAll(/\n$/, '')
-        String updatedBody = applyChoreCircles(issueBody, statuses)
+        String updatedBody = ReleaseStateData.applyChoreStatusCircles(issueBody, statuses)
         if (updatedBody == issueBody) {
             echo("Release issue ${issueRef} circles already match the indexed statuses; no edit needed.")
             return
@@ -83,23 +82,21 @@ void call(Map args = [:]) {
 }
 
 /**
- * Maps a criterion status to the status circle written back to the issue table. Only these three
- * states have a circle; any other status (e.g. unknown) returns null and leaves the row untouched.
+ * Extracts the issue number from a full opensearch-build issue URL, or null if it does not match.
+ * Kept @NonCPS so the transient Matcher never becomes a pipeline local that must survive a restart.
  */
-private String statusCircle(String status) {
-    return [
-        met        : ':green_circle:',
-        in_progress: ':yellow_circle:',
-        not_met    : ':red_circle:'
-    ][status]
+@NonCPS
+private String extractIssueRef(String releaseIssue) {
+    def matcher = releaseIssue =~ /^https:\/\/github\.com\/opensearch-project\/opensearch-build\/issues\/(\d+)$/
+    return matcher.matches() ? matcher.group(1) : null
 }
 
-private Map<String, String> readChoreStatuses(String version) {
+private Map<String, Map<String, String>> readChoreStatuses(String version) {
     def secret_metrics_cluster = [
         [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-release-secrets/aws-accounts/jenkins-health-metrics-account-number'],
         [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-release-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
     ]
-    Map<String, String> statuses = [:]
+    Map<String, Map<String, String>> statuses = [:]
     withSecrets(secrets: secret_metrics_cluster) {
         withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
             def releaseStateData = new ReleaseStateData(env.METRICS_HOST_URL, env.AWS_ACCESS_KEY_ID, env.AWS_SECRET_ACCESS_KEY, env.AWS_SESSION_TOKEN, this)
@@ -107,31 +104,4 @@ private Map<String, String> readChoreStatuses(String version) {
         }
     }
     return statuses
-}
-
-/**
- * Rewrites the status circle of each chore-verified criterion row to reflect its indexed status.
- * A row is matched by locating a chore criterion's keyword in the Criteria cell; only its status
- * cell (the first circle on the line) is replaced, leaving the other columns untouched. Rows whose
- * status is unknown, or has no circle mapping, are left as-is so a transient failure never blanks a
- * circle the release manager can see.
- */
-private String applyChoreCircles(String issueBody, Map<String, String> statuses) {
-    def choreByKeyword = ReleaseCriterionCatalog.choreCriteria()
-    // Split after each newline so line terminators are preserved and an unchanged body round-trips.
-    return issueBody.split(/(?<=\n)/).collect { line ->
-        if (!line.contains('|')) {
-            return line
-        }
-        String criteriaCell = line.split('\\|')[0].toLowerCase()
-        def criterion = choreByKeyword.find { criteriaCell.contains(it.keyword) }
-        if (!criterion) {
-            return line
-        }
-        String circle = statusCircle(statuses[criterion.criterionName])
-        if (!circle) {
-            return line
-        }
-        return line.replaceFirst(/^([^|]*\|[^|]*?):(green|yellow|red)_circle:/, '$1' + java.util.regex.Matcher.quoteReplacement(circle))
-    }.join('')
 }

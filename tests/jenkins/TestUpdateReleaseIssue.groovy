@@ -67,52 +67,11 @@ class TestUpdateReleaseIssue extends BuildPipelineTest {
 Criteria | Status | Description  | Comments
 -- | -- | -- | --
 Each component release issue has an assigned owner | :yellow_circle: |   |
-Sanity testing is done for all components | :yellow_circle: |   |
-All integration tests are passing | :green_circle: |   |'''
-
-    @Test
-    void testApplyChoreCirclesRewritesOnlyChoreRows() {
-        // Owners flips to met, integration tests flips to not_met; the manual sanity row is left as-is.
-        def statuses = [release_owners_assigned: 'met', all_integration_tests_passing: 'not_met']
-        String updated = script.applyChoreCircles(ISSUE_BODY, statuses)
-        assert updated.contains('an assigned owner | :green_circle:')
-        assert updated.contains('Sanity testing is done for all components | :yellow_circle:')
-        assert updated.contains('All integration tests are passing | :red_circle:')
-    }
-
-    @Test
-    void testApplyChoreCirclesPreservesLineTerminatorsWhenUnchanged() {
-        // A CRLF body with a trailing newline round-trips byte-for-byte when the circle already matches.
-        String body = "Each component release issue has an assigned owner | :green_circle: |   |\r\n"
-        assert script.applyChoreCircles(body, [release_owners_assigned: 'met']) == body
-    }
-
-    @Test
-    void testApplyChoreCirclesLeavesUnknownStatusUntouched() {
-        // A criterion with unknown (or unmapped) status keeps its existing circle rather than blanking.
-        String updated = script.applyChoreCircles(ISSUE_BODY, [release_owners_assigned: 'unknown'])
-        assert updated.contains('an assigned owner | :yellow_circle:')
-    }
-
-    @Test
-    void testApplyChoreCirclesReplacesOnlyStatusColumn() {
-        // A circle appearing in a later column must not be touched; only the first (status) circle is.
-        String body = 'Each component release issue has an assigned owner | :yellow_circle: | see :red_circle: note |'
-        String updated = script.applyChoreCircles(body, [release_owners_assigned: 'met'])
-        assert updated == 'Each component release issue has an assigned owner | :green_circle: | see :red_circle: note |'
-    }
-
-    @Test
-    void testApplyChoreCirclesIgnoresLaterColumnCircleWhenStatusCellBlank() {
-        // The status cell has no circle; a circle in the Comments column must stay untouched.
-        String body = 'Each component release issue has an assigned owner |  | see :red_circle: note |'
-        String updated = script.applyChoreCircles(body, [release_owners_assigned: 'met'])
-        assert updated == body
-    }
+Sanity testing is done for all components | :yellow_circle: |   |'''
 
     @Test
     void testUpdateCriteriaEditsIssueWithRewrittenBody() {
-        statusHits = '{"hits":{"hits":[{"_source":{"criterion_name":"release_owners_assigned","status":"met"}}]}}'
+        statusHits = '{"hits":{"hits":[{"_source":{"criterion_name":"release_owners_assigned","product":"both","status":"met"}}]}}'
         issueViewBody = ISSUE_BODY
 
         script.call(version: '3.8.0', releaseIssue: 'https://github.com/opensearch-project/opensearch-build/issues/5152')
@@ -125,8 +84,11 @@ All integration tests are passing | :green_circle: |   |'''
     @Test
     void testUpdateCriteriaSkipsEditWhenNothingChanged() {
         // Body already reflects the indexed status, so no edit should follow.
-        statusHits = '{"hits":{"hits":[{"_source":{"criterion_name":"release_owners_assigned","status":"met"}}]}}'
-        issueViewBody = 'Each component release issue has an assigned owner | :green_circle: |   |'
+        statusHits = '{"hits":{"hits":[{"_source":{"criterion_name":"release_owners_assigned","product":"both","status":"met"}}]}}'
+        issueViewBody = '''### [Entrance Criteria](https://example.com)
+Criteria | Status | Description  | Comments
+-- | -- | -- | --
+Each component release issue has an assigned owner | :green_circle: |   |'''
 
         script.call(version: '3.8.0', releaseIssue: 'https://github.com/opensearch-project/opensearch-build/issues/5152')
 
