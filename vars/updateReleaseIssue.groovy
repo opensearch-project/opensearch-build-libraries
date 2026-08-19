@@ -7,7 +7,6 @@
  * compatible open source license.
  */
 
-import com.cloudbees.groovy.cps.NonCPS
 import jenkins.ReleaseStateData
 
 /**
@@ -35,10 +34,13 @@ void call(Map args = [:]) {
         error('version and releaseIssue are required.')
     }
 
-    String issueRef = extractIssueRef(releaseIssue)
-    if (!issueRef) {
+    // Validate and extract the issue number without keeping a Matcher in a pipeline local: ==~ yields
+    // a boolean and replaceAll returns a String, so nothing non-serializable survives a CPS step.
+    String issuePattern = /^https:\/\/github\.com\/opensearch-project\/opensearch-build\/issues\/\d+$/
+    if (!(releaseIssue ==~ issuePattern)) {
         error("Release issue '${releaseIssue}' is not a valid opensearch-build issue URL.")
     }
+    String issueRef = releaseIssue.replaceAll(/^.*\/issues\//, '')
 
     // The oscar bot has write access to the release issue (edit body and comment).
     def secret_github_oscar_bot = [
@@ -93,15 +95,5 @@ void call(Map args = [:]) {
         writeFile(file: 'release-issue-body.md', text: updatedBody)
         sh(script: "gh issue edit ${issueRef} --repo opensearch-project/opensearch-build --body-file release-issue-body.md")
     }
-}
-
-/**
- * Extracts the issue number from a full opensearch-build issue URL, or null if it does not match.
- * Kept @NonCPS so the transient Matcher never becomes a pipeline local that must survive a restart.
- */
-@NonCPS
-private String extractIssueRef(String releaseIssue) {
-    def matcher = releaseIssue =~ /^https:\/\/github\.com\/opensearch-project\/opensearch-build\/issues\/(\d+)$/
-    return matcher.matches() ? matcher.group(1) : null
 }
 
