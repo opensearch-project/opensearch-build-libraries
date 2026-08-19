@@ -60,7 +60,21 @@ void call(Map args = [:]) {
         error("Invalid action '${action}'. Valid values: update_criteria, comment")
     }
 
-    Map<String, Map<String, String>> statuses = readChoreStatuses(version)
+    def secret_metrics_cluster = [
+        [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-release-secrets/aws-accounts/jenkins-health-metrics-account-number'],
+        [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-release-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
+    ]
+
+    // Build the data helper and read statuses under the metrics-cluster credentials. The same instance
+    // rewrites the issue body later (applyChoreStatusCircles is pure), so it is held across both blocks.
+    def releaseStateData = null
+    Map<String, Map<String, String>> statuses = [:]
+    withSecrets(secrets: secret_metrics_cluster) {
+        withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
+            releaseStateData = new ReleaseStateData(env.METRICS_HOST_URL, env.AWS_ACCESS_KEY_ID, env.AWS_SECRET_ACCESS_KEY, env.AWS_SESSION_TOKEN, this)
+            statuses = releaseStateData.getLatestChoreStatuses(version)
+        }
+    }
     if (statuses.isEmpty()) {
         echo("No chore-verified statuses indexed for version ${version}; nothing to write back.")
         return
@@ -71,7 +85,7 @@ void call(Map args = [:]) {
             script: "gh issue view ${issueRef} --repo opensearch-project/opensearch-build --json body --jq '.body'",
             returnStdout: true
         ).replaceAll(/\n$/, '')
-        String updatedBody = ReleaseStateData.applyChoreStatusCircles(issueBody, statuses)
+        String updatedBody = releaseStateData.applyChoreStatusCircles(issueBody, statuses)
         if (updatedBody == issueBody) {
             echo("Release issue ${issueRef} circles already match the indexed statuses; no edit needed.")
             return
@@ -91,17 +105,3 @@ private String extractIssueRef(String releaseIssue) {
     return matcher.matches() ? matcher.group(1) : null
 }
 
-private Map<String, Map<String, String>> readChoreStatuses(String version) {
-    def secret_metrics_cluster = [
-        [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-release-secrets/aws-accounts/jenkins-health-metrics-account-number'],
-        [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-release-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
-    ]
-    Map<String, Map<String, String>> statuses = [:]
-    withSecrets(secrets: secret_metrics_cluster) {
-        withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
-            def releaseStateData = new ReleaseStateData(env.METRICS_HOST_URL, env.AWS_ACCESS_KEY_ID, env.AWS_SECRET_ACCESS_KEY, env.AWS_SESSION_TOKEN, this)
-            statuses = releaseStateData.getLatestChoreStatuses(version)
-        }
-    }
-    return statuses
-}

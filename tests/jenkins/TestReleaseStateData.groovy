@@ -283,7 +283,7 @@ All integration tests are passing | :green_circle: |   |
             release_owners_assigned      : [both: 'met'],
             all_integration_tests_passing: ['opensearch': 'not_met', 'opensearch-dashboards': 'met']
         ]
-        String updated = ReleaseStateData.applyChoreStatusCircles(CIRCLE_BODY, statuses)
+        String updated = releaseStateData.applyChoreStatusCircles(CIRCLE_BODY, statuses)
         assert updated.contains('an assigned owner | :green_circle:')
         assert updated.contains('All integration tests are passing | :red_circle:')
         assert updated.contains('All integration tests are passing | :green_circle:')
@@ -293,7 +293,7 @@ All integration tests are passing | :green_circle: |   |
     void testApplyChoreStatusCirclesLeavesRowUntouchedWhenProductStatusMissing() {
         // Only the OpenSearch integration status is known; the OSD exit row keeps its existing circle.
         def statuses = [all_integration_tests_passing: ['opensearch': 'not_met']]
-        String updated = ReleaseStateData.applyChoreStatusCircles(CIRCLE_BODY, statuses)
+        String updated = releaseStateData.applyChoreStatusCircles(CIRCLE_BODY, statuses)
         assert updated.contains('All integration tests are passing | :red_circle:')
         assert updated.contains('All integration tests are passing | :green_circle:')
     }
@@ -303,7 +303,7 @@ All integration tests are passing | :green_circle: |   |
         // A chore keyword appearing before any criteria table heading must not be rewritten.
         String body = 'All integration tests are passing | :green_circle: |   |\n'
         def statuses = [all_integration_tests_passing: ['opensearch': 'not_met']]
-        assert ReleaseStateData.applyChoreStatusCircles(body, statuses) == body
+        assert releaseStateData.applyChoreStatusCircles(body, statuses) == body
     }
 
     @Test
@@ -313,7 +313,7 @@ All integration tests are passing | :green_circle: |   |
             release_owners_assigned      : [both: 'in_progress'],
             all_integration_tests_passing: ['opensearch': 'met', 'opensearch-dashboards': 'met']
         ]
-        assert ReleaseStateData.applyChoreStatusCircles(CIRCLE_BODY, statuses) == CIRCLE_BODY
+        assert releaseStateData.applyChoreStatusCircles(CIRCLE_BODY, statuses) == CIRCLE_BODY
     }
 
     // A trimmed release issue body carrying all three criteria tables in their real markdown shape.

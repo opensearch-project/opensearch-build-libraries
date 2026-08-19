@@ -49,12 +49,4 @@ enum ReleaseCriterionCatalog {
         this.criterionType = criterionType
         this.source = source
     }
-
-    static List<ReleaseCriterionCatalog> manualCriteria() {
-        return values().findAll { it.source == SOURCE_ISSUE_TABLE }
-    }
-
-    static List<ReleaseCriterionCatalog> choreCriteria() {
-        return values().findAll { it.source == SOURCE_CHORE }
-    }
 }
