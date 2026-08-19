@@ -29,6 +29,8 @@ import java.time.format.DateTimeFormatter
  *
  * @param Map args = [:] args A map of the following parameters
  * @param args.version <required> - Release version, e.g. "3.8.0" or "3.8" (resolved to origin/3.8).
+ * @param args.product <required> - Release product to scope to: 'opensearch' or
+ *                                   'opensearch-dashboards'; selects the bundled components checked.
  * @param args.releaseDate <optional> - Release date as yyyy-MM-dd; the age window is measured back
  *                                       from this date. Falls back to today when omitted.
  * @return Map of project name -> list of its blocking CVE ids (empty map when the criterion is met).
@@ -40,6 +42,9 @@ Map<String, List<String>> call(Map args = [:]) {
     if (!args.version) {
         error('version parameter is required.')
     }
+    if (!args.product) {
+        error('product parameter is required.')
+    }
 
     def secret_advisories_cluster = [
         [envVar: 'ADVISORIES_HOST_ACCOUNT', secretRef: 'op://opensearch-release-secrets/aws-accounts/security-advisories-account-number'],
@@ -47,6 +52,7 @@ Map<String, List<String>> call(Map args = [:]) {
     ]
 
     String branchTag = SecurityAdvisoryData.resolveVersionTag(args.version)
+    String product = args.product
     String cutoffIso = ageCutoffIso(args.releaseDate)
     echo("Checking unpatched medium-or-higher vulnerabilities for ${branchTag} (published on or before ${cutoffIso}).")
 
@@ -61,7 +67,7 @@ Map<String, List<String>> call(Map args = [:]) {
             def advisoryData = new SecurityAdvisoryData(advisoriesUrl, awsAccessKey, awsSecretKey, awsSessionToken, this)
 
             String scansIndex = advisoryData.getLatestScansIndex()
-            Map<String, List<String>> openByProject = advisoryData.getOpenVulnerabilitiesByProject(scansIndex, branchTag)
+            Map<String, List<String>> openByProject = advisoryData.getOpenVulnerabilitiesByProject(scansIndex, branchTag, product)
             List<String> openCves = openByProject.values().flatten().unique()
             echo("Found ${openCves.size()} open vulnerability id(s) across ${openByProject.size()} project(s) for ${branchTag} in ${scansIndex}.")
 

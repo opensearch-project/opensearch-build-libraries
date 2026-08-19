@@ -121,6 +121,7 @@ class TestCheckUnpatchedVulnerabilities extends BuildPipelineTest {
         assert scansSearch != null
         assert scansSearch.body.contains('project.tag')
         assert scansSearch.body.contains('origin/3.8')
+        assert scansSearch.body.contains('bundle_opensearch')
     }
 
     @Test
