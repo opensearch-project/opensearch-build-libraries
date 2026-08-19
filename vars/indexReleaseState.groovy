@@ -160,7 +160,11 @@ private void indexCriteriaForRelease(ReleaseStateData releaseStateData, Map rele
         ]
     ]
 
-    checks.each { check ->
+    // A plain for-loop, not .each { }: constructing a ReleaseCriterion (in indexCriterion) and passing
+    // it to a typed method inside a closure body makes the Groovy pipeline-unit compiler resolve
+    // ReleaseCriterion's fields mid-compile, re-entering a non-reentrant GroovyClassLoader recompile
+    // lock and deadlocking. The loop compiles inline, so that re-entrant path never happens.
+    for (check in checks) {
         def raw = runCheck(check.name, check.run)
         def result = normalizeResult(check, raw)
         indexCriterion(releaseStateData, release, check, result)
@@ -199,7 +203,11 @@ private void indexManualCriteriaForRelease(ReleaseStateData releaseStateData, Ma
         )
     }
 
-    releaseStateData.parseManualCriteria(issueBody).each { criterion ->
+    // A plain for-loop, not .each { }: constructing a ReleaseCriterion and passing it to a typed method
+    // inside a closure body makes the Groovy pipeline-unit compiler resolve ReleaseCriterion's fields
+    // mid-compile, re-entering a non-reentrant GroovyClassLoader recompile lock and deadlocking. The
+    // loop compiles inline, so that re-entrant path never happens.
+    for (criterion in releaseStateData.parseManualCriteria(issueBody)) {
         releaseStateData.indexCriterion(new ReleaseCriterion([
             version      : release.version,
             releaseDate  : release.releaseDate,
