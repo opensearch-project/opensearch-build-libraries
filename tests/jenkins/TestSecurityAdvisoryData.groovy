@@ -114,7 +114,7 @@ class TestSecurityAdvisoryData {
               }
             }
         ''']
-        def byProject = advisoryData.getOpenVulnerabilitiesByProject('scans-000335', 'origin/3.8')
+        def byProject = advisoryData.getOpenVulnerabilitiesByProject('scans-000335', 'origin/3.8', 'opensearch')
         assertEquals(['CVE-1', 'CVE-2'], byProject['Alerting'])
         assertEquals(['CVE-3'], byProject['SQL'])
         // The scans index is searched, and the branch tag is filtered on project.tag.
@@ -124,7 +124,27 @@ class TestSecurityAdvisoryData {
         assertTrue(queryBodies[scansSearch].contains('origin/3.8'))
         assertTrue(queryBodies[scansSearch].contains('timestamp.commit'))
         assertTrue(queryBodies[scansSearch].contains('release_type.keyword'))
-        assertTrue(queryBodies[scansSearch].contains('bundle'))
+        assertTrue(queryBodies[scansSearch].contains('bundle_opensearch'))
+    }
+
+    @Test
+    void testGetOpenVulnerabilitiesByProjectFiltersByDashboardsReleaseType() {
+        // The dashboards product scopes to its own bundle release_type (underscored, not hyphenated).
+        responses = ['{"hits":{"hits":[]}}']
+        advisoryData.getOpenVulnerabilitiesByProject('scans-000335', 'origin/3.8', 'opensearch-dashboards')
+        int scansSearch = searchedIndices.indexOf('scans-000335')
+        assertTrue(scansSearch >= 0)
+        assertTrue(queryBodies[scansSearch].contains('bundle_opensearch_dashboards'))
+    }
+
+    @Test
+    void testGetOpenVulnerabilitiesByProjectThrowsForUnknownProduct() {
+        try {
+            advisoryData.getOpenVulnerabilitiesByProject('scans-000335', 'origin/3.8', 'nope')
+            fail('Expected RuntimeException for an unknown product')
+        } catch (RuntimeException e) {
+            assertTrue(e.message.contains('Unknown product'))
+        }
     }
 
     @Test
@@ -145,7 +165,7 @@ class TestSecurityAdvisoryData {
               }
             }
         ''']
-        def byProject = advisoryData.getOpenVulnerabilitiesByProject('scans-000335', 'origin/3.8')
+        def byProject = advisoryData.getOpenVulnerabilitiesByProject('scans-000335', 'origin/3.8', 'opensearch')
         assertEquals(['CVE-1', 'GHSA-xxxx-yyyy-zzzz'], byProject['Alerting'])
     }
 
@@ -187,7 +207,7 @@ class TestSecurityAdvisoryData {
               }
             }
         ''']
-        def byProject = advisoryData.getOpenVulnerabilitiesByProject('scans-000335', 'origin/3.8')
+        def byProject = advisoryData.getOpenVulnerabilitiesByProject('scans-000335', 'origin/3.8', 'opensearch')
         assertEquals(['CVE-2'], byProject['Alerting'])
         assertEquals(['CVE-1'], byProject['SQL'])
     }
@@ -213,7 +233,7 @@ class TestSecurityAdvisoryData {
               }
             }
         ''']
-        def byProject = advisoryData.getOpenVulnerabilitiesByProject('scans-000335', 'origin/3.8')
+        def byProject = advisoryData.getOpenVulnerabilitiesByProject('scans-000335', 'origin/3.8', 'opensearch')
         assertEquals(['CVE-1'], byProject['Alerting'])
     }
 
@@ -245,7 +265,7 @@ class TestSecurityAdvisoryData {
               }
             }
         ''']
-        def byProject = advisoryData.getOpenVulnerabilitiesByProject('scans-000335', 'origin/3.8')
+        def byProject = advisoryData.getOpenVulnerabilitiesByProject('scans-000335', 'origin/3.8', 'opensearch')
         assertEquals(['Alerting'], byProject.keySet().toList())
         assertEquals(['CVE-1'], byProject['Alerting'])
     }
@@ -269,7 +289,7 @@ class TestSecurityAdvisoryData {
               }
             }
         ''']
-        def byProject = advisoryData.getOpenVulnerabilitiesByProject('scans-000335', 'origin/3.8')
+        def byProject = advisoryData.getOpenVulnerabilitiesByProject('scans-000335', 'origin/3.8', 'opensearch')
         assertEquals([:], byProject)
     }
 

@@ -71,6 +71,16 @@ private void indexCriteriaForRelease(ReleaseStateData releaseStateData, Map rele
         "manifests/${version}/opensearch-dashboards-${version}.yml"
     ]
 
+    // Integration results come product-keyed from a single chore call; fetch once (the two per-product
+    // criteria below both call this) and slice per product to avoid re-running the same queries.
+    def integResults = null
+    Closure integResultsForProduct = { String product ->
+        if (integResults == null) {
+            integResults = checkIntegTestResultsOverview(inputManifest: inputManifest)
+        }
+        return integResults[product]
+    }
+
     // Each entry maps a release criterion (from the release issue's entrance/exit tables) to the chore
     // that verifies it:
     //   name    - the criterion name, matching the release_state index
@@ -123,20 +133,38 @@ private void indexCriteriaForRelease(ReleaseStateData releaseStateData, Map rele
         [
             name   : 'all_integration_tests_passing',
             type   : 'exit',
-            product: 'both',
-            run    : { checkIntegTestResultsOverview(inputManifest: inputManifest) },
+            product: 'opensearch',
+            run    : { integResultsForProduct('opensearch') },
+            render : { raw -> renderIntegResults(raw) }
+        ],
+        [
+            name   : 'all_integration_tests_passing',
+            type   : 'exit',
+            product: 'opensearch-dashboards',
+            run    : { integResultsForProduct('opensearch-dashboards') },
             render : { raw -> renderIntegResults(raw) }
         ],
         [
             name   : 'no_unpatched_vulnerabilities',
             type   : 'exit',
-            product: 'both',
-            run    : { checkUnpatchedVulnerabilities(version: version, releaseDate: release.releaseDate) },
+            product: 'opensearch',
+            run    : { checkUnpatchedVulnerabilities(version: version, product: 'opensearch', releaseDate: release.releaseDate) },
+            render : { raw -> renderVulnerabilityResults(raw) }
+        ],
+        [
+            name   : 'no_unpatched_vulnerabilities',
+            type   : 'exit',
+            product: 'opensearch-dashboards',
+            run    : { checkUnpatchedVulnerabilities(version: version, product: 'opensearch-dashboards', releaseDate: release.releaseDate) },
             render : { raw -> renderVulnerabilityResults(raw) }
         ]
     ]
 
-    checks.each { check ->
+    // A plain for-loop, not .each { }: constructing a ReleaseCriterion (in indexCriterion) and passing
+    // it to a typed method inside a closure body makes the Groovy pipeline-unit compiler resolve
+    // ReleaseCriterion's fields mid-compile, re-entering a non-reentrant GroovyClassLoader recompile
+    // lock and deadlocking. The loop compiles inline, so that re-entrant path never happens.
+    for (check in checks) {
         def raw = runCheck(check.name, check.run)
         def result = normalizeResult(check, raw)
         indexCriterion(releaseStateData, release, check, result)
@@ -175,7 +203,11 @@ private void indexManualCriteriaForRelease(ReleaseStateData releaseStateData, Ma
         )
     }
 
-    releaseStateData.parseManualCriteria(issueBody).each { criterion ->
+    // A plain for-loop, not .each { }: constructing a ReleaseCriterion and passing it to a typed method
+    // inside a closure body makes the Groovy pipeline-unit compiler resolve ReleaseCriterion's fields
+    // mid-compile, re-entering a non-reentrant GroovyClassLoader recompile lock and deadlocking. The
+    // loop compiles inline, so that re-entrant path never happens.
+    for (criterion in releaseStateData.parseManualCriteria(issueBody)) {
         releaseStateData.indexCriterion(new ReleaseCriterion([
             version      : release.version,
             releaseDate  : release.releaseDate,
@@ -207,9 +239,10 @@ private Map renderVulnerabilityResults(Map<String, List<String>> byProject) {
 }
 
 /**
- * checkIntegTestResultsOverview always returns a Map keyed by every "${dist}_${arch}", with an empty
- * list for combinations where nothing failed. The failing components (deduped across arch/dist) are
- * the blocking components; only the combinations that actually had failures are kept in details.
+ * checkIntegTestResultsOverview returns a product-keyed map; each product's value is keyed by every
+ * "${dist}_${arch}" with an empty list where nothing failed. renderIntegResults is given one product's
+ * slice: the failing components (deduped across arch/dist) are the blocking components; only the
+ * combinations that actually had failures are kept in details.
  */
 private Map renderIntegResults(Map<String, List<String>> byDistArch) {
     Map<String, List<String>> failing = byDistArch.findAll { distArch, components -> components }
