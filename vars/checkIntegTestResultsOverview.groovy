@@ -13,7 +13,8 @@ import jenkins.ReleaseCandidateStatus
  * Attaches an html document in the Jenkins job with the results.
  * @param Map args = [:] args A map of the following parameters
  * @param args.inputManifest <required> - Input manifest file(s) eg: [manifests/2.0.0/opensearch-2.0.0.yml, manifests/2.0.0/opensearch-dashboards-2.0.0.yml] .
- * @return Map of "${distribution}_${architecture}" to the list of components failing integration tests (empty lists when all pass).
+ * @return Map of product ('opensearch' / 'opensearch-dashboards') to a map of "${distribution}_${architecture}"
+ *         to the list of components failing integration tests (empty lists when all pass).
  */
 Map<String, List> call(Map args = [:]) {
     lib = library(identifier: 'jenkins@13.8.0', retriever: legacySCM(scm))
@@ -50,7 +51,7 @@ Map<String, List> call(Map args = [:]) {
             "arm64": ['tar', 'rpm', 'deb']
     ]
 
-    def failingComponents = [:]
+    def failingComponents = ['opensearch': [:], 'opensearch-dashboards': [:]]
 
     withSecrets(secrets: secret_metrics_cluster){
         withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
@@ -68,13 +69,12 @@ Map<String, List> call(Map args = [:]) {
             } else {
                 archDistMap.each {arch, distributions ->
                     distributions.each { dist ->
-                        def osFailedComponents = componentIntegTestStatus.getAllFailedComponents(opensearchRcNumber, dist, arch, openSearchComponents)
-                        def osdFailedComponents = componentIntegTestStatus.getAllFailedComponents(opensearchDashboardsRcNumber, dist, arch, openSearchDashboardsComponents)
-                        failingComponents["${dist}_${arch}"] = osFailedComponents + osdFailedComponents
+                        failingComponents['opensearch']["${dist}_${arch}"] = componentIntegTestStatus.getAllFailedComponents(opensearchRcNumber, dist, arch, openSearchComponents)
+                        failingComponents['opensearch-dashboards']["${dist}_${arch}"] = componentIntegTestStatus.getAllFailedComponents(opensearchDashboardsRcNumber, dist, arch, openSearchDashboardsComponents)
                     }
                 }
-                def formattedOutput = failingComponents.collect { key, value ->
-                    "${key}: ${value}"
+                def formattedOutput = failingComponents.collect { product, byDistArch ->
+                    "${product}:\n" + byDistArch.collect { key, value -> "  ${key}: ${value}" }.join('\n')
                 }.join('\n')
                 echo "Components failing integration tests:\n${formattedOutput}"
             }

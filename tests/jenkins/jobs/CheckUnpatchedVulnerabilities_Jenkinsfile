@@ -15,6 +15,7 @@ pipeline {
                 script {
                     checkUnpatchedVulnerabilities(
                         version: '3.8.0',
+                        product: 'opensearch',
                         releaseDate: '2026-08-15'
                     )
                 }

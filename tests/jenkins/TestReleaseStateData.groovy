@@ -32,6 +32,7 @@ class TestReleaseStateData {
     // Search response returned to -XGET calls, and the index the search targeted.
     private String searchResponse
     private String searchedIndex
+    private String searchBody
 
     // Holds the body written by the most recent writeFile call, to pair with the following POST.
     private String pendingBody
@@ -57,6 +58,7 @@ class TestReleaseStateData {
             }
             if (s.contains('-XGET')) {
                 searchedIndex = extractSearchIndex(s)
+                searchBody = s
                 return searchResponse
             }
             return responseCode
@@ -188,6 +190,130 @@ class TestReleaseStateData {
     void testGetActiveReleasesReturnsEmptyWhenNoActiveReleases() {
         searchResponse = '{"hits":{"hits":[]}}'
         assert releaseStateData.getActiveReleases() == []
+    }
+
+    @Test
+    void testGetLatestChoreStatusesKeysStatusByCriterionAndProduct() {
+        searchResponse = '''
+            {
+              "hits": {
+                "hits": [
+                  {"_source": {"criterion_name": "release_owners_assigned", "product": "both", "status": "met"}},
+                  {"_source": {"criterion_name": "all_integration_tests_passing", "product": "opensearch", "status": "not_met"}},
+                  {"_source": {"criterion_name": "all_integration_tests_passing", "product": "opensearch-dashboards", "status": "met"}}
+                ]
+              }
+            }
+        '''
+        def statuses = releaseStateData.getLatestChoreStatuses('3.8.0')
+        // A per-product criterion keeps both products' statuses instead of one overwriting the other.
+        assert statuses == [
+            release_owners_assigned      : [both: 'met'],
+            all_integration_tests_passing: ['opensearch': 'not_met', 'opensearch-dashboards': 'met']
+        ]
+        assert searchedIndex == ReleaseStateIndex.STATE_INDEX
+        assert searchBody.contains('criterion_name')
+        assert searchBody.contains('last_checked')
+        assert searchBody.contains('chore_check')
+        assert searchBody.contains('3.8.0')
+    }
+
+    @Test
+    void testGetLatestChoreStatusesKeepsNewestPerCriterionProduct() {
+        // Hits are sorted newest first; the first status seen for a (criterion, product) wins.
+        searchResponse = '''
+            {
+              "hits": {
+                "hits": [
+                  {"_source": {"criterion_name": "release_owners_assigned", "product": "both", "status": "met"}},
+                  {"_source": {"criterion_name": "release_owners_assigned", "product": "both", "status": "not_met"}}
+                ]
+              }
+            }
+        '''
+        assert releaseStateData.getLatestChoreStatuses('3.8.0') == [release_owners_assigned: [both: 'met']]
+    }
+
+    @Test
+    void testGetLatestChoreStatusesReturnsEmptyWhenNoDocs() {
+        searchResponse = '{"hits":{"hits":[]}}'
+        assert releaseStateData.getLatestChoreStatuses('3.8.0') == [:]
+    }
+
+    @Test
+    void testGetLatestChoreStatusesSkipsHitsMissingNameProductOrStatus() {
+        // A hit missing criterion_name, product, or status is skipped; only the well-formed one is kept.
+        searchResponse = '''
+            {
+              "hits": {
+                "hits": [
+                  {"_source": {"product": "both", "status": "met"}},
+                  {"_source": {"criterion_name": "release_notes_ready", "status": "met"}},
+                  {"_source": {"criterion_name": "code_coverage_not_decreased", "product": "both"}},
+                  {"_source": {"criterion_name": "release_owners_assigned", "product": "both", "status": "not_met"}}
+                ]
+              }
+            }
+        '''
+        assert releaseStateData.getLatestChoreStatuses('3.8.0') == [release_owners_assigned: [both: 'not_met']]
+    }
+
+    // The three criteria tables with a chore row in each, for the circle write-back.
+    private static final String CIRCLE_BODY = '''### [Entrance Criteria](https://example.com)
+Criteria | Status | Description  | Comments
+-- | -- | -- | --
+Each component release issue has an assigned owner | :yellow_circle: |   |
+
+### OpenSearch 2.19.0 [exit criteria](https://example.com) status:
+Criteria | Status | Description  | Comments
+-- | -- | -- | --
+All integration tests are passing | :green_circle: |   |
+
+### OpenSearch-Dashboards 2.19.0 [exit criteria](https://example.com) status:
+Criteria | Status | Description  | Comments
+-- | -- | -- | --
+All integration tests are passing | :green_circle: |   |
+'''
+
+    @Test
+    void testApplyChoreStatusCirclesWritesPerProductStatusToEachExitTable() {
+        // Integration tests failed on OpenSearch but passed on OpenSearch-Dashboards; each exit table
+        // gets its own product's status, and the entrance owner row gets its 'both' status.
+        def statuses = [
+            release_owners_assigned      : [both: 'met'],
+            all_integration_tests_passing: ['opensearch': 'not_met', 'opensearch-dashboards': 'met']
+        ]
+        String updated = releaseStateData.applyChoreStatusCircles(CIRCLE_BODY, statuses)
+        assert updated.contains('an assigned owner | :green_circle:')
+        assert updated.contains('All integration tests are passing | :red_circle:')
+        assert updated.contains('All integration tests are passing | :green_circle:')
+    }
+
+    @Test
+    void testApplyChoreStatusCirclesLeavesRowUntouchedWhenProductStatusMissing() {
+        // Only the OpenSearch integration status is known; the OSD exit row keeps its existing circle.
+        def statuses = [all_integration_tests_passing: ['opensearch': 'not_met']]
+        String updated = releaseStateData.applyChoreStatusCircles(CIRCLE_BODY, statuses)
+        assert updated.contains('All integration tests are passing | :red_circle:')
+        assert updated.contains('All integration tests are passing | :green_circle:')
+    }
+
+    @Test
+    void testApplyChoreStatusCirclesIgnoresRowsOutsideKnownTables() {
+        // A chore keyword appearing before any criteria table heading must not be rewritten.
+        String body = 'All integration tests are passing | :green_circle: |   |\n'
+        def statuses = [all_integration_tests_passing: ['opensearch': 'not_met']]
+        assert releaseStateData.applyChoreStatusCircles(body, statuses) == body
+    }
+
+    @Test
+    void testApplyChoreStatusCirclesPreservesBodyWhenNothingChanges() {
+        // Statuses already match the body's circles, so it round-trips byte-for-byte.
+        def statuses = [
+            release_owners_assigned      : [both: 'in_progress'],
+            all_integration_tests_passing: ['opensearch': 'met', 'opensearch-dashboards': 'met']
+        ]
+        assert releaseStateData.applyChoreStatusCircles(CIRCLE_BODY, statuses) == CIRCLE_BODY
     }
 
     // A trimmed release issue body carrying all three criteria tables in their real markdown shape.

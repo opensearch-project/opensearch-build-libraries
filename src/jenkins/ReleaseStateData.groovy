@@ -13,7 +13,7 @@ import groovy.json.JsonOutput
 import java.text.SimpleDateFormat
 import java.util.regex.Pattern
 import utils.OpenSearchMetricsQuery
-import jenkins.ManualReleaseCriterion
+import jenkins.ReleaseCriterionCatalog
 
 /**
  * Indexes release state documents on the OpenSearch metrics cluster.
@@ -108,31 +108,132 @@ class ReleaseStateData {
         return JsonOutput.toJson(queryMap).replace('"', '\\"')
     }
 
+    /**
+     * Returns the latest chore-verified status for each criterion of a version, keyed by criterion
+     * name then by product. The state index appends a new doc every run, so a criterion accumulates
+     * many docs over time; sorting by last_checked descending and keeping the first doc seen per
+     * (criterion, product) keeps only the most recent status for each. Keying by product keeps a
+     * per-product criterion (e.g. integration tests, indexed once per product) from overwriting the
+     * other product's status. Only chore_check docs are read; manual (issue_table) criteria are
+     * owned by the release manager and are never written back.
+     *
+     * @param version the release version to read statuses for
+     * @return map of criterion name -> (product -> latest status)
+     */
+    Map<String, Map<String, String>> getLatestChoreStatuses(String version) {
+        def response = metricsQuery.fetchMetricsFromIndex(ReleaseIndices.STATE, latestChoreStatusesQuery(version))
+        def hits = response?.hits?.hits ?: []
+        Map<String, Map<String, String>> statusByCriterion = [:]
+        hits.each { hit ->
+            def doc = hit._source
+            if (doc?.criterion_name && doc?.product && doc?.status) {
+                Map<String, String> byProduct = statusByCriterion.get(doc.criterion_name, [:])
+                // Hits are sorted newest first, so the first status seen per product is the latest.
+                if (!byProduct.containsKey(doc.product)) {
+                    byProduct[doc.product] = doc.status
+                }
+            }
+        }
+        return statusByCriterion
+    }
+
+    private String latestChoreStatusesQuery(String version) {
+        def queryMap = [
+            size   : 100,
+            sort   : [['last_checked': [order: 'desc']]],
+            _source: ['criterion_name', 'product', 'status'],
+            query  : [
+                bool: [
+                    filter: [
+                        [term: [doc_type: 'criterion']],
+                        [term: [version: version]],
+                        [term: [source: 'chore_check']]
+                    ]
+                ]
+            ]
+        ]
+        return JsonOutput.toJson(queryMap).replace('"', '\\"')
+    }
+
     private static final Map<String, String> CIRCLE_STATUS = [
         green_circle : 'met',
         yellow_circle: 'in_progress',
         red_circle   : 'not_met'
     ]
 
+    private static final Map<String, String> STATUS_CIRCLE = [
+        met        : ':green_circle:',
+        in_progress: ':yellow_circle:',
+        not_met    : ':red_circle:'
+    ]
+
+    /**
+     * The three criteria tables in the release issue and the product each applies to: the entrance
+     * table covers both products, and each exit table covers one product. start/stop bound the table
+     * in the body so rows are parsed and rewritten in isolation.
+     */
+    private static List<Map> criteriaTables() {
+        return [
+            [type: 'entrance', product: 'both', start: /(?im)^#+.*entrance criteria/, stop: 'exit'],
+            [type: 'exit', product: 'opensearch', start: /(?im)^#+\s+opensearch\s+\S+\s+\[?exit criteria/, stop: 'dashboards'],
+            [type: 'exit', product: 'opensearch-dashboards', start: /(?im)^#+.*dashboards\s+\S+\s+\[?exit criteria/, stop: null]
+        ]
+    }
+
+    /**
+     * Rewrites the status circle of each chore-verified criterion row to reflect its latest indexed
+     * status. The body is walked once, tracking which table each line falls under (the entrance table
+     * applies to both products, each exit table to its own), so a per-product criterion gets that
+     * table's product's status and a 'both' criterion applies in every table it appears in. A row is
+     * matched by the chore keyword in the Criteria cell and only its status cell is rewritten. Lines
+     * outside the three known tables, unmatched rows, and statuses with no circle (e.g. unknown) are
+     * left as-is, so an unchanged body round-trips and a transient failure never blanks a circle.
+     *
+     * @param issueBody the raw markdown body of the release issue
+     * @param statusByCriterion criterion name -> (product -> status), from getLatestChoreStatuses
+     * @return the issue body with chore circles updated
+     */
+    String applyChoreStatusCircles(String issueBody, Map<String, Map<String, String>> statusByCriterion) {
+        def chores = ReleaseCriterionCatalog.values().findAll { it.source == ReleaseCriterionCatalog.SOURCE_CHORE }
+        def tables = criteriaTables()
+        String currentProduct = null
+        return issueBody.split(/(?<=\n)/).collect { line ->
+            def startedTable = tables.find { (line =~ it.start).find() }
+            if (startedTable) {
+                currentProduct = startedTable.product
+                return line
+            }
+            if (!currentProduct || !line.contains('|')) {
+                return line
+            }
+            String criteriaCell = line.split('\\|')[0].toLowerCase()
+            def criterion = chores.find { criteriaCell.contains(it.keyword) }
+            if (!criterion) {
+                return line
+            }
+            String status = statusByCriterion[criterion.criterionName]?.get(currentProduct)
+            String circle = status ? STATUS_CIRCLE[status] : null
+            if (!circle) {
+                return line
+            }
+            return line.replaceFirst(/^([^|]*\|[^|]*?):(green|yellow|red)_circle:/, '$1' + java.util.regex.Matcher.quoteReplacement(circle))
+        }.join('')
+    }
+
     /**
      * Reads the manual criteria (those no chore verifies) from the release issue's criteria tables.
      *
      * The issue holds three tables: an entrance table that applies to both products, and one exit
      * table per product. A criterion's product is therefore the table it sits in, not the row itself.
-     * Manual rows are matched by a stable keyword from their prose (see ManualReleaseCriterion) and
+     * Manual rows are matched by a stable keyword from their prose (see ReleaseCriterionCatalog) and
      * their status circle maps to a criterion status via CIRCLE_STATUS (unrecognised -> unknown).
      *
      * @param issueBody the raw markdown body of the release issue
      * @return list of maps [name, type, product, status], one per manual row found
      */
     List<Map> parseManualCriteria(String issueBody) {
-        def tables = [
-            [type: 'entrance', product: 'both', start: /(?im)^#+.*entrance criteria/, stop: 'exit'],
-            [type: 'exit', product: 'opensearch', start: /(?im)^#+\s+opensearch\s+\S+\s+\[?exit criteria/, stop: 'dashboards'],
-            [type: 'exit', product: 'opensearch-dashboards', start: /(?im)^#+.*dashboards\s+\S+\s+\[?exit criteria/, stop: null]
-        ]
-        return tables.collectMany { table ->
-            def criteria = ManualReleaseCriterion.values().findAll { it.criterionType == table.type }
+        return criteriaTables().collectMany { table ->
+            def criteria = ReleaseCriterionCatalog.values().findAll { it.source == ReleaseCriterionCatalog.SOURCE_ISSUE_TABLE && it.criterionType == table.type }
             sectionBetween(issueBody, table.start, table.stop).readLines().collectMany { line ->
                 if (!line.contains('|')) {
                     return []
