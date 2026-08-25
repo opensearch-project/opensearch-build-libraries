@@ -34,6 +34,15 @@ void call(Map args = [:]) {
         [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-release-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
     ]
 
+    // The outer withAWS assumes OpenSearchJenkinsAccessRole ONLY to capture the metrics-cluster
+    // credentials; it must not enclose the chore loop below. ReleaseStateData signs its reads and
+    // writes with these captured credential strings directly (see OpenSearchMetricsQuery.curlAuthArgs),
+    // so it does not need the ambient AWS session once constructed. Each chore check runs its own
+    // withAWS(role: 'OpenSearchJenkinsAccessRole', ...) internally; if the loop ran inside this outer
+    // assumed-role session, that nested re-assume would fail with sts:AssumeRole AccessDenied (an
+    // assumed-role session cannot re-assume the same role), and every criterion would record 'unknown'.
+    def releaseStateData
+    def releases
     withSecrets(secrets: secret_metrics_cluster) {
         withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
             def metricsUrl = env.METRICS_HOST_URL
@@ -41,23 +50,26 @@ void call(Map args = [:]) {
             def awsSecretKey = env.AWS_SECRET_ACCESS_KEY
             def awsSessionToken = env.AWS_SESSION_TOKEN
 
-            def releaseStateData = new ReleaseStateData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, this)
-
-            def releases = releaseStateData.getActiveReleases()
-            if (args.version) {
-                releases = releases.findAll { it.version == args.version }
-            }
-            if (releases.isEmpty()) {
-                echo('No active releases to index state for.')
-                return
-            }
-
-            releases.each { release ->
-                echo("Indexing release state for version ${release.version}.")
-                indexCriteriaForRelease(releaseStateData, release)
-                indexManualCriteriaForRelease(releaseStateData, release)
-            }
+            releaseStateData = new ReleaseStateData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, this)
+            releases = releaseStateData.getActiveReleases()
         }
+    }
+    echo("Found ${releases.size()} active release(s) in the schedule index.")
+
+    if (args.version) {
+        releases = releases.findAll { it.version == args.version }
+        echo("Restricting to version ${args.version}: ${releases.size()} match(es).")
+    }
+    if (releases.isEmpty()) {
+        echo('No active releases to index state for.')
+        return
+    }
+    echo("Indexing release state for ${releases.size()} version(s): ${releases.collect { it.version }.join(', ')}.")
+
+    releases.each { release ->
+        echo("Indexing release state for version ${release.version}.")
+        indexCriteriaForRelease(releaseStateData, release)
+        indexManualCriteriaForRelease(releaseStateData, release)
     }
 }
 
@@ -165,10 +177,26 @@ private void indexCriteriaForRelease(ReleaseStateData releaseStateData, Map rele
     // ReleaseCriterion's fields mid-compile, re-entering a non-reentrant GroovyClassLoader recompile
     // lock and deadlocking. The loop compiles inline, so that re-entrant path never happens.
     for (check in checks) {
-        def raw = runCheck(check.name, check.run)
+        // Product disambiguates the two per-product criteria (integration tests, vulnerabilities),
+        // which share a criterion name but run once per product.
+        String label = "${check.name} [${check.product}]"
+        echo("Running check '${label}' for version ${version}.")
+        def raw = runCheck(label, check.run)
         def result = normalizeResult(check, raw)
         indexCriterion(releaseStateData, release, check, result)
+        echo("Check '${label}' for version ${version} recorded as '${statusOf(result)}'.")
     }
+}
+
+/**
+ * Reports the status indexCriterion will record for a normalized result, so the check loop can log
+ * the outcome without duplicating the null -> unknown / empty -> met / else -> not_met mapping.
+ */
+private String statusOf(Map result) {
+    if (result == null) {
+        return 'unknown'
+    }
+    return result.blockingComponents.isEmpty() ? 'met' : 'not_met'
 }
 
 /**
@@ -195,6 +223,7 @@ private void indexManualCriteriaForRelease(ReleaseStateData releaseStateData, Ma
         [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-release-secrets/github-bot/ci-bot-token']
     ]
 
+    echo("Reading manual criteria for version ${release.version} from release issue #${issueNumber.group(1)}.")
     String issueBody
     withSecrets(secrets: secret_github_bot) {
         issueBody = sh(
@@ -203,11 +232,15 @@ private void indexManualCriteriaForRelease(ReleaseStateData releaseStateData, Ma
         )
     }
 
+    def manualCriteria = releaseStateData.parseManualCriteria(issueBody)
+    echo("Parsed ${manualCriteria.size()} manual criteria for version ${release.version}.")
+
     // A plain for-loop, not .each { }: constructing a ReleaseCriterion and passing it to a typed method
     // inside a closure body makes the Groovy pipeline-unit compiler resolve ReleaseCriterion's fields
     // mid-compile, re-entering a non-reentrant GroovyClassLoader recompile lock and deadlocking. The
     // loop compiles inline, so that re-entrant path never happens.
-    for (criterion in releaseStateData.parseManualCriteria(issueBody)) {
+    for (criterion in manualCriteria) {
+        echo("Recording manual criterion '${criterion.name} [${criterion.product}]' as '${criterion.status}' for version ${release.version}.")
         releaseStateData.indexCriterion(new ReleaseCriterion([
             version      : release.version,
             releaseDate  : release.releaseDate,
@@ -289,15 +322,10 @@ private def normalizeResult(Map check, def raw) {
  * null -> unknown, empty blockingComponents -> met, otherwise not_met with the components and details.
  */
 private void indexCriterion(ReleaseStateData releaseStateData, Map release, Map check, Map result) {
-    String status
+    String status = statusOf(result)
     List<String> blockingComponents = []
     String details = null
-    if (result == null) {
-        status = 'unknown'
-    } else if (result.blockingComponents.isEmpty()) {
-        status = 'met'
-    } else {
-        status = 'not_met'
+    if (status == 'not_met') {
         blockingComponents = result.blockingComponents
         details = result.details
     }
