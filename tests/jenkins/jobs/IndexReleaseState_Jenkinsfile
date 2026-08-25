@@ -12,7 +12,9 @@ pipeline {
         stage('indexReleaseState') {
             steps {
                 script {
-                    indexReleaseState()
+                    // CRITERIA is set by the test binding to exercise the criteria filter; unset it
+                    // defaults to null, which the var treats as "index every criterion".
+                    indexReleaseState(criteria: binding.hasVariable('CRITERIA') ? CRITERIA : null)
                 }
             }
         }

@@ -9,6 +9,7 @@
 
 import jenkins.ReleaseStateData
 import jenkins.ReleaseCriterion
+import jenkins.ReleaseCriterionCatalog
 
 /**
  * Computes and indexes per-criterion release readiness state for active releases.
@@ -27,8 +28,19 @@ import jenkins.ReleaseCriterion
  * @param Map args = [:] args A map of the following parameters
  * @param args.version <optional> - Restrict to a single release version. When omitted, all active
  *                                   releases from the schedule index are processed.
+ * @param args.criteria <optional> - Restrict to these criterion names (a comma-separated String or a
+ *                                    List of names, e.g. 'code_coverage_not_decreased' or
+ *                                    ['all_integration_tests_passing', 'security_reviews_complete']).
+ *                                    When omitted or empty, every criterion is indexed (the scheduled
+ *                                    cron default). Lets a re-run re-index only the criteria that need
+ *                                    it — e.g. after fixing the cause of a transient failure — instead
+ *                                    of re-running the whole set. Applies to both the automated chore
+ *                                    criteria and the manual (issue-table) criteria. Unknown names are
+ *                                    rejected up front so a typo aborts loudly rather than silently
+ *                                    indexing nothing.
  */
 void call(Map args = [:]) {
+    List<String> criteriaFilter = normalizeCriteriaFilter(args.criteria)
     def secret_metrics_cluster = [
         [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-release-secrets/aws-accounts/jenkins-health-metrics-account-number'],
         [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-release-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
@@ -65,18 +77,49 @@ void call(Map args = [:]) {
         return
     }
     echo("Indexing release state for ${releases.size()} version(s): ${releases.collect { it.version }.join(', ')}.")
+    if (criteriaFilter) {
+        echo("Restricting to criteria: ${criteriaFilter.join(', ')}.")
+    }
 
     releases.each { release ->
         echo("Indexing release state for version ${release.version}.")
-        indexCriteriaForRelease(releaseStateData, release)
-        indexManualCriteriaForRelease(releaseStateData, release)
+        indexCriteriaForRelease(releaseStateData, release, criteriaFilter)
+        indexManualCriteriaForRelease(releaseStateData, release, criteriaFilter)
     }
 }
 
 /**
- * Runs every automated criterion check for a release and indexes a criterion document for each.
+ * Normalizes the optional criteria filter into a list of criterion names and validates each against
+ * the catalog. Accepts a comma-separated String or a List (each element may itself be comma-separated
+ * or carry surrounding whitespace, e.g. from a Jenkins parameter). Returns an empty list when nothing
+ * is requested, which the callers treat as "all criteria". Throws on any name not in the catalog so a
+ * typo aborts the run rather than silently indexing nothing.
  */
-private void indexCriteriaForRelease(ReleaseStateData releaseStateData, Map release) {
+private List<String> normalizeCriteriaFilter(rawCriteria) {
+    if (!rawCriteria) {
+        return []
+    }
+    List<String> requested = (rawCriteria instanceof List ? rawCriteria : [rawCriteria])
+        .collectMany { it.toString().split(',').collect { name -> name.trim() } }
+        .findAll { it }
+        .unique()
+    if (!requested) {
+        return []
+    }
+    Set<String> valid = ReleaseCriterionCatalog.values().collect { it.criterionName } as Set
+    List<String> unknown = requested.findAll { !valid.contains(it) }
+    if (unknown) {
+        error("Unknown criterion name(s): ${unknown.join(', ')}. Valid names: ${valid.sort().join(', ')}.")
+    }
+    return requested
+}
+
+/**
+ * Runs the automated criterion checks for a release and indexes a criterion document for each.
+ * When criteriaFilter is non-empty, only checks whose criterion name is in the filter are run and
+ * indexed; an empty filter runs them all.
+ */
+private void indexCriteriaForRelease(ReleaseStateData releaseStateData, Map release, List<String> criteriaFilter) {
     String version = release.version
     List<String> inputManifest = [
         "manifests/${version}/opensearch-${version}.yml",
@@ -177,6 +220,12 @@ private void indexCriteriaForRelease(ReleaseStateData releaseStateData, Map rele
     // ReleaseCriterion's fields mid-compile, re-entering a non-reentrant GroovyClassLoader recompile
     // lock and deadlocking. The loop compiles inline, so that re-entrant path never happens.
     for (check in checks) {
+        // Skip checks not in the requested filter (an empty filter runs them all). A per-product
+        // criterion (integration tests, vulnerabilities) is matched by name, so requesting the name
+        // re-runs both products for it.
+        if (criteriaFilter && !criteriaFilter.contains(check.name)) {
+            continue
+        }
         // Product disambiguates the two per-product criteria (integration tests, vulnerabilities),
         // which share a criterion name but run once per product.
         String label = "${check.name} [${check.product}]"
@@ -203,8 +252,22 @@ private String statusOf(Map result) {
  * Reads the manual criteria (no chore verifies them) from the release issue's criteria tables and
  * indexes one criterion document for each. The issue body is fetched with the github-bot token and
  * parsed by ReleaseStateData; each row's status circle is recorded as-is (source 'issue_table').
+ * When criteriaFilter is non-empty, only manual criteria whose name is in the filter are indexed;
+ * if the filter names no manual criteria at all, the GitHub fetch is skipped entirely.
  */
-private void indexManualCriteriaForRelease(ReleaseStateData releaseStateData, Map release) {
+private void indexManualCriteriaForRelease(ReleaseStateData releaseStateData, Map release, List<String> criteriaFilter) {
+    // When a filter is set but names only chore criteria, there is nothing manual to do — skip the
+    // issue fetch (and its github-bot secret + gh call) rather than reading the issue for nothing.
+    if (criteriaFilter) {
+        Set<String> manualNames = ReleaseCriterionCatalog.values()
+            .findAll { it.source == ReleaseCriterionCatalog.SOURCE_ISSUE_TABLE }
+            .collect { it.criterionName } as Set
+        if (!criteriaFilter.any { manualNames.contains(it) }) {
+            echo("No manual criteria requested for version ${release.version}; skipping manual criteria.")
+            return
+        }
+    }
+
     if (!release.releaseIssue) {
         echo("No release issue for version ${release.version}; skipping manual criteria.")
         return
@@ -233,6 +296,9 @@ private void indexManualCriteriaForRelease(ReleaseStateData releaseStateData, Ma
     }
 
     def manualCriteria = releaseStateData.parseManualCriteria(issueBody)
+    if (criteriaFilter) {
+        manualCriteria = manualCriteria.findAll { criteriaFilter.contains(it.name) }
+    }
     echo("Parsed ${manualCriteria.size()} manual criteria for version ${release.version}.")
 
     // A plain for-loop, not .each { }: constructing a ReleaseCriterion and passing it to a typed method

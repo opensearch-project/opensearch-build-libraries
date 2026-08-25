@@ -147,7 +147,9 @@ class TestIndexReleaseState extends BuildPipelineTest {
      * so a test can set the outcome before calling this), or throws when the name is present in
      * choreThrows to exercise the runCheck -> 'unknown' path.
      */
-    private void runIndexReleaseState() {
+    private void runIndexReleaseState(criteria = null) {
+        // The job wrapper reads CRITERIA from the binding and passes it as args.criteria (null = all).
+        binding.setVariable('CRITERIA', criteria)
         def script = loadScript('tests/jenkins/jobs/IndexReleaseState_Jenkinsfile')
         ['checkRequestAssignReleaseOwners', 'checkDocumentationIssues', 'checkCodeCoverage',
          'checkReleaseNotes', 'checkReleaseIssues', 'checkDocumentationPullRequests',
@@ -294,5 +296,78 @@ class TestIndexReleaseState extends BuildPipelineTest {
         assert indexedDocs.findAll { it.source == 'issue_table' }.isEmpty()
         assertThat(getCommands('echo', 'skipping manual criteria'),
                 hasItem('No release issue for version 3.9.0; skipping manual criteria.'))
+    }
+
+    @Test
+    void testCriteriaFilterIndexesOnlyRequestedChoreCriterion() {
+        runIndexReleaseState('code_coverage_not_decreased')
+
+        // Only the requested chore criterion is indexed; nothing else runs.
+        assert indexedDocs.size() == 1
+        assert indexedDocs[0].criterion_name == 'code_coverage_not_decreased'
+        assert indexedDocs[0].source == 'chore_check'
+        assertThat(getCommands('echo', 'Restricting to criteria'),
+                hasItem('Restricting to criteria: code_coverage_not_decreased.'))
+        // A skipped check never logs a "Running check" line.
+        assert getCommands('echo', "Running check 'release_owners_assigned").isEmpty()
+    }
+
+    @Test
+    void testCriteriaFilterAsListRunsBothProductsOfAName() {
+        // Requesting a per-product criterion by name re-runs both products for it.
+        runIndexReleaseState(['all_integration_tests_passing'])
+
+        def docs = criterionDocs('all_integration_tests_passing')
+        assert docs.size() == 2
+        assert docs.collect { it.product }.sort() == ['opensearch', 'opensearch-dashboards']
+        // No other criteria and no manual docs.
+        assert indexedDocs.size() == 2
+    }
+
+    @Test
+    void testCriteriaFilterSelectsManualCriterionAndSkipsChores() {
+        runIndexReleaseState('security_reviews_complete')
+
+        // Only the one manual criterion is indexed; no chore docs.
+        assert indexedDocs.findAll { it.source == 'chore_check' }.isEmpty()
+        def docs = indexedDocs.findAll { it.source == 'issue_table' }
+        assert docs.size() == 1
+        assert docs[0].criterion_name == 'security_reviews_complete'
+        assert docs[0].status == 'met'
+    }
+
+    @Test
+    void testCriteriaFilterOfOnlyChoreNamesSkipsIssueFetch() {
+        runIndexReleaseState('code_coverage_not_decreased')
+
+        // A filter that names no manual criteria skips the GitHub issue fetch entirely.
+        assert getCommands('sh', 'gh issue view').isEmpty()
+        assertThat(getCommands('echo', 'No manual criteria requested'),
+                hasItem('No manual criteria requested for version 3.9.0; skipping manual criteria.'))
+    }
+
+    @Test
+    void testCommaSeparatedCriteriaStringMixesChoreAndManual() {
+        runIndexReleaseState('code_coverage_not_decreased, security_reviews_complete')
+
+        assert criterionDoc('code_coverage_not_decreased', 'both').source == 'chore_check'
+        assert criterionDoc('security_reviews_complete', 'both').source == 'issue_table'
+        assert indexedDocs.size() == 2
+    }
+
+    @Test
+    void testUnknownCriterionNameAbortsBeforeIndexing() {
+        String message = null
+        helper.registerAllowedMethod('error', [String], { String m ->
+            message = m
+            throw new RuntimeException(m)
+        })
+        try {
+            runIndexReleaseState('not_a_real_criterion')
+        } catch (ignored) {
+            // error() aborts the pipeline; the wrapping exception is expected.
+        }
+        assert message?.contains('Unknown criterion name(s): not_a_real_criterion')
+        assert indexedDocs.isEmpty()
     }
 }
