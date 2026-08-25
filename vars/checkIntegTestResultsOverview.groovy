@@ -16,8 +16,8 @@ import jenkins.ReleaseCandidateStatus
  * @return Map of product ('opensearch' / 'opensearch-dashboards') to a map of "${distribution}_${architecture}"
  *         to the list of components failing integration tests (empty lists when all pass).
  */
-Map<String, List> call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@13.8.0', retriever: legacySCM(scm))
+Map<String, Map> call(Map args = [:]) {
+    lib = library(identifier: 'jenkins@13.8.1', retriever: legacySCM(scm))
 
     def secret_metrics_cluster = [
         [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-release-secrets/aws-accounts/jenkins-health-metrics-account-number'],
