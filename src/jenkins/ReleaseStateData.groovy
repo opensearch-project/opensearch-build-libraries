@@ -238,7 +238,9 @@ class ReleaseStateData {
                 if (!line.contains('|')) {
                     return []
                 }
-                List<String> cells = line.split('\\|')*.trim()
+                // Use .collect { it.trim() } rather than the spread operator (*.trim()):
+                // Jenkins CPS transformation does not support spread, and this runs in a CPS context.
+                List<String> cells = line.split('\\|').collect { it.trim() }
                 // A leading pipe (| a | b |) splits to an empty first cell; drop it so the Criteria
                 // and Status columns are at the same indices whether or not the row is pipe-bounded.
                 if (cells && cells[0].isEmpty()) {
