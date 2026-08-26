@@ -51,6 +51,20 @@ class SecurityAdvisoriesQuery {
         return response
     }
 
+    /**
+     * Runs an unscoped search (GET /_search with no index in the path) to resolve the most recent
+     * scan index. The path deliberately carries no index name: a wildcard like scans-* would be
+     * percent-encoded by the SigV4 signer and then read as a literal index name (matching nothing),
+     * so the newest scan index is found by searching across the cluster and sorting by _index.
+     * @param query the SigV4-shell-escaped query body
+     */
+    def searchForLatestScanIndex(String query) {
+        this.script.println("Resolving the latest scan index with query: ${query}")
+        def response = runSearch("${advisoriesUrl}/_search", query)
+        this.script.println("Latest-scan-index resolution matched ${response?.hits?.hits?.size() ?: 0} scan doc(s).")
+        return response
+    }
+
     // The cluster endpoint is a secret, so the URL itself is never logged (callers log the index
     // and query instead). Issues the signed request, then fails loudly on an empty body or a cluster
     // error response so a failed query throws (and the caller records the criterion as unknown)

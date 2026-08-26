@@ -87,11 +87,12 @@ class TestSecurityAdvisoryData {
 
     @Test
     void testGetLatestScansIndexReturnsHighestNumberedIndex() {
-        // The scans-* search sorts _index desc, so the first hit is the newest scans index.
+        // The unscoped search sorts _index desc, so the first hit is the newest scans index.
         responses = ['{"hits":{"hits":[{"_index":"scans-000335"}]}}']
         assertEquals('scans-000335', advisoryData.getLatestScansIndex())
-        // Resolved via a search scoped to the scans-* index pattern.
-        assertEquals(SecurityAdvisoryData.SCANS_INDEX_PATTERN, searchedIndices[0])
+        // Resolved via an unscoped search (no index prefix in the URL) so a SigV4-encoded wildcard
+        // can never be read as a literal index name.
+        assertEquals('', searchedIndices[0])
     }
 
     @Test

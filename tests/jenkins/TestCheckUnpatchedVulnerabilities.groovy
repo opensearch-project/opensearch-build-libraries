@@ -89,16 +89,16 @@ class TestCheckUnpatchedVulnerabilities extends BuildPipelineTest {
             }
         '''
 
-        // Route each cluster search by the index in its URL: the scans-* search resolves the latest
-        // scans index, the concrete scans-NNNNNN returns open vulnerabilities, advisories returns
-        // aged CVEs, ignored-advisories returns exemptions.
+        // Route each cluster search by the index in its URL: the index-less _search resolves the
+        // latest scans index, the concrete scans-NNNNNN returns open vulnerabilities, advisories
+        // returns aged CVEs, ignored-advisories returns exemptions.
         helper.registerAllowedMethod('sh', [Map.class], { Map args ->
             String s = args.script
             def indexMatcher = (s =~ /sample\.url\/([^\/]*)\/?_search/)
             String index = indexMatcher ? indexMatcher[0][1] : null
             def bodyMatcher = (s =~ /-d "(.*)" \| jq/)
             searches.add([index: index, body: bodyMatcher ? bodyMatcher[0][1] : null])
-            if (index == 'scans-*') {
+            if (index == null || index.isEmpty()) {
                 return '{"hits":{"hits":[{"_index":"scans-000335"}]}}'
             }
             if (index == 'ignored-advisories') {

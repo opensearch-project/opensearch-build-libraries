@@ -41,9 +41,6 @@ class SecurityAdvisoryData {
     /** The index of project-scoped advisory exemptions, edited live ahead of the next scan. */
     static final String IGNORED_ADVISORIES_INDEX = 'ignored-advisories'
 
-    /** Index pattern for scan indices (scans-NNNNNN), searched to resolve the most recent one. */
-    static final String SCANS_INDEX_PATTERN = 'scans-*'
-
     /** The per-product release_type of bundled components, keyed by product (security-advisories#135). */
     static final Map<String, String> RELEASE_TYPE_BY_PRODUCT = [
         'opensearch'           : 'bundle_opensearch',
@@ -135,9 +132,11 @@ class SecurityAdvisoryData {
     }
 
     /**
-     * Resolves the most recently created scans index. Scan indices are named scans-NNNNNN, so a
-     * search over the scans-* pattern for docs that have timestamp.scan, sorted by _index descending,
-     * returns the highest-numbered (newest) index first.
+     * Resolves the most recently created scans index. Scan indices are named scans-NNNNNN, so an
+     * unscoped search for docs that have timestamp.scan, sorted by _index descending, returns the
+     * highest-numbered (newest) index first. The search is unscoped rather than scoped to a scans-*
+     * pattern because a wildcard in a SigV4-signed request path is percent-encoded and then read as a
+     * literal index name (matching nothing).
      *
      * @return the concrete scans index name (e.g. scans-000164)
      * @throws RuntimeException if no scans index can be resolved
@@ -149,7 +148,7 @@ class SecurityAdvisoryData {
             sort   : [['_index': [order: 'desc']]],
             _source: false
         ])
-        def response = advisoriesQuery.search(SCANS_INDEX_PATTERN, query)
+        def response = advisoriesQuery.searchForLatestScanIndex(query)
         def hits = response?.hits?.hits
         if (!hits) {
             script.error('Could not resolve latest scans index: no scan documents found.')
