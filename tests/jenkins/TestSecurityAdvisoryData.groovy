@@ -69,12 +69,29 @@ class TestSecurityAdvisoryData {
     }
 
     @Test
+    void testResolveManifestRefTagMapsRefsToBranchTags() {
+        // The three ref formats seen in real manifests.
+        assertEquals('origin/main', SecurityAdvisoryData.resolveManifestRefTag('main'))
+        assertEquals('origin/3.8', SecurityAdvisoryData.resolveManifestRefTag('tags/3.8.0'))
+        assertEquals('origin/3.8', SecurityAdvisoryData.resolveManifestRefTag('3.8'))
+        assertEquals('origin/3.8', SecurityAdvisoryData.resolveManifestRefTag('3.8.1'))
+        assertEquals('origin/main', SecurityAdvisoryData.resolveManifestRefTag('latest'))
+        // An already-resolved tag is passed through unchanged.
+        assertEquals('origin/2.19', SecurityAdvisoryData.resolveManifestRefTag('origin/2.19'))
+        // A non-version ref is prefixed rather than mangled.
+        assertEquals('origin/some-branch', SecurityAdvisoryData.resolveManifestRefTag('some-branch'))
+        // Blank/absent ref returns null so the caller can fall back to the version.
+        assertEquals(null, SecurityAdvisoryData.resolveManifestRefTag(null))
+        assertEquals(null, SecurityAdvisoryData.resolveManifestRefTag('   '))
+    }
+
+    @Test
     void testGetLatestScansIndexReturnsHighestNumberedIndex() {
-        // The cluster-wide search sorts _index desc, so the first hit is the newest scans index.
+        // The scans-* search sorts _index desc, so the first hit is the newest scans index.
         responses = ['{"hits":{"hits":[{"_index":"scans-000335"}]}}']
         assertEquals('scans-000335', advisoryData.getLatestScansIndex())
-        // Resolved via a cluster-wide search (no index prefix in the URL).
-        assertEquals('', searchedIndices[0])
+        // Resolved via a search scoped to the scans-* index pattern.
+        assertEquals(SecurityAdvisoryData.SCANS_INDEX_PATTERN, searchedIndices[0])
     }
 
     @Test

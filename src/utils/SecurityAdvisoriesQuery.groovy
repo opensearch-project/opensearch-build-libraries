@@ -51,18 +51,6 @@ class SecurityAdvisoriesQuery {
         return response
     }
 
-    /**
-     * Runs a cluster-wide search (GET /_search with no index prefix), used to resolve which
-     * concrete scan index is the most recent across all indices.
-     * @param query the SigV4-shell-escaped query body
-     */
-    def searchAllIndices(String query) {
-        this.script.println("Querying advisories cluster (all indices) with query: ${query}")
-        def response = runSearch("${advisoriesUrl}/_search", query)
-        this.script.println("Advisories cluster search returned ${response?.hits?.hits?.size() ?: 0} hit(s).")
-        return response
-    }
-
     // The cluster endpoint is a secret, so the URL itself is never logged (callers log the index
     // and query instead). Issues the signed request, then fails loudly on an empty body or a cluster
     // error response so a failed query throws (and the caller records the criterion as unknown)

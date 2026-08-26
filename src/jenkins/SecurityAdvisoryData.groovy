@@ -41,10 +41,19 @@ class SecurityAdvisoryData {
     /** The index of project-scoped advisory exemptions, edited live ahead of the next scan. */
     static final String IGNORED_ADVISORIES_INDEX = 'ignored-advisories'
 
+    /** Index pattern for scan indices (scans-NNNNNN), searched to resolve the most recent one. */
+    static final String SCANS_INDEX_PATTERN = 'scans-*'
+
     /** The per-product release_type of bundled components, keyed by product (security-advisories#135). */
     static final Map<String, String> RELEASE_TYPE_BY_PRODUCT = [
         'opensearch'           : 'bundle_opensearch',
         'opensearch-dashboards': 'bundle_opensearch_dashboards'
+    ]
+
+    /** The core component whose manifest ref determines the scan branch tag, keyed by product. */
+    static final Map<String, String> CORE_COMPONENT_BY_PRODUCT = [
+        'opensearch'           : 'OpenSearch',
+        'opensearch-dashboards': 'OpenSearch-Dashboards'
     ]
 
     /**
@@ -93,9 +102,42 @@ class SecurityAdvisoryData {
     }
 
     /**
+     * Maps a component's manifest ref to the branch tag the scans are keyed on (project.tag). The
+     * manifest ref is the source of truth for the branch a release currently builds from, so before a
+     * release branch is cut the ref is still 'main' and scans are keyed on origin/main, not the
+     * not-yet-existing origin/{major}.{minor}. Manifest refs seen in practice: 'main' (pre-cut),
+     * '3.8' (branch cut, e.g. a patch line), and 'tags/3.8.0' (released).
+     *
+     *   - blank                    -> null (caller falls back to the version)
+     *   - main / latest            -> origin/main
+     *   - already origin/-prefixed -> returned as-is
+     *   - tags/3.8.0               -> origin/3.8
+     *   - '3.8' / 3.8.1            -> origin/3.8
+     *   - anything else            -> origin/{ref}
+     */
+    static String resolveManifestRefTag(String ref) {
+        if (!ref?.trim()) {
+            return null
+        }
+        String cleaned = ref.trim()
+        if (cleaned.startsWith('origin/')) {
+            return cleaned
+        }
+        if (cleaned.toLowerCase() in ['main', 'latest']) {
+            return 'origin/main'
+        }
+        String stripped = cleaned.startsWith('tags/') ? cleaned.substring('tags/'.length()) : cleaned
+        def parts = stripped.tokenize('.')
+        if (parts.size() >= 2 && parts[0].isInteger() && parts[1].isInteger()) {
+            return "origin/${parts[0]}.${parts[1]}"
+        }
+        return "origin/${stripped}"
+    }
+
+    /**
      * Resolves the most recently created scans index. Scan indices are named scans-NNNNNN, so a
-     * cluster-wide search for docs that have timestamp.scan, sorted by _index descending, returns
-     * the highest-numbered (newest) index first.
+     * search over the scans-* pattern for docs that have timestamp.scan, sorted by _index descending,
+     * returns the highest-numbered (newest) index first.
      *
      * @return the concrete scans index name (e.g. scans-000164)
      * @throws RuntimeException if no scans index can be resolved
@@ -107,7 +149,7 @@ class SecurityAdvisoryData {
             sort   : [['_index': [order: 'desc']]],
             _source: false
         ])
-        def response = advisoriesQuery.searchAllIndices(query)
+        def response = advisoriesQuery.search(SCANS_INDEX_PATTERN, query)
         def hits = response?.hits?.hits
         if (!hits) {
             script.error('Could not resolve latest scans index: no scan documents found.')

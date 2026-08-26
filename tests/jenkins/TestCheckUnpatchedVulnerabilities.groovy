@@ -43,6 +43,13 @@ class TestCheckUnpatchedVulnerabilities extends BuildPipelineTest {
             return helper.callClosure(closure)
         })
 
+        // The branch tag is derived from the core component's manifest ref. The job under test is
+        // version 3.8.0, whose real manifest ref is 'tags/3.8.0' -> origin/3.8.
+        helper.registerAllowedMethod('fileExists', [String], { String path -> return true })
+        helper.registerAllowedMethod('readYaml', [Map], { Map args ->
+            return [components: [[name: 'OpenSearch', ref: 'tags/3.8.0']]]
+        })
+
         // Two projects, three open (non-excluded) CVEs; CVE-2 is excluded and must be dropped.
         scansResponse = '''
             {
@@ -82,15 +89,16 @@ class TestCheckUnpatchedVulnerabilities extends BuildPipelineTest {
             }
         '''
 
-        // Route each cluster search by the index in its URL: the index-less _search resolves the
-        // latest scans index, scans-* returns open vulnerabilities, advisories returns aged CVEs.
+        // Route each cluster search by the index in its URL: the scans-* search resolves the latest
+        // scans index, the concrete scans-NNNNNN returns open vulnerabilities, advisories returns
+        // aged CVEs, ignored-advisories returns exemptions.
         helper.registerAllowedMethod('sh', [Map.class], { Map args ->
             String s = args.script
             def indexMatcher = (s =~ /sample\.url\/([^\/]*)\/?_search/)
             String index = indexMatcher ? indexMatcher[0][1] : null
             def bodyMatcher = (s =~ /-d "(.*)" \| jq/)
             searches.add([index: index, body: bodyMatcher ? bodyMatcher[0][1] : null])
-            if (index == null || index.isEmpty()) {
+            if (index == 'scans-*') {
                 return '{"hits":{"hits":[{"_index":"scans-000335"}]}}'
             }
             if (index == 'ignored-advisories') {
@@ -117,11 +125,34 @@ class TestCheckUnpatchedVulnerabilities extends BuildPipelineTest {
     @Test
     void testReleaseBranchTagIsFilteredOnTheScansSearch() {
         runScript('tests/jenkins/jobs/CheckUnpatchedVulnerabilities_Jenkinsfile')
-        def scansSearch = searches.find { it.index?.startsWith('scans-') }
+        def scansSearch = searches.find { it.index?.startsWith('scans-0') }
         assert scansSearch != null
         assert scansSearch.body.contains('project.tag')
         assert scansSearch.body.contains('origin/3.8')
         assert scansSearch.body.contains('bundle_opensearch')
+    }
+
+    @Test
+    void testBranchTagComesFromManifestRefNotVersionBeforeBranchCut() {
+        // Before the release branch is cut the core ref is still 'main', so the scan must be keyed on
+        // origin/main — not origin/3.8 derived from the version (the bug this fixes).
+        helper.registerAllowedMethod('readYaml', [Map], { Map args ->
+            return [components: [[name: 'OpenSearch', ref: 'main']]]
+        })
+        runScript('tests/jenkins/jobs/CheckUnpatchedVulnerabilities_Jenkinsfile')
+        assertThat(getCommands('echo', 'published on or before'),
+                hasItem('Checking unpatched medium-or-higher vulnerabilities for origin/main (published on or before 2026-06-16T23:59:59.999Z).'))
+        def scansSearch = searches.find { it.index?.startsWith('scans-0') }
+        assert scansSearch.body.contains('origin/main')
+    }
+
+    @Test
+    void testBranchTagFallsBackToVersionWhenManifestMissing() {
+        // No manifest on disk -> derive the tag from the version (3.8.0 -> origin/3.8).
+        helper.registerAllowedMethod('fileExists', [String], { String path -> return false })
+        runScript('tests/jenkins/jobs/CheckUnpatchedVulnerabilities_Jenkinsfile')
+        assertThat(getCommands('echo', 'published on or before'),
+                hasItem('Checking unpatched medium-or-higher vulnerabilities for origin/3.8 (published on or before 2026-06-16T23:59:59.999Z).'))
     }
 
     @Test
