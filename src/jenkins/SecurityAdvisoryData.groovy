@@ -110,7 +110,7 @@ class SecurityAdvisoryData {
         def response = advisoriesQuery.searchAllIndices(query)
         def hits = response?.hits?.hits
         if (!hits) {
-            throw new RuntimeException('Could not resolve latest scans index: no scan documents found.')
+            script.error('Could not resolve latest scans index: no scan documents found.')
         }
         return hits[0]._index
     }
@@ -132,7 +132,7 @@ class SecurityAdvisoryData {
     Map<String, List<String>> getOpenVulnerabilitiesByProject(String scansIndex, String branchTag, String product) {
         String releaseType = RELEASE_TYPE_BY_PRODUCT[product]
         if (!releaseType) {
-            throw new RuntimeException("Unknown product '${product}'; expected one of ${RELEASE_TYPE_BY_PRODUCT.keySet()}.")
+            script.error("Unknown product '${product}'; expected one of ${RELEASE_TYPE_BY_PRODUCT.keySet()}.")
         }
         Map<String, Set<String>> exemptedByProject = getExemptedAliasesByProject(branchTag)
         def query = shellEscape([

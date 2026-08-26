@@ -89,7 +89,7 @@ class OpenSearchMetricsQuery {
     void createIndex(String targetIndex, Map mapping) {
         String httpCode = sendJson('PUT', "${metricsUrl}/${targetIndex}", mapping)
         if (httpCode != '200' && httpCode != '201') {
-            throw new RuntimeException("Failed to create index ${targetIndex}. HTTP status: ${httpCode}")
+            script.error("Failed to create index ${targetIndex}. HTTP status: ${httpCode}")
         }
     }
 
@@ -110,7 +110,7 @@ class OpenSearchMetricsQuery {
         String url = documentId ? "${metricsUrl}/${targetIndex}/_doc/${documentId}" : "${metricsUrl}/${targetIndex}/_doc"
         String httpCode = sendJson(method, url, document)
         if (httpCode != '200' && httpCode != '201') {
-            throw new RuntimeException("Failed to index document into ${targetIndex}. HTTP status: ${httpCode}")
+            script.error("Failed to index document into ${targetIndex}. HTTP status: ${httpCode}")
         }
     }
 

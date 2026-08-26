@@ -78,11 +78,11 @@ class SecurityAdvisoriesQuery {
         returnStdout: true
         ).trim()
         if (!rawResponse) {
-            throw new RuntimeException('Advisories cluster returned an empty response.')
+            script.error('Advisories cluster returned an empty response.')
         }
         def response = new JsonSlurperClassic().parseText(rawResponse)
         if (response?.error) {
-            throw new RuntimeException("Advisories cluster query failed: ${response.error}")
+            script.error("Advisories cluster query failed: ${response.error}")
         }
         return response
     }

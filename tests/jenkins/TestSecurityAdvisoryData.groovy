@@ -38,6 +38,7 @@ class TestSecurityAdvisoryData {
         ignoredAdvisoriesResponse = '{"hits":{"hits":[]}}'
         script = new Expando()
         script.println = { msg -> }
+        script.error = { String message -> throw new RuntimeException(message) }
         script.sh = { Map args ->
             String s = args.script
             def matcher = (s =~ /${advisoriesUrl}\/([^\/]*)\/?_search/)

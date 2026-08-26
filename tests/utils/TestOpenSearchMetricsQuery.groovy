@@ -57,6 +57,8 @@ class TestOpenSearchMetricsQuery {
             // Mock implementation for println
             println(message)
         }
+
+        script.error = { String message -> throw new RuntimeException(message) }
     }
 
     @Test
