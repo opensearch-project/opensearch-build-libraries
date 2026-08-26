@@ -545,6 +545,38 @@ class TestCheckIntegTestResultsOverview extends BuildPipelineTest {
         assertThat(getCommands('echo', 'Components failing integration tests'), hasItem("Components failing integration tests:\nopensearch:\n  tar_x64: [cross-cluster-replication, ml-commons, sql]\n  rpm_x64: [cross-cluster-replication, ml-commons, sql]\n  deb_x64: [cross-cluster-replication, ml-commons, sql]\n  zip_x64: [cross-cluster-replication, ml-commons, sql]\n  tar_arm64: [cross-cluster-replication, ml-commons, sql]\n  rpm_arm64: [cross-cluster-replication, ml-commons, sql]\n  deb_arm64: [cross-cluster-replication, ml-commons, sql]\nopensearch-dashboards:\n  tar_x64: [observabilityDashboards, OpenSearch-Dashboards-ci-group-2]\n  rpm_x64: [observabilityDashboards, OpenSearch-Dashboards-ci-group-2]\n  deb_x64: [observabilityDashboards, OpenSearch-Dashboards-ci-group-2]\n  zip_x64: [observabilityDashboards, OpenSearch-Dashboards-ci-group-2]\n  tar_arm64: [observabilityDashboards, OpenSearch-Dashboards-ci-group-2]\n  rpm_arm64: [observabilityDashboards, OpenSearch-Dashboards-ci-group-2]\n  deb_arm64: [observabilityDashboards, OpenSearch-Dashboards-ci-group-2]"))
     }
 
+    @Test
+    void testFallsBackToCurrentResultsWhenNoRcYet() {
+        // Before the first successful RC build, getLatestRcNumber returns 0 (not null). The overview
+        // must not error; it queries the current (non-RC, rc_number 0) integration results instead of
+        // recording the criterion as unknown for the whole pre-RC window. Route sh by script content:
+        // the RC-number lookups return zero hits (-> 0), and the rc_number "0" integ queries return a
+        // small failed/passed set.
+        String rcZeroHits = '{"hits":{"total":{"value":0,"relation":"eq"},"hits":[]}}'
+        String integResults = '{"hits":{"total":{"value":2,"relation":"eq"},"hits":[' +
+                '{"_source":{"component":"sql","component_build_result":"failed"}},' +
+                '{"_source":{"component":"k-NN","component_build_result":"passed"}}]}}'
+        helper.registerAllowedMethod('sh', [Map], { Map args ->
+            String s = args.script ?: ''
+            if (s.contains('opensearch-distribution-build-results')) {
+                return rcZeroHits
+            }
+            return integResults
+        })
+
+        this.registerLibTester(new CheckIntegTestResultsOverviewLibTester(['tests/data/opensearch-input-2.12.0.yml', 'tests/data/opensearch-dashboards-input-2.12.0.yml']))
+        runScript('tests/jenkins/jobs/CheckIntegTestResultsOverview_Jenkinsfile')
+
+        // The pre-RC fallback is announced and the criterion is computed (not errored to unknown).
+        assertThat(getCommands('echo', 'No successful RC build yet'),
+                hasItem('No successful RC build yet; reporting current (non-RC) integration test results.'))
+        assertThat(getCommands('echo', 'Components failing integration tests'),
+                hasItem(containsString('sql')))
+        // The integ query is keyed on rc_number 0, i.e. the current non-RC results.
+        assertThat(getCommands('sh', 'opensearch-integration-test-results'),
+                hasItem(containsString('\\"rc_number\\":\\"0\\"')))
+    }
+
     def getCommands(method, text) {
         def shCommands = helper.callStack.findAll { call ->
             call.methodName == method
