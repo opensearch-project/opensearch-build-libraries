@@ -244,24 +244,39 @@ class TestIndexReleaseState extends BuildPipelineTest {
         Map doc = criterionDoc('no_unpatched_vulnerabilities', 'opensearch')
         assert doc.status == 'not_met'
         assert doc.blocking_components.sort() == ['Alerting', 'SQL']
-        assert doc.details.contains('SQL: CVE-1, CVE-2')
-        assert doc.details.contains('Alerting: CVE-3')
+        // Each key's items are bracketed so the per-key list is visually distinct.
+        assert doc.details.contains('SQL: [CVE-1, CVE-2]')
+        assert doc.details.contains('Alerting: [CVE-3]')
     }
 
     @Test
     void testIntegResultsRenderFailingComponents() {
         choreOutcomes.checkIntegTestResultsOverview = [
-            'opensearch'           : ['linux_x64': ['sql'], 'linux_arm64': []],
+            'opensearch'           : ['linux_x64': ['sql', 'k-NN'], 'linux_arm64': ['sql']],
             'opensearch-dashboards': ['linux_x64': []]
         ]
         runIndexReleaseState()
 
         Map os = criterionDoc('all_integration_tests_passing', 'opensearch')
         assert os.status == 'not_met'
-        assert os.blocking_components == ['sql']
+        // blocking_components is the deduped union across dist/arch.
+        assert os.blocking_components.sort() == ['k-NN', 'sql']
+        // details keeps each dist/arch's own bracketed list (x64 and arm64 can differ).
+        assert os.details.contains('linux_x64: [sql, k-NN]')
+        assert os.details.contains('linux_arm64: [sql]')
 
         Map osd = criterionDoc('all_integration_tests_passing', 'opensearch-dashboards')
         assert osd.status == 'met'
+    }
+
+    @Test
+    void testDaysToReleaseComputedFromReleaseDate() {
+        // release_date is 2026-09-15 (see ACTIVE_RELEASES_RESPONSE); days_to_release is computed on
+        // the fly at check time, so assert it is a populated integer rather than the old null.
+        runIndexReleaseState()
+        Map doc = criterionDoc('code_coverage_not_decreased', 'both')
+        assert doc.days_to_release != null
+        assert doc.days_to_release instanceof Integer
     }
 
     @Test

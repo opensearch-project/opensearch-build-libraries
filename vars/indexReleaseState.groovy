@@ -7,6 +7,10 @@
  * compatible open source license.
  */
 
+import com.cloudbees.groovy.cps.NonCPS
+import java.time.LocalDate
+import java.time.format.DateTimeParseException
+import java.time.temporal.ChronoUnit
 import jenkins.ReleaseStateData
 import jenkins.ReleaseCriterion
 import jenkins.ReleaseCriterionCatalog
@@ -313,6 +317,7 @@ private void indexManualCriteriaForRelease(ReleaseStateData releaseStateData, Ma
         releaseStateData.indexCriterion(new ReleaseCriterion([
             version      : release.version,
             releaseDate  : release.releaseDate,
+            daysToRelease: daysToRelease(release.releaseDate),
             product      : criterion.product,
             criterionType: criterion.type,
             criterionName: criterion.name,
@@ -325,11 +330,31 @@ private void indexManualCriteriaForRelease(ReleaseStateData releaseStateData, Ma
 }
 
 /**
+ * Days from today (UTC) until the release date, computed on the fly so each indexed criterion records
+ * how far out the release is at check time. Returns null when the release date is absent or unparseable
+ * (yyyy-MM-dd). Marked @NonCPS: LocalDate/ChronoUnit are not serializable, so the computation must not
+ * leave any of those objects as a live local across a pipeline step.
+ */
+@NonCPS
+private Integer daysToRelease(String releaseDate) {
+    if (!releaseDate?.trim()) {
+        return null
+    }
+    try {
+        return ChronoUnit.DAYS.between(LocalDate.now(), LocalDate.parse(releaseDate.trim())) as Integer
+    } catch (DateTimeParseException ignored) {
+        return null
+    }
+}
+
+/**
  * Renders a keyed problem map into a readable one-line summary for the criterion's details field,
- * e.g. [SQL: [CVE-1, CVE-2], Alerting: [CVE-3]] -> "SQL: CVE-1, CVE-2; Alerting: CVE-3".
+ * e.g. [SQL: [CVE-1, CVE-2], Alerting: [CVE-3]] -> "SQL: [CVE-1, CVE-2]; Alerting: [CVE-3]". Each
+ * key's items are bracketed so a per-key list is visually distinct (e.g. integration-test failures
+ * per dist/arch, where tar_x64 and tar_arm64 can differ).
  */
 private String renderDetails(Map<String, List<String>> problemsByKey) {
-    return problemsByKey.collect { key, items -> "${key}: ${items.join(', ')}" }.join('; ')
+    return problemsByKey.collect { key, items -> "${key}: [${items.join(', ')}]" }.join('; ')
 }
 
 /**
@@ -402,6 +427,7 @@ private void indexCriterion(ReleaseStateData releaseStateData, Map release, Map 
     releaseStateData.indexCriterion(new ReleaseCriterion([
         version            : release.version,
         releaseDate        : release.releaseDate,
+        daysToRelease      : daysToRelease(release.releaseDate),
         product            : check.product,
         criterionType      : check.type,
         criterionName      : check.name,
