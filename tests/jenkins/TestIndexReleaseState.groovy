@@ -299,6 +299,24 @@ class TestIndexReleaseState extends BuildPipelineTest {
     }
 
     @Test
+    void testManualCriteriaSkippedWhenReleaseIssueUrlInvalid() {
+        helper.registerAllowedMethod('sh', [Map], { Map callArgs ->
+            String script = callArgs.script ?: ''
+            if (script.contains('_search')) {
+                return '{"hits": {"hits": [{"_source": {"version": "3.9.0", "release_date": "2026-09-15", "release_issue": "not-a-url"}}]}}'
+            }
+            return '201'
+        })
+        runIndexReleaseState()
+
+        // An invalid issue URL never reaches gh; manual criteria are skipped.
+        assert getCommands('sh', 'gh issue view').isEmpty()
+        assert indexedDocs.findAll { it.source == 'issue_table' }.isEmpty()
+        assertThat(getCommands('echo', 'not a valid issue URL'),
+                hasItem("Release issue 'not-a-url' for version 3.9.0 is not a valid issue URL; skipping manual criteria."))
+    }
+
+    @Test
     void testCriteriaFilterIndexesOnlyRequestedChoreCriterion() {
         runIndexReleaseState('code_coverage_not_decreased')
 

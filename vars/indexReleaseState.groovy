@@ -273,11 +273,14 @@ private void indexManualCriteriaForRelease(ReleaseStateData releaseStateData, Ma
         return
     }
 
-    // The release issue is read from the schedule index as a full GitHub issue URL; resolve it to a
-    // bare issue number so a crafted value can never inject into the gh shell command.
-    def issueNumber = (release.releaseIssue =~ /\/issues\/(\d+)/)
-    if (!issueNumber.find()) {
-        echo("Release issue '${release.releaseIssue}' for version ${release.version} is not a valid issue URL; skipping manual criteria.")
+    // gh issue view accepts the full issue URL directly, so the URL from the schedule index is passed
+    // through as-is. It is validated against the expected opensearch-build issue URL shape first so a
+    // crafted value can never inject into the gh shell command. String.matches returns a boolean (not
+    // a java.util.regex.Matcher), so no non-serializable object is held across the pipeline steps
+    // below — holding a Matcher across a step crashes the CPS VM when it persists program state.
+    String issueUrl = release.releaseIssue
+    if (!issueUrl.matches('https://github\\.com/opensearch-project/opensearch-build/issues/\\d+')) {
+        echo("Release issue '${issueUrl}' for version ${release.version} is not a valid issue URL; skipping manual criteria.")
         return
     }
 
@@ -286,11 +289,11 @@ private void indexManualCriteriaForRelease(ReleaseStateData releaseStateData, Ma
         [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-release-secrets/github-bot/ci-bot-token']
     ]
 
-    echo("Reading manual criteria for version ${release.version} from release issue #${issueNumber.group(1)}.")
+    echo("Reading manual criteria for version ${release.version} from release issue ${issueUrl}.")
     String issueBody
     withSecrets(secrets: secret_github_bot) {
         issueBody = sh(
-            script: "gh issue view ${issueNumber.group(1)} --repo opensearch-project/opensearch-build --json body --jq '.body'",
+            script: "gh issue view ${issueUrl} --json body --jq '.body'",
             returnStdout: true
         )
     }
