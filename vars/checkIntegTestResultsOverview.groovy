@@ -64,9 +64,17 @@ Map<String, Map> call(Map args = [:]) {
             def opensearchRcNumber = releaseCandidateStatus.getLatestRcNumber('OpenSearch')
             def opensearchDashboardsRcNumber = releaseCandidateStatus.getLatestRcNumber('OpenSearch-Dashboards')
 
-            if (opensearchRcNumber == null || opensearchDashboardsRcNumber == null || opensearchRcNumber == 0 || opensearchDashboardsRcNumber == 0) {
-                    error("Unable to fetch latest RC number from metrics. Received null or 0 value.")
+            // getLatestRcNumber returns null only on a query failure, and 0 when no successful RC
+            // build exists yet (the normal pre-RC state, before the RC date). A null is a real error;
+            // a 0 is not — before the first RC, fall back to the current non-RC integration results
+            // (rc_number 0) so the criterion reflects live test status instead of reading as unknown
+            // for the whole pre-RC window.
+            if (opensearchRcNumber == null || opensearchDashboardsRcNumber == null) {
+                    error("Unable to fetch latest RC number from metrics. Received null value.")
             } else {
+                if (opensearchRcNumber == 0 || opensearchDashboardsRcNumber == 0) {
+                    echo("No successful RC build yet; reporting current (non-RC) integration test results.")
+                }
                 archDistMap.each {arch, distributions ->
                     distributions.each { dist ->
                         failingComponents['opensearch']["${dist}_${arch}"] = componentIntegTestStatus.getAllFailedComponents(opensearchRcNumber, dist, arch, openSearchComponents)

@@ -52,14 +52,16 @@ class SecurityAdvisoriesQuery {
     }
 
     /**
-     * Runs a cluster-wide search (GET /_search with no index prefix), used to resolve which
-     * concrete scan index is the most recent across all indices.
+     * Runs an unscoped search (GET /_search with no index in the path) to resolve the most recent
+     * scan index. The path deliberately carries no index name: a wildcard like scans-* would be
+     * percent-encoded by the SigV4 signer and then read as a literal index name (matching nothing),
+     * so the newest scan index is found by searching across the cluster and sorting by _index.
      * @param query the SigV4-shell-escaped query body
      */
-    def searchAllIndices(String query) {
-        this.script.println("Querying advisories cluster (all indices) with query: ${query}")
+    def searchForLatestScanIndex(String query) {
+        this.script.println("Resolving the latest scan index with query: ${query}")
         def response = runSearch("${advisoriesUrl}/_search", query)
-        this.script.println("Advisories cluster search returned ${response?.hits?.hits?.size() ?: 0} hit(s).")
+        this.script.println("Latest-scan-index resolution matched ${response?.hits?.hits?.size() ?: 0} scan doc(s).")
         return response
     }
 
@@ -78,11 +80,11 @@ class SecurityAdvisoriesQuery {
         returnStdout: true
         ).trim()
         if (!rawResponse) {
-            throw new RuntimeException('Advisories cluster returned an empty response.')
+            script.error('Advisories cluster returned an empty response.')
         }
         def response = new JsonSlurperClassic().parseText(rawResponse)
         if (response?.error) {
-            throw new RuntimeException("Advisories cluster query failed: ${response.error}")
+            script.error("Advisories cluster query failed: ${response.error}")
         }
         return response
     }

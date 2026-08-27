@@ -1,0 +1,22 @@
+/**
+ * Copyright OpenSearch Contributors
+ * SPDX-License-Identifier: Apache-2.0
+ * The OpenSearch Contributors require contributions made to
+ * this file be licensed under the Apache-2.0 license or a
+ * compatible open source license.
+ */
+
+pipeline {
+    agent none
+    stages {
+        stage('indexReleaseState') {
+            steps {
+                script {
+                    // CRITERIA is set by the test binding to exercise the criteria filter; unset it
+                    // defaults to null, which the var treats as "index every criterion".
+                    indexReleaseState(criteria: binding.hasVariable('CRITERIA') ? CRITERIA : null)
+                }
+            }
+        }
+    }
+}
