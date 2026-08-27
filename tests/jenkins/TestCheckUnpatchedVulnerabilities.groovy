@@ -156,6 +156,28 @@ class TestCheckUnpatchedVulnerabilities extends BuildPipelineTest {
     }
 
     @Test
+    void testBranchTagFromAlreadyPrefixedManifestRef() {
+        // A ref already in origin/ form is passed through unchanged.
+        helper.registerAllowedMethod('readYaml', [Map], { Map args ->
+            return [components: [[name: 'OpenSearch', ref: 'origin/2.19']]]
+        })
+        runScript('tests/jenkins/jobs/CheckUnpatchedVulnerabilities_Jenkinsfile')
+        assertThat(getCommands('echo', 'published on or before'),
+                hasItem('Checking unpatched medium-or-higher vulnerabilities for origin/2.19 (published on or before 2026-06-16T23:59:59.999Z).'))
+    }
+
+    @Test
+    void testBranchTagFromNonNumericManifestRef() {
+        // A non-version ref is prefixed rather than reduced to major.minor.
+        helper.registerAllowedMethod('readYaml', [Map], { Map args ->
+            return [components: [[name: 'OpenSearch', ref: 'feature-branch']]]
+        })
+        runScript('tests/jenkins/jobs/CheckUnpatchedVulnerabilities_Jenkinsfile')
+        assertThat(getCommands('echo', 'published on or before'),
+                hasItem('Checking unpatched medium-or-higher vulnerabilities for origin/feature-branch (published on or before 2026-06-16T23:59:59.999Z).'))
+    }
+
+    @Test
     void testCriterionMetWhenNoAgedAdvisories() {
         // No advisory is aged medium-or-higher, so the criterion is met (empty map).
         advisoriesResponse = '{"hits":{"hits":[]}}'

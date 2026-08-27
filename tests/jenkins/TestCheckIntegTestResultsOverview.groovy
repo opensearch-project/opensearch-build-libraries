@@ -577,6 +577,25 @@ class TestCheckIntegTestResultsOverview extends BuildPipelineTest {
                 hasItem(containsString('\\"rc_number\\":\\"0\\"')))
     }
 
+    @Test
+    void testErrorsWhenRcNumberQueryFails() {
+        // A malformed RC-number response makes getLatestRcNumber return null (a query failure, distinct
+        // from 0). That must error rather than fall back, so the criterion reads as unknown.
+        helper.registerAllowedMethod('sh', [Map], { Map args ->
+            String s = args.script ?: ''
+            if (s.contains('opensearch-distribution-build-results')) {
+                return 'not-json'
+            }
+            return '{"hits":{"hits":[]}}'
+        })
+
+        this.registerLibTester(new CheckIntegTestResultsOverviewLibTester(['tests/data/opensearch-input-2.12.0.yml', 'tests/data/opensearch-dashboards-input-2.12.0.yml']))
+        runScript('tests/jenkins/jobs/CheckIntegTestResultsOverview_Jenkinsfile')
+
+        assertThat(getCommands('error', 'Unable to fetch latest RC number'),
+                hasItem(containsString('Unable to fetch latest RC number from metrics. Received null value.')))
+    }
+
     def getCommands(method, text) {
         def shCommands = helper.callStack.findAll { call ->
             call.methodName == method
