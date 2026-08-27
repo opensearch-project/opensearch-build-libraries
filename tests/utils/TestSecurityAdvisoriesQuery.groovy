@@ -31,6 +31,7 @@ class TestSecurityAdvisoriesQuery {
             return response
         }
         script.println = { message -> }
+        script.error = { String message -> throw new RuntimeException(message) }
     }
 
     @Test

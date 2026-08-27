@@ -24,13 +24,21 @@ import java.time.format.DateTimeFormatter
  * only if it will have been public for more than 60 days by the time the release ships. When no
  * release date is supplied, it falls back to now() - 60 days.
  *
- * The version is resolved to a branch tag (origin/3.8, origin/main) — never the exact 3.8.0 tag,
- * which only exists after release.
+ * The scan branch tag is resolved from the core component's manifest ref (the source of truth for
+ * the branch a release currently builds from): before the release branch is cut the ref is still
+ * 'main', so scans are keyed on origin/main rather than the not-yet-existing origin/{major}.{minor}.
+ * The product's manifest path is derived from the version and product
+ * (manifests/{version}/{product}-{version}.yml); when it cannot be read or lacks the core ref, it
+ * falls back to deriving the tag from the version. Never the exact 3.8.0 tag, which only exists
+ * after release.
  *
  * @param Map args = [:] args A map of the following parameters
- * @param args.version <required> - Release version, e.g. "3.8.0" or "3.8" (resolved to origin/3.8).
+ * @param args.version <required> - Release version, e.g. "3.8.0"; locates the product manifest and is
+ *                                   the branch-tag fallback when the manifest ref is unavailable.
  * @param args.product <required> - Release product to scope to: 'opensearch' or
- *                                   'opensearch-dashboards'; selects the bundled components checked.
+ *                                   'opensearch-dashboards'; selects the bundled components checked,
+ *                                   the product manifest, and the core component whose ref sets the
+ *                                   branch tag.
  * @param args.releaseDate <optional> - Release date as yyyy-MM-dd; the age window is measured back
  *                                       from this date. Falls back to today when omitted.
  * @return Map of project name -> list of its blocking CVE ids (empty map when the criterion is met).
@@ -51,8 +59,8 @@ Map<String, List<String>> call(Map args = [:]) {
         [envVar: 'ADVISORIES_HOST_URL', secretRef: 'op://opensearch-release-secrets/security-advisories-cluster/security-advisories-cluster-endpoint']
     ]
 
-    String branchTag = SecurityAdvisoryData.resolveVersionTag(args.version)
     String product = args.product
+    String branchTag = resolveBranchTag(args.version, product) ?: SecurityAdvisoryData.resolveVersionTag(args.version)
     String cutoffIso = ageCutoffIso(args.releaseDate)
     echo("Checking unpatched medium-or-higher vulnerabilities for ${branchTag} (published on or before ${cutoffIso}).")
 
@@ -90,6 +98,32 @@ Map<String, List<String>> call(Map args = [:]) {
         echo('No unpatched medium-or-higher vulnerabilities older than the 60-day window.')
     }
     return blockingByProject
+}
+
+/**
+ * Resolves the scan branch tag from the core component's manifest ref, or null when the product
+ * manifest cannot be read or its core ref is absent (the caller then falls back to the version). The
+ * manifest path is derived from the version and product; the core component is the product's own
+ * entry (OpenSearch / OpenSearch-Dashboards), whose ref reflects the branch the release currently
+ * builds from, so this is 'main' before the release branch is cut.
+ */
+private String resolveBranchTag(String version, String product) {
+    String coreComponent = SecurityAdvisoryData.CORE_COMPONENT_BY_PRODUCT[product]
+    if (!coreComponent) {
+        return null
+    }
+    String manifestFile = "manifests/${version}/${product}-${version}.yml"
+    if (!fileExists(manifestFile)) {
+        echo("Manifest ${manifestFile} not found; falling back to the version for the branch tag.")
+        return null
+    }
+    def manifest = readYaml(file: manifestFile)
+    def core = manifest.components?.find { it.name == coreComponent }
+    if (!core?.ref) {
+        echo("No '${coreComponent}' ref in ${manifestFile}; falling back to the version for the branch tag.")
+        return null
+    }
+    return SecurityAdvisoryData.resolveManifestRefTag(core.ref)
 }
 
 /**

@@ -7,8 +7,13 @@
  * compatible open source license.
  */
 
+import com.cloudbees.groovy.cps.NonCPS
+import java.time.LocalDate
+import java.time.format.DateTimeParseException
+import java.time.temporal.ChronoUnit
 import jenkins.ReleaseStateData
 import jenkins.ReleaseCriterion
+import jenkins.ReleaseCriterionCatalog
 
 /**
  * Computes and indexes per-criterion release readiness state for active releases.
@@ -27,13 +32,33 @@ import jenkins.ReleaseCriterion
  * @param Map args = [:] args A map of the following parameters
  * @param args.version <optional> - Restrict to a single release version. When omitted, all active
  *                                   releases from the schedule index are processed.
+ * @param args.criteria <optional> - Restrict to these criterion names (a comma-separated String or a
+ *                                    List of names, e.g. 'code_coverage_not_decreased' or
+ *                                    ['all_integration_tests_passing', 'security_reviews_complete']).
+ *                                    When omitted or empty, every criterion is indexed (the scheduled
+ *                                    cron default). Lets a re-run re-index only the criteria that need
+ *                                    it — e.g. after fixing the cause of a transient failure — instead
+ *                                    of re-running the whole set. Applies to both the automated chore
+ *                                    criteria and the manual (issue-table) criteria. Unknown names are
+ *                                    rejected up front so a typo aborts loudly rather than silently
+ *                                    indexing nothing.
  */
 void call(Map args = [:]) {
+    List<String> criteriaFilter = normalizeCriteriaFilter(args.criteria)
     def secret_metrics_cluster = [
         [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-release-secrets/aws-accounts/jenkins-health-metrics-account-number'],
         [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-release-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
     ]
 
+    // The outer withAWS assumes OpenSearchJenkinsAccessRole ONLY to capture the metrics-cluster
+    // credentials; it must not enclose the chore loop below. ReleaseStateData signs its reads and
+    // writes with these captured credential strings directly (see OpenSearchMetricsQuery.curlAuthArgs),
+    // so it does not need the ambient AWS session once constructed. Each chore check runs its own
+    // withAWS(role: 'OpenSearchJenkinsAccessRole', ...) internally; if the loop ran inside this outer
+    // assumed-role session, that nested re-assume would fail with sts:AssumeRole AccessDenied (an
+    // assumed-role session cannot re-assume the same role), and every criterion would record 'unknown'.
+    def releaseStateData
+    def releases
     withSecrets(secrets: secret_metrics_cluster) {
         withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
             def metricsUrl = env.METRICS_HOST_URL
@@ -41,30 +66,64 @@ void call(Map args = [:]) {
             def awsSecretKey = env.AWS_SECRET_ACCESS_KEY
             def awsSessionToken = env.AWS_SESSION_TOKEN
 
-            def releaseStateData = new ReleaseStateData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, this)
-
-            def releases = releaseStateData.getActiveReleases()
-            if (args.version) {
-                releases = releases.findAll { it.version == args.version }
-            }
-            if (releases.isEmpty()) {
-                echo('No active releases to index state for.')
-                return
-            }
-
-            releases.each { release ->
-                echo("Indexing release state for version ${release.version}.")
-                indexCriteriaForRelease(releaseStateData, release)
-                indexManualCriteriaForRelease(releaseStateData, release)
-            }
+            releaseStateData = new ReleaseStateData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, this)
+            releases = releaseStateData.getActiveReleases()
         }
+    }
+    echo("Found ${releases.size()} active release(s) in the schedule index.")
+
+    if (args.version) {
+        releases = releases.findAll { it.version == args.version }
+        echo("Restricting to version ${args.version}: ${releases.size()} match(es).")
+    }
+    if (releases.isEmpty()) {
+        echo('No active releases to index state for.')
+        return
+    }
+    echo("Indexing release state for ${releases.size()} version(s): ${releases.collect { it.version }.join(', ')}.")
+    if (criteriaFilter) {
+        echo("Restricting to criteria: ${criteriaFilter.join(', ')}.")
+    }
+
+    releases.each { release ->
+        echo("Indexing release state for version ${release.version}.")
+        indexCriteriaForRelease(releaseStateData, release, criteriaFilter)
+        indexManualCriteriaForRelease(releaseStateData, release, criteriaFilter)
     }
 }
 
 /**
- * Runs every automated criterion check for a release and indexes a criterion document for each.
+ * Normalizes the optional criteria filter into a list of criterion names and validates each against
+ * the catalog. Accepts a comma-separated String or a List (each element may itself be comma-separated
+ * or carry surrounding whitespace, e.g. from a Jenkins parameter). Returns an empty list when nothing
+ * is requested, which the callers treat as "all criteria". Throws on any name not in the catalog so a
+ * typo aborts the run rather than silently indexing nothing.
  */
-private void indexCriteriaForRelease(ReleaseStateData releaseStateData, Map release) {
+private List<String> normalizeCriteriaFilter(rawCriteria) {
+    if (!rawCriteria) {
+        return []
+    }
+    List<String> requested = (rawCriteria instanceof List ? rawCriteria : [rawCriteria])
+        .collectMany { it.toString().split(',').collect { name -> name.trim() } }
+        .findAll { it }
+        .unique()
+    if (!requested) {
+        return []
+    }
+    Set<String> valid = ReleaseCriterionCatalog.values().collect { it.criterionName } as Set
+    List<String> unknown = requested.findAll { !valid.contains(it) }
+    if (unknown) {
+        error("Unknown criterion name(s): ${unknown.join(', ')}. Valid names: ${valid.sort().join(', ')}.")
+    }
+    return requested
+}
+
+/**
+ * Runs the automated criterion checks for a release and indexes a criterion document for each.
+ * When criteriaFilter is non-empty, only checks whose criterion name is in the filter are run and
+ * indexed; an empty filter runs them all.
+ */
+private void indexCriteriaForRelease(ReleaseStateData releaseStateData, Map release, List<String> criteriaFilter) {
     String version = release.version
     List<String> inputManifest = [
         "manifests/${version}/opensearch-${version}.yml",
@@ -165,28 +224,67 @@ private void indexCriteriaForRelease(ReleaseStateData releaseStateData, Map rele
     // ReleaseCriterion's fields mid-compile, re-entering a non-reentrant GroovyClassLoader recompile
     // lock and deadlocking. The loop compiles inline, so that re-entrant path never happens.
     for (check in checks) {
-        def raw = runCheck(check.name, check.run)
+        // Skip checks not in the requested filter (an empty filter runs them all). A per-product
+        // criterion (integration tests, vulnerabilities) is matched by name, so requesting the name
+        // re-runs both products for it.
+        if (criteriaFilter && !criteriaFilter.contains(check.name)) {
+            continue
+        }
+        // Product disambiguates the two per-product criteria (integration tests, vulnerabilities),
+        // which share a criterion name but run once per product.
+        String label = "${check.name} [${check.product}]"
+        echo("Running check '${label}' for version ${version}.")
+        def raw = runCheck(label, check.run)
         def result = normalizeResult(check, raw)
         indexCriterion(releaseStateData, release, check, result)
+        echo("Check '${label}' for version ${version} recorded as '${statusOf(result)}'.")
     }
+}
+
+/**
+ * Reports the status indexCriterion will record for a normalized result, so the check loop can log
+ * the outcome without duplicating the null -> unknown / empty -> met / else -> not_met mapping.
+ */
+private String statusOf(Map result) {
+    if (result == null) {
+        return 'unknown'
+    }
+    return result.blockingComponents.isEmpty() ? 'met' : 'not_met'
 }
 
 /**
  * Reads the manual criteria (no chore verifies them) from the release issue's criteria tables and
  * indexes one criterion document for each. The issue body is fetched with the github-bot token and
  * parsed by ReleaseStateData; each row's status circle is recorded as-is (source 'issue_table').
+ * When criteriaFilter is non-empty, only manual criteria whose name is in the filter are indexed;
+ * if the filter names no manual criteria at all, the GitHub fetch is skipped entirely.
  */
-private void indexManualCriteriaForRelease(ReleaseStateData releaseStateData, Map release) {
+private void indexManualCriteriaForRelease(ReleaseStateData releaseStateData, Map release, List<String> criteriaFilter) {
+    // When a filter is set but names only chore criteria, there is nothing manual to do — skip the
+    // issue fetch (and its github-bot secret + gh call) rather than reading the issue for nothing.
+    if (criteriaFilter) {
+        Set<String> manualNames = ReleaseCriterionCatalog.values()
+            .findAll { it.source == ReleaseCriterionCatalog.SOURCE_ISSUE_TABLE }
+            .collect { it.criterionName } as Set
+        if (!criteriaFilter.any { manualNames.contains(it) }) {
+            echo("No manual criteria requested for version ${release.version}; skipping manual criteria.")
+            return
+        }
+    }
+
     if (!release.releaseIssue) {
         echo("No release issue for version ${release.version}; skipping manual criteria.")
         return
     }
 
-    // The release issue is read from the schedule index as a full GitHub issue URL; resolve it to a
-    // bare issue number so a crafted value can never inject into the gh shell command.
-    def issueNumber = (release.releaseIssue =~ /\/issues\/(\d+)/)
-    if (!issueNumber.find()) {
-        echo("Release issue '${release.releaseIssue}' for version ${release.version} is not a valid issue URL; skipping manual criteria.")
+    // gh issue view accepts the full issue URL directly, so the URL from the schedule index is passed
+    // through as-is. It is validated against the expected opensearch-build issue URL shape first so a
+    // crafted value can never inject into the gh shell command. String.matches returns a boolean (not
+    // a java.util.regex.Matcher), so no non-serializable object is held across the pipeline steps
+    // below — holding a Matcher across a step crashes the CPS VM when it persists program state.
+    String issueUrl = release.releaseIssue
+    if (!issueUrl.matches('https://github\\.com/opensearch-project/opensearch-build/issues/\\d+')) {
+        echo("Release issue '${issueUrl}' for version ${release.version} is not a valid issue URL; skipping manual criteria.")
         return
     }
 
@@ -195,22 +293,31 @@ private void indexManualCriteriaForRelease(ReleaseStateData releaseStateData, Ma
         [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-release-secrets/github-bot/ci-bot-token']
     ]
 
+    echo("Reading manual criteria for version ${release.version} from release issue ${issueUrl}.")
     String issueBody
     withSecrets(secrets: secret_github_bot) {
         issueBody = sh(
-            script: "gh issue view ${issueNumber.group(1)} --repo opensearch-project/opensearch-build --json body --jq '.body'",
+            script: "gh issue view ${issueUrl} --json body --jq '.body'",
             returnStdout: true
         )
     }
+
+    def manualCriteria = releaseStateData.parseManualCriteria(issueBody)
+    if (criteriaFilter) {
+        manualCriteria = manualCriteria.findAll { criteriaFilter.contains(it.name) }
+    }
+    echo("Parsed ${manualCriteria.size()} manual criteria for version ${release.version}.")
 
     // A plain for-loop, not .each { }: constructing a ReleaseCriterion and passing it to a typed method
     // inside a closure body makes the Groovy pipeline-unit compiler resolve ReleaseCriterion's fields
     // mid-compile, re-entering a non-reentrant GroovyClassLoader recompile lock and deadlocking. The
     // loop compiles inline, so that re-entrant path never happens.
-    for (criterion in releaseStateData.parseManualCriteria(issueBody)) {
+    for (criterion in manualCriteria) {
+        echo("Recording manual criterion '${criterion.name} [${criterion.product}]' as '${criterion.status}' for version ${release.version}.")
         releaseStateData.indexCriterion(new ReleaseCriterion([
             version      : release.version,
             releaseDate  : release.releaseDate,
+            daysToRelease: daysToRelease(release.releaseDate),
             product      : criterion.product,
             criterionType: criterion.type,
             criterionName: criterion.name,
@@ -223,11 +330,31 @@ private void indexManualCriteriaForRelease(ReleaseStateData releaseStateData, Ma
 }
 
 /**
+ * Days from today (UTC) until the release date, computed on the fly so each indexed criterion records
+ * how far out the release is at check time. Returns null when the release date is absent or unparseable
+ * (yyyy-MM-dd). Marked @NonCPS: LocalDate/ChronoUnit are not serializable, so the computation must not
+ * leave any of those objects as a live local across a pipeline step.
+ */
+@NonCPS
+private Integer daysToRelease(String releaseDate) {
+    if (!releaseDate?.trim()) {
+        return null
+    }
+    try {
+        return ChronoUnit.DAYS.between(LocalDate.now(), LocalDate.parse(releaseDate.trim())) as Integer
+    } catch (DateTimeParseException ignored) {
+        return null
+    }
+}
+
+/**
  * Renders a keyed problem map into a readable one-line summary for the criterion's details field,
- * e.g. [SQL: [CVE-1, CVE-2], Alerting: [CVE-3]] -> "SQL: CVE-1, CVE-2; Alerting: CVE-3".
+ * e.g. [SQL: [CVE-1, CVE-2], Alerting: [CVE-3]] -> "SQL: [CVE-1, CVE-2]; Alerting: [CVE-3]". Each
+ * key's items are bracketed so a per-key list is visually distinct (e.g. integration-test failures
+ * per dist/arch, where tar_x64 and tar_arm64 can differ).
  */
 private String renderDetails(Map<String, List<String>> problemsByKey) {
-    return problemsByKey.collect { key, items -> "${key}: ${items.join(', ')}" }.join('; ')
+    return problemsByKey.collect { key, items -> "${key}: [${items.join(', ')}]" }.join('; ')
 }
 
 /**
@@ -289,15 +416,10 @@ private def normalizeResult(Map check, def raw) {
  * null -> unknown, empty blockingComponents -> met, otherwise not_met with the components and details.
  */
 private void indexCriterion(ReleaseStateData releaseStateData, Map release, Map check, Map result) {
-    String status
+    String status = statusOf(result)
     List<String> blockingComponents = []
     String details = null
-    if (result == null) {
-        status = 'unknown'
-    } else if (result.blockingComponents.isEmpty()) {
-        status = 'met'
-    } else {
-        status = 'not_met'
+    if (status == 'not_met') {
         blockingComponents = result.blockingComponents
         details = result.details
     }
@@ -305,6 +427,7 @@ private void indexCriterion(ReleaseStateData releaseStateData, Map release, Map 
     releaseStateData.indexCriterion(new ReleaseCriterion([
         version            : release.version,
         releaseDate        : release.releaseDate,
+        daysToRelease      : daysToRelease(release.releaseDate),
         product            : check.product,
         criterionType      : check.type,
         criterionName      : check.name,
