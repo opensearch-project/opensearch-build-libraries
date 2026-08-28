@@ -68,9 +68,9 @@ void call(Map args = [:]) {
     ]
 
     // Build the data helper and read statuses under the metrics-cluster credentials. The same instance
-    // rewrites the issue body later (applyChoreStatusCircles is pure), so it is held across both blocks.
+    // rewrites the issue body later (applyChoreStatusUpdates is pure), so it is held across both blocks.
     def releaseStateData = null
-    Map<String, Map<String, String>> statuses = [:]
+    Map<String, Map<String, Map>> statuses = [:]
     withSecrets(secrets: secret_metrics_cluster) {
         withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
             releaseStateData = new ReleaseStateData(env.METRICS_HOST_URL, env.AWS_ACCESS_KEY_ID, env.AWS_SECRET_ACCESS_KEY, env.AWS_SESSION_TOKEN, this)
@@ -87,9 +87,9 @@ void call(Map args = [:]) {
             script: "gh issue view ${issueRef} --repo opensearch-project/opensearch-build --json body --jq '.body'",
             returnStdout: true
         ).replaceAll(/\n$/, '')
-        String updatedBody = releaseStateData.applyChoreStatusCircles(issueBody, statuses)
+        String updatedBody = releaseStateData.applyChoreStatusUpdates(issueBody, statuses)
         if (updatedBody == issueBody) {
-            echo("Release issue ${issueRef} circles already match the indexed statuses; no edit needed.")
+            echo("Release issue ${issueRef} is already up to date with the indexed statuses; no edit needed.")
             return
         }
         writeFile(file: 'release-issue-body.md', text: updatedBody)
