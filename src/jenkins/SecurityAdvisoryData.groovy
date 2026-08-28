@@ -47,6 +47,12 @@ class SecurityAdvisoryData {
         'opensearch-dashboards': 'bundle_opensearch_dashboards'
     ]
 
+    /** The core component whose manifest ref determines the scan branch tag, keyed by product. */
+    static final Map<String, String> CORE_COMPONENT_BY_PRODUCT = [
+        'opensearch'           : 'OpenSearch',
+        'opensearch-dashboards': 'OpenSearch-Dashboards'
+    ]
+
     /**
      * Max CVE ids per advisories terms lookup. OpenSearch's default max_terms_count is 65536; a
      * conservative batch keeps payloads small and mirrors the security_advisories agent.
@@ -93,9 +99,44 @@ class SecurityAdvisoryData {
     }
 
     /**
-     * Resolves the most recently created scans index. Scan indices are named scans-NNNNNN, so a
-     * cluster-wide search for docs that have timestamp.scan, sorted by _index descending, returns
-     * the highest-numbered (newest) index first.
+     * Maps a component's manifest ref to the branch tag the scans are keyed on (project.tag). The
+     * manifest ref is the source of truth for the branch a release currently builds from, so before a
+     * release branch is cut the ref is still 'main' and scans are keyed on origin/main, not the
+     * not-yet-existing origin/{major}.{minor}. Manifest refs seen in practice: 'main' (pre-cut),
+     * '3.8' (branch cut, e.g. a patch line), and 'tags/3.8.0' (released).
+     *
+     *   - blank                    -> null (caller falls back to the version)
+     *   - main / latest            -> origin/main
+     *   - already origin/-prefixed -> returned as-is
+     *   - tags/3.8.0               -> origin/3.8
+     *   - '3.8' / 3.8.1            -> origin/3.8
+     *   - anything else            -> origin/{ref}
+     */
+    static String resolveManifestRefTag(String ref) {
+        if (!ref?.trim()) {
+            return null
+        }
+        String cleaned = ref.trim()
+        if (cleaned.startsWith('origin/')) {
+            return cleaned
+        }
+        if (cleaned.toLowerCase() in ['main', 'latest']) {
+            return 'origin/main'
+        }
+        String stripped = cleaned.startsWith('tags/') ? cleaned.substring('tags/'.length()) : cleaned
+        def parts = stripped.tokenize('.')
+        if (parts.size() >= 2 && parts[0].isInteger() && parts[1].isInteger()) {
+            return "origin/${parts[0]}.${parts[1]}"
+        }
+        return "origin/${stripped}"
+    }
+
+    /**
+     * Resolves the most recently created scans index. Scan indices are named scans-NNNNNN, so an
+     * unscoped search for docs that have timestamp.scan, sorted by _index descending, returns the
+     * highest-numbered (newest) index first. The search is unscoped rather than scoped to a scans-*
+     * pattern because a wildcard in a SigV4-signed request path is percent-encoded and then read as a
+     * literal index name (matching nothing).
      *
      * @return the concrete scans index name (e.g. scans-000164)
      * @throws RuntimeException if no scans index can be resolved
@@ -107,10 +148,10 @@ class SecurityAdvisoryData {
             sort   : [['_index': [order: 'desc']]],
             _source: false
         ])
-        def response = advisoriesQuery.searchAllIndices(query)
+        def response = advisoriesQuery.searchForLatestScanIndex(query)
         def hits = response?.hits?.hits
         if (!hits) {
-            throw new RuntimeException('Could not resolve latest scans index: no scan documents found.')
+            script.error('Could not resolve latest scans index: no scan documents found.')
         }
         return hits[0]._index
     }
@@ -132,7 +173,7 @@ class SecurityAdvisoryData {
     Map<String, List<String>> getOpenVulnerabilitiesByProject(String scansIndex, String branchTag, String product) {
         String releaseType = RELEASE_TYPE_BY_PRODUCT[product]
         if (!releaseType) {
-            throw new RuntimeException("Unknown product '${product}'; expected one of ${RELEASE_TYPE_BY_PRODUCT.keySet()}.")
+            script.error("Unknown product '${product}'; expected one of ${RELEASE_TYPE_BY_PRODUCT.keySet()}.")
         }
         Map<String, Set<String>> exemptedByProject = getExemptedAliasesByProject(branchTag)
         def query = shellEscape([
