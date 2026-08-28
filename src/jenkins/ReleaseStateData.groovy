@@ -195,6 +195,9 @@ class ReleaseStateData {
      */
     private static final String OSCAR_COMMENT_PATTERN = /\s*<details><summary>OSCAR: blocking components<\/summary>.*?<\/details>/
 
+    /** Characters stripped from an indexed component name before it is written into the issue body. */
+    private static final String COMPONENT_NAME_DISALLOWED = /[^\w.\-\/ ]/
+
     /**
      * Rewrites the status circle and Comments cell of each chore-verified criterion row to reflect its
      * latest indexed status. The body is walked once, tracking which table each line falls under (the
@@ -266,13 +269,23 @@ class ReleaseStateData {
      */
     private String rewriteCommentsCell(String comments, String status, List<String> blockingComponents) {
         String human = comments.replaceAll(OSCAR_COMMENT_PATTERN, '')
-        if (status != 'not_met' || !blockingComponents) {
+        List<String> components = status == 'not_met' ? sanitizeComponents(blockingComponents) : []
+        if (!components) {
             return human
         }
-        List<String> shown = blockingComponents.take(MAX_LISTED_COMPONENTS)
-        String more = blockingComponents.size() > MAX_LISTED_COMPONENTS ? " (+${blockingComponents.size() - MAX_LISTED_COMPONENTS} more)" : ''
+        List<String> shown = components.take(MAX_LISTED_COMPONENTS)
+        String more = components.size() > MAX_LISTED_COMPONENTS ? " (+${components.size() - MAX_LISTED_COMPONENTS} more)" : ''
         String block = "<details><summary>${OSCAR_COMMENT_SUMMARY}</summary><p>${shown.join(', ')}${more}</p></details>"
         return "${human.replaceAll(/\s+$/, '')} ${block}"
+    }
+
+    /**
+     * Keeps only word characters, dots, dashes, slashes and spaces of each indexed component name, so a
+     * value read from the index can neither inject markup into the issue body nor break the table row
+     * with a stray pipe. Names left empty by the strip are dropped.
+     */
+    private List<String> sanitizeComponents(List<String> components) {
+        return (components ?: []).collect { "${it ?: ''}".replaceAll(COMPONENT_NAME_DISALLOWED, '').trim() }.findAll { it }
     }
 
     /**

@@ -82,6 +82,29 @@ Sanity testing is done for all components | :yellow_circle: |   |'''
     }
 
     @Test
+    void testUpdateCriteriaWritesBlockingComponentsIntoCommentsCell() {
+        statusHits = '{"hits":{"hits":[{"_source":{"criterion_name":"release_owners_assigned","product":"both","status":"not_met","blocking_components":["sql","k-NN"]}}]}}'
+
+        script.call(version: '3.8.0', releaseIssue: 'https://github.com/opensearch-project/opensearch-build/issues/5152')
+
+        assert writtenBody.contains('an assigned owner | :red_circle:')
+        assert writtenBody.contains('<details><summary>OSCAR: blocking components</summary><p>sql, k-NN</p></details>')
+    }
+
+    @Test
+    void testUpdateCriteriaSanitizesComponentNamesFromTheIndex() {
+        // Component names come from the index, so markup and stray pipes are stripped before they reach
+        // the issue body: neither can inject HTML nor break the table row.
+        statusHits = '{"hits":{"hits":[{"_source":{"criterion_name":"release_owners_assigned","product":"both","status":"not_met","blocking_components":["<b>sql</b>","dashboards|extra","<>"]}}]}}'
+
+        script.call(version: '3.8.0', releaseIssue: 'https://github.com/opensearch-project/opensearch-build/issues/5152')
+
+        // Angle brackets and pipes are dropped, and a name left empty by the strip ('<>') is skipped.
+        assert writtenBody.contains('<p>bsql/b, dashboardsextra</p>')
+        assert !writtenBody.contains('<b>')
+    }
+
+    @Test
     void testUpdateCriteriaSkipsEditWhenNothingChanged() {
         // Body already reflects the indexed status, so no edit should follow.
         statusHits = '{"hits":{"hits":[{"_source":{"criterion_name":"release_owners_assigned","product":"both","status":"met"}}]}}'
