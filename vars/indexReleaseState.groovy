@@ -42,8 +42,11 @@ import jenkins.ReleaseCriterionCatalog
  *                                    criteria and the manual (issue-table) criteria. Unknown names are
  *                                    rejected up front so a typo aborts loudly rather than silently
  *                                    indexing nothing.
+ * @return the releases whose state was indexed, each a map [version, releaseDate, releaseIssue], so a
+ *         caller can act on them (e.g. write the readiness state back to each release issue). Empty
+ *         when there were no active releases to process.
  */
-void call(Map args = [:]) {
+List<Map> call(Map args = [:]) {
     List<String> criteriaFilter = normalizeCriteriaFilter(args.criteria)
     def secret_metrics_cluster = [
         [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-release-secrets/aws-accounts/jenkins-health-metrics-account-number'],
@@ -78,7 +81,7 @@ void call(Map args = [:]) {
     }
     if (releases.isEmpty()) {
         echo('No active releases to index state for.')
-        return
+        return []
     }
     echo("Indexing release state for ${releases.size()} version(s): ${releases.collect { it.version }.join(', ')}.")
     if (criteriaFilter) {
@@ -90,6 +93,7 @@ void call(Map args = [:]) {
         indexCriteriaForRelease(releaseStateData, release, criteriaFilter)
         indexManualCriteriaForRelease(releaseStateData, release, criteriaFilter)
     }
+    return releases
 }
 
 /**

@@ -118,19 +118,22 @@ class ReleaseStateData {
      * owned by the release manager and are never written back.
      *
      * @param version the release version to read statuses for
-     * @return map of criterion name -> (product -> latest status)
+     * @return map of criterion name -> (product -> [status, blockingComponents]), where status is the
+     *         latest status string and blockingComponents is its list of blocking components (empty
+     *         when none). The nested map lets the issue write-back render both the circle and a
+     *         blocking-components note per criterion.
      */
-    Map<String, Map<String, String>> getLatestChoreStatuses(String version) {
+    Map<String, Map<String, Map>> getLatestChoreStatuses(String version) {
         def response = metricsQuery.fetchMetricsFromIndex(ReleaseIndices.STATE, latestChoreStatusesQuery(version))
         def hits = response?.hits?.hits ?: []
-        Map<String, Map<String, String>> statusByCriterion = [:]
+        Map<String, Map<String, Map>> statusByCriterion = [:]
         hits.each { hit ->
             def doc = hit._source
             if (doc?.criterion_name && doc?.product && doc?.status) {
-                Map<String, String> byProduct = statusByCriterion.get(doc.criterion_name, [:])
+                Map<String, Map> byProduct = statusByCriterion.get(doc.criterion_name, [:])
                 // Hits are sorted newest first, so the first status seen per product is the latest.
                 if (!byProduct.containsKey(doc.product)) {
-                    byProduct[doc.product] = doc.status
+                    byProduct[doc.product] = [status: doc.status, blockingComponents: doc.blocking_components ?: []]
                 }
             }
         }
@@ -141,7 +144,7 @@ class ReleaseStateData {
         def queryMap = [
             size   : 100,
             sort   : [['last_checked': [order: 'desc']]],
-            _source: ['criterion_name', 'product', 'status'],
+            _source: ['criterion_name', 'product', 'status', 'blocking_components'],
             query  : [
                 bool: [
                     filter: [
@@ -180,20 +183,39 @@ class ReleaseStateData {
         ]
     }
 
+    /** Max blocking components listed in the OSCAR comment before collapsing the rest into a count. */
+    private static final int MAX_LISTED_COMPONENTS = 10
+
+    /** Marker summary identifying OSCAR's own <details> block in a Comments cell, for idempotent replace. */
+    private static final String OSCAR_COMMENT_SUMMARY = 'OSCAR: blocking components'
+
     /**
-     * Rewrites the status circle of each chore-verified criterion row to reflect its latest indexed
-     * status. The body is walked once, tracking which table each line falls under (the entrance table
-     * applies to both products, each exit table to its own), so a per-product criterion gets that
-     * table's product's status and a 'both' criterion applies in every table it appears in. A row is
-     * matched by the chore keyword in the Criteria cell and only its status cell is rewritten. Lines
-     * outside the three known tables, unmatched rows, and statuses with no circle (e.g. unknown) are
-     * left as-is, so an unchanged body round-trips and a transient failure never blanks a circle.
+     * Matches OSCAR's own <details> block (kept on a single line so it is valid inside a table cell)
+     * plus any leading whitespace, so re-running strips the previous block before writing the new one.
+     */
+    private static final String OSCAR_COMMENT_PATTERN = /\s*<details><summary>OSCAR: blocking components<\/summary>.*?<\/details>/
+
+    /** Characters stripped from an indexed component name before it is written into the issue body. */
+    private static final String COMPONENT_NAME_DISALLOWED = /[^\w.\-\/ ]/
+
+    /**
+     * Rewrites the status circle and Comments cell of each chore-verified criterion row to reflect its
+     * latest indexed status. The body is walked once, tracking which table each line falls under (the
+     * entrance table applies to both products, each exit table to its own), so a per-product criterion
+     * gets that table's product's status and a 'both' criterion applies in every table it appears in. A
+     * row is matched by the chore keyword in the Criteria cell; its status cell gets the circle, and its
+     * Comments cell gets an OSCAR <details> block listing the blocking components when the criterion is
+     * not_met (cleared when it is met). The OSCAR block is delimited by a marker summary so a human note
+     * in the same cell is preserved. Lines outside the three known tables, unmatched rows, and statuses
+     * with no circle (e.g. unknown) are left as-is, so an unchanged body round-trips and a transient
+     * failure never blanks a circle.
      *
      * @param issueBody the raw markdown body of the release issue
-     * @param statusByCriterion criterion name -> (product -> status), from getLatestChoreStatuses
-     * @return the issue body with chore circles updated
+     * @param statusByCriterion criterion name -> (product -> [status, blockingComponents]), from
+     *        getLatestChoreStatuses
+     * @return the issue body with chore circles and comments updated
      */
-    String applyChoreStatusCircles(String issueBody, Map<String, Map<String, String>> statusByCriterion) {
+    String applyChoreStatusUpdates(String issueBody, Map<String, Map<String, Map>> statusByCriterion) {
         def chores = ReleaseCriterionCatalog.values().findAll { it.source == ReleaseCriterionCatalog.SOURCE_CHORE }
         def tables = criteriaTables()
         String currentProduct = null
@@ -211,13 +233,59 @@ class ReleaseStateData {
             if (!criterion) {
                 return line
             }
-            String status = statusByCriterion[criterion.criterionName]?.get(currentProduct)
-            String circle = status ? STATUS_CIRCLE[status] : null
+            def entry = statusByCriterion[criterion.criterionName]?.get(currentProduct)
+            String circle = entry ? STATUS_CIRCLE[entry.status] : null
             if (!circle) {
                 return line
             }
-            return line.replaceFirst(/^([^|]*\|[^|]*?):(green|yellow|red)_circle:/, '$1' + java.util.regex.Matcher.quoteReplacement(circle))
+            return rewriteCriterionRow(line, circle, entry.status, entry.blockingComponents ?: [])
         }.join('')
+    }
+
+    /**
+     * Rewrites a single chore criterion row: sets the status circle and the OSCAR block in the Comments
+     * cell, preserving the trailing newline. A row that is not at least a 4-column table row is returned
+     * unchanged. Rejoining the split cells with '|' is an identity when nothing changes, so an
+     * already-current row round-trips byte-for-byte.
+     */
+    private String rewriteCriterionRow(String line, String circle, String status, List<String> blockingComponents) {
+        String newline = line.endsWith('\n') ? '\n' : ''
+        String content = newline ? line[0..-2] : line
+        List<String> cells = content.split(/\|/, -1) as List
+        if (cells.size() < 4) {
+            return line
+        }
+        cells[1] = cells[1].replaceFirst(/:(green|yellow|red)_circle:/, java.util.regex.Matcher.quoteReplacement(circle))
+        // The Comments cell is the tail (index 3 onward), joined back so a stray pipe in it round-trips.
+        String comments = cells[3..-1].join('|')
+        cells = cells[0..2] + [rewriteCommentsCell(comments, status, blockingComponents)]
+        return cells.join('|') + newline
+    }
+
+    /**
+     * Replaces OSCAR's <details> block in a Comments cell, preserving any human-written text. When the
+     * criterion is not_met with blocking components, a fresh block is appended; otherwise the block is
+     * removed (e.g. once the criterion goes met) leaving only the human text.
+     */
+    private String rewriteCommentsCell(String comments, String status, List<String> blockingComponents) {
+        String human = comments.replaceAll(OSCAR_COMMENT_PATTERN, '')
+        List<String> components = status == 'not_met' ? sanitizeComponents(blockingComponents) : []
+        if (!components) {
+            return human
+        }
+        List<String> shown = components.take(MAX_LISTED_COMPONENTS)
+        String more = components.size() > MAX_LISTED_COMPONENTS ? " (+${components.size() - MAX_LISTED_COMPONENTS} more)" : ''
+        String block = "<details><summary>${OSCAR_COMMENT_SUMMARY}</summary><p>${shown.join(', ')}${more}</p></details>"
+        return "${human.replaceAll(/\s+$/, '')} ${block}"
+    }
+
+    /**
+     * Keeps only word characters, dots, dashes, slashes and spaces of each indexed component name, so a
+     * value read from the index can neither inject markup into the issue body nor break the table row
+     * with a stray pipe. Names left empty by the strip are dropped.
+     */
+    private List<String> sanitizeComponents(List<String> components) {
+        return (components ?: []).collect { "${it ?: ''}".replaceAll(COMPONENT_NAME_DISALLOWED, '').trim() }.findAll { it }
     }
 
     /**

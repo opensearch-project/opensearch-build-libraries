@@ -199,20 +199,25 @@ class TestReleaseStateData {
               "hits": {
                 "hits": [
                   {"_source": {"criterion_name": "release_owners_assigned", "product": "both", "status": "met"}},
-                  {"_source": {"criterion_name": "all_integration_tests_passing", "product": "opensearch", "status": "not_met"}},
+                  {"_source": {"criterion_name": "all_integration_tests_passing", "product": "opensearch", "status": "not_met", "blocking_components": ["sql", "security"]}},
                   {"_source": {"criterion_name": "all_integration_tests_passing", "product": "opensearch-dashboards", "status": "met"}}
                 ]
               }
             }
         '''
         def statuses = releaseStateData.getLatestChoreStatuses('3.8.0')
-        // A per-product criterion keeps both products' statuses instead of one overwriting the other.
+        // A per-product criterion keeps both products' statuses instead of one overwriting the other, and
+        // each entry carries the latest status plus its blocking components (empty when absent).
         assert statuses == [
-            release_owners_assigned      : [both: 'met'],
-            all_integration_tests_passing: ['opensearch': 'not_met', 'opensearch-dashboards': 'met']
+            release_owners_assigned      : [both: [status: 'met', blockingComponents: []]],
+            all_integration_tests_passing: [
+                'opensearch'           : [status: 'not_met', blockingComponents: ['sql', 'security']],
+                'opensearch-dashboards': [status: 'met', blockingComponents: []]
+            ]
         ]
         assert searchedIndex == ReleaseStateIndex.STATE_INDEX
         assert searchBody.contains('criterion_name')
+        assert searchBody.contains('blocking_components')
         assert searchBody.contains('last_checked')
         assert searchBody.contains('chore_check')
         assert searchBody.contains('3.8.0')
@@ -231,7 +236,7 @@ class TestReleaseStateData {
               }
             }
         '''
-        assert releaseStateData.getLatestChoreStatuses('3.8.0') == [release_owners_assigned: [both: 'met']]
+        assert releaseStateData.getLatestChoreStatuses('3.8.0') == [release_owners_assigned: [both: [status: 'met', blockingComponents: []]]]
     }
 
     @Test
@@ -255,7 +260,7 @@ class TestReleaseStateData {
               }
             }
         '''
-        assert releaseStateData.getLatestChoreStatuses('3.8.0') == [release_owners_assigned: [both: 'not_met']]
+        assert releaseStateData.getLatestChoreStatuses('3.8.0') == [release_owners_assigned: [both: [status: 'not_met', blockingComponents: []]]]
     }
 
     // The three criteria tables with a chore row in each, for the circle write-back.
@@ -276,44 +281,83 @@ All integration tests are passing | :green_circle: |   |
 '''
 
     @Test
-    void testApplyChoreStatusCirclesWritesPerProductStatusToEachExitTable() {
+    void testApplyChoreStatusUpdatesWritesPerProductStatusToEachExitTable() {
         // Integration tests failed on OpenSearch but passed on OpenSearch-Dashboards; each exit table
         // gets its own product's status, and the entrance owner row gets its 'both' status.
         def statuses = [
-            release_owners_assigned      : [both: 'met'],
-            all_integration_tests_passing: ['opensearch': 'not_met', 'opensearch-dashboards': 'met']
+            release_owners_assigned      : [both: [status: 'met', blockingComponents: []]],
+            all_integration_tests_passing: [
+                'opensearch'           : [status: 'not_met', blockingComponents: ['sql']],
+                'opensearch-dashboards': [status: 'met', blockingComponents: []]
+            ]
         ]
-        String updated = releaseStateData.applyChoreStatusCircles(CIRCLE_BODY, statuses)
+        String updated = releaseStateData.applyChoreStatusUpdates(CIRCLE_BODY, statuses)
         assert updated.contains('an assigned owner | :green_circle:')
         assert updated.contains('All integration tests are passing | :red_circle:')
         assert updated.contains('All integration tests are passing | :green_circle:')
     }
 
     @Test
-    void testApplyChoreStatusCirclesLeavesRowUntouchedWhenProductStatusMissing() {
+    void testApplyChoreStatusUpdatesWritesBlockingComponentsToCommentsWhenNotMet() {
+        // A not_met chore row gets an OSCAR details block listing its blocking components in Comments.
+        def statuses = [all_integration_tests_passing: ['opensearch': [status: 'not_met', blockingComponents: ['sql', 'security']]]]
+        String updated = releaseStateData.applyChoreStatusUpdates(CIRCLE_BODY, statuses)
+        assert updated.contains('<details><summary>OSCAR: blocking components</summary><p>sql, security</p></details>')
+    }
+
+    @Test
+    void testApplyChoreStatusUpdatesCapsBlockingComponentsAtTenWithOverflowCount() {
+        def components = (1..12).collect { "component-${it}" }
+        def statuses = [all_integration_tests_passing: ['opensearch': [status: 'not_met', blockingComponents: components]]]
+        String updated = releaseStateData.applyChoreStatusUpdates(CIRCLE_BODY, statuses)
+        assert updated.contains('component-1, component-2, component-3, component-4, component-5, component-6, component-7, component-8, component-9, component-10 (+2 more)')
+        assert !updated.contains('component-11')
+    }
+
+    @Test
+    void testApplyChoreStatusUpdatesPreservesHumanCommentAndClearsOscarBlockWhenMet() {
+        // A row that already carries a human note plus a stale OSCAR block: the block is removed once the
+        // criterion is met, but the human note is preserved.
+        String body = '''### OpenSearch 2.19.0 [exit criteria](https://example.com) status:
+Criteria | Status | Description  | Comments
+-- | -- | -- | --
+All integration tests are passing | :red_circle: |   | see thread <details><summary>OSCAR: blocking components</summary><p>sql</p></details>
+'''
+        def statuses = [all_integration_tests_passing: ['opensearch': [status: 'met', blockingComponents: []]]]
+        String updated = releaseStateData.applyChoreStatusUpdates(body, statuses)
+        assert updated.contains('All integration tests are passing | :green_circle:')
+        assert updated.contains('see thread')
+        assert !updated.contains('OSCAR: blocking components')
+    }
+
+    @Test
+    void testApplyChoreStatusUpdatesLeavesRowUntouchedWhenProductStatusMissing() {
         // Only the OpenSearch integration status is known; the OSD exit row keeps its existing circle.
-        def statuses = [all_integration_tests_passing: ['opensearch': 'not_met']]
-        String updated = releaseStateData.applyChoreStatusCircles(CIRCLE_BODY, statuses)
+        def statuses = [all_integration_tests_passing: ['opensearch': [status: 'not_met', blockingComponents: []]]]
+        String updated = releaseStateData.applyChoreStatusUpdates(CIRCLE_BODY, statuses)
         assert updated.contains('All integration tests are passing | :red_circle:')
         assert updated.contains('All integration tests are passing | :green_circle:')
     }
 
     @Test
-    void testApplyChoreStatusCirclesIgnoresRowsOutsideKnownTables() {
+    void testApplyChoreStatusUpdatesIgnoresRowsOutsideKnownTables() {
         // A chore keyword appearing before any criteria table heading must not be rewritten.
         String body = 'All integration tests are passing | :green_circle: |   |\n'
-        def statuses = [all_integration_tests_passing: ['opensearch': 'not_met']]
-        assert releaseStateData.applyChoreStatusCircles(body, statuses) == body
+        def statuses = [all_integration_tests_passing: ['opensearch': [status: 'not_met', blockingComponents: []]]]
+        assert releaseStateData.applyChoreStatusUpdates(body, statuses) == body
     }
 
     @Test
-    void testApplyChoreStatusCirclesPreservesBodyWhenNothingChanges() {
-        // Statuses already match the body's circles, so it round-trips byte-for-byte.
+    void testApplyChoreStatusUpdatesPreservesBodyWhenNothingChanges() {
+        // Statuses already match the body's circles and no row is not_met, so it round-trips byte-for-byte.
         def statuses = [
-            release_owners_assigned      : [both: 'in_progress'],
-            all_integration_tests_passing: ['opensearch': 'met', 'opensearch-dashboards': 'met']
+            release_owners_assigned      : [both: [status: 'in_progress', blockingComponents: []]],
+            all_integration_tests_passing: [
+                'opensearch'           : [status: 'met', blockingComponents: []],
+                'opensearch-dashboards': [status: 'met', blockingComponents: []]
+            ]
         ]
-        assert releaseStateData.applyChoreStatusCircles(CIRCLE_BODY, statuses) == CIRCLE_BODY
+        assert releaseStateData.applyChoreStatusUpdates(CIRCLE_BODY, statuses) == CIRCLE_BODY
     }
 
     // A trimmed release issue body carrying all three criteria tables in their real markdown shape.
