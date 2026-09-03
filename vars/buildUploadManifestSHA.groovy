@@ -7,7 +7,7 @@
  * compatible open source license.
  */
 void call(Map args = [:]) {
-    lib = library(identifier: 'jenkins@13.8.2', retriever: legacySCM(scm))
+    lib = library(identifier: 'jenkins@13.8.3', retriever: legacySCM(scm))
 
     def secret_artifacts = [
         [envVar: 'ARTIFACT_BUCKET_NAME', secretRef: 'op://opensearch-release-secrets/aws-resource-arns/jenkins-artifact-bucket-name'],

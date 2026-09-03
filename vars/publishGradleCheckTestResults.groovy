@@ -21,7 +21,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 void call(Map args = [:]) {
-    def lib = library(identifier: 'jenkins@13.8.2', retriever: legacySCM(scm))
+    def lib = library(identifier: 'jenkins@13.8.3', retriever: legacySCM(scm))
     def finalJsonDoc = ""
     def buildNumber = currentBuild.number
     def buildDescription = currentBuild.description
