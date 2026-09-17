@@ -39,6 +39,7 @@ List<String> call(Map args = [:]) {
     def inputManifestYaml = readYaml(file: args.inputManifest[0])
     def version = inputManifestYaml.build.version
     List<String> componentsMissingReleaseIssue = []
+    List<String> excludedComponents = ReleaseMetricsData.EXCLUDED_COMPONENTS
 
     inputManifest.each { inputManifestFile ->
         def inputManifestObj = readYaml(file: inputManifestFile)
@@ -50,7 +51,7 @@ List<String> call(Map args = [:]) {
                 def awsSessionToken = env.AWS_SESSION_TOKEN
 
                 ReleaseMetricsData releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, this)
-                inputManifestObj.components.each { component ->
+                inputManifestObj.components.findAll { !excludedComponents.contains(it.name) }.each { component ->
                     if (!releaseMetricsData.getReleaseIssueStatus(component.name)) {
                         componentsMissingReleaseIssue.add(component.name)
                     }
