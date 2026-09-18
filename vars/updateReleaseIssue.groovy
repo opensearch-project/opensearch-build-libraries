@@ -42,17 +42,18 @@ void call(Map args = [:]) {
     }
     String issueRef = releaseIssue.replaceAll(/^.*\/issues\//, '')
 
-    // The oscar bot has write access to the release issue (edit body and comment).
-    def secret_github_oscar_bot = [
-        [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-release-secrets/github-bot/oscar-ci-bot-username'],
-        [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-release-secrets/github-bot/oscar-ci-bot-token']
+    // Temp fix untik oscar bot is active
+    // TODO: Replace with oscar-ci-bot once it is active
+    def secret_github_bot = [
+        [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-release-secrets/github-bot/ci-bot-username'],
+        [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-release-secrets/github-bot/ci-bot-token']
     ]
 
     if (action == 'comment') {
         if (!args.comment) {
             error("comment is required when action is 'comment'.")
         }
-        withSecrets(secrets: secret_github_oscar_bot) {
+        withSecrets(secrets: secret_github_bot) {
             writeFile(file: 'release-issue-comment.md', text: args.comment)
             sh(script: "gh issue comment ${issueRef} --repo opensearch-project/opensearch-build --body-file release-issue-comment.md")
         }
@@ -82,7 +83,7 @@ void call(Map args = [:]) {
         return
     }
 
-    withSecrets(secrets: secret_github_oscar_bot) {
+    withSecrets(secrets: secret_github_bot) {
         String issueBody = sh(
             script: "gh issue view ${issueRef} --repo opensearch-project/opensearch-build --json body --jq '.body'",
             returnStdout: true
