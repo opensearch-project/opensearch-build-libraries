@@ -32,6 +32,7 @@ List<String> call(Map args = [:]) {
     def version = manifestYaml.build.version
 
     List<String> componentsMissingReleaseOwners = []
+    List<String> excludedComponents = ReleaseMetricsData.EXCLUDED_COMPONENTS
 
     inputManifest.each { inputManifestFile ->
         def inputManifestObj = readYaml(file: inputManifestFile)
@@ -45,7 +46,7 @@ List<String> call(Map args = [:]) {
                 ReleaseMetricsData releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, this)
                 ComponentRepoData componentRepoData = new ComponentRepoData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, this)
 
-                inputManifestObj.components.each { component ->
+                inputManifestObj.components.findAll { !excludedComponents.contains(it.name) }.each { component ->
                     def releaseOwner = releaseMetricsData.getReleaseOwners(component.name)
                     if (releaseOwner == null || releaseOwner.isEmpty()) {
                         componentsMissingReleaseOwners.add(component.name)
