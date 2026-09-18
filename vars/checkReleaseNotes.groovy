@@ -29,6 +29,7 @@ List<String> call(Map args = [:]) {
     validateParameters(args, action)
 
     List<String> componentsMissingReleaseNotes = []
+    List<String> excludedComponents = ReleaseMetricsData.EXCLUDED_COMPONENTS
 
     inputManifest.each { inputManifestFile ->
         def inputManifestObj = readYaml(file: inputManifestFile)
@@ -41,7 +42,7 @@ List<String> call(Map args = [:]) {
                 def awsSessionToken = env.AWS_SESSION_TOKEN
 
                 ReleaseMetricsData releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, this)
-                inputManifestObj.components.each { component ->
+                inputManifestObj.components.findAll { !excludedComponents.contains(it.name) }.each { component ->
                     def releaseNotesExist = releaseMetricsData.getReleaseNotesStatus(component.name)
                     // Conservative gate: only a confirmed `true` clears a component. A missing metrics doc
                     // or a query failure returns null and is flagged as missing so releases never pass silently.

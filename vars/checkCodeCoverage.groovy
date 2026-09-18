@@ -34,6 +34,7 @@ List<String> call(Map args = [:]) {
     def monthYear = String.format("%02d-%d", now.monthValue, now.year)
     def codeCoverageIndex = "opensearch-codecov-metrics-${monthYear}"
     def componentsMissingCodeCoverageWithUrl = [:]
+    List<String> excludedComponents = ReleaseMetricsData.EXCLUDED_COMPONENTS
 
     inputManifests.each { inputManifestFile ->
         def inputManifestObj = readYaml(file: inputManifestFile)
@@ -46,7 +47,7 @@ List<String> call(Map args = [:]) {
 
                 def componentRepoData = new ComponentRepoData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, this)
                 def releaseMetricsData = new ReleaseMetricsData(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, version, this)
-                inputManifestObj.components.each { component ->
+                inputManifestObj.components.findAll { !excludedComponents.contains(it.name) }.each { component ->
                     String repoName = component.repository.toString().split('/')[-1].replace('.git', '')
                     def codeCoverage = componentRepoData.getCodeCoverage(component.name, codeCoverageIndex)
                     def releaseIssue = releaseMetricsData.getReleaseIssue(repoName)
