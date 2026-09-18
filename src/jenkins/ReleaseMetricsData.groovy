@@ -14,6 +14,7 @@ import utils.OpenSearchMetricsQuery
 
 class ReleaseMetricsData {
     public static final String INDEX_NAME = 'opensearch_release_metrics'
+    public static final List<String> EXCLUDED_COMPONENTS = ['functionalTestDashboards']
     String metricsUrl
     String awsAccessKey
     String awsSecretKey
