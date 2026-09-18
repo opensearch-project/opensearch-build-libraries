@@ -43,7 +43,7 @@ void call(Map args = [:]) {
     String issueRef = releaseIssue.replaceAll(/^.*\/issues\//, '')
 
     // Temp fix untik oscar bot is active
-    // To DO: Replace with oscar-ci-bot once it is active
+    // TODO: Replace with oscar-ci-bot once it is active
     def secret_github_bot = [
         [envVar: 'GITHUB_USER', secretRef: 'op://opensearch-release-secrets/github-bot/ci-bot-username'],
         [envVar: 'GITHUB_TOKEN', secretRef: 'op://opensearch-release-secrets/github-bot/ci-bot-token']
