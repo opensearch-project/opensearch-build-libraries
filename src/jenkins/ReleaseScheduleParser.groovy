@@ -21,10 +21,12 @@ import java.util.Locale
  *   Release Number | First RC Generated | Latest Possible Release Date | Release Manager | Tracking Issue
  *
  * Each parsed row is normalized to a Map:
- *   [version, rcDate (yyyy-MM-dd), releaseDate (yyyy-MM-dd), releaseManager (List<String>), releaseIssue (URL)]
+ *   [version, rcDate (yyyy-MM-dd), releaseDate (yyyy-MM-dd), releaseManager (List<String>),
+ *    releaseManagerGhHandle (List<String>), releaseIssue (URL)]
  *
  * A release can have more than one release manager, so releaseManager is always a list
- * (empty when the cell is blank).
+ * (empty when the cell is blank). Managers are linked to their GitHub profiles, so
+ * releaseManagerGhHandle carries their handles in the same order.
  *
  * Revised dates: when a date is changed, the original is kept as struck-through text
  * (<strike>/<s>/<del>) followed by the new live date, e.g.
@@ -88,17 +90,19 @@ class ReleaseScheduleParser {
         String rcDate = normalizeDate(cleanText(cells[1]))
         String releaseDate = normalizeDate(cleanText(cells[2]))
         List<String> releaseManagers = extractManagers(cells[3])
+        List<String> releaseManagerHandles = extractManagerHandles(cells[3])
         String releaseIssue = extractAnchorUrl(cells[4])
 
         if (!version || !rcDate || !releaseDate) {
             return null
         }
         return [
-            version       : version,
-            rcDate        : rcDate,
-            releaseDate   : releaseDate,
-            releaseManager: releaseManagers,
-            releaseIssue  : releaseIssue
+            version               : version,
+            rcDate                : rcDate,
+            releaseDate           : releaseDate,
+            releaseManager        : releaseManagers,
+            releaseManagerGhHandle: releaseManagerHandles,
+            releaseIssue          : releaseIssue
         ]
     }
 
@@ -147,6 +151,63 @@ class ReleaseScheduleParser {
             names = stripTags(live).split(',').collect { it.trim() }
         }
         return names.findAll { it }
+    }
+
+    /**
+     * Extracts the release managers' GitHub handles from a cell, in the same order as
+     * extractManagers returns their names. Each manager is linked to their GitHub profile
+     * ("<a href="https://github.com/gaiksaya">Sayali Gaikawad</a>"), and the handle is what the
+     * identity table maps to a Slack user, so it is the only way a notification can tag them.
+     *
+     * Returns an empty list unless every manager in the cell yields a handle, so the handles are
+     * either absent or positionally aligned with the names - a short list would leave callers
+     * unable to tell which name a handle belongs to.
+     */
+    static List<String> extractManagerHandles(String cell) {
+        if (!cell) {
+            return []
+        }
+        String live = cell.replaceAll(STRIKETHROUGH_PATTERN, '')
+        List<String> handles = []
+        int anchors = 0
+        def anchorMatcher = (live =~ /(?si)<a\b([^>]*)>(.*?)<\/a>/)
+        while (anchorMatcher.find()) {
+            anchors++
+            String handle = handleFromProfileUrl(anchorMatcher.group(1))
+            if (handle) {
+                handles.add(handle)
+            }
+        }
+        return (anchors > 0 && handles.size() == anchors) ? handles : []
+    }
+
+    /**
+     * Reduces an anchor's attributes to the GitHub handle its href points at, or null when there is
+     * no href or it is not a github.com user profile. The page links some managers with a trailing
+     * slash ('github.com/gaiksaya/'), which would otherwise become part of the handle, and a
+     * repository link (github.com/org/repo) is not a person at all.
+     */
+    private static String handleFromProfileUrl(String attributes) {
+        def hrefMatcher = (attributes =~ /(?i)href\s*=\s*"([^"]*)"/)
+        if (!hrefMatcher.find()) {
+            return null
+        }
+        def profileMatcher = (hrefMatcher.group(1).trim() =~ /(?i)^https?:\/\/(?:www\.)?github\.com\/(.*)$/)
+        if (!profileMatcher.find()) {
+            return null
+        }
+        String path = profileMatcher.group(1)
+        for (String separator : ['?', '#']) {
+            int index = path.indexOf(separator)
+            if (index >= 0) {
+                path = path.substring(0, index)
+            }
+        }
+        path = path.replaceAll(/\/+$/, '').trim()
+        if (!path || path.contains('/')) {
+            return null
+        }
+        return path.startsWith('@') ? path.substring(1) : path
     }
 
     // Returns the href URL of the (non-struck) anchor in the cell, or null.

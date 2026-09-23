@@ -29,6 +29,7 @@ class ReleaseSchedule {
     String releaseDate
     String releaseIssue
     List<String> releaseManager
+    List<String> releaseManagerGhHandle
     String status
     String registeredBy
 
@@ -44,8 +45,13 @@ class ReleaseSchedule {
         this.rcDate = args.rcDate
         this.releaseDate = args.releaseDate
         this.releaseIssue = args.releaseIssue
-        // Accept a list (from the schedule parser) or a single handle (manual callers); normalize to a list.
+        // Accept a list (from the schedule parser) or a single name (manual callers); normalize to a list.
         this.releaseManager = normalizeManagers(args.releaseManager)
+        // The schedule page names release managers in prose ("Jane Doe"), which identifies nobody to
+        // Slack. The handle is what the identity table maps to a Slack user, so it is carried as its
+        // own field rather than overwriting the human-readable name. Empty when the caller has none,
+        // in which case consumers fall back to the name.
+        this.releaseManagerGhHandle = normalizeManagers(args.releaseManagerGhHandle)
         this.registeredBy = args.registeredBy
     }
 
@@ -98,14 +104,15 @@ class ReleaseSchedule {
      */
     Map toDocument(String timestamp) {
         return [
-            version        : version,
-            rc_date        : rcDate,
-            release_date   : releaseDate,
-            release_issue  : releaseIssue,
-            release_manager: releaseManager,
-            status         : status,
-            registered_at  : timestamp,
-            registered_by  : registeredBy
+            version                  : version,
+            rc_date                  : rcDate,
+            release_date             : releaseDate,
+            release_issue            : releaseIssue,
+            release_manager          : releaseManager,
+            release_manager_gh_handle: releaseManagerGhHandle,
+            status                   : status,
+            registered_at            : timestamp,
+            registered_by            : registeredBy
         ]
     }
 }
