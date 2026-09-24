@@ -120,19 +120,21 @@ class TestReleaseStateDocuments {
     void testScheduleToDocumentMapsSnakeCaseFields() {
         // status is passed explicitly so this test stays focused on field mapping (not date-derived status).
         def doc = new ReleaseSchedule([
-                version       : '3.8.0',
-                rcDate        : '2026-08-01',
-                releaseDate   : '2026-08-12',
-                releaseManager: 'test-rm',
-                status        : 'inactive',
-                registeredBy  : 'release-schedule-job #5'
+                version               : '3.8.0',
+                rcDate                : '2026-08-01',
+                releaseDate           : '2026-08-12',
+                releaseManager        : 'Test Rm',
+                releaseManagerGhHandle: 'test-rm',
+                status                : 'inactive',
+                registeredBy          : 'release-schedule-job #5'
         ]).toDocument(TS)
 
         assert doc.version == '3.8.0'
         assert doc.rc_date == '2026-08-01'
         assert doc.release_date == '2026-08-12'
-        // A single manager handle is normalized to a one-element list.
-        assert doc.release_manager == ['test-rm']
+        // A single manager is normalized to a one-element list, name and handle alike.
+        assert doc.release_manager == ['Test Rm']
+        assert doc.release_manager_gh_handle == ['test-rm']
         assert doc.registered_by == 'release-schedule-job #5'
         assert doc.status == 'inactive'
         assert doc.registered_at == TS
@@ -140,14 +142,34 @@ class TestReleaseStateDocuments {
 
     @Test
     void testScheduleAcceptsMultipleReleaseManagers() {
-        def doc = new ReleaseSchedule([version: '3.8.0', releaseManager: ['Alice', 'Bob'], status: 'active']).toDocument(TS)
+        def doc = new ReleaseSchedule([
+                version               : '3.8.0',
+                releaseManager        : ['Alice', 'Bob'],
+                releaseManagerGhHandle: ['alice', 'bob'],
+                status                : 'active'
+        ]).toDocument(TS)
         assert doc.release_manager == ['Alice', 'Bob']
+        assert doc.release_manager_gh_handle == ['alice', 'bob']
     }
 
     @Test
     void testScheduleNormalizesNullReleaseManagerToEmptyList() {
         def doc = new ReleaseSchedule([version: '3.8.0', status: 'active']).toDocument(TS)
         assert doc.release_manager == []
+        assert doc.release_manager_gh_handle == []
+    }
+
+    @Test
+    void testScheduleKeepsTheNameWhenNoHandleIsKnown() {
+        // A manager the page names in plain text has no profile link to scrape a handle from; the
+        // name still has to be recorded so a notification can at least say who it is.
+        def doc = new ReleaseSchedule([
+                version       : '3.8.0',
+                releaseManager: ['Alice'],
+                status        : 'active'
+        ]).toDocument(TS)
+        assert doc.release_manager == ['Alice']
+        assert doc.release_manager_gh_handle == []
     }
 
     @Test

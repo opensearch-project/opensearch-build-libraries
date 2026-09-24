@@ -55,14 +55,15 @@ class ReleaseStateIndex {
         return [
             mappings: [
                 properties: [
-                    version        : [type: 'keyword'],
-                    rc_date        : [type: 'date', format: 'yyyy-MM-dd'],
-                    release_date   : [type: 'date', format: 'yyyy-MM-dd'],
-                    release_issue  : [type: 'keyword'],
-                    release_manager: [type: 'keyword'],
-                    status         : [type: 'keyword'],
-                    registered_at  : [type: 'date'],
-                    registered_by  : [type: 'keyword']
+                    version                  : [type: 'keyword'],
+                    rc_date                  : [type: 'date', format: 'yyyy-MM-dd'],
+                    release_date             : [type: 'date', format: 'yyyy-MM-dd'],
+                    release_issue            : [type: 'keyword'],
+                    release_manager          : [type: 'keyword'],
+                    release_manager_gh_handle: [type: 'keyword'],
+                    status                   : [type: 'keyword'],
+                    registered_at            : [type: 'date'],
+                    registered_by            : [type: 'keyword']
                 ]
             ]
         ]

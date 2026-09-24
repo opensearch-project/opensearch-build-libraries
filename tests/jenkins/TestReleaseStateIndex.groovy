@@ -60,12 +60,14 @@ class TestReleaseStateIndex {
         Map properties = mapping.mappings.properties
         assert properties.keySet() == [
                 'version', 'rc_date', 'release_date', 'release_issue',
-                'release_manager', 'status', 'registered_at', 'registered_by'
+                'release_manager', 'release_manager_gh_handle', 'status',
+                'registered_at', 'registered_by'
         ] as Set
         assert properties.version.type == 'keyword'
         assert properties.rc_date.type == 'date'
         assert properties.rc_date.format == 'yyyy-MM-dd'
         assert properties.release_date.type == 'date'
+        assert properties.release_manager_gh_handle.type == 'keyword'
     }
 
     @Test
