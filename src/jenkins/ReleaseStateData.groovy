@@ -124,7 +124,28 @@ class ReleaseStateData {
      *         blocking-components note per criterion.
      */
     Map<String, Map<String, Map>> getLatestChoreStatuses(String version) {
-        def response = metricsQuery.fetchMetricsFromIndex(ReleaseIndices.STATE, latestChoreStatusesQuery(version))
+        return latestStatuses(version, ReleaseCriterionCatalog.SOURCE_CHORE)
+    }
+
+    /**
+     * The latest status of every criterion for a version, whatever its source. Same shape as
+     * getLatestChoreStatuses.
+     *
+     * A Go/No-Go decision is judged against all of the criteria, including the manual ones the
+     * release manager sets by hand - those are exactly the ones a decision tends to waive, so a
+     * snapshot that omitted them would not record what was actually agreed to.
+     *
+     * @param version the release version to read statuses for
+     */
+    Map<String, Map<String, Map>> getLatestCriteriaStatuses(String version) {
+        return latestStatuses(version, null)
+    }
+
+    /**
+     * @param source restrict to criteria recorded by this source, or null for every source.
+     */
+    private Map<String, Map<String, Map>> latestStatuses(String version, String source) {
+        def response = metricsQuery.fetchMetricsFromIndex(ReleaseIndices.STATE, latestStatusesQuery(version, source))
         def hits = response?.hits?.hits ?: []
         Map<String, Map<String, Map>> statusByCriterion = [:]
         hits.each { hit ->
@@ -140,18 +161,21 @@ class ReleaseStateData {
         return statusByCriterion
     }
 
-    private String latestChoreStatusesQuery(String version) {
+    private String latestStatusesQuery(String version, String source) {
+        List filters = [
+            [term: [doc_type: 'criterion']],
+            [term: [version: version]]
+        ]
+        if (source) {
+            filters.add([term: [source: source]])
+        }
         def queryMap = [
             size   : 100,
             sort   : [['last_checked': [order: 'desc']]],
             _source: ['criterion_name', 'product', 'status', 'blocking_components'],
             query  : [
                 bool: [
-                    filter: [
-                        [term: [doc_type: 'criterion']],
-                        [term: [version: version]],
-                        [term: [source: 'chore_check']]
-                    ]
+                    filter: filters
                 ]
             ]
         ]
@@ -163,6 +187,16 @@ class ReleaseStateData {
         yellow_circle: 'in_progress',
         red_circle   : 'not_met'
     ]
+
+    /**
+     * The circle a status renders as, so the release issue shows one vocabulary whether a status is
+     * written into a criteria table or listed in a decision comment.
+     *
+     * @return the circle emoji, or null for an unrecognized status
+     */
+    static String statusCircle(String status) {
+        return STATUS_CIRCLE[status]
+    }
 
     private static final Map<String, String> STATUS_CIRCLE = [
         met        : ':green_circle:',

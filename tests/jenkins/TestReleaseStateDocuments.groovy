@@ -79,18 +79,28 @@ class TestReleaseStateDocuments {
     @Test
     void testDecisionToDocumentMapsSnakeCaseAndDiscriminator() {
         def doc = new ReleaseDecision([
-                version            : '3.8.0',
-                decidedBy          : 'test-rm',
-                decision           : 'go',
-                oscarRecommendation: 'yellow',
-                agreedWithOscar    : false
+                version             : '3.8.0',
+                decidedBy           : 'U123',
+                decidedByDisplayName: 'Foo Bar',
+                decision            : 'go',
+                oscarRecommendation : 'yellow',
+                agreedWithOscar     : false
         ]).toDocument(TS)
 
         assert doc.doc_type == 'decision'
-        assert doc.decided_by == 'test-rm'
+        assert doc.decided_by == 'U123'
+        assert doc.decided_by_display_name == 'Foo Bar'
         assert doc.oscar_recommendation == 'yellow'
         assert doc.agreed_with_oscar == false
         assert doc.decided_at == TS
+    }
+
+    @Test
+    void testDecisionKeepsTheAuthenticatedIdWhenNoDisplayNameResolved() {
+        // The id is required and proven; the name is a label Slack may not have given us.
+        def doc = new ReleaseDecision([version: '3.8.0', decidedBy: 'U123', decision: 'go']).toDocument(TS)
+        assert doc.decided_by == 'U123'
+        assert doc.decided_by_display_name == null
     }
 
     @Test

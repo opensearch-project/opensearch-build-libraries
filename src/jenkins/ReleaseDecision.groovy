@@ -22,6 +22,7 @@ class ReleaseDecision {
 
     String version
     String decidedBy
+    String decidedByDisplayName
     String decision
     String oscarRecommendation
     Boolean agreedWithOscar
@@ -33,6 +34,9 @@ class ReleaseDecision {
         String context = this.class.simpleName
         this.version = ArgumentValidator.required(args, 'version', context)
         this.decidedBy = ArgumentValidator.required(args, 'decidedBy', context)
+        // A readable label for decidedBy, which is an authenticated but opaque id. This one is not
+        // verified, so it is recorded beside the id rather than instead of it.
+        this.decidedByDisplayName = args.decidedByDisplayName
         this.decision = ArgumentValidator.requireOneOf(args, 'decision', VALID_DECISIONS, context)
         this.oscarRecommendation = ArgumentValidator.optionalOneOf(args, 'oscarRecommendation', VALID_RECOMMENDATIONS, context)
         this.agreedWithOscar = args.agreedWithOscar
@@ -46,16 +50,17 @@ class ReleaseDecision {
      */
     Map toDocument(String timestamp) {
         return [
-            doc_type            : 'decision',
-            version             : version,
-            decided_at          : timestamp,
-            decided_by          : decidedBy,
-            decision            : decision,
-            oscar_recommendation: oscarRecommendation,
-            agreed_with_oscar   : agreedWithOscar,
-            criteria_snapshot   : criteriaSnapshot,
-            release_issue       : releaseIssue,
-            notes               : notes
+            doc_type               : 'decision',
+            version                : version,
+            decided_at             : timestamp,
+            decided_by             : decidedBy,
+            decided_by_display_name: decidedByDisplayName,
+            decision               : decision,
+            oscar_recommendation   : oscarRecommendation,
+            agreed_with_oscar      : agreedWithOscar,
+            criteria_snapshot      : criteriaSnapshot,
+            release_issue          : releaseIssue,
+            notes                  : notes
         ]
     }
 }
