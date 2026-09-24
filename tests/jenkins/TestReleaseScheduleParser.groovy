@@ -71,6 +71,7 @@ class TestReleaseScheduleParser {
         assert row.rcDate == '2026-01-27'
         assert row.releaseDate == '2026-02-10'
         assert row.releaseManager == ['Foo']
+        assert row.releaseManagerGhHandle == ['foo']
         assert row.releaseIssue == 'https://github.com/opensearch-project/opensearch-build/issues/5897'
     }
 
@@ -95,12 +96,29 @@ class TestReleaseScheduleParser {
     }
 
     @Test
+    void testMultipleReleaseManagerHandlesStayAlignedWithTheirNames() {
+        // The handle is what resolves a manager to a Slack user, so a consumer has to be able to
+        // tell whose handle is whose - the two lists are read positionally.
+        def row = new ReleaseScheduleParser(SAMPLE_HTML).parseSchedule().find { it.version == '3.8.0' }
+        assert row.releaseManager == ['Alice', 'Bob']
+        assert row.releaseManagerGhHandle == ['alice', 'bob']
+    }
+
+    @Test
     void testRowWithEmptyManagerAndIssueStillParses() {
         def row = new ReleaseScheduleParser(SAMPLE_HTML).parseSchedule().find { it.version == '3.9.0' }
         assert row.rcDate == '2026-09-15'   // revised, live value
         assert row.releaseDate == '2026-09-29'
         assert row.releaseManager == []
+        assert row.releaseManagerGhHandle == []
         assert row.releaseIssue == null
+    }
+
+    @Test
+    void testTrailingSlashIsNotPartOfTheHandle() {
+        // The page links some managers as 'github.com/bar/'.
+        def row = new ReleaseScheduleParser(SAMPLE_HTML).parseSchedule().find { it.version == '2.19.6' }
+        assert row.releaseManagerGhHandle == ['bar']
     }
 
     @Test
@@ -114,6 +132,46 @@ class TestReleaseScheduleParser {
         assert ReleaseScheduleParser.extractManagers('Alice, Bob') == ['Alice', 'Bob']
         assert ReleaseScheduleParser.extractManagers('') == []
         assert ReleaseScheduleParser.extractManagers(null) == []
+    }
+
+    @Test
+    void testExtractManagerHandlesReadsTheProfileUrl() {
+        assert ReleaseScheduleParser.extractManagerHandles(
+            '<a href="https://github.com/foo">Foo Bar</a>') == ['foo']
+        // The page separates two linked managers with an ampersand rather than a comma.
+        assert ReleaseScheduleParser.extractManagerHandles(
+            '<a href="https://github.com/foo">Foo</a> &amp; <a href="https://github.com/bar">Bar</a>'
+        ) == ['foo', 'bar']
+        assert ReleaseScheduleParser.extractManagerHandles(
+            '<a href="https://github.com/foo?tab=repositories">Foo</a>') == ['foo']
+        assert ReleaseScheduleParser.extractManagerHandles('') == []
+        assert ReleaseScheduleParser.extractManagerHandles(null) == []
+    }
+
+    @Test
+    void testHandlesAreDroppedWhenAnyManagerCannotBeResolved() {
+        // Handles are paired with names by position, so a short list would attribute a handle to
+        // the wrong person. All-or-nothing keeps a consumer from having to guess.
+        assert ReleaseScheduleParser.extractManagerHandles(
+            '<a href="https://github.com/foo">Foo</a>, <a href="mailto:bar@example.com">Bar</a>'
+        ) == []
+        // An organisation or repository link is not a person.
+        assert ReleaseScheduleParser.extractManagerHandles(
+            '<a href="https://github.com/opensearch-project/opensearch-build">Build</a>') == []
+    }
+
+    @Test
+    void testPlainTextManagersHaveNoHandles() {
+        // Nothing to resolve, so every manager falls back to being named.
+        assert ReleaseScheduleParser.extractManagerHandles('Alice, Bob') == []
+    }
+
+    @Test
+    void testStruckThroughManagerIsIgnored() {
+        // A revised manager is struck through and replaced; only the live one counts.
+        assert ReleaseScheduleParser.extractManagerHandles(
+            '<s><a href="https://github.com/foo">Foo</a></s> <a href="https://github.com/bar">Bar</a>'
+        ) == ['bar']
     }
 
     @Test
