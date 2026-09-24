@@ -20,7 +20,9 @@ import jenkins.ReleaseSchedule
  * @param args.rcDate <optional> - Release candidate date in yyyy-MM-dd. eg: 2026-08-01
  * @param args.releaseDate <optional> - Release date in yyyy-MM-dd. eg: 2026-08-12
  * @param args.releaseIssue <optional> - URL of the GitHub release issue.
- * @param args.releaseManager <optional> - GitHub handle of the release manager.
+ * @param args.releaseManager <optional> - Name(s) of the release manager, as the schedule page prints them.
+ * @param args.releaseManagerGhHandle <optional> - GitHub handle(s) of the release manager, used to resolve
+ *                                                  them to a Slack user for notifications.
  * @param args.status <optional> - Schedule status. Defaults to 'inactive'. One of: inactive, active, released, cancelled.
  */
 void call(Map args = [:]) {
@@ -30,13 +32,14 @@ void call(Map args = [:]) {
     ]
 
     def schedule = new ReleaseSchedule([
-        version       : args.version,
-        rcDate        : args.rcDate,
-        releaseDate   : args.releaseDate,
-        releaseIssue  : args.releaseIssue,
-        releaseManager: args.releaseManager,
-        status        : args.status,
-        registeredBy  : "${env.JOB_NAME} #${env.BUILD_NUMBER}"
+        version               : args.version,
+        rcDate                : args.rcDate,
+        releaseDate           : args.releaseDate,
+        releaseIssue          : args.releaseIssue,
+        releaseManager        : args.releaseManager,
+        releaseManagerGhHandle: args.releaseManagerGhHandle,
+        status                : args.status,
+        registeredBy          : "${env.JOB_NAME} #${env.BUILD_NUMBER}"
     ])
 
     withSecrets(secrets: secret_metrics_cluster) {
