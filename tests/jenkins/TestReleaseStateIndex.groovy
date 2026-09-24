@@ -78,6 +78,8 @@ class TestReleaseStateIndex {
         assert properties.doc_type.type == 'keyword'
         assert properties.criterion_name.type == 'keyword'
         assert properties.decision.type == 'keyword'
+        assert properties.decided_by.type == 'keyword'
+        assert properties.decided_by_display_name.type == 'keyword'
         assert properties.agreed_with_oscar.type == 'boolean'
         assert properties.days_to_release.type == 'integer'
         // criteria_snapshot is stored but not indexed
