@@ -16,9 +16,9 @@ pipeline {
                             runBenchmarkTestScript(
                             command: COMMAND,
                             endpoint: CLUSTER_ENDPOINT,
-                            secondaryEndpoint: SECONDARY_ENDPOINT,
-                            insecure: "false",
-                            sigv4: "true",
+                            secondaryEndpoint: "www.secondary.com",
+                            insecure: "true",
+                            sigv4: "false",
                             workload: TEST_WORKLOAD,
                             userTag: USER_TAGS.isEmpty() ? "security-enabled:true" : "${USER_TAGS},security-enabled:true",
                             workloadParams: WORKLOAD_PARAMS,
