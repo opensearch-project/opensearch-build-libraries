@@ -24,6 +24,7 @@ class TestRunBenchmarkTestScriptWithEndpoint extends BuildPipelineTest {
         this.registerLibTester(new RunBenchmarkTestEndpointLibTester(
                 'execute-test',
                 'opensearch-ABCxdfdfhyfk.com',
+                '',
                 'false',
                 'nyc_taxis',
                 'true',
@@ -51,6 +52,11 @@ class TestRunBenchmarkTestScriptWithEndpoint extends BuildPipelineTest {
     }
 
     @Test
+    public void testRunBenchmarkTestScript_PipelineSingleNodeSecondaryEndpoint() {
+        super.testPipeline("tests/jenkins/jobs/BenchmarkTestWithSecondaryEndpoint_Jenkinsfile")
+    }
+
+    @Test
     void testRunBenchmarkTestScript_verifyScriptExecutionsNoManifest() {
         runScript("tests/jenkins/jobs/BenchmarkTestWithEndpoint_Jenkinsfile")
 
@@ -60,7 +66,21 @@ class TestRunBenchmarkTestScriptWithEndpoint extends BuildPipelineTest {
 
         assertThat(testScriptCommands.size(), equalTo(1))
         assertThat(testScriptCommands, hasItem(
-                "set +x && ./test.sh benchmark-test execute-test     --cluster-endpoint opensearch-ABCxdfdfhyfk.com  --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag true,security-enabled:true  --sigv4"
+                "set +x && ./test.sh benchmark-test execute-test     --cluster-endpoint opensearch-ABCxdfdfhyfk.com   --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag true,security-enabled:true  --sigv4"
+        ))
+    }
+
+    @Test
+    void testRunBenchmarkTestScript_verifyScriptExecutionsSecondaryEndpoint() {
+        runScript("tests/jenkins/jobs/BenchmarkTestWithSecondaryEndpoint_Jenkinsfile")
+
+        def testScriptCommands = getCommandExecutions('sh', './test.sh').findAll {
+            shCommand -> shCommand.contains('./test.sh')
+        }
+
+        assertThat(testScriptCommands.size(), equalTo(1))
+        assertThat(testScriptCommands, hasItem(
+                "set +x && ./test.sh benchmark-test execute-test     --cluster-endpoint opensearch-ABCxdfdfhyfk.com --secondary-endpoint www.secondary.com  --workload nyc_taxis --benchmark-config /tmp/workspace/benchmark.ini --user-tag true,security-enabled:true --without-security"
         ))
     }
 

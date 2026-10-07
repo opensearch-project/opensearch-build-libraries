@@ -15,6 +15,7 @@
  * @param args.pluginUrl <optional> - Download link for an opensearch plugin installation
  * @param args.distributionVersion <optional> - Provide OpenSearch version if using distributionUrl param
  * @param args.endpoint <optional> - Endpoint to the cluster.
+ * @param args.secondaryEndpoint <optional> - Secondary cluster endpoint to the cluster for cross-cluster-replication tests.
  * @param args.insecure <optional> - Force the security of the cluster to be disabled, default is false.
  * @param args.sigv4 <optional> - Use AWS SigV4 authentication, default is false.
  * @param args.region <optional> - AWS region for signing, default is us-east-1
@@ -111,6 +112,7 @@ void call(Map args = [:]) {
             isNullOrEmpty(args.pluginUrl) ? "" : "--plugin-url ${args.pluginUrl}",
             isNullOrEmpty(args.distributionVersion) ? "" : "--distribution-version ${args.distributionVersion}",
             isNullOrEmpty(args.endpoint) ? "" : "--cluster-endpoint ${args.endpoint}",
+            isNullOrEmpty(args.secondaryEndpoint) ? "" : "--secondary-endpoint ${args.secondaryEndpoint}",
             isNullOrEmpty(args.endpoint) ? "--config ${WORKSPACE}/config.yml" : "",
             "--workload ${args.workload}",
             "--benchmark-config ${WORKSPACE}/benchmark.ini",
