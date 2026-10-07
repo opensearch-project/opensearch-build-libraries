@@ -15,6 +15,7 @@ class RunBenchmarkTestEndpointLibTester extends LibFunctionTester{
 
     private String command
     private String endpoint
+    private String secondaryEndpoint
     private String insecure
     private String workload
     private String userTag
@@ -26,11 +27,12 @@ class RunBenchmarkTestEndpointLibTester extends LibFunctionTester{
     private String telemetryParams
     private String sigv4
 
-    public RunBenchmarkTestEndpointLibTester(command, endpoint, insecure, workload, userTag, workloadParams,
+    public RunBenchmarkTestEndpointLibTester(command, endpoint, secondaryEndpoint, insecure, workload, userTag, workloadParams,
                                            testProcedure, excludeTasks, includeTasks,
                                            additionalConfig,telemetryParams, sigv4){
         this.command = command
         this.endpoint = endpoint
+        this.secondaryEndpoint = secondaryEndpoint
         this.insecure = insecure
         this.workload = workload
         this.userTag = userTag
@@ -90,6 +92,7 @@ class RunBenchmarkTestEndpointLibTester extends LibFunctionTester{
         binding.setVariable('BUILD_URL', 'test://artifact.url')
         binding.setVariable('COMMAND', command)
         binding.setVariable('CLUSTER_ENDPOINT', endpoint)
+        binding.setVariable('SECONDARY_ENDPOINT', secondaryEndpoint)
         binding.setVariable('GITHUB_BOT_TOKEN_NAME', 'bot_token_name')
         binding.setVariable('GITHUB_USER', 'test_user')
         binding.setVariable('GITHUB_TOKEN', 'test_token')
