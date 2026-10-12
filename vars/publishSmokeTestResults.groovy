@@ -95,12 +95,12 @@ boolean argCheck(String str) { return (str == null || str.allWhitespace || str.i
 void indexSmokeTestData(indexName, testRecordsFile) {
     echo("publishSmokeTestResults: indexSmokeTestData called with indexName=${indexName}, file=${testRecordsFile}")
     def secret_metrics_cluster = [
-        [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-release-secrets/aws-accounts/jenkins-health-metrics-account-number'],
-        [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-release-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
+        [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-release-secrets/aws-accounts/opensearch-project-managed-aws-account-lf'],
+        [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-release-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint-lf']
     ]
 
     withSecrets(secrets: secret_metrics_cluster){
-        withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
+        withAWS(role: 'opensearch-metrics', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
             def awsAccessKey = env.AWS_ACCESS_KEY_ID
             def awsSecretKey = env.AWS_SECRET_ACCESS_KEY
             def awsSessionToken = env.AWS_SESSION_TOKEN

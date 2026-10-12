@@ -19,8 +19,8 @@ Map<String, List> call(Map args = [:]) {
     lib = library(identifier: 'jenkins@lf-jenkins', retriever: legacySCM(scm))
 
     def secret_metrics_cluster = [
-        [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-release-secrets/aws-accounts/jenkins-health-metrics-account-number'],
-        [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-release-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
+        [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-release-secrets/aws-accounts/opensearch-project-managed-aws-account-lf'],
+        [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-release-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint-lf']
     ]
 
     // Parameter validation
@@ -53,7 +53,7 @@ Map<String, List> call(Map args = [:]) {
     def failingComponents = [:]
 
     withSecrets(secrets: secret_metrics_cluster){
-        withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
+        withAWS(role: 'opensearch-metrics', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
             def metricsUrl = env.METRICS_HOST_URL
             def awsAccessKey = env.AWS_ACCESS_KEY_ID
             def awsSecretKey = env.AWS_SECRET_ACCESS_KEY
