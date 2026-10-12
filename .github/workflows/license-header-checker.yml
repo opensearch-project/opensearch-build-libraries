@@ -9,4 +9,4 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Add License Header
-        uses: kt3k/license_checker@d12a6d90c58e30fefed09f2c4d03ba57f4c673a8 # v1.0.6
+        uses: peterzhuamazon/license_checker_github_action@532fcc2838fde55e25266211b1cbb33a6c89e2c0 # v1.0.7
