@@ -40,7 +40,7 @@ void call(Map args = [:]) {
             ReleaseCandidateStatus releaseCandidateStatus = new ReleaseCandidateStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, buildIndexName, version, qualifier, this)
 
             opensearchRcNumber = releaseCandidateStatus.getLatestRcNumber('OpenSearch')
-            opensearchDashboardsRcNumber = releaseCandidateStatus.getLatestRcNumber('OpenSearch-Dashboards')
+            opensearchDashboardsRcNumber = releaseCandidateStatus.getLatestRcNumber('OpenSearch Dashboards')
         }
     }
 
@@ -89,7 +89,7 @@ void call(Map args = [:]) {
  * Trigger build workflow for a specific product and required parameters for RC
  */
 def triggerBuildWorkflow(String version, String product, String rcNumber) {
-        build job: "distribution-build-${product}", 
+        build job: "distribution-build-${product}",
         parameters: [
             string(name: 'INPUT_MANIFEST', value: "${version}/${product}-${version}.yml"),
             string(name: 'TEST_MANIFEST', value: "${version}/${product}-${version}-test.yml"),
@@ -101,7 +101,7 @@ def triggerBuildWorkflow(String version, String product, String rcNumber) {
             string(name: 'BUILD_DOCKER', value: "build_docker_with_build_number_tag"),
             booleanParam(name: 'CONTINUE_ON_ERROR', value: false),
             booleanParam(name: 'UPDATE_GITHUB_ISSUE', value: true),
-        ], 
+        ],
         wait: false,
         propagate: false
 }
