@@ -26,7 +26,7 @@
 #                all artifacts in the passed in directory. If AUTO_PUBLISH is enabled, 
 #                it will publish to maven central. The folder passed as input should contain 
 #                subfolders org/opensearch to ensure artifacts are deployed under the correct groupId.
-#                Example: ./stage-maven-release.sh /maven
+#                Example: ./stage-maven-release.sh -d /maven -a false
 #                - where maven contains /maven/org/opensearch
 #
 # Usage:         ./stage-maven-release.sh -d <directory> -a <true|false>
@@ -48,8 +48,9 @@ usage() {
 }
 AUTO_PUBLISH=false
 DEPLOYED_STAGING_REPO_ID=""
+OSSRH_STAGING_API_URL="https://ossrh-staging-api.central.sonatype.com"
 
-while getopts "ha:d:" option; do
+while getopts ":ha:d:" option; do
   case $option in
   h)
     usage
@@ -62,6 +63,11 @@ while getopts "ha:d:" option; do
     ;;
   \?)
     echo "Invalid option -$OPTARG" >&2
+    usage
+    exit 1
+    ;;
+  :)
+    echo "Option -$OPTARG requires an argument" >&2
     usage
     exit 1
     ;;
@@ -136,67 +142,84 @@ echo "==========================================="
 
 deployment_log="${workdir}/deployment.log"
 
+# Since 2026-10, Central Publisher Portal validation fails with a misleading "Bundle has content that does NOT have a .pom file"
+# when the bundle contains maven-metadata*.xml files, even though the poms are present.
+# https://github.com/opensearch-project/opensearch-build-libraries/issues/944, https://community.sonatype.com/t/central-portal-rejects-a-valid-bundle-bundle-has-content-that-does-not-have-a-pom-file-poms-are-present/16708
+echo "Removing maven-metadata files so that Central Publisher Portal will not rejects bundles"
+find "${ARTIFACT_DIRECTORY}" -name 'maven-metadata*.xml*' -print -delete
+
 mvn --settings="${mvn_settings}" \
   org.sonatype.plugins:nexus-staging-maven-plugin:1.7.0:deploy-staged-repository \
   -DrepositoryDirectory="${ARTIFACT_DIRECTORY}" \
-  -DnexusUrl="https://ossrh-staging-api.central.sonatype.com" \
+  -DskipStagingRepositoryClose=true \
+  -DnexusUrl="${OSSRH_STAGING_API_URL}" \
   -DserverId=central \
-  -DautoReleaseAfterClose=false \
   -DstagingProgressTimeoutMinutes=30 \
   -DstagingProfileId="${STAGING_PROFILE_ID}" > "${deployment_log}" 2>&1 || echo "Maven command failed with exit code: $?"
 
 cat "${deployment_log}"
 
 if grep -q "BUILD SUCCESS" "${deployment_log}"; then
-  DEPLOYED_STAGING_REPO_ID=$(grep "Closing staging repository with ID" "${deployment_log}" | grep -o "\"[^\"]*\"" | tr -d '"')
-  echo "Successfully staged and validated artifacts. Staging repository ID: ${DEPLOYED_STAGING_REPO_ID}"
+  DEPLOYED_STAGING_REPO_ID=$(grep "Not closing staging repository with ID" "${deployment_log}" | grep -o "\"[^\"]*\"" | tr -d '"')
+  echo "Maven upload finished, verifying staging repository."
 else
   echo "Deployment failed!! Please check the logs above for details or check the Sonatype portal https://central.sonatype.com/publishing."
   exit 1
 fi
 
+if [ -z "${DEPLOYED_STAGING_REPO_ID}" ]; then
+  echo "Unable to retrieve DEPLOYED_STAGING_REPO_ID from deployment log."
+  exit 1
+fi
+
+# Verify the uploaded staging repository exists
+SONATYPE_AUTH="Authorization: Bearer $(printf '%s:%s' "${SONATYPE_USERNAME}" "${SONATYPE_PASSWORD}" | base64 | tr -d '\n')"
+DEPLOYED_STAGING_REPO_KEY="${SONATYPE_USERNAME}/any/${DEPLOYED_STAGING_REPO_ID}"
+MAX_RETRIES=10
+for i in $(seq 1 "${MAX_RETRIES}"); do
+  STAGING_REPOS=$(curl -s -H "${SONATYPE_AUTH}" "${OSSRH_STAGING_API_URL}/manual/search/repositories?ip=any&profile_id=${STAGING_PROFILE_ID}" || true)
+  if [[ "${STAGING_REPOS}" == *"\"key\":\"${DEPLOYED_STAGING_REPO_KEY}\""* ]]; then
+    echo "Uploaded staging repository found."
+    break
+  fi
+  if [ "${i}" -eq "${MAX_RETRIES}" ]; then
+    echo "Uploaded staging repository NOT found after ${MAX_RETRIES} attempts."
+    exit 1
+  fi
+  echo "Uploaded staging repository not found yet, retrying in 10s (${i}/${MAX_RETRIES})."
+  sleep 10
+done
+
+# Close the staging repository and transfer it to the Central Publisher Portal
+if [ "${AUTO_PUBLISH}" = true ]; then
+  PUBLISHING_TYPE="automatic"
+else
+  PUBLISHING_TYPE="user_managed"
+fi
+
+echo "==========================================="
+echo "Closing staging repository with AUTO_PUBLISH=${AUTO_PUBLISH} (publishing_type=${PUBLISHING_TYPE})."
+echo "==========================================="
+
+RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 1800 -X POST -H "${SONATYPE_AUTH}" \
+  "${OSSRH_STAGING_API_URL}/manual/upload/repository/${DEPLOYED_STAGING_REPO_KEY}?publishing_type=${PUBLISHING_TYPE}" || true)
+
+if [[ ${RESPONSE_CODE} != 2* ]]; then
+  echo "Failed to close staging repository. Response code: ${RESPONSE_CODE}"
+  echo "Please check the Sonatype portal https://central.sonatype.com/publishing ."
+  exit 1
+fi
+
+if [ "${AUTO_PUBLISH}" = true ]; then
+  echo "Staging repository closed, it will be published to Maven Central automatically once validation passes."
+else
+  echo "Staging repository closed, please publish it manually via Sonatype portal https://central.sonatype.com/publishing once validation passes."
+fi
+echo "Check deployment status via Sonatype portal https://central.sonatype.com/publishing ."
+
 echo "==========================================="
 echo "Done."
 echo "==========================================="
-
-# When using `org.sonatype.plugins:nexus-staging-maven-plugin` rc-close or rc-release we get below error:
-# `Failed to process request: Got unexpected XML element when reading stagedRepositoryIds: Got unexpected element StartElement(a, {"": "", "xml": "http://www.w3.org/XML/1998/namespace", "xmlns": "http://www.w3.org/2000/xmlns/"}, [class -> string-array]), expected one of: string`
-# Sending raw POST request to release the staging repository instead.
-# Ref: https://github.com/cdklabs/publib/pull/1667/files#diff-36ff5f7d55e47535ad5f6a8236eaecc92dba5cc2223d39b09f870d090c47327eR396
-
-if [ "$AUTO_PUBLISH" = true ] && [ -n "$DEPLOYED_STAGING_REPO_ID" ] ; then
-    echo "==========================================="
-    echo "Releasing Staging Repository ${DEPLOYED_STAGING_REPO_ID}."
-    echo "==========================================="
-
-    PROMOTION_URL="https://ossrh-staging-api.central.sonatype.com/service/local/staging/bulk/promote"
-    JSON_DATA="{
-        \"stagedRepositoryIds\": [\"${DEPLOYED_STAGING_REPO_ID}\"], 
-        \"autoDropAfterRelease\": true, 
-        \"description\": \"Releasing ${DEPLOYED_STAGING_REPO_ID}\"
-      }"
-      
-    RESPONSE_CODE=$(curl -w "%{http_code}\n" -X POST "${PROMOTION_URL}" \
-      -u "${SONATYPE_USERNAME}:${SONATYPE_PASSWORD}" \
-      -H "Content-Type: application/json" \
-      -H "Accept: application/json" \
-      -d "{\"data\": ${JSON_DATA}}")
-
-    if [[ ${RESPONSE_CODE} != 200 ]]; then
-        echo "Failed to close and release staging repository ${DEPLOYED_STAGING_REPO_ID}. Response code: ${RESPONSE_CODE}"
-        echo "Please release the staging repository manually via Sonatype portal https://central.sonatype.com/publishing ."
-        exit 1
-    else
-        echo "Staging repository ${DEPLOYED_STAGING_REPO_ID} released successfully."
-    fi
-
-    echo "==========================================="
-    echo "Done."
-    echo "==========================================="
-else 
-    echo "Skipping auto-release of staging repository ${DEPLOYED_STAGING_REPO_ID} as AUTO_PUBLISH might be set false or unable to retrieve DEPLOYED_STAGING_REPO_ID."
-    echo "Please release the staging repository manually via Sonatype portal https://central.sonatype.com/publishing ."
-fi
 })
                      loadCustomScript.sh(chmod a+x ./stage-maven-release.sh)
                   publishToMaven.signArtifacts({artifactPath=/path/to/signing, type=maven, platform=linux, sigtype=.asc, email=release@opensearch.org})
