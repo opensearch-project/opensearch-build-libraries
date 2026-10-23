@@ -54,7 +54,7 @@ class ReleaseCandidateStatus {
                         filter: [
                             [
                                 match_phrase: [
-                                    component: "${componentName}"
+                                        component_category: "${componentName}"
                                 ]
                             ],
                             [
@@ -111,7 +111,7 @@ class ReleaseCandidateStatus {
                                 filter: [
                                         [
                                                 match_phrase: [
-                                                        component: "${componentName}"
+                                                        component_category: "${componentName}"
                                                 ]
                                         ],
                                         [
