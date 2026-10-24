@@ -12,6 +12,7 @@ import jenkins.tests.BuildPipelineTest
 import org.junit.Test
 import static com.lesfurets.jenkins.unit.MethodCall.callArgsToString
 import static org.hamcrest.CoreMatchers.hasItem
+import static org.hamcrest.CoreMatchers.equalTo
 import static org.hamcrest.MatcherAssert.assertThat
 
 class TestPublishToMaven extends BuildPipelineTest {
@@ -24,6 +25,7 @@ class TestPublishToMaven extends BuildPipelineTest {
             closure.delegate = delegate
             return helper.callClosure(closure)
         })
+        binding.setVariable('BUILD_NUMBER', "123123")
         binding.setVariable('SIGNER_CLIENT_ROLE', 'SIGNER_CLIENT_ROLE')
         binding.setVariable('SIGNER_CLIENT_EXTERNAL_ID', 'SIGNER_CLIENT_EXTERNAL_ID')
         binding.setVariable('SIGNER_CLIENT_UNSIGNED_BUCKET', 'SIGNER_CLIENT_UNSIGNED_BUCKET')
@@ -40,6 +42,10 @@ class TestPublishToMaven extends BuildPipelineTest {
         assertThat(signing_sh, hasItem('#!/bin/bash\n                   set +x\n                   export ROLE=SIGNER_CLIENT_ROLE\n                   export EXTERNAL_ID=SIGNER_CLIENT_EXTERNAL_ID\n                   export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET\n                   export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET\n\n                   workspace/sign.sh /path/to/signing --type maven --platform linux --sigtype .asc --email release@opensearch.org\n               '))
         assertThat(release_sh, hasItem('./stage-maven-release.sh -d /path/to/maven/artifacts -a true'))
         assertThat(release_sh, hasItem('chmod a+x ./stage-maven-release.sh'))
+
+        def multipart_sh = getCommands('sh', './stage-maven-release.sh -d "${parts_dir}" -a true')
+        assertThat(multipart_sh.size(), equalTo(1))
+        assertThat(multipart_sh[0].contains('if [ "false" != "true" ]; then'), equalTo(true))
     }
 
     @Test
@@ -51,6 +57,7 @@ class TestPublishToMaven extends BuildPipelineTest {
             closure.delegate = delegate
             return helper.callClosure(closure)
         })
+        binding.setVariable('BUILD_NUMBER', "123123")
         binding.setVariable('SIGNER_CLIENT_ROLE', 'SIGNER_CLIENT_ROLE')
         binding.setVariable('SIGNER_CLIENT_EXTERNAL_ID', 'SIGNER_CLIENT_EXTERNAL_ID')
         binding.setVariable('SIGNER_CLIENT_UNSIGNED_BUCKET', 'SIGNER_CLIENT_UNSIGNED_BUCKET')
@@ -67,6 +74,10 @@ class TestPublishToMaven extends BuildPipelineTest {
         assertThat(signing_sh, hasItem('#!/bin/bash\n                   set +x\n                   export ROLE=SIGNER_CLIENT_ROLE\n                   export EXTERNAL_ID=SIGNER_CLIENT_EXTERNAL_ID\n                   export UNSIGNED_BUCKET=SIGNER_CLIENT_UNSIGNED_BUCKET\n                   export SIGNED_BUCKET=SIGNER_CLIENT_SIGNED_BUCKET\n\n                   workspace/sign.sh /path/to/signing/manifest.yml --type maven --platform linux --sigtype .asc --email release@opensearch.org\n               '))
         assertThat(release_sh, hasItem('./stage-maven-release.sh -d /path/to/maven/artifacts -a false'))
         assertThat(release_sh, hasItem('chmod a+x ./stage-maven-release.sh'))
+
+        def multipart_sh = getCommands('sh', './stage-maven-release.sh -d "${parts_dir}" -a false')
+        assertThat(multipart_sh.size(), equalTo(1))
+        assertThat(multipart_sh[0].contains('if [ "true" != "true" ]; then'), equalTo(true))
     }
 
     def getCommands(method, text) {

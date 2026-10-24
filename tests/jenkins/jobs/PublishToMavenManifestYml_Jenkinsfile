@@ -18,6 +18,14 @@ pipeline {
                         mavenArtifactsPath: '/path/to/maven/artifacts',
                         autoPublish: 'false'
                     )
+
+                    publishToMaven(
+                        signingArtifactsPath: '/path/to/signing/manifest.yml',
+                        mavenArtifactsPath: '/path/to/maven/artifacts',
+                        autoPublish: 'false',
+                        multiPartsUpload: true,
+                        skipPublishedCheck: true
+                    )
                 }
             }
         }
