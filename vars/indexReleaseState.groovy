@@ -49,21 +49,21 @@ import jenkins.ReleaseCriterionCatalog
 List<Map> call(Map args = [:]) {
     List<String> criteriaFilter = normalizeCriteriaFilter(args.criteria)
     def secret_metrics_cluster = [
-        [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-release-secrets/aws-accounts/jenkins-health-metrics-account-number'],
-        [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-release-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint']
+        [envVar: 'METRICS_HOST_ACCOUNT', secretRef: 'op://opensearch-release-secrets/aws-accounts/opensearch-project-managed-aws-account-lf'],
+        [envVar: 'METRICS_HOST_URL', secretRef: 'op://opensearch-release-secrets/metrics-cluster/jenkins-health-metrics-cluster-endpoint-lf']
     ]
 
-    // The outer withAWS assumes OpenSearchJenkinsAccessRole ONLY to capture the metrics-cluster
+    // The outer withAWS assumes opensearch-metrics ONLY to capture the metrics-cluster
     // credentials; it must not enclose the chore loop below. ReleaseStateData signs its reads and
     // writes with these captured credential strings directly (see OpenSearchMetricsQuery.curlAuthArgs),
     // so it does not need the ambient AWS session once constructed. Each chore check runs its own
-    // withAWS(role: 'OpenSearchJenkinsAccessRole', ...) internally; if the loop ran inside this outer
+    // withAWS(role: 'opensearch-metrics', ...) internally; if the loop ran inside this outer
     // assumed-role session, that nested re-assume would fail with sts:AssumeRole AccessDenied (an
     // assumed-role session cannot re-assume the same role), and every criterion would record 'unknown'.
     def releaseStateData
     def releases
     withSecrets(secrets: secret_metrics_cluster) {
-        withAWS(role: 'OpenSearchJenkinsAccessRole', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
+        withAWS(role: 'opensearch-metrics', roleAccount: "${METRICS_HOST_ACCOUNT}", duration: 900, roleSessionName: 'jenkins-session') {
             def metricsUrl = env.METRICS_HOST_URL
             def awsAccessKey = env.AWS_ACCESS_KEY_ID
             def awsSecretKey = env.AWS_SECRET_ACCESS_KEY
