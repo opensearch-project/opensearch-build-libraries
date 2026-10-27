@@ -53,13 +53,13 @@ void call(Map args = [:]) {
 
             releaseIssueUrl = releaseMetricsData.getReleaseIssue('opensearch-build')
             opensearchRcNumber = args.opensearchRcNumber ?: releaseCandidateStatus.getLatestRcNumber('OpenSearch')
-            opensearchDashboardsRcNumber = args.opensearchDashboardsRcNumber ?: releaseCandidateStatus.getLatestRcNumber('OpenSearch-Dashboards')
+            opensearchDashboardsRcNumber = args.opensearchDashboardsRcNumber ?: releaseCandidateStatus.getLatestRcNumber('OpenSearch Dashboards')
             println("Retrieved RC numbers: OpenSearch - ${opensearchRcNumber}, OpenSearch-Dashboards - ${opensearchDashboardsRcNumber}")
             if (opensearchRcNumber == null || opensearchDashboardsRcNumber == null || opensearchRcNumber == 0 || opensearchDashboardsRcNumber == 0) {
                     error("Unable to fetch latest RC number from metrics. Received null or 0 value.")
             } else {
                 opensearchRcBuildNumber = releaseCandidateStatus.getRcDistributionNumber(opensearchRcNumber, 'OpenSearch').toString()
-                opensearchDashboardsRcBuildNumber = releaseCandidateStatus.getRcDistributionNumber(opensearchDashboardsRcNumber, 'OpenSearch-Dashboards').toString()
+                opensearchDashboardsRcBuildNumber = releaseCandidateStatus.getRcDistributionNumber(opensearchDashboardsRcNumber, 'OpenSearch Dashboards').toString()
             }
         }
     }
