@@ -52,7 +52,7 @@ class TestReleaseCandidateStatus {
                                 filter: [
                                         [
                                                 match_phrase: [
-                                                        component: "OpenSearch"
+                                                        component_category: "OpenSearch"
                                                 ]
                                         ],
                                         [
@@ -87,7 +87,7 @@ class TestReleaseCandidateStatus {
                                 filter: [
                                         [
                                                 match_phrase: [
-                                                        component: "OpenSearch"
+                                                        component_category: "OpenSearch"
                                                 ]
                                         ],
                                         [
@@ -133,7 +133,7 @@ class TestReleaseCandidateStatus {
                                 filter: [
                                         [
                                                 match_phrase: [
-                                                        component: "OpenSearch"
+                                                        component_category: "OpenSearch"
                                                 ]
                                         ],
                                         [
@@ -179,7 +179,7 @@ class TestReleaseCandidateStatus {
                                 filter: [
                                         [
                                                 match_phrase: [
-                                                        component: "OpenSearch"
+                                                        component_category: "OpenSearch"
                                                 ]
                                         ],
                                         [
