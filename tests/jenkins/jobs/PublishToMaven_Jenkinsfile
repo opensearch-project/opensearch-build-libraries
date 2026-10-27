@@ -19,7 +19,12 @@ pipeline {
                         autoPublish: 'true'
                     )
 
-
+                    publishToMaven(
+                        signingArtifactsPath: '/path/to/signing',
+                        mavenArtifactsPath: '/path/to/maven/artifacts',
+                        autoPublish: 'true',
+                        multiPartsUpload: true
+                    )
                 }
             }
         }

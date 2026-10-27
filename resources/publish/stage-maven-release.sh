@@ -11,36 +11,37 @@
 # Name:          stage-maven-release.sh
 # Language:      Shell
 #
-# About:         Deploy opensearch artifacts to a maven central.
-#                This script will create a new staging repository in Sonatype and stage
-#                all artifacts in the passed in directory. If AUTO_PUBLISH is enabled, 
-#                it will publish to maven central. The folder passed as input should contain 
-#                subfolders org/opensearch to ensure artifacts are deployed under the correct groupId.
+# About:         Deploy opensearch artifacts to maven central.
+#                This script will zip all artifacts in the passed in directory into a bundle and
+#                upload it to the Sonatype Central Publisher Portal, then wait for validation.
+#                If AUTO_PUBLISH is enabled, it will publish to maven central once validated, and wait until published.
+#                The folder passed as input should contain subfolders org/opensearch
+#                to ensure artifacts are deployed under the correct groupId.
 #                Example: ./stage-maven-release.sh -d /maven -a false
 #                - where maven contains /maven/org/opensearch
 #
-# Usage:         ./stage-maven-release.sh -d <directory> -a <true|false>
+# Usage:         ./stage-maven-release.sh -d <directory> -a <true|false> [-n <upload_name>]
 #
 ###############################################################################################
 set -e
 
 usage() {
-  echo "usage: $0 [-h] -d <path_to_artifacts_dir> -a <true|false>"
+  echo "usage: $0 [-h] -d <path_to_artifacts_dir> -a <true|false> [-n <upload_name>]"
   echo "  -h      display help"
   echo "  -d      parent directory containing artifacts to org/opensearch namespace."
   echo "          example: dir = ~/.m2/repository where repository contains /org/opensearch"
-  echo "  -a      auto-publish to maven central after staging repository is created. Defaults to false."
+  echo "  -a      auto-publish to maven central after validation passes. Defaults to false."
+  echo "  -n      upload zip name without .zip. Defaults to maven_upload."
   echo "Required environment variables:"
   echo "SONATYPE_USERNAME - username with publish rights to a sonatype repository"
   echo "SONATYPE_PASSWORD - publishing token for sonatype"
-  echo "STAGING_PROFILE_ID - Sonatype Staging profile ID"
   exit 1
 }
 AUTO_PUBLISH=false
-DEPLOYED_STAGING_REPO_ID=""
-OSSRH_STAGING_API_URL="https://ossrh-staging-api.central.sonatype.com"
+UPLOAD_NAME="maven_upload"
+CENTRAL_PORTAL_URL="https://central.sonatype.com"
 
-while getopts ":ha:d:" option; do
+while getopts ":ha:d:n:" option; do
   case $option in
   h)
     usage
@@ -51,15 +52,16 @@ while getopts ":ha:d:" option; do
   d)
     ARTIFACT_DIRECTORY="${OPTARG}"
     ;;
+  n)
+    UPLOAD_NAME="${OPTARG}"
+    ;;
   \?)
     echo "Invalid option -$OPTARG" >&2
     usage
-    exit 1
     ;;
   :)
     echo "Option -$OPTARG requires an argument" >&2
     usage
-    exit 1
     ;;
   esac
 done
@@ -67,15 +69,13 @@ done
 if [ "$AUTO_PUBLISH" != "true" ] && [ "$AUTO_PUBLISH" != "false" ]; then
   echo "Error: Invalid value for -a: '$AUTO_PUBLISH'. Must be 'true' or 'false'"
   usage
-  exit 1
 fi
 
-required_env_vars=(ARTIFACT_DIRECTORY SONATYPE_USERNAME SONATYPE_PASSWORD STAGING_PROFILE_ID)
+required_env_vars=(ARTIFACT_DIRECTORY SONATYPE_USERNAME SONATYPE_PASSWORD)
 for var in "${required_env_vars[@]}"; do
   if [ -z "${!var}" ]; then
     echo "Error: $var is required"
     usage
-    exit 1
   fi
 done
 
@@ -91,121 +91,77 @@ fi
 
 workdir=$(mktemp -d)
 
-function cleanup() {
+cleanup() {
   rm -rf "${workdir}"
 }
 trap cleanup TERM INT EXIT
 
-function create_maven_settings() {
-  # Create a settings.xml file with the user+password for maven
-  mvn_settings="${workdir}/mvn-settings.xml"
-  cat >"${mvn_settings}" <<-EOF
-<?xml version="1.0" encoding="UTF-8" ?>
-<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
-                            http://maven.apache.org/xsd/settings-1.0.0.xsd">
-  <mirrors>
-    <mirror>
-      <id>opensearch-maven-mirror</id>
-      <name>OpenSearch CI Maven Mirror</name>
-      <url>https://ci.opensearch.org/maven2/</url>
-      <mirrorOf>central</mirrorOf>
-    </mirror>
-  </mirrors>
-  <servers>
-    <server>
-      <id>central</id>
-      <username>${SONATYPE_USERNAME}</username>
-      <password>${SONATYPE_PASSWORD}</password>
-    </server>
-  </servers>
-</settings>
-EOF
-}
-
-create_maven_settings
 echo "AUTO_PUBLISH variable is set to: '$AUTO_PUBLISH'"
 echo "==========================================="
-echo "Deploying artifacts under ${ARTIFACT_DIRECTORY} to Staging Repository."
+echo "Deploying artifacts under ${ARTIFACT_DIRECTORY} to Central Publisher Portal."
 echo "==========================================="
-
-deployment_log="${workdir}/deployment.log"
 
 # Since 2026-10, Central Publisher Portal validation fails with a misleading "Bundle has content that does NOT have a .pom file"
 # when the bundle contains maven-metadata*.xml files, even though the poms are present.
 # https://github.com/opensearch-project/opensearch-build-libraries/issues/944, https://community.sonatype.com/t/central-portal-rejects-a-valid-bundle-bundle-has-content-that-does-not-have-a-pom-file-poms-are-present/16708
-echo "Removing maven-metadata files so that Central Publisher Portal will not rejects bundles"
-find "${ARTIFACT_DIRECTORY}" -name 'maven-metadata*.xml*' -print -delete
+echo "Removing maven-metadata files so that Central Publisher Portal will not reject bundles"
+find "${ARTIFACT_DIRECTORY}" -name 'maven-metadata*.xml*' -delete
 
-mvn --settings="${mvn_settings}" \
-  org.sonatype.plugins:nexus-staging-maven-plugin:1.7.0:deploy-staged-repository \
-  -DrepositoryDirectory="${ARTIFACT_DIRECTORY}" \
-  -DskipStagingRepositoryClose=true \
-  -DnexusUrl="${OSSRH_STAGING_API_URL}" \
-  -DserverId=central \
-  -DstagingProgressTimeoutMinutes=30 \
-  -DstagingProfileId="${STAGING_PROFILE_ID}" > "${deployment_log}" 2>&1 || echo "Maven command failed with exit code: $?"
-
-cat "${deployment_log}"
-
-if grep -q "BUILD SUCCESS" "${deployment_log}"; then
-  DEPLOYED_STAGING_REPO_ID=$(grep "Not closing staging repository with ID" "${deployment_log}" | grep -o "\"[^\"]*\"" | tr -d '"')
-  echo "Maven upload finished, verifying staging repository."
-else
-  echo "Deployment failed!! Please check the logs above for details or check the Sonatype portal https://central.sonatype.com/publishing."
-  exit 1
-fi
-
-if [ -z "${DEPLOYED_STAGING_REPO_ID}" ]; then
-  echo "Unable to retrieve DEPLOYED_STAGING_REPO_ID from deployment log."
-  exit 1
-fi
-
-# Verify the uploaded staging repository exists
 SONATYPE_AUTH="Authorization: Bearer $(printf '%s:%s' "${SONATYPE_USERNAME}" "${SONATYPE_PASSWORD}" | base64 | tr -d '\n')"
-DEPLOYED_STAGING_REPO_KEY="${SONATYPE_USERNAME}/any/${DEPLOYED_STAGING_REPO_ID}"
-MAX_RETRIES=10
-for i in $(seq 1 "${MAX_RETRIES}"); do
-  STAGING_REPOS=$(curl -s -H "${SONATYPE_AUTH}" "${OSSRH_STAGING_API_URL}/manual/search/repositories?ip=any&profile_id=${STAGING_PROFILE_ID}" || true)
-  if [[ "${STAGING_REPOS}" == *"\"key\":\"${DEPLOYED_STAGING_REPO_KEY}\""* ]]; then
-    echo "Uploaded staging repository found."
-    break
-  fi
-  if [ "${i}" -eq "${MAX_RETRIES}" ]; then
-    echo "Uploaded staging repository NOT found after ${MAX_RETRIES} attempts."
-    exit 1
-  fi
-  echo "Uploaded staging repository not found yet, retrying in 10s (${i}/${MAX_RETRIES})."
-  sleep 10
-done
-
-# Close the staging repository and transfer it to the Central Publisher Portal
 if [ "${AUTO_PUBLISH}" = true ]; then
-  PUBLISHING_TYPE="automatic"
+  PUBLISHING_TYPE="AUTOMATIC"
+  EXPECTED_STATE="PUBLISHED"
+  EXPECTED_MESSAGE="Deployment published to Maven Central."
 else
-  PUBLISHING_TYPE="user_managed"
+  PUBLISHING_TYPE="USER_MANAGED"
+  EXPECTED_STATE="VALIDATED"
+  EXPECTED_MESSAGE="Deployment validated, please publish it manually via Sonatype portal ${CENTRAL_PORTAL_URL}/publishing ."
 fi
 
-echo "==========================================="
-echo "Closing staging repository with AUTO_PUBLISH=${AUTO_PUBLISH} (publishing_type=${PUBLISHING_TYPE})."
-echo "==========================================="
-
-RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 1800 -X POST -H "${SONATYPE_AUTH}" \
-  "${OSSRH_STAGING_API_URL}/manual/upload/repository/${DEPLOYED_STAGING_REPO_KEY}?publishing_type=${PUBLISHING_TYPE}" || true)
+bundle="${workdir}/${UPLOAD_NAME}.zip"
+(cd "${ARTIFACT_DIRECTORY}" && zip -qr "${bundle}" .)
+echo "Uploading ${UPLOAD_NAME}.zip ($(du -h "${bundle}" | cut -f1)) with publishingType=${PUBLISHING_TYPE} at $(date -u)."
+RESPONSE_CODE=$(curl -s -o "${workdir}/upload_response" -w "%{http_code}" --max-time 1800 -X POST -H "${SONATYPE_AUTH}" \
+  --form bundle=@"${bundle}" "${CENTRAL_PORTAL_URL}/api/v1/publisher/upload?publishingType=${PUBLISHING_TYPE}" || true)
+echo "Upload response code: ${RESPONSE_CODE} at $(date -u)."
 
 if [[ ${RESPONSE_CODE} != 2* ]]; then
-  echo "Failed to close staging repository. Response code: ${RESPONSE_CODE}"
-  echo "Please check the Sonatype portal https://central.sonatype.com/publishing ."
+  echo "Failed to upload bundle. Response code: ${RESPONSE_CODE}"
+  echo "Please check the Sonatype portal ${CENTRAL_PORTAL_URL}/publishing ."
+  exit 1
+fi
+PORTAL_DEPLOYMENT_ID=$(cat "${workdir}/upload_response")
+if [ -z "${PORTAL_DEPLOYMENT_ID}" ]; then
+  echo "Upload returned no deployment ID, please check via Sonatype portal ${CENTRAL_PORTAL_URL}/publishing ."
   exit 1
 fi
 
-if [ "${AUTO_PUBLISH}" = true ]; then
-  echo "Staging repository closed, it will be published to Maven Central automatically once validation passes."
-else
-  echo "Staging repository closed, please publish it manually via Sonatype portal https://central.sonatype.com/publishing once validation passes."
-fi
-echo "Check deployment status via Sonatype portal https://central.sonatype.com/publishing ."
+# Wait for the Portal validation, and the publish when AUTO_PUBLISH=true
+MAX_STATUS_CHECKS=60
+for i in $(seq 1 "${MAX_STATUS_CHECKS}"); do
+  DEPLOYMENT_STATUS=$(curl -s --max-time 30 -X POST -H "${SONATYPE_AUTH}" "${CENTRAL_PORTAL_URL}/api/v1/publisher/status?id=${PORTAL_DEPLOYMENT_ID}" || true)
+  DEPLOYMENT_STATE=$(echo "${DEPLOYMENT_STATUS}" | jq -R -r 'fromjson? | .deploymentState // empty')
+  echo "Deployment state: ${DEPLOYMENT_STATE:-no response or invalid data} (${i}/${MAX_STATUS_CHECKS})."
+  if [ "${DEPLOYMENT_STATE}" = "FAILED" ]; then
+    DEPLOYMENT_ERRORS=$(echo "${DEPLOYMENT_STATUS}" | jq -R -r 'fromjson? | .errors // empty')
+    echo "==========================================="
+    echo "Deployment failed with errors:"
+    echo "${DEPLOYMENT_ERRORS}"
+    echo "==========================================="
+    echo "Please check the errors via Sonatype portal ${CENTRAL_PORTAL_URL}/publishing ."
+    exit 1
+  fi
+  if [ "${DEPLOYMENT_STATE}" = "${EXPECTED_STATE}" ]; then
+    break
+  fi
+  if [ "${i}" -eq "${MAX_STATUS_CHECKS}" ]; then
+    echo "Timed out waiting for the deployment, please check via Sonatype portal ${CENTRAL_PORTAL_URL}/publishing ."
+    exit 1
+  fi
+  sleep 30
+done
+
+echo "${EXPECTED_MESSAGE}"
 
 echo "==========================================="
 echo "Done."
