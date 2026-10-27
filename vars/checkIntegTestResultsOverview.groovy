@@ -62,7 +62,7 @@ Map<String, Map> call(Map args = [:]) {
             ComponentIntegTestStatus componentIntegTestStatus = new ComponentIntegTestStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, 'opensearch-integration-test-results', version, qualifier, this)
             ReleaseCandidateStatus releaseCandidateStatus = new ReleaseCandidateStatus(metricsUrl, awsAccessKey, awsSecretKey, awsSessionToken, 'opensearch-distribution-build-results', version, qualifier, this)
             def opensearchRcNumber = releaseCandidateStatus.getLatestRcNumber('OpenSearch')
-            def opensearchDashboardsRcNumber = releaseCandidateStatus.getLatestRcNumber('OpenSearch-Dashboards')
+            def opensearchDashboardsRcNumber = releaseCandidateStatus.getLatestRcNumber('OpenSearch Dashboards')
 
             // getLatestRcNumber returns null only on a query failure, and 0 when no successful RC
             // build exists yet (the normal pre-RC state, before the RC date). A null is a real error;
